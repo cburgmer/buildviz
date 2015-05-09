@@ -10,8 +10,9 @@
   {:body buildData})
 
 (defn- get-build [job build]
-  (let [buildData (@builds build)]
-    {:body buildData}))
+  (if-let [buildData (@builds build)]
+    {:body buildData}
+    {:status 404}))
 
 (defroutes app-routes
   (PUT "/builds/:job/:build" [job build :as {body :body}] (store-build job build body))
