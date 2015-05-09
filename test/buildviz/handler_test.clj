@@ -5,7 +5,7 @@
   (:require [cheshire.core :as json]))
 
 (deftest test-app
-  (testing "app"
+  (testing "PUT to /builds/:job/:build"
     ; PUT should return 200
     (let [response (app (request :put "/builds/mybuild/1"))]
       (is (= (:status response) 200)))
@@ -17,8 +17,9 @@
                             (content-type "application/json")))
           resp-data (json/parse-string (:body response))]
       (is (= resp-data
-             {"start" 42 "end" 43})))
+             {"start" 42 "end" 43}))))
 
+  (testing "GET to /builds/:job/:build"
     ; GET should return 200
     (app (-> (request :put
                       "/builds/anotherBuild/1")
