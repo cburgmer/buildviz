@@ -37,6 +37,23 @@
       (is (= resp-data
              {"start" 42 "end" 43})))
 
-    ; GET should return 404 if not found
+    ; GET should return 404 if job not found
     (let [response (app (request :get "/builds/unknownBuild/10"))]
+      (is (= (:status response) 404)))
+
+    ; GET should return 404 if build not found
+    (app (-> (request :put
+                      "/builds/anExistingBuild/1")
+             (body (json/generate-string {:start 42 :end 43}))
+             (content-type "application/json")))
+    (let [response (app (request :get "/builds/anExistingBuild/2"))]
+      (is (= (:status response) 404)))
+
+    ; Different jobs should not interfere with each other
+    (app (-> (request :put
+                      "/builds/someBuild/1")
+             (body (json/generate-string {:start 42 :end 43}))
+             (content-type "application/json")))
+    (let [response (app (request :get "/builds/totallyUnrelatedBuild/1"))
+          resp-data (json/parse-string (:body response))]
       (is (= (:status response) 404)))))
