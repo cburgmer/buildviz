@@ -23,9 +23,28 @@
       {:status 404})
     {:status 404}))
 
+(defn- avg [series]
+  (/ (reduce + series) (count series)))
+
+(defn- duration-for [build]
+  (- (build :end) (build :start)))
+
+(defn- summary-for [job]
+  (let [buildDataEntries (vals (@builds job))
+        averageRuntime (avg (map duration-for buildDataEntries))]
+    {:averageRuntime averageRuntime}))
+
+(defn- get-pipeline []
+  (let [jobNames (keys @builds)
+        buildSummaries (map summary-for jobNames)
+        buildSummary (zipmap jobNames buildSummaries)]
+    {:body buildSummary}))
+
 (defroutes app-routes
   (PUT "/builds/:job/:build" [job build :as {body :body}] (store-build! job build body))
-  (GET "/builds/:job/:build" [job build] (get-build job build)))
+  (GET "/builds/:job/:build" [job build] (get-build job build))
+
+  (GET "/pipeline" [] (get-pipeline)))
 
 (defn- wrap-log-request [handler]
   (fn [req]

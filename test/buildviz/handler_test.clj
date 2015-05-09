@@ -4,7 +4,13 @@
         buildviz.handler)
   (:require [cheshire.core :as json]))
 
-(deftest test-app
+(defn each-fixture [f]
+  (reset! builds {})
+  (f))
+
+(use-fixtures :each each-fixture)
+
+(deftest Storage
   (testing "PUT to /builds/:job/:build"
     ; PUT should return 200
     (let [response (app (request :put "/builds/mybuild/1"))]
@@ -58,3 +64,29 @@
     (let [response (app (request :get "/builds/totallyUnrelatedBuild/1"))
           resp-data (json/parse-string (:body response))]
       (is (= (:status response) 404)))))
+
+(deftest PipelineSummary
+  (testing "GET to /pipeline"
+    ; GET should return 200
+    (let [response (app (request :get "/pipeline"))]
+      (is (= (:status response) 200)))
+
+    ; GET should return empty map by default
+    (let [response (app (request :get "/pipeline"))
+          resp-data (json/parse-string (:body response))]
+      (is (= resp-data {})))
+
+    ; GET should return job summary
+    (app (-> (request :put
+                      "/builds/someBuild/1")
+             (body (json/generate-string {:start 42 :end 43}))
+             (content-type "application/json")))
+    (app (-> (request :put
+                      "/builds/anotherBuild/1")
+             (body (json/generate-string {:start 10 :end 12}))
+             (content-type "application/json")))
+    (let [response (app (request :get "/pipeline"))
+          resp-data (json/parse-string (:body response))]
+      (is (= resp-data {"someBuild" {"averageRuntime" 1}
+                        "anotherBuild" {"averageRuntime" 2}})))
+    ))
