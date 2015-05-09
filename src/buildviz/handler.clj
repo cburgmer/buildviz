@@ -3,12 +3,19 @@
         ring.middleware.json)
   (:require [compojure.handler :as handler]))
 
-(defn- store-build [req]
-  (let [body (:body req)]
-    {:body body}))
+(def builds (atom {}))
+
+(defn- store-build [job build buildData]
+  (swap! builds assoc build buildData)
+  {:body buildData})
+
+(defn- get-build [job build]
+  (let [buildData (@builds build)]
+    {:body buildData}))
 
 (defroutes app-routes
-  (PUT "/builds/:job/:build" [job build] store-build))
+  (PUT "/builds/:job/:build" [job build :as {body :body}] (store-build job build body))
+  (GET "/builds/:job/:build" [job build] (get-build job build)))
 
 (defn- wrap-log-request [handler]
   (fn [req]
