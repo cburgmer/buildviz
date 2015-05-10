@@ -2,12 +2,11 @@
 
 Transparency for your build pipeline's results and runtime.
 
-## Installation
-
-Download from http://example.com/FIXME.
+**This is experimental and things are going to move around a lot**
 
 ## Usage
 
-FIXME: explanation
-
-    $ java -jar buildviz-0.1.0-standalone.jar
+    $ ./lein ring server-headless
+    # from a 2nd tab
+    $ ./seedDummyData.sh
+    $ open http://localhost:3000/index.html
