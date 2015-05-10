@@ -80,10 +80,28 @@
 
     ; GET should return total build count
     (reset! builds {})
+    (a-build "runOnce" 1, {})
+    (a-build "runTwice" 1, {})
+    (a-build "runTwice" 2, {})
+    (let [response (app (request :get "/pipeline"))
+          resp-data (json/parse-string (:body response))]
+      (is (= resp-data {"runTwice" {"totalCount" 2}
+                        "runOnce" {"totalCount" 1}})))
+
+    ; GET should return error build count
+    (reset! builds {})
     (a-build "flakyBuild" 1, {:outcome "pass"})
     (a-build "flakyBuild" 2, {:outcome "fail"})
     (a-build "brokenBuild" 1, {:outcome "fail"})
     (let [response (app (request :get "/pipeline"))
           resp-data (json/parse-string (:body response))]
-      (is (= resp-data {"flakyBuild" {"totalCount" 2}
-                        "brokenBuild" {"totalCount" 1}})))))
+      (is (= resp-data {"flakyBuild" {"errorCount" 1 "totalCount" 2}
+                        "brokenBuild" {"errorCount" 1 "totalCount" 1}})))
+
+    ; GET should return error build count
+    (reset! builds {})
+    (a-build "goodBuild" 1, {:outcome "pass"})
+    (let [response (app (request :get "/pipeline"))
+          resp-data (json/parse-string (:body response))]
+      (is (= resp-data {"goodBuild" {"errorCount" 0 "totalCount" 1}})))
+    ))

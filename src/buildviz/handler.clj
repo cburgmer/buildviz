@@ -42,11 +42,18 @@
 (defn- total-count-for [summary buildDataEntries]
   (assoc summary :totalCount (count buildDataEntries)))
 
+(defn- error-count-for [summary buildDataEntries]
+  (let [buildsWithOutcome (filter #(contains? % :outcome) buildDataEntries)]
+    (if (not (empty? buildsWithOutcome))
+      (assoc summary :errorCount (count (filter #(= "fail" (:outcome %)) buildsWithOutcome)))
+      summary)))
+
 (defn- summary-for [job]
   (let [buildDataEntries (vals (@builds job))]
     (-> {}
         (average-runtime-for buildDataEntries)
-        (total-count-for buildDataEntries))))
+        (total-count-for buildDataEntries)
+        (error-count-for buildDataEntries))))
 
 (defn- get-pipeline []
   (let [jobNames (keys @builds)
