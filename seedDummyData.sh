@@ -3,7 +3,12 @@
 function aBuild {
     START=$RANDOM
     END=$[ $START + ( $RANDOM % 100 ) ]
-    echo '{"start":' $START ', "end":' $END '}'
+    if [[ $[ $RANDOM % 2 ] -eq 0 ]]; then
+        OUTCOME="pass"
+    else
+        OUTCOME="fail"
+    fi
+    echo '{"start": '$START', "end": '$END', "outcome": "'$OUTCOME'"}'
 }
 
 function send {
