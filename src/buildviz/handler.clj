@@ -1,6 +1,9 @@
 (ns buildviz.handler
   (:use compojure.core
-        ring.middleware.json)
+        ring.middleware.json
+        ring.middleware.resource
+        ring.middleware.content-type
+        ring.middleware.not-modified)
   (:require [compojure.handler :as handler]))
 
 (def builds (atom {}))
@@ -55,4 +58,7 @@
   (-> app-routes
       wrap-log-request
       wrap-json-response
-      (wrap-json-body {:keywords? true})))
+      (wrap-json-body {:keywords? true})
+      (wrap-resource "public")
+      (wrap-content-type)
+      (wrap-not-modified)))
