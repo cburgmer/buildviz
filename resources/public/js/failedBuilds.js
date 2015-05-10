@@ -36,7 +36,7 @@
     var color = d3.scale.category20c();
 
     d3.json('/pipeline', function (_, root) {
-        var node = svg.selectAll(".node")
+        var node = svg.selectAll("g")
                 .data(noGrouping(bubble.nodes({children: failedBuildsAsBubbles(root)})))
                 .enter()
                 .append("g")
