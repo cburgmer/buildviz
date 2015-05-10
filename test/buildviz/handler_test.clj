@@ -10,6 +10,12 @@
 
 (use-fixtures :each each-fixture)
 
+(defn a-build [jobName, buildNr, content]
+  (app (-> (request :put
+                    (format "/builds/%s/%s" jobName buildNr))
+           (body (json/generate-string content))
+           (content-type "application/json"))))
+
 (deftest Storage
   (testing "PUT to /builds/:job/:build"
     ; PUT should return 200
@@ -27,18 +33,12 @@
 
   (testing "GET to /builds/:job/:build"
     ; GET should return 200
-    (app (-> (request :put
-                      "/builds/anotherBuild/1")
-             (body (json/generate-string {:start 42 :end 43}))
-             (content-type "application/json")))
+    (a-build "anotherBuild" 1 {:start 42 :end 43})
     (let [response (app (request :get "/builds/anotherBuild/1"))]
       (is (= (:status response) 200)))
 
     ; GET should return content stored by PUT
-    (app (-> (request :put
-                  "/builds/yetAnotherBuild/1")
-             (body (json/generate-string {:start 42 :end 43}))
-             (content-type "application/json")))
+    (a-build "yetAnotherBuild" 1, {:start 42 :end 43})
     (let [response (app (request :get "/builds/yetAnotherBuild/1"))
           resp-data (json/parse-string (:body response))]
       (is (= resp-data
@@ -49,18 +49,12 @@
       (is (= (:status response) 404)))
 
     ; GET should return 404 if build not found
-    (app (-> (request :put
-                      "/builds/anExistingBuild/1")
-             (body (json/generate-string {:start 42 :end 43}))
-             (content-type "application/json")))
+    (a-build "anExistingBuild" 1, {:start 42 :end 43})
     (let [response (app (request :get "/builds/anExistingBuild/2"))]
       (is (= (:status response) 404)))
 
     ; Different jobs should not interfere with each other
-    (app (-> (request :put
-                      "/builds/someBuild/1")
-             (body (json/generate-string {:start 42 :end 43}))
-             (content-type "application/json")))
+    (a-build "someBuild" 1, {:start 42 :end 43})
     (let [response (app (request :get "/builds/totallyUnrelatedBuild/1"))
           resp-data (json/parse-string (:body response))]
       (is (= (:status response) 404)))))
@@ -77,14 +71,8 @@
       (is (= resp-data {})))
 
     ; GET should return job summary
-    (app (-> (request :put
-                      "/builds/someBuild/1")
-             (body (json/generate-string {:start 42 :end 43}))
-             (content-type "application/json")))
-    (app (-> (request :put
-                      "/builds/anotherBuild/1")
-             (body (json/generate-string {:start 10 :end 12}))
-             (content-type "application/json")))
+    (a-build "someBuild" 1, {:start 42 :end 43})
+    (a-build "anotherBuild" 1, {:start 10 :end 12})
     (let [response (app (request :get "/pipeline"))
           resp-data (json/parse-string (:body response))]
       (is (= resp-data {"someBuild" {"averageRuntime" 1}
