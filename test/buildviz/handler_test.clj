@@ -95,13 +95,13 @@
     (a-build "brokenBuild" 1, {:outcome "fail"})
     (let [response (app (request :get "/pipeline"))
           resp-data (json/parse-string (:body response))]
-      (is (= resp-data {"flakyBuild" {"errorCount" 1 "totalCount" 2}
-                        "brokenBuild" {"errorCount" 1 "totalCount" 1}})))
+      (is (= resp-data {"flakyBuild" {"failedCount" 1 "totalCount" 2}
+                        "brokenBuild" {"failedCount" 1 "totalCount" 1}})))
 
     ; GET should return error build count
     (reset! builds {})
     (a-build "goodBuild" 1, {:outcome "pass"})
     (let [response (app (request :get "/pipeline"))
           resp-data (json/parse-string (:body response))]
-      (is (= resp-data {"goodBuild" {"errorCount" 0 "totalCount" 1}})))
+      (is (= resp-data {"goodBuild" {"failedCount" 0 "totalCount" 1}})))
     ))

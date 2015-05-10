@@ -45,7 +45,7 @@
 (defn- error-count-for [summary buildDataEntries]
   (let [buildsWithOutcome (filter #(contains? % :outcome) buildDataEntries)]
     (if (not (empty? buildsWithOutcome))
-      (assoc summary :errorCount (count (filter #(= "fail" (:outcome %)) buildsWithOutcome)))
+      (assoc summary :failedCount (count (filter #(= "fail" (:outcome %)) buildsWithOutcome)))
       summary)))
 
 (defn- summary-for [job]
