@@ -10,3 +10,8 @@ Transparency for your build pipeline's results and runtime.
     # from a 2nd tab
     $ ./seedDummyData.sh
     $ open http://localhost:3000/index.html
+
+## Run as standalone jar
+
+    $ ./lein ring uberjar
+    $ java -jar target/buildviz-*-standalone.jar
