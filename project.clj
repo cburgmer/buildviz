@@ -1,6 +1,6 @@
 (defproject buildviz "0.1.0-SNAPSHOT"
   :description "Transparency for your build pipeline's results and runtime."
-  :url "http://example.com/FIXME"
+  :url "https://github.com/cburgmer/buildviz"
   :license {:name "BSD 2-Clause"
             :url "http://opensource.org/licenses/BSD-2-Clause"}
   :dependencies [[org.clojure/clojure "1.6.0"]
@@ -12,7 +12,6 @@
   :ring {:handler buildviz.handler/app
          :nrepl {:start? true
                  :port 9998}}
-  :profiles {:uberjar {:aot :all}
-             :dev {:dependencies [[javax.servlet/servlet-api "2.5"]
+  :profiles {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
                                   [cheshire "5.4.0"]
                                   [ring-mock "0.1.5"]]}})
