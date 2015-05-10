@@ -23,6 +23,8 @@
                     })
                 }
 
+                d3.select("body").append("h1")
+                    .text("Average Job Build Time");
                 var svg = d3.select("body").append("svg")
                             .attr("width", diameter)
                             .attr("height", diameter)
