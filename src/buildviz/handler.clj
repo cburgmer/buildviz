@@ -30,12 +30,23 @@
   (/ (reduce + series) (count series)))
 
 (defn- duration-for [build]
-  (- (build :end) (build :start)))
+  (if (and (contains? build :end) (contains? build :end))
+    (- (build :end) (build :start))))
+
+(defn- average-runtime-for [summary buildDataEntries]
+  (let [runtimes (filter (complement nil?) (map duration-for buildDataEntries))]
+    (if (not (empty? runtimes))
+      (assoc summary :averageRuntime (avg runtimes))
+      summary)))
+
+(defn- total-count-for [summary buildDataEntries]
+  (assoc summary :totalCount (count buildDataEntries)))
 
 (defn- summary-for [job]
-  (let [buildDataEntries (vals (@builds job))
-        averageRuntime (avg (map duration-for buildDataEntries))]
-    {:averageRuntime averageRuntime}))
+  (let [buildDataEntries (vals (@builds job))]
+    (-> {}
+        (average-runtime-for buildDataEntries)
+        (total-count-for buildDataEntries))))
 
 (defn- get-pipeline []
   (let [jobNames (keys @builds)

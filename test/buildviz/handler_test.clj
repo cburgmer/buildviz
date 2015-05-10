@@ -75,6 +75,15 @@
     (a-build "anotherBuild" 1, {:start 10 :end 12})
     (let [response (app (request :get "/pipeline"))
           resp-data (json/parse-string (:body response))]
-      (is (= resp-data {"someBuild" {"averageRuntime" 1}
-                        "anotherBuild" {"averageRuntime" 2}})))
-    ))
+      (is (= resp-data {"someBuild" {"averageRuntime" 1 "totalCount" 1}
+                        "anotherBuild" {"averageRuntime" 2 "totalCount" 1}})))
+
+    ; GET should return total build count
+    (reset! builds {})
+    (a-build "flakyBuild" 1, {:outcome "pass"})
+    (a-build "flakyBuild" 2, {:outcome "fail"})
+    (a-build "brokenBuild" 1, {:outcome "fail"})
+    (let [response (app (request :get "/pipeline"))
+          resp-data (json/parse-string (:body response))]
+      (is (= resp-data {"flakyBuild" {"totalCount" 2}
+                        "brokenBuild" {"totalCount" 1}})))))
