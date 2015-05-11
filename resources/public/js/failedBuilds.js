@@ -1,4 +1,4 @@
-(function () {
+(function (widget) {
     // Roughly following http://bl.ocks.org/mbostock/4063269
     var diameter = 600,
         className = "failedBuilds";
@@ -39,11 +39,8 @@
         }
     };
 
-    d3.select("body").append("h1")
-        .text("Failed Builds");
-    var svg = d3.select("body").append("svg")
-            .attr("width", diameter)
-            .attr("height", diameter)
+    var svg = widget.create("Failed Builds")
+            .svg(diameter)
             .attr("class", className);
 
     var bubble = d3.layout.pack()
@@ -83,4 +80,4 @@
             .style("text-anchor", "middle")
             .text(function(d) { return d.name; });
     });
-}());
+}(widget));
