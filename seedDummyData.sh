@@ -1,6 +1,6 @@
 #!/bin/bash
 
-function aBuild {
+function anyBuild {
     START=$RANDOM
     END=$[ $START + ( $RANDOM % 100 ) ]
     if [[ $[ $RANDOM % 2 ] -eq 0 ]]; then
@@ -8,6 +8,20 @@ function aBuild {
     else
         OUTCOME="fail"
     fi
+    aBuild $START $END $OUTCOME
+}
+
+function aBrokenBuild {
+    START=$RANDOM
+    END=$[ $START + ( $RANDOM % 100 ) ]
+    OUTCOME="fail"
+    aBuild $START $END $OUTCOME
+}
+
+function aBuild {
+    START=$1
+    END=$2
+    OUTCOME=$3
     echo '{"start": '$START', "end": '$END', "outcome": "'$OUTCOME'"}'
 }
 
@@ -17,11 +31,15 @@ function send {
     curl -H "Content-Type: application/json" --data @- -XPUT "http://localhost:3000/builds/${JOB}/${BUILD}"
 }
 
-aBuild | send "someBuild" 1
-aBuild | send "someBuild" 2
-aBuild | send "someBuild" 3
+anyBuild | send "someBuild" 1
+anyBuild | send "someBuild" 2
+anyBuild | send "someBuild" 3
 
-aBuild | send "anotherBuild" 1
+anyBuild | send "anotherBuild" 1
 
-aBuild | send "yetAnotherBuild" 1
-aBuild | send "yetAnotherBuild" 2
+anyBuild | send "yetAnotherBuild" 1
+anyBuild | send "yetAnotherBuild" 2
+
+aBrokenBuild | send "aBrokenBuild" 1
+aBrokenBuild | send "aBrokenBuild" 2
+aBrokenBuild | send "aBrokenBuild" 3
