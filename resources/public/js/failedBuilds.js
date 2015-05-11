@@ -3,19 +3,40 @@
     var diameter = 600,
         className = "failedBuilds";
 
+    var failRatio = function (job) {
+        var failCount = job.failedCount || 0;
+        return failCount / job.totalCount;
+    };
+
     var failedBuildsAsBubbles = function (pipeline) {
         return Object.keys(pipeline)
             .filter(function (jobName) {
                 return pipeline[jobName].failedCount > 0;
             })
             .map(function (jobName) {
-            var failedCount = pipeline[jobName].failedCount;
-            return {
-                name: jobName,
-                title: jobName + ': ' + failedCount,
-                value: failedCount
-            };
-        });
+                var failedCount = pipeline[jobName].failedCount,
+                    ratio = failRatio(pipeline[jobName]);
+                return {
+                    name: jobName,
+                    title: jobName + ': ' + failedCount + ' (' + (ratio * 100) + '%)',
+                    failRatio: ratio,
+                    value: failedCount
+                };
+            });
+    };
+
+    var maxFailRatio = function (pipeline) {
+        var failRatios = Object.keys(pipeline)
+            .map(function (jobName) {
+                return failRatio(pipeline[jobName]);
+            });
+
+        if (failRatios.length > 0) {
+            return Math.max.apply(null, failRatios);
+        } else {
+            // Something valid
+            return 1;
+        }
     };
 
     d3.select("body").append("h1")
@@ -33,9 +54,17 @@
             return bubbleNodes.filter(function(d) { return !d.children; });
         };
 
-    var color = d3.scale.category20c();
+    var colorScale = function (maxDomain) {
+        return d3.scale.linear()
+            .domain([0, maxDomain])
+            .range(["white", d3.rgb("red").darker()])
+            .interpolate(d3.interpolateLab);
+    };
 
     d3.json('/pipeline', function (_, root) {
+        var failRatio = maxFailRatio(root),
+            color = colorScale(failRatio);
+
         var node = svg.selectAll("g")
                 .data(noGrouping(bubble.nodes({children: failedBuildsAsBubbles(root)})))
                 .enter()
@@ -47,7 +76,7 @@
 
         node.append("circle")
             .attr("r", function (d) { return d.r; })
-            .style("fill", function(d) { return color(d.name); });
+            .style("fill", function(d) { return color(d.failRatio); });
 
         node.append("text")
             .attr("dy", ".3em")
