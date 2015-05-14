@@ -8,7 +8,8 @@
                  [ring/ring-jetty-adapter "1.2.1"]
                  [ring/ring-json "0.2.0"]
                  [compojure "1.1.6"]]
-  :plugins [[lein-ring "0.9.3"]]
+  :plugins [[lein-ring "0.9.3"]
+            [lein-exec "0.3.4"]]
   :ring {:handler buildviz.handler/app
          :nrepl {:start? true
                  :port 9998}}
