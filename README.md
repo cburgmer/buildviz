@@ -16,7 +16,7 @@ Transparency for your build pipeline's results and runtime.
     $ ./lein ring uberjar
     $ java -jar target/buildviz-*-standalone.jar
 
-## Full fledged exampe
+## Full fledged example
 
 Install Go.cd
 
