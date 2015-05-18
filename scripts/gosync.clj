@@ -23,30 +23,37 @@
      :end buildEndTime
      :outcome outcome}))
 
-(defn build-info [jobs]
-  (let [job (first jobs)] ; TODO multi job stages?
-    {:name (get job "name")
-     :id (get job "id")}))
+(defn build-info [job]
+  {:name (get job "name")
+   :id (get job "id")})
 
-(defn build-for-stage [pipelineName pipelineNo stage]
-  (let [build (build-info (get stage "jobs"))
-        stageName (get stage "name")
-        buildName (format "%s %s" pipelineName stageName)]
-    [buildName pipelineNo build]))
+(defn builds-for-stage [pipelineName pipelineNo stage]
+  (let [jobs (get stage "jobs")
+        stageName (get stage "name")]
+    (for
+        [job jobs
+         :let [jobName (get job "name")
+               build (build-info job)
+               buildName (format "%s %s %s" pipelineName stageName jobName)]]
+      [buildName pipelineNo build])))
 
-(defn stages-for-pipeline [pipelineRun]
+(defn builds-for-pipeline [pipelineRun]
   (let [stages (get pipelineRun "stages")
         stagesWithJobs (filter #(not (empty? (get % "jobs"))) stages)
         pipelineName (get pipelineRun "name")
         pipelineNo (get pipelineRun "label")]
-    (map (partial build-for-stage pipelineName pipelineNo) stagesWithJobs)))
+    (apply concat
+           (map (partial builds-for-stage
+                         pipelineName
+                         pipelineNo)
+                stagesWithJobs))))
 
 (defn history-for [pipeline]
   (let [historyUrl (format "%s/api/pipelines/%s/history" server-url pipeline)
         historyResp (client/get historyUrl)
         history (j/parse-string (:body historyResp))
         pipelineInfos (get history "pipelines")]
-    (apply concat (map stages-for-pipeline pipelineInfos))))
+    (apply concat (map builds-for-pipeline pipelineInfos))))
 
 (defn full-history-for [pipeline]
   (map (fn [[buildName buildNo build]] [buildName buildNo (build-for pipeline build)])
