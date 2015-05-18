@@ -10,11 +10,14 @@
 
 (def server-url (second *command-line-args*))
 
-(defn build-for [pipeline {stage :name id :id}]
-  (let [buildUrl (format "%s/jobStatus.json?pipelineName=%s&stageName=%s&jobId=%s" server-url pipeline stage id)
-        buildResp (client/get buildUrl)
-        build (j/parse-string (:body buildResp))
-        buildInfo (get (first build) "building_info")
+(defn absolute-url [relativeUrl]
+  (clojure.string/join [server-url relativeUrl]))
+
+(defn get-url [relativeUrl]
+  (client/get (absolute-url relativeUrl)))
+
+(defn parse-build-info [jsonResp]
+  (let [buildInfo (get (first jsonResp) "building_info")
         buildStartTime (tc/to-long (tf/parse (get buildInfo "build_building_date")))
         buildEndTime (tc/to-long (tf/parse (get buildInfo "build_completed_date")))
         result (get buildInfo "result")
@@ -23,44 +26,50 @@
      :end buildEndTime
      :outcome outcome}))
 
-(defn build-info [job]
-  {:name (get job "name")
-   :id (get job "id")})
+(defn build-for [pipeline {{stageName :stageName jobId :jobId} :job}]
+  (let [buildUrl (format "/jobStatus.json?pipelineName=%s&stageName=%s&jobId=%s" pipeline stageName jobId)
+        buildResp (get-url buildUrl)
+        build (j/parse-string (:body buildResp))]
+    (parse-build-info build)))
 
-(defn builds-for-stage [pipelineName pipelineNo stage]
+(defn job-info [job]
+  {:stageName (get job "name")
+   :jobId (get job "id")})
+
+(defn jobs-for-stage [pipelineName pipelineNo stage]
   (let [jobs (get stage "jobs")
         stageName (get stage "name")]
     (for
         [job jobs
-         :let [jobName (get job "name")
-               build (build-info job)
-               buildName (format "%s %s %s" pipelineName stageName jobName)]]
-      [buildName pipelineNo build])))
+         :let [jobName (get job "name")]]
+      {:fullName (format "%s %s %s" pipelineName stageName jobName)
+       :run pipelineNo
+       :job (job-info job)})))
 
-(defn builds-for-pipeline [pipelineRun]
+(defn jobs-for-pipeline [pipelineRun]
   (let [stages (get pipelineRun "stages")
         stagesWithJobs (filter #(not (empty? (get % "jobs"))) stages)
         pipelineName (get pipelineRun "name")
         pipelineNo (get pipelineRun "label")]
     (apply concat
-           (map (partial builds-for-stage
+           (map (partial jobs-for-stage
                          pipelineName
                          pipelineNo)
                 stagesWithJobs))))
 
 (defn history-for [pipeline]
-  (let [historyUrl (format "%s/api/pipelines/%s/history" server-url pipeline)
-        historyResp (client/get historyUrl)
+  (let [historyUrl (format "/api/pipelines/%s/history" pipeline)
+        historyResp (get-url historyUrl)
         history (j/parse-string (:body historyResp))
         pipelineInfos (get history "pipelines")]
-    (apply concat (map builds-for-pipeline pipelineInfos))))
+    (apply concat (map jobs-for-pipeline pipelineInfos))))
 
 (defn full-history-for [pipeline]
-  (map (fn [[buildName buildNo build]] [buildName buildNo (build-for pipeline build)])
+  (map #(assoc % :build (build-for pipeline %))
        (history-for pipeline)))
 
 (defn send-to-go [builds]
-  (doseq [[jobName buildNo build] builds]
+  (doseq [{jobName :fullName buildNo :run build :build} builds]
     (println jobName buildNo build)
     (client/put (format "http://localhost:3000/builds/%s/%s" jobName buildNo)
                 {:content-type :json
