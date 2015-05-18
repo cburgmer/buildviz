@@ -26,25 +26,22 @@
      :end buildEndTime
      :outcome outcome}))
 
-(defn build-for [pipeline {{stageName :stageName jobId :jobId} :job}]
-  (let [buildUrl (format "/jobStatus.json?pipelineName=%s&stageName=%s&jobId=%s" pipeline stageName jobId)
+(defn build-for [{jobId :jobId}]
+  (let [buildUrl (format "/jobStatus.json?pipelineName=&stageName=&jobId=%s" jobId)
         buildResp (get-url buildUrl)
         build (j/parse-string (:body buildResp))]
     (parse-build-info build)))
-
-(defn job-info [job]
-  {:stageName (get job "name")
-   :jobId (get job "id")})
 
 (defn jobs-for-stage [pipelineName pipelineNo stage]
   (let [jobs (get stage "jobs")
         stageName (get stage "name")]
     (for
         [job jobs
-         :let [jobName (get job "name")]]
+         :let [jobName (get job "name")
+               jobId (get job "id")]]
       {:fullName (format "%s %s %s" pipelineName stageName jobName)
        :run pipelineNo
-       :job (job-info job)})))
+       :jobId jobId})))
 
 (defn jobs-for-pipeline [pipelineRun]
   (let [stages (get pipelineRun "stages")
@@ -65,7 +62,7 @@
     (apply concat (map jobs-for-pipeline pipelineInfos))))
 
 (defn full-history-for [pipeline]
-  (map #(assoc % :build (build-for pipeline %))
+  (map #(assoc % :build (build-for %))
        (history-for pipeline)))
 
 (defn send-to-go [builds]
@@ -73,8 +70,7 @@
     (println jobName buildNo build)
     (client/put (format "http://localhost:3000/builds/%s/%s" jobName buildNo)
                 {:content-type :json
-                 :body (j/generate-string build)})
-    ))
+                 :body (j/generate-string build)})))
 
 (send-to-go
  (apply concat
