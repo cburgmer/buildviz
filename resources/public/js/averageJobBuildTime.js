@@ -43,8 +43,9 @@
             .style("fill", function(d) { return color(d.name); });
 
         node.append("text")
-            .attr("dy", ".3em")
             .style("text-anchor", "middle")
-            .text(function(d) { return d.name; });
+            .each(function (d) {
+                widget.textWithLineBreaks(this, d.name.split(' '));
+            });
     });
 }(widget));

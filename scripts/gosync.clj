@@ -31,7 +31,7 @@
 (defn build-for-stage [pipelineName pipelineNo stage]
   (let [build (build-info (get stage "jobs"))
         stageName (get stage "name")
-        buildName (format "%s_%s" pipelineName stageName)]
+        buildName (format "%s %s" pipelineName stageName)]
     [buildName pipelineNo build]))
 
 (defn stages-for-pipeline [pipelineRun]
