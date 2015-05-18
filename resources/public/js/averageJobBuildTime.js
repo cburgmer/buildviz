@@ -40,7 +40,10 @@
 
         node.append("circle")
             .attr("r", function (d) { return d.r; })
-            .style("fill", function(d) { return color(d.name); });
+            .style("fill", function(d) {
+                var jobGroup = d.name.split(' ')[0];
+                return color(jobGroup);
+            });
 
         node.append("text")
             .style("text-anchor", "middle")
