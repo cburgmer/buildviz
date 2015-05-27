@@ -87,7 +87,7 @@
    :buildNo (format "%s %s" pipelineRun stageRun)
    :build build})
 
-(defn send-to-go [builds]
+(defn put-to-buildviz [builds]
   (doseq [{jobName :jobName buildNo :buildNo build :build} builds]
     (println jobName buildNo build)
     (client/put (format "http://localhost:3000/builds/%s/%s" jobName buildNo)
@@ -100,4 +100,4 @@
               (map job-instances-for-stage
                    (stages-for-pipeline-group "Development")))))
 
-(send-to-go (map make-build-instance job-instances))
+(put-to-buildviz (map make-build-instance job-instances))
