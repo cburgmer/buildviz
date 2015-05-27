@@ -2,7 +2,15 @@
 
 Transparency for your build pipeline's results and runtime.
 
-**This is experimental and things are going to move around a lot**
+**This is experimental, don't get your hopes up**
+
+## Motivation
+
+The [Toyota Production System](http://en.wikipedia.org/wiki/Toyota_Production_System) advocates the ["jidoka"](http://en.wikipedia.org/w/index.php?title=Jidoka&redirect=no) principle where manual supervision steps in when an anomaly is detected, the production line is then stopped and finally the anomaly is removed. So far our software build pipeline follows the lean manufacturing metaphor.
+
+Too often we seem to be forgetting though that this principle makes yet another step mandatory: *reflection* (["hansei"](http://en.wikipedia.org/wiki/Hansei)) including a root cause analysis that leads to the improvement of the production process (in the spirit of ["kaizen"](http://en.wikipedia.org/wiki/Kaizen)).
+
+May this tool evolve towards supporting us in reflecting on our software production line.
 
 ## Usage
 
