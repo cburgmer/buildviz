@@ -16,6 +16,8 @@
 (defn get-url [relativeUrl]
   (client/get (absolute-url relativeUrl)))
 
+; /jobStatus.json
+
 (defn parse-build-info [jsonResp]
   (let [buildInfo (get (first jsonResp) "building_info")
         buildStartTime (tc/to-long (tf/parse (get buildInfo "build_building_date")))
@@ -32,46 +34,70 @@
         build (j/parse-string (:body buildResp))]
     (parse-build-info build)))
 
-(defn jobs-for-stage [pipelineName pipelineNo stage]
-  (let [jobs (get stage "jobs")
-        stageName (get stage "name")]
-    (for
-        [job jobs
-         :let [jobName (get job "name")
-               jobId (get job "id")]]
-      {:fullName (format "%s %s %s" pipelineName stageName jobName)
-       :run pipelineNo
-       :jobId jobId})))
+(defn job-data-for-instance [jobInstance]
+  (assoc jobInstance :build (build-for jobInstance)))
 
-(defn jobs-for-pipeline [pipelineRun]
-  (let [stages (get pipelineRun "stages")
-        stagesWithJobs (filter #(not (empty? (get % "jobs"))) stages)
-        pipelineName (get pipelineRun "name")
-        pipelineNo (get pipelineRun "label")]
-    (apply concat
-           (map (partial jobs-for-stage
-                         pipelineName
-                         pipelineNo)
-                stagesWithJobs))))
 
-(defn history-for [pipeline]
-  (let [historyUrl (format "/api/pipelines/%s/history" pipeline)
-        historyResp (get-url historyUrl)
-        history (j/parse-string (:body historyResp))
-        pipelineInfos (get history "pipelines")]
-    (apply concat (map jobs-for-pipeline pipelineInfos))))
+; /api/stages/%pipeline/%stage/history
 
-(defn full-history-for [pipeline]
-  (map #(assoc % :build (build-for %))
-       (history-for pipeline)))
+(defn job-instances-for-stage-instance [{pipelineRun :pipeline_counter
+                                         stageRun :counter
+                                         jobs :jobs}]
+  (map (fn [{id :id name :name result :result}]
+         {:jobId id
+          :jobName name
+          :stageRun stageRun
+          :pipelineRun pipelineRun})
+       jobs))
+
+(defn job-instances-for-stage [{stage :stage pipeline :pipeline}]
+  (let [stageHistoryUrl (format "/api/stages/%s/%s/history" pipeline stage)
+        stageHistoryResp (get-url stageHistoryUrl)
+        stageHistory (j/parse-string (:body stageHistoryResp) true)
+        stageInstances (:stages stageHistory)]
+    (map #(assoc % :stageName stage :pipelineName pipeline)
+         (apply concat
+                (map #(job-instances-for-stage-instance %) stageInstances)))))
+
+
+; /api/config/pipeline_groups
+
+(defn stages-for-pipeline [pipeline]
+  (let [pipelineName (:name pipeline)
+        stages (:stages pipeline)]
+    (map (fn [{name :name}]
+           {:stage name :pipeline pipelineName})
+         stages)))
+
+(defn stages-for-pipeline-group [pipelineGroupName]
+    (let [pipelineGroupsUrl "/api/config/pipeline_groups"
+          pipelineGroupsResp (get-url pipelineGroupsUrl)
+          pipelineGroups (j/parse-string (:body pipelineGroupsResp) true)
+          pipelineGroup (first (filter #(= pipelineGroupName (:name %)) pipelineGroups))
+          pipelines (:pipelines pipelineGroup)]
+      (apply concat
+             (map stages-for-pipeline pipelines))))
+
+; upload
+
+(defn make-build-instance [{jobName :jobName stageName :stageName pipelineName :pipelineName
+                            stageRun :stageRun pipelineRun :pipelineRun
+                            build :build}]
+  {:jobName (format "%s %s %s" pipelineName stageName jobName)
+   :buildNo (format "%s %s" pipelineRun stageRun)
+   :build build})
 
 (defn send-to-go [builds]
-  (doseq [{jobName :fullName buildNo :run build :build} builds]
+  (doseq [{jobName :jobName buildNo :buildNo build :build} builds]
     (println jobName buildNo build)
     (client/put (format "http://localhost:3000/builds/%s/%s" jobName buildNo)
                 {:content-type :json
                  :body (j/generate-string build)})))
 
-(send-to-go
- (apply concat
-        (map full-history-for (list "Deploy_Consumer" "Deploy_Services" "Deploy_QA" "Deploy_B2B" "B2B_Website" "Web_Services" "Consumer_Website"))))
+(def job-instances
+  (map job-data-for-instance
+       (apply concat
+              (map job-instances-for-stage
+                   (stages-for-pipeline-group "Development")))))
+
+(send-to-go (map make-build-instance job-instances))
