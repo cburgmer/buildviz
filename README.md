@@ -28,8 +28,7 @@ May this tool evolve towards supporting us in reflecting on our software product
 
 Install Go.cd
 
-    $ vagrant init gocd/gocd-demo
-    $ vagrant up
+    $ vagrant init gocd/gocd-demo; vagrant box update; vagrant up
 
 Start buildviz
 
