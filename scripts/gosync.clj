@@ -59,6 +59,26 @@
                 (map job-instances-for-stage-instance stageInstances)))))
 
 
+;; /api/pipelines/%pipelines/instance/%run
+
+(defn revision->input [{modifications :modifications material :material}]
+  (let [{revision :revision} (first modifications)
+        source_id (:id material)]
+    {:revision revision
+     :source_id source_id}))
+
+(defn inputs-for-pipeline-run [pipelineName run]
+  (let [pipelineInstance (get-json "/api/pipelines/%s/instance/%s" pipelineName run)
+        revisions (:material_revisions (:build_cause pipelineInstance))]
+    (map revision->input revisions)))
+
+(defn augment-job-with-inputs [job]
+  (let [pipelineRun (:pipelineRun job)
+        pipelineName (:pipelineName job)
+        inputs (inputs-for-pipeline-run pipelineName pipelineRun)]
+    (assoc job :inputs inputs)))
+
+
 ;; /api/config/pipeline_groups
 
 (defn stages-for-pipeline [pipeline]
@@ -69,20 +89,21 @@
          stages)))
 
 (defn stages-for-pipeline-group [pipelineGroupName]
-    (let [pipelineGroups (get-json "/api/config/pipeline_groups")
-          pipelineGroup (first (filter #(= pipelineGroupName (:name %)) pipelineGroups))
-          pipelines (:pipelines pipelineGroup)]
-      (apply concat
-             (map stages-for-pipeline pipelines))))
+  (let [pipelineGroups (get-json "/api/config/pipeline_groups")
+        pipelineGroup (first (filter #(= pipelineGroupName (:name %)) pipelineGroups))
+        pipelines (:pipelines pipelineGroup)]
+    (apply concat
+           (map stages-for-pipeline pipelines))))
+
 
 ;; upload
 
 (defn make-build-instance [{jobName :jobName stageName :stageName pipelineName :pipelineName
                             stageRun :stageRun pipelineRun :pipelineRun
-                            build :build}]
+                            inputs :inputs build :build}]
   {:jobName (format "%s %s %s" pipelineName stageName jobName)
    :buildNo (format "%s %s" pipelineRun stageRun)
-   :build build})
+   :build (assoc build :inputs inputs)})
 
 (defn put-to-buildviz [builds]
   (doseq [{jobName :jobName buildNo :buildNo build :build} builds]
@@ -93,10 +114,11 @@
 
 (def job-instances
   (map job-data-for-instance
-       (apply concat
-              (map job-instances-for-stage
-                   (concat (stages-for-pipeline-group "Development")
-                           (stages-for-pipeline-group "Verification")
-                           (stages-for-pipeline-group "Production"))))))
+       (map augment-job-with-inputs
+            (apply concat
+                   (map job-instances-for-stage
+                        (concat (stages-for-pipeline-group "Development")
+                                (stages-for-pipeline-group "Verification")
+                                (stages-for-pipeline-group "Production")))))))
 
 (put-to-buildviz (map make-build-instance job-instances))
