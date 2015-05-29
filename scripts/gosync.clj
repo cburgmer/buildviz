@@ -10,35 +10,36 @@
 
 (def server-url (second *command-line-args*))
 
-(defn absolute-url [relativeUrl]
+(defn absolute-url-for [relativeUrl]
   (clojure.string/join [server-url relativeUrl]))
 
-(defn get-url [relativeUrl]
-  (client/get (absolute-url relativeUrl)))
+(defn get-json [relative-url-template & url-params]
+  (let [relative-url (apply format relative-url-template url-params)
+        response (client/get (absolute-url-for relative-url))]
+    (j/parse-string (:body response) true)))
 
-; /jobStatus.json
+
+;; /jobStatus.json
 
 (defn parse-build-info [jsonResp]
-  (let [buildInfo (get (first jsonResp) "building_info")
-        buildStartTime (tc/to-long (tf/parse (get buildInfo "build_building_date")))
-        buildEndTime (tc/to-long (tf/parse (get buildInfo "build_completed_date")))
-        result (get buildInfo "result")
+  (let [buildInfo (:building_info (first jsonResp))
+        buildStartTime (tc/to-long (tf/parse (:build_building_date buildInfo)))
+        buildEndTime (tc/to-long (tf/parse (:build_completed_date buildInfo)))
+        result (:result buildInfo)
         outcome (if (= "Passed" result) "pass" "fail")]
     {:start buildStartTime
      :end buildEndTime
      :outcome outcome}))
 
 (defn build-for [{jobId :jobId}]
-  (let [buildUrl (format "/jobStatus.json?pipelineName=&stageName=&jobId=%s" jobId)
-        buildResp (get-url buildUrl)
-        build (j/parse-string (:body buildResp))]
+  (let [build (get-json "/jobStatus.json?pipelineName=&stageName=&jobId=%s" jobId)]
     (parse-build-info build)))
 
 (defn job-data-for-instance [jobInstance]
   (assoc jobInstance :build (build-for jobInstance)))
 
 
-; /api/stages/%pipeline/%stage/history
+;; /api/stages/%pipeline/%stage/history
 
 (defn job-instances-for-stage-instance [{pipelineRun :pipeline_counter
                                          stageRun :counter
@@ -51,16 +52,14 @@
        jobs))
 
 (defn job-instances-for-stage [{stage :stage pipeline :pipeline}]
-  (let [stageHistoryUrl (format "/api/stages/%s/%s/history" pipeline stage)
-        stageHistoryResp (get-url stageHistoryUrl)
-        stageHistory (j/parse-string (:body stageHistoryResp) true)
+  (let [stageHistory (get-json "/api/stages/%s/%s/history" pipeline stage)
         stageInstances (:stages stageHistory)]
     (map #(assoc % :stageName stage :pipelineName pipeline)
          (apply concat
-                (map #(job-instances-for-stage-instance %) stageInstances)))))
+                (map job-instances-for-stage-instance stageInstances)))))
 
 
-; /api/config/pipeline_groups
+;; /api/config/pipeline_groups
 
 (defn stages-for-pipeline [pipeline]
   (let [pipelineName (:name pipeline)
@@ -70,15 +69,13 @@
          stages)))
 
 (defn stages-for-pipeline-group [pipelineGroupName]
-    (let [pipelineGroupsUrl "/api/config/pipeline_groups"
-          pipelineGroupsResp (get-url pipelineGroupsUrl)
-          pipelineGroups (j/parse-string (:body pipelineGroupsResp) true)
+    (let [pipelineGroups (get-json "/api/config/pipeline_groups")
           pipelineGroup (first (filter #(= pipelineGroupName (:name %)) pipelineGroups))
           pipelines (:pipelines pipelineGroup)]
       (apply concat
              (map stages-for-pipeline pipelines))))
 
-; upload
+;; upload
 
 (defn make-build-instance [{jobName :jobName stageName :stageName pipelineName :pipelineName
                             stageRun :stageRun pipelineRun :pipelineRun
