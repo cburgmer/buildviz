@@ -98,6 +98,8 @@
   (map job-data-for-instance
        (apply concat
               (map job-instances-for-stage
-                   (stages-for-pipeline-group "Development")))))
+                   (concat (stages-for-pipeline-group "Development")
+                           (stages-for-pipeline-group "Verification")
+                           (stages-for-pipeline-group "Production"))))))
 
 (put-to-buildviz (map make-build-instance job-instances))
