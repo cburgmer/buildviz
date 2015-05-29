@@ -113,12 +113,12 @@
                  :body (j/generate-string build)})))
 
 (def job-instances
-  (map job-data-for-instance
-       (map augment-job-with-inputs
-            (apply concat
-                   (map job-instances-for-stage
-                        (concat (stages-for-pipeline-group "Development")
-                                (stages-for-pipeline-group "Verification")
-                                (stages-for-pipeline-group "Production")))))))
+  (->> (concat (stages-for-pipeline-group "Development")
+               (stages-for-pipeline-group "Verification")
+               (stages-for-pipeline-group "Production"))
+       (map job-instances-for-stage)
+       (apply concat)
+       (map augment-job-with-inputs)
+       (map job-data-for-instance)))
 
 (put-to-buildviz (map make-build-instance job-instances))
