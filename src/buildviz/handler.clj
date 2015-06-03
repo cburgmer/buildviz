@@ -4,7 +4,8 @@
         ring.middleware.resource
         ring.middleware.content-type
         ring.middleware.not-modified)
-  (:require [compojure.handler :as handler]))
+  (:require [compojure.handler :as handler]
+             [buildviz.jobinfo :as jobinfo]))
 
 (def builds (atom {}))
 
@@ -42,18 +43,26 @@
 (defn- total-count-for [summary buildDataEntries]
   (assoc summary :totalCount (count buildDataEntries)))
 
-(defn- error-count-for [summary buildDataEntries]
-  (let [buildsWithOutcome (filter #(contains? % :outcome) buildDataEntries)]
-    (if (not (empty? buildsWithOutcome))
-      (assoc summary :failedCount (count (filter #(= "fail" (:outcome %)) buildsWithOutcome)))
-      summary)))
+(defn- builds-with-outcome [build-data-entries]
+  (filter #(contains? % :outcome) build-data-entries))
+
+(defn- error-count-for [summary build-data-entries]
+  (if-let [builds (seq (builds-with-outcome build-data-entries))]
+    (assoc summary :failedCount (count (filter #(= "fail" (:outcome %)) builds)))
+    summary))
+
+(defn- flaky-runs-for [summary build-data-entries]
+  (if-let [builds (seq (builds-with-outcome build-data-entries))]
+    (assoc summary :flakyCount (jobinfo/flaky-build-count builds))
+    summary))
 
 (defn- summary-for [job]
   (let [buildDataEntries (vals (@builds job))]
     (-> {}
         (average-runtime-for buildDataEntries)
         (total-count-for buildDataEntries)
-        (error-count-for buildDataEntries))))
+        (error-count-for buildDataEntries)
+        (flaky-runs-for buildDataEntries))))
 
 (defn- get-pipeline []
   (let [jobNames (keys @builds)
