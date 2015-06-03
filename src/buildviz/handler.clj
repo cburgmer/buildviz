@@ -14,16 +14,16 @@
     (@builds job)
     {}))
 
-(defn- store-build! [job build buildData]
+(defn- store-build! [job build build-data]
   (let [entry (job-entry job)
-        updatedEntry (assoc entry build buildData)]
-    (swap! builds assoc job updatedEntry)
-    {:body buildData}))
+        updated-entry (assoc entry build build-data)]
+    (swap! builds assoc job updated-entry)
+    {:body build-data}))
 
 (defn- get-build [job build]
   (if (contains? @builds job)
-    (if-let [buildData ((@builds job) build)]
-      {:body buildData}
+    (if-let [build-data ((@builds job) build)]
+      {:body build-data}
       {:status 404})
     {:status 404}))
 
@@ -34,14 +34,14 @@
   (if (and (contains? build :end) (contains? build :end))
     (- (build :end) (build :start))))
 
-(defn- average-runtime-for [summary buildDataEntries]
-  (let [runtimes (filter (complement nil?) (map duration-for buildDataEntries))]
+(defn- average-runtime-for [summary build-data-entries]
+  (let [runtimes (filter (complement nil?) (map duration-for build-data-entries))]
     (if (not (empty? runtimes))
       (assoc summary :averageRuntime (avg runtimes))
       summary)))
 
-(defn- total-count-for [summary buildDataEntries]
-  (assoc summary :totalCount (count buildDataEntries)))
+(defn- total-count-for [summary build-data-entries]
+  (assoc summary :totalCount (count build-data-entries)))
 
 (defn- builds-with-outcome [build-data-entries]
   (filter #(contains? % :outcome) build-data-entries))
@@ -57,12 +57,12 @@
     summary))
 
 (defn- summary-for [job]
-  (let [buildDataEntries (vals (@builds job))]
+  (let [build-data-entries (vals (@builds job))]
     (-> {}
-        (average-runtime-for buildDataEntries)
-        (total-count-for buildDataEntries)
-        (error-count-for buildDataEntries)
-        (flaky-runs-for buildDataEntries))))
+        (average-runtime-for build-data-entries)
+        (total-count-for build-data-entries)
+        (error-count-for build-data-entries)
+        (flaky-runs-for build-data-entries))))
 
 (defn- get-pipeline []
   (let [jobNames (keys @builds)
