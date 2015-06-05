@@ -27,18 +27,10 @@
       {:status 404})
     {:status 404}))
 
-(defn- avg [series]
-  (/ (reduce + series) (count series)))
-
-(defn- duration-for [build]
-  (if (and (contains? build :end) (contains? build :end))
-    (- (build :end) (build :start))))
-
 (defn- average-runtime-for [summary build-data-entries]
-  (let [runtimes (filter (complement nil?) (map duration-for build-data-entries))]
-    (if (not (empty? runtimes))
-      (assoc summary :averageRuntime (avg runtimes))
-      summary)))
+  (if-let [avg-runtime (jobinfo/average-runtime build-data-entries)]
+    (assoc summary :averageRuntime avg-runtime)
+    summary))
 
 (defn- total-count-for [summary build-data-entries]
   (assoc summary :totalCount (count build-data-entries)))
