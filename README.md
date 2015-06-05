@@ -4,6 +4,8 @@ Transparency for your build pipeline's results and runtime.
 
 **This is experimental, don't get your hopes up**
 
+![Screenshot](https://github.com/cburgmer/buildviz/raw/master/screenshot.png)
+
 ## Motivation
 
 The [Toyota Production System](http://en.wikipedia.org/wiki/Toyota_Production_System) advocates the ["jidoka"](http://en.wikipedia.org/w/index.php?title=Jidoka&redirect=no) principle where manual supervision steps in when an anomaly is detected, the production line is then stopped and finally the anomaly is removed. So far our software build pipeline follows the lean manufacturing metaphor.
