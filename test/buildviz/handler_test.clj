@@ -88,7 +88,7 @@
       (is (= resp-data {"runTwice" {"totalCount" 2}
                         "runOnce" {"totalCount" 1}})))
 
-    ;; GET should return error build count
+    ;; GET should return failed build count
     (reset! builds {})
     (a-build "flakyBuild" 1, {:outcome "pass"})
     (a-build "flakyBuild" 2, {:outcome "fail"})

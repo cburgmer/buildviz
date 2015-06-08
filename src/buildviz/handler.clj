@@ -27,6 +27,8 @@
       {:status 404})
     {:status 404}))
 
+;; summary
+
 (defn- average-runtime-for [summary build-data-entries]
   (if-let [avg-runtime (jobinfo/average-runtime build-data-entries)]
     (assoc summary :averageRuntime avg-runtime)
@@ -35,16 +37,13 @@
 (defn- total-count-for [summary build-data-entries]
   (assoc summary :totalCount (count build-data-entries)))
 
-(defn- builds-with-outcome [build-data-entries]
-  (filter #(contains? % :outcome) build-data-entries))
-
-(defn- error-count-for [summary build-data-entries]
-  (if-let [builds (seq (builds-with-outcome build-data-entries))]
-    (assoc summary :failedCount (count (filter #(= "fail" (:outcome %)) builds)))
+(defn- failed-count-for [summary build-data-entries]
+  (if-let [builds (seq (jobinfo/builds-with-outcome build-data-entries))]
+    (assoc summary :failedCount (jobinfo/fail-count builds))
     summary))
 
-(defn- flaky-runs-for [summary build-data-entries]
-  (if-let [builds (seq (builds-with-outcome build-data-entries))]
+(defn- flaky-count-for [summary build-data-entries]
+  (if-let [builds (seq (jobinfo/builds-with-outcome build-data-entries))]
     (assoc summary :flakyCount (jobinfo/flaky-build-count builds))
     summary))
 
@@ -53,14 +52,16 @@
     (-> {}
         (average-runtime-for build-data-entries)
         (total-count-for build-data-entries)
-        (error-count-for build-data-entries)
-        (flaky-runs-for build-data-entries))))
+        (failed-count-for build-data-entries)
+        (flaky-count-for build-data-entries))))
 
 (defn- get-pipeline []
   (let [jobNames (keys @builds)
         buildSummaries (map summary-for jobNames)
         buildSummary (zipmap jobNames buildSummaries)]
     {:body buildSummary}))
+
+;; app
 
 (defroutes app-routes
   (PUT "/builds/:job/:build" [job build :as {body :body}] (store-build! job build body))

@@ -1,5 +1,8 @@
 (ns buildviz.jobinfo)
 
+(defn builds-with-outcome [build-data-entries]
+  (filter #(contains? % :outcome) build-data-entries))
+
 ;; flaky builds
 
 (defn- outcomes-for-builds-grouped-by-input [build-data-entries]
@@ -31,3 +34,11 @@
 (defn average-runtime [build-data-entries]
   (if-let [runtimes (seq (build-durations build-data-entries))]
     (avg runtimes)))
+
+;; error count
+
+(defn- failed-build? [build]
+  (= "fail" (:outcome build)))
+
+(defn fail-count [build-data-entries]
+  (count (filter failed-build? build-data-entries)))

@@ -13,6 +13,12 @@
                                                                     {:revision "b" :id 43})})
 
 (deftest JobInfo
+  (testing "builds-with-outcome"
+    (is (= [] (builds-with-outcome [])))
+    (is (= [] (builds-with-outcome [{:start 0}])))
+    (is (= [{:outcome "pass"}] (builds-with-outcome [{:outcome "pass"}])))
+    (is (= [{:outcome "pass"} {:outcome "fail"}] (builds-with-outcome [{:outcome "pass"} {:outcome "fail"}]))))
+
   (testing "flaky-build-count"
     (is (= 1 (flaky-build-count [failed-test-input-1 passed-test-input-1])))
     (is (= 1 (flaky-build-count [passed-test-input-1 failed-test-input-1])))
@@ -28,4 +34,10 @@
     (is (= nil (average-runtime [])))
     (is (= 42 (average-runtime [{:start 0 :end 42}])))
     (is (= 20 (average-runtime [{:start 10 :end 20} {:start 50 :end 80}])))
-    (is (= 42 (average-runtime [{:start 0 :end 42}, {:outcome "pass"}])))))
+    (is (= 42 (average-runtime [{:start 0 :end 42}, {:outcome "pass"}]))))
+
+  (testing "fail-count"
+    (is (= 0 (fail-count [{:outcome "pass"}])))
+    (is (= 0 (fail-count [])))
+    (is (= 1 (fail-count [{:outcome "fail"}])))
+    (is (= 2 (fail-count [{:outcome "fail"} {:outcome "pass"} {:outcome "fail"}])))))
