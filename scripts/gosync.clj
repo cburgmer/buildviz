@@ -21,8 +21,8 @@
 
 ;; /jobStatus.json
 
-(defn parse-build-info [jsonResp]
-  (let [buildInfo (:building_info (first jsonResp))
+(defn parse-build-info [json-response]
+  (let [buildInfo (:building_info (first json-response))
         buildStartTime (tc/to-long (tf/parse (:build_building_date buildInfo)))
         buildEndTime (tc/to-long (tf/parse (:build_completed_date buildInfo)))
         result (:result buildInfo)
@@ -55,8 +55,7 @@
   (let [stageHistory (get-json "/api/stages/%s/%s/history" pipeline stage)
         stageInstances (:stages stageHistory)]
     (map #(assoc % :stageName stage :pipelineName pipeline)
-         (apply concat
-                (map job-instances-for-stage-instance stageInstances)))))
+         (mapcat job-instances-for-stage-instance stageInstances))))
 
 
 ;; /api/pipelines/%pipelines/instance/%run
@@ -92,8 +91,7 @@
   (let [pipelineGroups (get-json "/api/config/pipeline_groups")
         pipelineGroup (first (filter #(= pipelineGroupName (:name %)) pipelineGroups))
         pipelines (:pipelines pipelineGroup)]
-    (apply concat
-           (map stages-for-pipeline pipelines))))
+    (mapcat stages-for-pipeline pipelines)))
 
 
 ;; upload
@@ -116,8 +114,7 @@
   (->> (concat (stages-for-pipeline-group "Development")
                (stages-for-pipeline-group "Verification")
                (stages-for-pipeline-group "Production"))
-       (map job-instances-for-stage)
-       (apply concat)
+       (mapcat job-instances-for-stage)
        (map augment-job-with-inputs)
        (map job-data-for-instance)))
 
