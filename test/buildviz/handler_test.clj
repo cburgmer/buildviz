@@ -16,6 +16,11 @@
            (body (json/generate-string content))
            (content-type "application/json"))))
 
+(defn some-test-results [job-name build-no content]
+  (app (-> (request :put (format "/builds/%s/%s/testresults" job-name build-no))
+           (body content)
+           (content-type "application/xml"))))
+
 (deftest Storage
   (testing "PUT to /builds/:job/:build"
     ;; PUT should return 200
@@ -58,6 +63,34 @@
     (let [response (app (request :get "/builds/totallyUnrelatedBuild/1"))
           resp-data (json/parse-string (:body response))]
       (is (= (:status response) 404)))))
+
+
+(deftest JUnitStorage
+  (testing "PUT to /builds/:job/:build/testresults"
+    (is (= 204 (:status (app (-> (request :put "/builds/mybuild/1/testresults")
+                                 (body "<testsuites></testsuites>")
+                                 (content-type "application/xml")))))))
+  (testing "GET to /builds/:job/:build/testresults"
+    (some-test-results "abuild" "42" "bla bla")
+    (let [response (app (request :get "/builds/abuild/42/testresults"))]
+      (is (= 200 (:status response))))
+
+    (some-test-results "anotherBuild" "2" "some content")
+    (let [response (app (request :get "/builds/anotherBuild/2/testresults"))]
+      (is (= "some content" (:body response))))
+
+    (some-test-results "anotherBuild" "2" "some content")
+    (let [response (app (request :get "/builds/anotherBuild/2/testresults"))]
+      (is (= {"Content-Type" "application/xml;charset=UTF-8"} (:headers response))))
+
+    (let [response (app (request :get "/builds/missingJob/1/testresults"))]
+      (is (= 404 (:status response))))
+
+    (some-test-results "jobMissingABuild" "1" "something")
+    (let [response (app (request :get "/builds/jobMissingABuild/2/testresults"))]
+      (is (= 404 (:status response))))
+  ))
+
 
 (deftest PipelineSummary
   (testing "GET to /pipeline"

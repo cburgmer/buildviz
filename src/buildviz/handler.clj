@@ -8,10 +8,16 @@
              [buildviz.jobinfo :as jobinfo]))
 
 (def builds (atom {}))
+(def test-results (atom {}))
 
 (defn- job-entry [job]
   (if (contains? @builds job)
     (@builds job)
+    {}))
+
+(defn- test-results-entry [job]
+  (if (contains? @test-results job)
+    (@test-results job)
     {}))
 
 (defn- store-build! [job build build-data]
@@ -24,6 +30,21 @@
   (if (contains? @builds job)
     (if-let [build-data ((@builds job) build)]
       {:body build-data}
+      {:status 404})
+    {:status 404}))
+
+(defn- store-test-results! [job build body]
+  (let [content (slurp body)
+        entry (test-results-entry job)
+        updated-entry (assoc entry build content)]
+    (swap! test-results assoc job updated-entry))
+  {:status 204})
+
+(defn- get-test-results [job build]
+  (if-let [job-results (@test-results job)]
+    (if-let [content (job-results build)]
+      {:body content
+       :headers {"Content-Type" "application/xml;charset=UTF-8"}}
       {:status 404})
     {:status 404}))
 
@@ -66,6 +87,8 @@
 (defroutes app-routes
   (PUT "/builds/:job/:build" [job build :as {body :body}] (store-build! job build body))
   (GET "/builds/:job/:build" [job build] (get-build job build))
+  (PUT "/builds/:job/:build/testresults" [job build :as {body :body}] (store-test-results! job build body))
+  (GET "/builds/:job/:build/testresults" [job build] (get-test-results job build))
 
   (GET "/pipeline" [] (get-pipeline)))
 
