@@ -50,31 +50,27 @@
 
 ;; summary
 
-(defn- average-runtime-for [summary build-data-entries]
+(defn- average-runtime-for [build-data-entries]
   (if-let [avg-runtime (jobinfo/average-runtime build-data-entries)]
-    (assoc summary :averageRuntime avg-runtime)
-    summary))
+    {:averageRuntime avg-runtime}))
 
-(defn- total-count-for [summary build-data-entries]
-  (assoc summary :totalCount (count build-data-entries)))
+(defn- total-count-for [build-data-entries]
+  {:totalCount (count build-data-entries)})
 
-(defn- failed-count-for [summary build-data-entries]
+(defn- failed-count-for [build-data-entries]
   (if-let [builds (seq (jobinfo/builds-with-outcome build-data-entries))]
-    (assoc summary :failedCount (jobinfo/fail-count builds))
-    summary))
+    {:failedCount (jobinfo/fail-count builds)}))
 
-(defn- flaky-count-for [summary build-data-entries]
+(defn- flaky-count-for [build-data-entries]
   (if-let [builds (seq (jobinfo/builds-with-outcome build-data-entries))]
-    (assoc summary :flakyCount (jobinfo/flaky-build-count builds))
-    summary))
+    {:flakyCount (jobinfo/flaky-build-count builds)}))
 
 (defn- summary-for [job]
   (let [build-data-entries (vals (@builds job))]
-    (-> {}
-        (average-runtime-for build-data-entries)
-        (total-count-for build-data-entries)
-        (failed-count-for build-data-entries)
-        (flaky-count-for build-data-entries))))
+    (merge (average-runtime-for build-data-entries)
+           (total-count-for build-data-entries)
+           (failed-count-for build-data-entries)
+           (flaky-count-for build-data-entries))))
 
 (defn- get-pipeline []
   (let [jobNames (keys @builds)
