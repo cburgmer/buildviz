@@ -80,5 +80,9 @@
                 .style("fill", function(d) { return color((d.children ? d : d.parent).name); })
                 .style("fill-rule", "evenodd");
 
+        path.append("title")
+            .text(function (d) {
+                return d.name;
+            });
     });
 }(widget));
