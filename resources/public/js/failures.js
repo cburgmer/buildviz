@@ -23,17 +23,6 @@
             .append("g")
             .attr("transform", "translate(" + diameter / 2 + "," + diameter * .52 + ")");
 
-    // Interpolate the arcs in data space.
-    var arcTween = function (a) {
-        var i = d3.interpolate({x: a.x0, dx: a.dx0}, a);
-        return function(t) {
-            var b = i(t);
-            a.x0 = b.x;
-            a.dx0 = b.dx;
-            return arc(b);
-        };
-    };
-
     var transformTestCase = function (testCases) {
         return testCases.map(function (testCase) {
             return {
@@ -71,14 +60,15 @@
             name: "Failures",
             children: transformFailures(failures)
         };
+
         var path = svg.datum(data).selectAll("path")
                 .data(partition.value(function (d) { return d.size; }).nodes)
-                .enter().append("path")
+                .enter()
+                .append("path")
                 .attr("display", function(d) { return d.depth ? null : "none"; }) // hide inner ring
                 .attr("d", arc)
                 .style("stroke", "#fff")
-                .style("fill", function(d) { return color((d.children ? d : d.parent).name); })
-                .style("fill-rule", "evenodd");
+                .style("fill", function(d) { return color((d.children ? d : d.parent).name); });
 
         path.append("title")
             .text(function (d) {
