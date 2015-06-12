@@ -39,7 +39,7 @@
         }
     };
 
-    var svg = widget.create("Failed Builds")
+    var svg = widget.create("Failed Builds", "Color: Failure Ratio, Diameter: Number of Failures")
             .svg(diameter)
             .attr("class", className);
 

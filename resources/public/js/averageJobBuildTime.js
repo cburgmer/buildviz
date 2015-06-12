@@ -14,7 +14,7 @@
         });
     };
 
-    var svg = widget.create("Average Job Build Time")
+    var svg = widget.create("Average Job Build Time","Color: jobGroup, Diameter: avg. Runtime")
             .svg(diameter)
             .attr("class", className);
 

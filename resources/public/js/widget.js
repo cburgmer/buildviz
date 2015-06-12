@@ -21,11 +21,13 @@ var widget = function () {
             .attr("viewBox", "0 0 " + size + " " + size);
     };
 
-    module.create = function (headline) {
+    module.create = function (headline,description) {
         var widget = d3.select("body").append("section");
         widget.append("h1")
             .text(headline);
 
+        widget.append("p")
+            .text(description)
         return {
             svg: function (size) {
                 return responsiveSvg(widget, size);

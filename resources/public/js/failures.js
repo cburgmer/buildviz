@@ -17,7 +17,7 @@
             .innerRadius(function(d) { return Math.sqrt(d.y); })
             .outerRadius(function(d) { return Math.sqrt(d.y + d.dy); });
 
-    var svg = widget.create("Failures")
+    var svg = widget.create("Failures", "Color: NOTSURE, Diameter: NOTSURE")
             .svg(diameter)
             .attr("class", className)
             .append("g")

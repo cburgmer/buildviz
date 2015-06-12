@@ -39,7 +39,7 @@
         }
     };
 
-    var svg = widget.create("Flaky Builds")
+    var svg = widget.create("Flaky Builds","Color: Flaky Ratio, Diameter: Flaky Count")
             .svg(diameter)
             .attr("class", className);
 
