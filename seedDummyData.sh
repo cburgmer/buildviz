@@ -31,9 +31,17 @@ function send {
     curl -H "Content-Type: application/json" --data @- -XPUT "http://localhost:3000/builds/${JOB}/${BUILD}"
 }
 
+function sendTestResult {
+    JOB=$1
+    BUILD=$2
+    curl -X PUT -d@- "http://localhost:3000/builds/${JOB}/${BUILD}/testresults"
+}
+
 anyBuild | send "someBuild" 1
 anyBuild | send "someBuild" 2
 anyBuild | send "someBuild" 3
+
+cat example-testresult.xml | sendTestResult "someBuild" 1
 
 anyBuild | send "anotherBuild" 1
 
