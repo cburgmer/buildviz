@@ -4,5 +4,8 @@
     <testcase name="A Test Case">
       <failure>Meh</failure>
     </testcase>
+    <testcase name="Another Test Case">
+      <failure>Meh</failure>
+    </testcase>
   </testsuite>
 </testsuites>
