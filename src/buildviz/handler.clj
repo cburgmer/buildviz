@@ -5,7 +5,8 @@
         ring.middleware.content-type
         ring.middleware.not-modified)
   (:require [compojure.handler :as handler]
-             [buildviz.jobinfo :as jobinfo]))
+            [buildviz.jobinfo :as jobinfo]
+            [buildviz.testsuites :as testsuites]))
 
 (def builds (atom {}))
 (def test-results (atom {}))
@@ -48,7 +49,7 @@
       {:status 404})
     {:status 404}))
 
-;; summary
+;; pipeline
 
 (defn- average-runtime-for [build-data-entries]
   (if-let [avg-runtime (jobinfo/average-runtime build-data-entries)]
@@ -78,6 +79,21 @@
         buildSummary (zipmap jobNames buildSummaries)]
     {:body buildSummary}))
 
+;; failures
+
+(defn- failures-for [job]
+  (let [build-data-entries (vals (@builds job))]
+    (merge (if-let [test-results (@test-results job)]
+             (let [test-runs (map testsuites/testsuites-for (vals test-results))]
+               {:testsuites (testsuites/accumulate-testsuite-failures test-runs)})
+             {})
+           (failed-count-for build-data-entries))))
+
+(defn- get-failures []
+  (let [job-names (keys @builds)
+        failures (map failures-for job-names)]
+    {:body (zipmap job-names failures)}))
+
 ;; app
 
 (defroutes app-routes
@@ -86,7 +102,8 @@
   (PUT "/builds/:job/:build/testresults" [job build :as {body :body}] (store-test-results! job build body))
   (GET "/builds/:job/:build/testresults" [job build] (get-test-results job build))
 
-  (GET "/pipeline" [] (get-pipeline)))
+  (GET "/pipeline" [] (get-pipeline))
+  (GET "/failures" [] (get-failures)))
 
 (defn- wrap-log-request [handler]
   (fn [req]

@@ -4,8 +4,12 @@
         buildviz.handler)
   (:require [cheshire.core :as json]))
 
-(defn each-fixture [f]
+(defn- reset-app! []
   (reset! builds {})
+  (reset! test-results {}))
+
+(defn each-fixture [f]
+  (reset-app!)
   (f))
 
 (use-fixtures :each each-fixture)
@@ -112,7 +116,7 @@
                         "anotherBuild" {"averageRuntime" 2 "totalCount" 1}})))
 
     ;; GET should return total build count
-    (reset! builds {})
+    (reset-app!)
     (a-build "runOnce" 1, {})
     (a-build "runTwice" 1, {})
     (a-build "runTwice" 2, {})
@@ -122,7 +126,7 @@
                         "runOnce" {"totalCount" 1}})))
 
     ;; GET should return failed build count
-    (reset! builds {})
+    (reset-app!)
     (a-build "flakyBuild" 1, {:outcome "pass"})
     (a-build "flakyBuild" 2, {:outcome "fail"})
     (a-build "brokenBuild" 1, {:outcome "fail"})
@@ -132,17 +136,48 @@
                         "brokenBuild" {"failedCount" 1 "totalCount" 1 "flakyCount" 0}})))
 
     ;; GET should return error build count
-    (reset! builds {})
+    (reset-app!)
     (a-build "goodBuild" 1, {:outcome "pass"})
     (let [response (app (request :get "/pipeline"))
           resp-data (json/parse-string (:body response))]
       (is (= resp-data {"goodBuild" {"failedCount" 0 "totalCount" 1 "flakyCount" 0}})))
 
     ;; GET should return a flaky build count
-    (reset! builds {})
+    (reset-app!)
     (a-build "flakyBuild" 1, {:outcome "pass" :inputs {:id 42 :revision "dat_revision"}})
     (a-build "flakyBuild" 2, {:outcome "fail" :inputs {:id 42 :revision "dat_revision"}})
     (let [response (app (request :get "/pipeline"))
           resp-data (json/parse-string (:body response))]
       (is (= resp-data {"flakyBuild" {"failedCount" 1 "totalCount" 2 "flakyCount" 1}})))
+    ))
+
+(deftest FailuresSummary
+  (testing "GET to /failures"
+    ;; GET should return 200
+    (let [response (app (request :get "/failures"))]
+      (is (= 200 (:status response))))
+
+    ;; GET should return empty map by default
+    (let [response (app (request :get "/failures"))
+          resp-data (json/parse-string (:body response))]
+      (is (= {} resp-data)))
+
+    ;; GET should return list of failing builds
+    (reset-app!)
+    (a-build "failingBuild" 1, {:outcome "fail"})
+    (a-build "anotherFailingBuild" 1, {:outcome "fail"})
+    (let [response (app (request :get "/failures"))
+          resp-data (json/parse-string (:body response))]
+      (is (= {"anotherFailingBuild" {"failedCount" 1} "failingBuild" {"failedCount" 1}} resp-data)))
+
+    ;; GET should include a list of failing test cases
+    (reset-app!)
+    (a-build "failingBuild" 1, {:outcome "fail"})
+    (some-test-results "failingBuild" "1" "<testsuites><testsuite name=\"a suite\"><testcase name=\"a test\"><failure/></testcase></testsuite></testsuites>")
+    (let [response (app (request :get "/failures"))
+          resp-data (json/parse-string (:body response))]
+      (is (= {"failingBuild" {"failedCount" 1 "testsuites" [{"name" "a suite"
+                                                             "children" [{"name" "a test"
+                                                                          "failedCount" 1}]}]}}
+             resp-data)))
     ))
