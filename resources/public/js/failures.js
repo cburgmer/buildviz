@@ -72,7 +72,8 @@
 
         path.append("title")
             .text(function (d) {
-                return d.name;
+                var failures = d.size ? ' (' + d.size + ')' : '';
+                return d.name + failures;
             });
     });
 }(widget));
