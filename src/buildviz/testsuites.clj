@@ -85,5 +85,5 @@
   (->> (map filter-failed-tests test-runs)
        (map apply-fail-count)
        (map testsuites-list->map)
-       (apply merge-with concat)
+       (apply merge-with merge)
        (testsuites-map->list)))
