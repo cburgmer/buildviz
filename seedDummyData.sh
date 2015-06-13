@@ -8,7 +8,8 @@ function anyBuild {
     else
         OUTCOME="fail"
     fi
-    aBuild $START $END $OUTCOME
+    REVISION=$[ $RANDOM % 4 ]
+    aBuild $START $END $OUTCOME $REVISION
 }
 
 function aBrokenBuild {
@@ -22,7 +23,13 @@ function aBuild {
     START=$1
     END=$2
     OUTCOME=$3
-    echo '{"start": '$START', "end": '$END', "outcome": "'$OUTCOME'"}'
+    REVISION=$4
+    SOURCE_ID=42
+    if [[ -z "$REVISION" ]]; then
+        echo '{"start": '$START', "end": '$END', "outcome": "'$OUTCOME'"}'
+    else
+        echo '{"start": '$START', "end": '$END', "outcome": "'$OUTCOME'", "inputs": [{"revision": "'$REVISION'", "source_id": "'$SOURCE_ID'"}]}'
+    fi
 }
 
 function send {
@@ -51,3 +58,6 @@ anyBuild | send "yetAnotherBuild" 2
 aBrokenBuild | send "aBrokenBuild" 1
 aBrokenBuild | send "aBrokenBuild" 2
 aBrokenBuild | send "aBrokenBuild" 3
+
+aBuild 0 20 'fail' 'abcd' | send "aFlakyBuild" 1
+aBuild 100 120 'pass' 'abcd' | send "aFlakyBuild" 2
