@@ -17,16 +17,40 @@ May this tool evolve towards supporting us in reflecting on our software product
 ## Usage
 
     $ ./lein ring server-headless
-    # from a 2nd tab
-    $ ./seedDummyData.sh
     $ open http://localhost:3000/index.html
 
+Then `PUT` data to `http://localhost:3000/builds/$JOB_NAME/$BUILD_ID` 
+
+Valid content can be
+
+```js
+{
+"start": $START_TIMESTAMP,
+"end": $END_TIMESTAMP,
+"outcome": "pass", /* or "fail" */
+"inputs": [{
+    "revision": "$REVISION",
+    "source_id": "$SOURCE_ID"
+}]
+}
+```
+
+All values are optional.
+
+JUnit XML output can be `PUT` to `http://localhost:3000/builds/$JOB_NAME/$BUILD_ID/testresults` 
+    
 ## Run as standalone jar
 
     $ ./lein ring uberjar
     $ java -jar target/buildviz-*-standalone.jar
 
-## Full fledged example
+## Example    
+
+Seed dummy data for a quick impression.
+
+    $ ./seedDummyData.sh
+
+### Full fledged example
 
 Install Go.cd
 
