@@ -21,7 +21,7 @@ May this tool evolve towards supporting us in reflecting on our software product
 
 Then `PUT` data to `http://localhost:3000/builds/$JOB_NAME/$BUILD_ID` 
 
-Valid content can be
+Valid content (JSON) can be
 
 ```js
 {
@@ -52,14 +52,9 @@ Seed dummy data for a quick impression.
 
 ### Full fledged example
 
-Install Go.cd
-
+    # Install Go.cd
     $ vagrant init gocd/gocd-demo; vagrant box update; vagrant up
-
-Start buildviz
-
+    # Start buildviz
     $ ./lein ring server-headless
-
-Sync buildviz with the Go builds
-
+    # Sync buildviz with the Go builds
     $ ./lein exec scripts/gosync.clj http://localhost:8153/go
