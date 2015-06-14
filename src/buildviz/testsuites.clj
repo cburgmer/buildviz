@@ -36,9 +36,11 @@
     (testcase elem)))
 
 (defn testsuites-for [junit-xml-result]
-  (let [junit-xml-dom (xml/parse (java.io.ByteArrayInputStream. (.getBytes junit-xml-result)))
-        testsuites (:content junit-xml-dom)]
-    (map parse-testsuite testsuites)))
+  (let [root (xml/parse (java.io.ByteArrayInputStream. (.getBytes junit-xml-result)))]
+    (if (= :testsuites (:tag root))
+      (map parse-testsuite
+           (:content root))
+      (list (parse-testsuite root)))))
 
 
 
