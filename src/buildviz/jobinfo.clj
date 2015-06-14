@@ -24,7 +24,8 @@
   (/ (reduce + series) (count series)))
 
 (defn- duration-for [build]
-  (if (and (contains? build :end) (contains? build :end))
+  (if (and (contains? build :start)
+           (contains? build :end))
     (- (build :end) (build :start))))
 
 (defn- build-durations [build-data-entries]

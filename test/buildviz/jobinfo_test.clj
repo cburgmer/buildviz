@@ -32,6 +32,8 @@
 
   (testing "average-runtime"
     (is (= nil (average-runtime [])))
+    (is (= nil (average-runtime [{:start 0}])))
+    (is (= nil (average-runtime [{:end 0}])))
     (is (= 42 (average-runtime [{:start 0 :end 42}])))
     (is (= 20 (average-runtime [{:start 10 :end 20} {:start 50 :end 80}])))
     (is (= 42 (average-runtime [{:start 0 :end 42}, {:outcome "pass"}]))))
