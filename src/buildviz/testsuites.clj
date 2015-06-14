@@ -26,16 +26,6 @@
 
 
 
-(defn- testsuite-child-as-map [children]
-  (zipmap (map :name children)
-          (map #(dissoc % :name) children)))
-
-(defn- testsuites-list->map [testsuites]
-  (zipmap (map :name testsuites)
-          (map testsuite-child-as-map
-               (map :children testsuites))))
-
-
 (defn- testcase-entries-for [children-map]
   (reduce-kv (fn [children name entry-map]
                (conj children (assoc entry-map :name name)))
@@ -53,24 +43,8 @@
              testsuites))
 
 
-(defn- apply-fail-count-for-case [testcase]
-  (assoc testcase :failedCount 1))
-
-(defn- apply-fail-count-for-suite [testsuite]
-  (update-in testsuite
-             [:children]
-             (fn [children] (map apply-fail-count-for-case children))))
-
-(defn- apply-fail-count [testsuites]
-  (map apply-fail-count-for-suite testsuites))
-
-
-(defn- dissoc-status [testcase]
-  (dissoc testcase :status))
-
 (defn- filter-failed-tests-for-children [children]
-  (map dissoc-status
-       (filter #(= :fail (:status %)) children)))
+  (filter #(= :fail (:status %)) children))
 
 (defn- filter-failed-tests-for-suite [testsuite]
   (update-in testsuite
@@ -81,9 +55,38 @@
   (map filter-failed-tests-for-suite testsuites))
 
 
+(defn- rollout-testcases-for-suite [suite]
+  (let [suite-name (:name suite)
+        children (:children suite)]
+    (map #(vector suite-name (:name %)) children)))
+
+(defn- rollout-testcases [testsuites]
+  (mapcat rollout-testcases-for-suite testsuites))
+
+
+(defn- assoc-testcase [testsuite testcase-key fail-count]
+  (let [testcase {(last testcase-key) {:failedCount fail-count}}
+        testsuite-name (first testcase-key)]
+    (if (contains? testsuite testsuite-name)
+      (update-in testsuite [testsuite-name] merge testcase )
+      (assoc testsuite testsuite-name testcase))))
+
+(defn- build-hierarchy-recursivley [testsuite testcase-fail-frequencies]
+  (if-let [next-testcase (first testcase-fail-frequencies)]
+    (let [testcase-key (key next-testcase)
+          fail-count (val next-testcase)]
+      (build-hierarchy-recursivley
+       (assoc-testcase testsuite testcase-key fail-count)
+       (rest testcase-fail-frequencies)))
+    testsuite))
+
+(defn- build-hierarchy [testcase-fail-frequencies]
+  (build-hierarchy-recursivley {} testcase-fail-frequencies))
+
+
 (defn accumulate-testsuite-failures [test-runs]
   (->> (map filter-failed-tests test-runs)
-       (map apply-fail-count)
-       (map testsuites-list->map)
-       (apply merge-with merge)
+       (mapcat rollout-testcases)
+       (frequencies)
+       (build-hierarchy)
        (testsuites-map->list)))

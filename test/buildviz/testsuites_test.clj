@@ -41,4 +41,8 @@
              :children [{:name "a case" :failedCount 1}]}]
            (accumulate-testsuite-failures [[(a-testsuite "suite" (a-testcase "a case" :fail))]
                                            [(a-testsuite "another suite" (a-testcase "another case" :fail))]])))
+    (is (= [{:name "suite"
+             :children [{:name "a case" :failedCount 2}]}]
+           (accumulate-testsuite-failures [[(a-testsuite "suite" (a-testcase "a case" :fail))]
+                                           [(a-testsuite "suite" (a-testcase "a case" :fail))]])))
     ))
