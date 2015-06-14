@@ -41,11 +41,17 @@
     (swap! test-results assoc job updated-entry))
   {:status 204})
 
-(defn- get-test-results [job build]
+(defn- accepts? [header-value media-type]
+  (and (some? header-value)
+       (.startsWith header-value media-type)))
+
+(defn- get-test-results [job build headers]
   (if-let [job-results (@test-results job)]
     (if-let [content (job-results build)]
-      {:body content
-       :headers {"Content-Type" "application/xml;charset=UTF-8"}}
+      (if (accepts? (get headers "accept") "application/json")
+        {:body (testsuites/testsuites-for content)}
+        {:body content
+         :headers {"Content-Type" "application/xml;charset=UTF-8"}})
       {:status 404})
     {:status 404}))
 
@@ -100,7 +106,7 @@
   (PUT "/builds/:job/:build" [job build :as {body :body}] (store-build! job build body))
   (GET "/builds/:job/:build" [job build] (get-build job build))
   (PUT "/builds/:job/:build/testresults" [job build :as {body :body}] (store-test-results! job build body))
-  (GET "/builds/:job/:build/testresults" [job build] (get-test-results job build))
+  (GET "/builds/:job/:build/testresults" [job build :as {headers :headers}] (get-test-results job build headers))
 
   (GET "/pipeline" [] (get-pipeline))
   (GET "/failures" [] (get-failures)))

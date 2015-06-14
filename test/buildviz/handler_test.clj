@@ -93,6 +93,13 @@
     (some-test-results "jobMissingABuild" "1" "something")
     (let [response (app (request :get "/builds/jobMissingABuild/2/testresults"))]
       (is (= 404 (:status response))))
+
+    (some-test-results "job" "1" "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuite name=\"suite\"><testcase name=\"case\"></testcase></testsuite>")
+    (let [response (app (-> (request :get "/builds/job/1/testresults")
+                            (header :accept "application/json")))]
+      (is (= [{"name" "suite"
+               "children" [{"name" "case"
+                           "status" "pass"}]}] (json/parse-string (:body response)))))
   ))
 
 
