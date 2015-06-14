@@ -15,14 +15,24 @@
     {:name (item-name testcase-elem)
      :status status}))
 
+(declare parse-testsuite)
+
 (defn- testsuite [testsuite-elem]
   {:name (item-name testsuite-elem)
-   :children (map testcase (:content testsuite-elem))})
+   :children (map parse-testsuite (:content testsuite-elem))})
+
+(defn- testsuite? [elem]
+  (= :testsuite (:tag elem)))
+
+(defn- parse-testsuite [elem]
+  (if (testsuite? elem)
+    (testsuite elem)
+    (testcase elem)))
 
 (defn testsuites-for [junit-xml-result]
   (let [junit-xml-dom (xml/parse (java.io.ByteArrayInputStream. (.getBytes junit-xml-result)))
         testsuites (:content junit-xml-dom)]
-    (map testsuite testsuites)))
+    (map parse-testsuite testsuites)))
 
 
 

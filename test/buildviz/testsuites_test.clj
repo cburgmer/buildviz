@@ -12,6 +12,11 @@
              :children [{:name "a test"
                          :status :pass}]}]
            (testsuites-for "<testsuites><testsuite name=\"a suite\"><testcase name=\"a test\"></testcase></testsuite></testsuites>")))
+    (is (= [{:name "a suite"
+             :children [{:name "a sub suite"
+                         :children [{:name "a test"
+                                     :status :pass}]}]}]
+           (testsuites-for "<testsuites><testsuite name=\"a suite\"><testsuite name=\"a sub suite\"><testcase name=\"a test\"></testcase></testsuite></testsuite></testsuites>")))
     ))
 
 
