@@ -17,7 +17,7 @@
             .innerRadius(function(d) { return Math.sqrt(d.y); })
             .outerRadius(function(d) { return Math.sqrt(d.y + d.dy); });
 
-    var svg = widget.create("Failures", "Color: NOTSURE, Diameter: NOTSURE")
+    var svg = widget.create("Failures", "Color: Job/Test Suite, Arc size: Number of Failures")
             .svg(diameter)
             .attr("class", className)
             .append("g")
@@ -55,6 +55,19 @@
         });
     };
 
+    var inheritDirectParentColorForLeafs = function(d) {
+        var key;
+        if (d.children) {
+            key = d.name;
+        } else if (d.depth > 1) {
+            key = d.parent.name;
+        } else {
+            key = d.name;
+        }
+
+        return color(key);
+    };
+
     d3.json('/failures', function (_, failures) {
         var data = {
             name: "Failures",
@@ -68,7 +81,7 @@
                 .attr("display", function(d) { return d.depth ? null : "none"; }) // hide inner ring
                 .attr("d", arc)
                 .style("stroke", "#fff")
-                .style("fill", function(d) { return color((d.children ? d : d.parent).name); });
+                .style("fill", inheritDirectParentColorForLeafs);
 
         path.append("title")
             .text(function (d) {
