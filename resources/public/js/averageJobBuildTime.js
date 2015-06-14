@@ -4,14 +4,18 @@
         className = "averageJobBuildTime";
 
     var buildRuntimeAsBubbles = function (pipeline) {
-        return Object.keys(pipeline).map(function (jobName) {
-            var avgRuntime = pipeline[jobName].averageRuntime;
-            return {
-                name: jobName,
-                title: jobName + ': ' + avgRuntime,
-                value: avgRuntime
-            };
-        });
+        return Object.keys(pipeline)
+            .filter(function (jobName) {
+                return pipeline[jobName].averageRuntime;
+            })
+            .map(function (jobName) {
+                var avgRuntime = pipeline[jobName].averageRuntime;
+                return {
+                    name: jobName,
+                    title: jobName + ': ' + avgRuntime,
+                    value: avgRuntime
+                };
+            });
     };
 
     var svg = widget.create("Average Job Build Time","Color: jobGroup, Diameter: avg. Runtime")
