@@ -42,35 +42,36 @@
 
 
 
-(defn- testcase-entries-for [children-map]
-  (reduce-kv (fn [children name entry-map]
-               (conj children (assoc entry-map :name name)))
-             []
-             children-map))
+
+(declare testsuites-map->list)
 
 (defn- testsuite-entry-for [name children-map]
   {:name name
-   :children (testcase-entries-for children-map)})
+   :children (testsuites-map->list children-map)})
 
 (defn- testsuites-map->list [testsuites]
   (reduce-kv (fn [suites name children]
-               (conj suites (testsuite-entry-for name children)))
+               (conj suites (if (contains? children :failedCount)
+                              (assoc children :name name)
+                              (testsuite-entry-for name children))))
              []
              testsuites))
 
 
-(defn- rolled-out-testcase [suite-name testcase]
-  (let [testcase-id (vector suite-name (:name testcase))
+(defn- rolled-out-testcase [suite-id testcase]
+  (let [testcase-id (conj suite-id (:name testcase))
         testcase-content (dissoc testcase :name)]
     (vector testcase-id testcase-content)))
 
-(defn- unroll-testcases-for-suite [suite]
-  (let [suite-name (:name suite)
-        children (:children suite)]
-    (map #(rolled-out-testcase suite-name %) children)))
+(defn- unroll-testcases-for-suite [parent-suite-id entry]
+  (if-let [children (:children entry)]
+    (let [suite-name (:name entry)
+          suite-id (conj parent-suite-id suite-name)]
+      (mapcat (partial unroll-testcases-for-suite suite-id) children))
+    (list (rolled-out-testcase parent-suite-id entry))))
 
 (defn- unroll-testcases [testsuites]
-  (mapcat unroll-testcases-for-suite testsuites))
+  (mapcat (partial unroll-testcases-for-suite []) testsuites))
 
 
 (defn- failed-testcase-ids [unrolled-testcases]
@@ -79,24 +80,22 @@
                unrolled-testcases)))
 
 
-(defn- assoc-testcase [testsuite testcase-id fail-count]
-  (let [testcase {(last testcase-id) {:failedCount fail-count}}
-        testsuite-name (first testcase-id)]
-    (if (contains? testsuite testsuite-name)
-      (update-in testsuite [testsuite-name] merge testcase )
-      (assoc testsuite testsuite-name testcase))))
+(defn- assoc-testcase-entry [testsuite testcase-id fail-count]
+  (let [testcase {(peek testcase-id) {:failedCount fail-count}}
+        suite-path (pop testcase-id)]
+    (update-in testsuite suite-path merge testcase)))
 
-(defn- build-suite-hierarchy-recursivley [testsuite testcase-fail-frequencies]
+(defn- build-suite-hierarchy-recursively [testsuite testcase-fail-frequencies]
   (if-let [next-testcase (first testcase-fail-frequencies)]
     (let [testcase-id (key next-testcase)
           fail-count (val next-testcase)]
       (recur
-       (assoc-testcase testsuite testcase-id fail-count)
+       (assoc-testcase-entry testsuite testcase-id fail-count)
        (rest testcase-fail-frequencies)))
     testsuite))
 
 (defn- build-suite-hierarchy [testcase-fail-frequencies]
-  (build-suite-hierarchy-recursivley {} testcase-fail-frequencies))
+  (build-suite-hierarchy-recursively {} testcase-fail-frequencies))
 
 
 (defn accumulate-testsuite-failures [test-runs]

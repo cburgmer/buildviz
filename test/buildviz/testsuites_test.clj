@@ -36,6 +36,8 @@
   (testing "accumulate-testsuite-failures"
     (is (= []
            (accumulate-testsuite-failures [])))
+    (is (= []
+           (accumulate-testsuite-failures [[(a-testsuite "suite" (a-testcase "a case" :pass))]])))
     (is (= [{:name "suite"
              :children [{:name "a case" :failedCount 1}]}]
            (accumulate-testsuite-failures [[(a-testsuite "suite" (a-testcase "a case" :fail))]])))
@@ -57,4 +59,16 @@
              :children [{:name "a case" :failedCount 2}]}]
            (accumulate-testsuite-failures [[(a-testsuite "suite" (a-testcase "a case" :fail))]
                                            [(a-testsuite "suite" (a-testcase "a case" :fail))]])))
+    (is (= [{:name "suite"
+             :children [{:name "a case" :failedCount 1}]}]
+           (accumulate-testsuite-failures [[(a-testsuite "suite" (a-testcase "a case" :pass))]
+                                           [(a-testsuite "suite" (a-testcase "a case" :fail))]])))
+    (is (= [{:name "suite"
+             :children [{:name "nested suite"
+                         :children [{:name "another case" :failedCount 1}
+                                    {:name "a case" :failedCount 1}]}]}]
+           (accumulate-testsuite-failures [[(a-testsuite "suite"
+                                                         (a-testsuite "nested suite" (a-testcase "a case" :fail)))]
+                                           [(a-testsuite "suite"
+                                                         (a-testsuite "nested suite" (a-testcase "another case" :fail)))]])))
     ))
