@@ -10,6 +10,10 @@
            (testsuites-for "<testsuites><testsuite name=\"a suite\"><testcase name=\"a test\"><failure/></testcase></testsuite></testsuites>")))
     (is (= [{:name "a suite"
              :children [{:name "a test"
+                         :status :error}]}]
+           (testsuites-for "<testsuites><testsuite name=\"a suite\"><testcase name=\"a test\"><error/></testcase></testsuite></testsuites>")))
+    (is (= [{:name "a suite"
+             :children [{:name "a test"
                          :status :pass}]}]
            (testsuites-for "<testsuites><testsuite name=\"a suite\"><testcase name=\"a test\"></testcase></testsuite></testsuites>")))
     (is (= [{:name "a suite"
@@ -35,6 +39,9 @@
     (is (= [{:name "suite"
              :children [{:name "a case" :failedCount 1}]}]
            (accumulate-testsuite-failures [[(a-testsuite "suite" (a-testcase "a case" :fail))]])))
+    (is (= [{:name "suite"
+             :children [{:name "a case" :failedCount 1}]}]
+           (accumulate-testsuite-failures [[(a-testsuite "suite" (a-testcase "a case" :error))]])))
     (is (= [{:name "suite"
              :children [{:name "another case" :failedCount 1}
                         {:name "a case" :failedCount 1}]}]

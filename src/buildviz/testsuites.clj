@@ -5,13 +5,19 @@
   (some #(= :failure (:tag %))
         (:content testcase-elem)))
 
+(defn- is-error? [testcase-elem]
+  (some #(= :error (:tag %))
+        (:content testcase-elem)))
+
 (defn- item-name [elem]
   (:name (:attrs elem)))
 
 (defn- testcase [testcase-elem]
   (let [status (if (is-failure? testcase-elem)
                  :fail
-                 :pass)]
+                 (if (is-error? testcase-elem)
+                   :error
+                   :pass))]
     {:name (item-name testcase-elem)
      :status status}))
 
@@ -69,7 +75,7 @@
 
 (defn- failed-testcase-ids [unrolled-testcases]
   (map #(first %)
-       (filter #(= :fail (:status (last %)))
+       (filter #(not= :pass (:status (last %)))
                unrolled-testcases)))
 
 
