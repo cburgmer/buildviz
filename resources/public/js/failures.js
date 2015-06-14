@@ -48,8 +48,8 @@
                 name: jobName,
                 size: job.failedCount
             };
-            if (job.testsuites) {
-                entry.children = transformTestSuites(job.testsuites);
+            if (job.children) {
+                entry.children = transformTestSuites(job.children);
             }
             return entry;
         });

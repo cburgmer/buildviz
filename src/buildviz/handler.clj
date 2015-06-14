@@ -91,7 +91,7 @@
   (let [build-data-entries (vals (@builds job))]
     (merge (if-let [test-results (@test-results job)]
              (let [test-runs (map testsuites/testsuites-for (vals test-results))]
-               {:testsuites (testsuites/accumulate-testsuite-failures test-runs)})
+               {:children (testsuites/accumulate-testsuite-failures test-runs)})
              {})
            (failed-count-for build-data-entries))))
 

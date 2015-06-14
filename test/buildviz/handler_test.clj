@@ -183,8 +183,8 @@
     (some-test-results "failingBuild" "1" "<testsuites><testsuite name=\"a suite\"><testcase name=\"a test\"><failure/></testcase></testsuite></testsuites>")
     (let [response (app (request :get "/failures"))
           resp-data (json/parse-string (:body response))]
-      (is (= {"failingBuild" {"failedCount" 1 "testsuites" [{"name" "a suite"
-                                                             "children" [{"name" "a test"
-                                                                          "failedCount" 1}]}]}}
+      (is (= {"failingBuild" {"failedCount" 1 "children" [{"name" "a suite"
+                                                           "children" [{"name" "a test"
+                                                                        "failedCount" 1}]}]}}
              resp-data)))
     ))
