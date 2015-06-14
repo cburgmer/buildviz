@@ -70,22 +70,22 @@
       (update-in testsuite [testsuite-name] merge testcase )
       (assoc testsuite testsuite-name testcase))))
 
-(defn- build-hierarchy-recursivley [testsuite testcase-fail-frequencies]
+(defn- build-suite-hierarchy-recursivley [testsuite testcase-fail-frequencies]
   (if-let [next-testcase (first testcase-fail-frequencies)]
     (let [testcase-id (key next-testcase)
           fail-count (val next-testcase)]
-      (build-hierarchy-recursivley
+      (recur
        (assoc-testcase testsuite testcase-id fail-count)
        (rest testcase-fail-frequencies)))
     testsuite))
 
-(defn- build-hierarchy [testcase-fail-frequencies]
-  (build-hierarchy-recursivley {} testcase-fail-frequencies))
+(defn- build-suite-hierarchy [testcase-fail-frequencies]
+  (build-suite-hierarchy-recursivley {} testcase-fail-frequencies))
 
 
 (defn accumulate-testsuite-failures [test-runs]
   (->> (mapcat unroll-testcases test-runs)
        (failed-testcase-ids)
        (frequencies)
-       (build-hierarchy)
+       (build-suite-hierarchy)
        (testsuites-map->list)))
