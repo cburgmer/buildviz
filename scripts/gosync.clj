@@ -93,22 +93,62 @@
         pipelines (:pipelines pipelineGroup)]
     (mapcat stages-for-pipeline pipelines)))
 
+;; /files/%pipeline/%run/%stage/%run/job.json
+
+(defn looks-like-xml? [file-name]
+  (.endsWith file-name "xml"))
+
+(defn filter-xml-files [file-node]
+  (if (= "folder" (:type file-node))
+    (mapcat filter-xml-files (:files file-node))
+    (if (looks-like-xml? (:name file-node))
+      (list (:url file-node))
+      [])))
+
+(defn xml-artifacts-for-job-run [{pipeline-name :pipelineName
+                                  pipeline-run :pipelineRun
+                                  stage-name :stageName
+                                  stage-run :stageRun
+                                  job-name :jobName}]
+  (let [artifacts-url (format "/files/%s/%s/%s/%s/%s.json" pipeline-name pipeline-run stage-name stage-run job-name)
+        file-tree (get-json artifacts-url)]
+    (mapcat filter-xml-files file-tree)))
+
+(defn augment-job-instance-with-junit-xml [job-instance]
+  (if-let [xml-file-url (first (xml-artifacts-for-job-run job-instance))]
+    (assoc job-instance
+           :junit-xml-func
+           (fn []
+             (println xml-file-url)
+             (:body (client/get xml-file-url))))
+    job-instance))
 
 ;; upload
 
 (defn make-build-instance [{jobName :jobName stageName :stageName pipelineName :pipelineName
                             stageRun :stageRun pipelineRun :pipelineRun
+                            junit-xml-func :junit-xml-func
                             inputs :inputs build :build}]
   {:jobName (format "%s %s %s" pipelineName stageName jobName)
    :buildNo (format "%s %s" pipelineRun stageRun)
+   :junit-xml-func junit-xml-func
    :build (assoc build :inputs inputs)})
 
+(defn put-build [job-name build-no build]
+  (client/put (format "http://localhost:3000/builds/%s/%s" job-name build-no)
+              {:content-type :json
+               :body (j/generate-string build)}))
+
+(defn put-junit-xml [job-name build-no xml-content]
+  (client/put (format "http://localhost:3000/builds/%s/%s/testresults" job-name build-no)
+              {:body xml-content}))
+
 (defn put-to-buildviz [builds]
-  (doseq [{jobName :jobName buildNo :buildNo build :build} builds]
+  (doseq [{jobName :jobName buildNo :buildNo build :build junit-xml-func :junit-xml-func} builds]
     (println jobName buildNo build)
-    (client/put (format "http://localhost:3000/builds/%s/%s" jobName buildNo)
-                {:content-type :json
-                 :body (j/generate-string build)})))
+    (put-build jobName buildNo  build)
+    (when (some? junit-xml-func)
+      (put-junit-xml jobName buildNo (junit-xml-func)))))
 
 (def job-instances
   (->> (concat (stages-for-pipeline-group "Development")
@@ -116,6 +156,7 @@
                (stages-for-pipeline-group "Production"))
        (mapcat job-instances-for-stage)
        (map augment-job-with-inputs)
-       (map job-data-for-instance)))
+       (map job-data-for-instance)
+       (map augment-job-instance-with-junit-xml)))
 
 (put-to-buildviz (map make-build-instance job-instances))
