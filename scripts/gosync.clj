@@ -99,7 +99,7 @@
   (.endsWith file-name "xml"))
 
 (defn filter-xml-files [file-node]
-  (if (= "folder" (:type file-node))
+  (if (contains? file-node :files)
     (mapcat filter-xml-files (:files file-node))
     (if (looks-like-xml? (:name file-node))
       (list (:url file-node))
