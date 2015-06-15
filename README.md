@@ -58,3 +58,9 @@ Seed dummy data for a quick impression.
     $ ./lein ring server-headless
     # Sync buildviz with the Go builds
     $ ./lein exec scripts/gosync.clj http://localhost:8153/go
+
+### More
+
+[FAQ](https://github.com/cburgmer/buildviz/wiki)
+
+Maintained by [@cburgmer](https://twitter.com/cburgmer).
