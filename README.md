@@ -39,11 +39,6 @@ All values are optional.
 
 JUnit XML output can be `PUT` to `http://localhost:3000/builds/$JOB_NAME/$BUILD_ID/testresults` 
     
-## Run as standalone jar
-
-    $ ./lein ring uberjar
-    $ java -jar target/buildviz-*-standalone.jar
-
 ## Example    
 
 Seed dummy data for a quick impression.
