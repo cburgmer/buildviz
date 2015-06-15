@@ -10,6 +10,10 @@
 
 (def server-url (second *command-line-args*))
 
+(def selected-pipeline-group-names (set (drop 2 *command-line-args*)))
+
+;; util
+
 (defn absolute-url-for [relativeUrl]
   (clojure.string/join [server-url relativeUrl]))
 
@@ -87,11 +91,15 @@
            {:stage name :pipeline pipelineName})
          stages)))
 
-(defn stages-for-pipeline-group [pipelineGroupName]
-  (let [pipelineGroups (get-json "/api/config/pipeline_groups")
-        pipelineGroup (first (filter #(= pipelineGroupName (:name %)) pipelineGroups))
-        pipelines (:pipelines pipelineGroup)]
+(defn stages-for-pipeline-group [pipeline-group]
+  (let [pipelines (:pipelines pipeline-group)]
     (mapcat stages-for-pipeline pipelines)))
+
+(defn get-pipeline-groups []
+  (get-json "/api/config/pipeline_groups"))
+
+(defn select-pipeline-groups [pipeline-groups filter-by-names]
+  (filter #(contains? filter-by-names (:name %)) pipeline-groups))
 
 ;; /files/%pipeline/%run/%stage/%run/job.json
 
@@ -150,10 +158,18 @@
     (when (some? junit-xml-func)
       (put-junit-xml jobName buildNo (junit-xml-func)))))
 
+;; run
+
+(def pipeline-groups (get-pipeline-groups))
+
+(def selected-pipeline-groups
+  (if (seq selected-pipeline-group-names)
+    (select-pipeline-groups pipeline-groups selected-pipeline-group-names)
+    pipeline-groups))
+
 (def job-instances
-  (->> (concat (stages-for-pipeline-group "Development")
-               (stages-for-pipeline-group "Verification")
-               (stages-for-pipeline-group "Production"))
+  (->> selected-pipeline-groups
+       (mapcat stages-for-pipeline-group)
        (mapcat job-instances-for-stage)
        (map augment-job-with-inputs)
        (map job-data-for-instance)
