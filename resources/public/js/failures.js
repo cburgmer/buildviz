@@ -42,17 +42,22 @@
     };
 
     var transformFailures = function (failureMap) {
-        return Object.keys(failureMap).map(function (jobName) {
-            var job = failureMap[jobName];
-            var entry = {
-                name: jobName,
-                size: job.failedCount
-            };
-            if (job.children) {
-                entry.children = transformTestSuites(job.children);
-            }
-            return entry;
-        });
+        return Object.keys(failureMap)
+            .filter(function (jobName) {
+                var job = failureMap[jobName];
+                return job.failedCount;
+            })
+            .map(function (jobName) {
+                var job = failureMap[jobName];
+                var entry = {
+                    name: jobName,
+                    size: job.failedCount
+                };
+                if (job.children) {
+                    entry.children = transformTestSuites(job.children);
+                }
+                return entry;
+            });
     };
 
     var inheritDirectParentColorForLeafs = function(d) {
