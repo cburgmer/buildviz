@@ -16,10 +16,11 @@ May this tool evolve towards supporting us in reflecting on our software product
 
 ## Usage
 
+    $ ./lein npm install
     $ ./lein ring server-headless
     $ open http://localhost:3000/index.html
 
-Then `PUT` data to `http://localhost:3000/builds/$JOB_NAME/$BUILD_ID` 
+Then `PUT` data to `http://localhost:3000/builds/$JOB_NAME/$BUILD_ID`
 
 Valid content (JSON) can be
 
@@ -37,9 +38,9 @@ Valid content (JSON) can be
 
 All values are optional.
 
-JUnit XML output can be `PUT` to `http://localhost:3000/builds/$JOB_NAME/$BUILD_ID/testresults` 
-    
-## Example    
+JUnit XML output can be `PUT` to `http://localhost:3000/builds/$JOB_NAME/$BUILD_ID/testresults`
+
+## Example
 
 Seed dummy data for a quick impression.
 

@@ -9,7 +9,10 @@
                  [ring/ring-json "0.2.0"]
                  [compojure "1.1.6"]]
   :plugins [[lein-ring "0.9.3"]
-            [lein-exec "0.3.4"]]
+            [lein-exec "0.3.4"]
+            [lein-npm "0.5.0"]]
+  :node-dependencies [[d3 "3.5.5"]]
+  :npm-root "resources/public/js"
   :ring {:handler buildviz.handler/app
          :nrepl {:start? true
                  :port 9998}}
