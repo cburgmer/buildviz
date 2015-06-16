@@ -3,7 +3,8 @@
         ring.middleware.json
         ring.middleware.resource
         ring.middleware.content-type
-        ring.middleware.not-modified)
+        ring.middleware.not-modified
+        ring.util.response)
   (:require [compojure.handler :as handler]
             [buildviz.jobinfo :as jobinfo]
             [buildviz.testsuites :as testsuites]))
@@ -103,6 +104,8 @@
 ;; app
 
 (defroutes app-routes
+  (GET "/" [] (redirect "/index.html"))
+
   (PUT "/builds/:job/:build" [job build :as {body :body}] (store-build! job build body))
   (GET "/builds/:job/:build" [job build] (get-build job build))
   (PUT "/builds/:job/:build/testresults" [job build :as {body :body}] (store-test-results! job build body))

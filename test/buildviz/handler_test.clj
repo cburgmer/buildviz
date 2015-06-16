@@ -188,3 +188,11 @@
                                                                         "failedCount" 1}]}]}}
              resp-data)))
     ))
+
+(deftest EntryPoint
+  (testing "GET to /"
+    (let [response (app (request :get "/"))]
+      (is (= 302 (:status response))))
+
+    (let [response (app (request :get "/"))]
+      (is (= "/index.html" (get (:headers response) "Location"))))))
