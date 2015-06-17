@@ -45,13 +45,14 @@
 
 (defn parse-build-info [json-response]
   (let [build-info (:building_info (first json-response))
-        start-time (tc/to-long (tf/parse (:build_building_date build-info)))
-        end-time (tc/to-long (tf/parse (:build_completed_date build-info)))
-        result (:result build-info)
-        outcome (if (= "Passed" result) "pass" "fail")]
-    (-> {}
-        (build-times start-time end-time)
-        (assoc :outcome outcome))))
+        result (:result build-info)]
+    (when-not (= "Unknown" result)
+      (let [start-time (tc/to-long (tf/parse (:build_building_date build-info)))
+            end-time (tc/to-long (tf/parse (:build_completed_date build-info)))
+            outcome (if (= "Passed" result) "pass" "fail")]
+        (-> {}
+            (build-times start-time end-time)
+            (assoc :outcome outcome))))))
 
 (defn build-for [{jobId :jobId}]
   (let [build (get-json "/jobStatus.json?pipelineName=&stageName=&jobId=%s" jobId)]
@@ -191,6 +192,7 @@
        (mapcat job-instances-for-stage)
        (map augment-job-with-inputs)
        (map job-data-for-instance)
+       (filter #(some? (:build %)))
        (map augment-job-instance-with-junit-xml)))
 
 (put-to-buildviz (map make-build-instance job-instances))
