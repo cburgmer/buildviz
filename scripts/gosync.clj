@@ -36,15 +36,22 @@
     build-end-time
     build-start-time))
 
+(defn build-times [info start-time end-time]
+  (if-not (nil? end-time)
+    (assoc info
+           :start (handle-missing-start-time-when-cancelled start-time end-time)
+           :end end-time)
+    info))
+
 (defn parse-build-info [json-response]
-  (let [buildInfo (:building_info (first json-response))
-        buildStartTime (tc/to-long (tf/parse (:build_building_date buildInfo)))
-        buildEndTime (tc/to-long (tf/parse (:build_completed_date buildInfo)))
-        result (:result buildInfo)
+  (let [build-info (:building_info (first json-response))
+        start-time (tc/to-long (tf/parse (:build_building_date build-info)))
+        end-time (tc/to-long (tf/parse (:build_completed_date build-info)))
+        result (:result build-info)
         outcome (if (= "Passed" result) "pass" "fail")]
-    {:start (handle-missing-start-time-when-cancelled buildStartTime buildEndTime)
-     :end buildEndTime
-     :outcome outcome}))
+    (-> {}
+        (build-times start-time end-time)
+        (assoc :outcome outcome))))
 
 (defn build-for [{jobId :jobId}]
   (let [build (get-json "/jobStatus.json?pipelineName=&stageName=&jobId=%s" jobId)]
