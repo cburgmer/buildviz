@@ -1,3 +1,6 @@
+(println "Syncing Go.cd builds to buildviz")
+
+(println "Loading dependencies...")
 (use '[leiningen.exec :only (deps)])
 (deps '[[clj-http "1.1.2"]
         [clj-time "0.9.0"]
@@ -7,10 +10,13 @@
          '[clj-http.client :as client]
          '[clj-time.format :as tf]
          '[clj-time.coerce :as tc])
+(println "Loading dependencies done")
 
 (def server-url (second *command-line-args*))
 
 (def selected-pipeline-group-names (set (drop 2 *command-line-args*)))
+
+(println "Reading groups" selected-pipeline-group-names "from url" server-url)
 
 ;; util
 
