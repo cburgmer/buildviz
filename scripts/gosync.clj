@@ -4,24 +4,35 @@
 (use '[leiningen.exec :only (deps)])
 (deps '[[clj-http "1.1.2"]
         [clj-time "0.9.0"]
-        [cheshire "5.4.0"]])
+        [cheshire "5.4.0"]
+        [org.clojure/tools.cli "0.3.1"]])
 
 (require '[cheshire.core :as j]
          '[clj-http.client :as client]
          '[clj-time.format :as tf]
-         '[clj-time.coerce :as tc])
+         '[clj-time.coerce :as tc]
+         '[clojure.tools.cli :refer [parse-opts]])
 (println "Loading dependencies done")
 
-(def server-url (second *command-line-args*))
+(def cli-options
+  [["-b" "--buildviz URL" "URL pointing to a running buildviz instance"
+    :id :buildviz-url
+    :default "http://localhost:3000"]])
 
-(def selected-pipeline-group-names (set (drop 2 *command-line-args*)))
+(def args (parse-opts *command-line-args* cli-options))
 
-(println "Reading groups" selected-pipeline-group-names "from url" server-url)
+(def go-url (second (:arguments args)))
+(def buildviz-url (:buildviz-url (:options args)))
+
+(def selected-pipeline-group-names (set (drop 2 (:arguments args))))
+
+(println "Storing build information to" buildviz-url)
+(println "Reading groups" selected-pipeline-group-names "from url" go-url)
 
 ;; util
 
 (defn absolute-url-for [relativeUrl]
-  (clojure.string/join [server-url relativeUrl]))
+  (clojure.string/join [go-url relativeUrl]))
 
 (defn get-json [relative-url-template & url-params]
   (let [relative-url (apply format relative-url-template url-params)
@@ -161,13 +172,16 @@
    :junit-xml-func junit-xml-func
    :build (assoc build :inputs inputs)})
 
+(defn buildviz-build-base-url [job-name build-no]
+  (format "%s/builds/%s/%s" buildviz-url job-name build-no))
+
 (defn put-build [job-name build-no build]
-  (client/put (format "http://localhost:3000/builds/%s/%s" job-name build-no)
+  (client/put (buildviz-build-base-url job-name build-no)
               {:content-type :json
                :body (j/generate-string build)}))
 
 (defn put-junit-xml [job-name build-no xml-content]
-  (client/put (format "http://localhost:3000/builds/%s/%s/testresults" job-name build-no)
+  (client/put (clojure.string/join [(buildviz-build-base-url job-name build-no) "/testresults"])
               {:body xml-content}))
 
 (defn put-to-buildviz [builds]
