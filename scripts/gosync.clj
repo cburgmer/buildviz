@@ -31,13 +31,18 @@
 
 ;; /jobStatus.json
 
+(defn handle-missing-start-time-when-cancelled [build-start-time build-end-time]
+  (if (nil? build-start-time)
+    build-end-time
+    build-start-time))
+
 (defn parse-build-info [json-response]
   (let [buildInfo (:building_info (first json-response))
         buildStartTime (tc/to-long (tf/parse (:build_building_date buildInfo)))
         buildEndTime (tc/to-long (tf/parse (:build_completed_date buildInfo)))
         result (:result buildInfo)
         outcome (if (= "Passed" result) "pass" "fail")]
-    {:start buildStartTime
+    {:start (handle-missing-start-time-when-cancelled buildStartTime buildEndTime)
      :end buildEndTime
      :outcome outcome}))
 
