@@ -40,6 +40,16 @@ All values are optional.
 
 JUnit XML output can be `PUT` to `http://localhost:3000/builds/$JOB_NAME/$BUILD_ID/testresults`
 
+## Getting the data
+
+buildviz does not care where the data is coming from. It expects to be told via PUTs against `/builds`.
+
+If you are using Go.cd, try the script `./scripts/gosync.clj`:
+
+```sh
+./lein exec scripts/gosync.clj http://$USER:$PW@localhost:8153/go $PIPELINE_GROUP $ANOTHER_PIPELINE_GROUP...
+```
+
 ## Example
 
 Seed dummy data for a quick impression.
