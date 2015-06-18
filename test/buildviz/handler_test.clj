@@ -189,6 +189,31 @@
              resp-data)))
     ))
 
+(deftest TestsuitesSummary
+  (testing "GET to /testsuites"
+    ;; GET should return 200
+    (let [response (app (request :get "/testsuites"))]
+      (is (= 200 (:status response))))
+
+    ;; GET should return empty map by default
+    (let [response (app (request :get "/testsuites"))
+          resp-data (json/parse-string (:body response))]
+      (is (= {} resp-data)))
+
+    ;; GET should include a list of builds with test cases
+    (reset-app!)
+    (a-build "aBuild" 1, {})
+    (some-test-results "aBuild" "1" "<testsuites><testsuite name=\"a suite\"><testcase name=\"a test\" time=\"10\"></testcase></testsuite></testsuites>")
+(a-build "aBuild" 2, {})
+    (some-test-results "aBuild" "2" "<testsuites><testsuite name=\"a suite\"><testcase name=\"a test\" time=\"30\"></testcase></testsuite></testsuites>")
+    (let [response (app (request :get "/testsuites"))
+          resp-data (json/parse-string (:body response))]
+      (is (= {"aBuild" {"children" [{"name" "a suite"
+                                     "children" [{"name" "a test"
+                                                  "averageRuntime" 20000}]}]}}
+             resp-data)))
+    ))
+
 (deftest EntryPoint
   (testing "GET to /"
     (let [response (app (request :get "/"))]

@@ -101,6 +101,17 @@
         failures (map failures-for job-names)]
     {:body (zipmap job-names failures)}))
 
+;; testsuites
+
+(defn- testsuites-for [job]
+  (let [test-results (@test-results job)
+        test-runs (map testsuites/testsuites-for (vals test-results))]
+    {:children (testsuites/average-testsuite-duration test-runs)}))
+
+(defn- get-testsuites []
+  (let [job-names (keys @builds)]
+    {:body (zipmap job-names (map testsuites-for job-names))}))
+
 ;; app
 
 (defroutes app-routes
@@ -112,7 +123,8 @@
   (GET "/builds/:job/:build/testresults" [job build :as {headers :headers}] (get-test-results job build headers))
 
   (GET "/pipeline" [] (get-pipeline))
-  (GET "/failures" [] (get-failures)))
+  (GET "/failures" [] (get-failures))
+  (GET "/testsuites" [] (get-testsuites)))
 
 (defn- wrap-log-request [handler]
   (fn [req]
