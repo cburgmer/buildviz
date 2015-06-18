@@ -12,14 +12,23 @@
 (defn- item-name [elem]
   (:name (:attrs elem)))
 
+(defn- parse-duration [testcase-elem]
+  (if-let [time (:time (:attrs testcase-elem))]
+    (Math/round (* 1000 (Float/parseFloat time)))))
+
+(defn- parse-status [testcase-elem]
+  (if (is-failure? testcase-elem)
+    :fail
+    (if (is-error? testcase-elem)
+      :error
+      :pass)))
+
 (defn- testcase [testcase-elem]
-  (let [status (if (is-failure? testcase-elem)
-                 :fail
-                 (if (is-error? testcase-elem)
-                   :error
-                   :pass))]
-    {:name (item-name testcase-elem)
-     :status status}))
+  (let [testcase {:name (item-name testcase-elem)
+                  :status (parse-status testcase-elem)}]
+    (if-let [duration (parse-duration testcase-elem)]
+      (assoc testcase :duration duration)
+      testcase)))
 
 (declare parse-testsuite)
 
