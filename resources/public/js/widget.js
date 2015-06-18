@@ -27,7 +27,7 @@ var widget = function () {
             .text(headline);
 
         widget.append("p")
-            .text(description)
+            .text(description);
         return {
             svg: function (size) {
                 return responsiveSvg(widget, size);
