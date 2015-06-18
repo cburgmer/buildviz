@@ -43,7 +43,7 @@ function failingTestCase {
 <?xml version="1.0" encoding="UTF-8"?>
 <testsuites>
   <testsuite name="Test Suite">
-    <testcase name="A Test Case">
+    <testcase name="A Test Case" time="0.0062">
       <failure>Meh</failure>
     </testcase>
   </testsuite>
@@ -56,7 +56,7 @@ function anotherFailingTestCase {
 <?xml version="1.0" encoding="UTF-8"?>
 <testsuites>
   <testsuite name="Test Suite">
-    <testcase name="Another Test Case">
+    <testcase name="Another Test Case" time="0.0021">
       <failure>Meh</failure>
     </testcase>
   </testsuite>
