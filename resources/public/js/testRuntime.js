@@ -28,21 +28,21 @@
             .append("g")
             .attr("transform", "translate(" + diameter / 2 + "," + diameter * .52 + ")");
 
-    var transformTestCase = function (testCase) {
+    var transformTestcase = function (testcase) {
         return {
-            name: testCase.name,
-            size: testCase.averageRuntime
+            name: testcase.name,
+            size: testcase.averageRuntime
         };
     };
 
-    var transformTestSuite = function (suite) {
+    var transformTestsuite = function (suite) {
         return {
             name: suite.name,
             children: suite.children.map(function (child) {
                 if (child.children) {
-                    return transformTestSuite(child);
+                    return transformTestsuite(child);
                 } else {
-                    return transformTestCase(child);
+                    return transformTestcase(child);
                 }
             })
         };
@@ -54,7 +54,7 @@
                 var job = jobMap[jobName];
                 return {
                     name: jobName,
-                    children: job.children.map(transformTestSuite)
+                    children: job.children.map(transformTestsuite)
                 };
             });
     };

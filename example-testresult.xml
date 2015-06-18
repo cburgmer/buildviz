@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <testsuites>
   <testsuite name="Test Suite">
-    <testcase name="A Test Case" time="0.42">
-      <failure>Meh</failure>
-    </testcase>
+    <testsuite name="Sub Test Suite">
+      <testcase name="A Test Case" time="0.42">
+        <failure>Meh</failure>
+      </testcase>
+    </testsuite>
     <testcase name="Another Test Case" time="1.01">
       <failure>Meh</failure>
     </testcase>

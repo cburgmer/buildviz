@@ -28,22 +28,24 @@
             .append("g")
             .attr("transform", "translate(" + diameter / 2 + "," + diameter * .52 + ")");
 
-    var transformTestCase = function (testCases) {
-        return testCases.map(function (testCase) {
-            return {
-                name: testCase.name,
-                size: testCase.failedCount
-            };
-        });
+    var transformTestcase = function (testCase) {
+        return {
+            name: testCase.name,
+            size: testCase.failedCount
+        };
     };
 
-    var transformTestSuites = function (testsuites) {
-        return testsuites.map(function (suite) {
-            return {
-                name: suite.name,
-                children: transformTestCase(suite.children)
-            };
-        });
+    var transformTestsuite = function (suite) {
+        return {
+            name: suite.name,
+            children: suite.children.map(function (child) {
+                if (child.children) {
+                    return transformTestsuite(child);
+                } else {
+                    return transformTestcase(child);
+                }
+            })
+        };
     };
 
     var transformFailures = function (failureMap) {
@@ -59,7 +61,7 @@
                     size: job.failedCount
                 };
                 if (job.children) {
-                    entry.children = transformTestSuites(job.children);
+                    entry.children = job.children.map(transformTestsuite);
                 }
                 return entry;
             });
