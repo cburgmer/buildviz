@@ -12,7 +12,7 @@
 (defn- item-name [elem]
   (:name (:attrs elem)))
 
-(defn- parse-duration [testcase-elem]
+(defn- parse-runtime [testcase-elem]
   (if-let [time (:time (:attrs testcase-elem))]
     (Math/round (* 1000 (Float/parseFloat time)))))
 
@@ -26,8 +26,8 @@
 (defn- testcase [testcase-elem]
   (let [testcase {:name (item-name testcase-elem)
                   :status (parse-status testcase-elem)}]
-    (if-let [duration (parse-duration testcase-elem)]
-      (assoc testcase :duration duration)
+    (if-let [runtime (parse-runtime testcase-elem)]
+      (assoc testcase :runtime runtime)
       testcase)))
 
 (declare parse-testsuite)
@@ -60,9 +60,12 @@
   {:name name
    :children (testsuites-map->list children-map)})
 
+(defn- is-leaf-node? [children]
+  (not (some map? (vals children))))
+
 (defn- testsuites-map->list [testsuites]
   (reduce-kv (fn [suites name children]
-               (conj suites (if (contains? children :failedCount)
+               (conj suites (if (is-leaf-node? children)
                               (assoc children :name name)
                               (testsuite-entry-for name children))))
              []
@@ -91,27 +94,56 @@
                unrolled-testcases)))
 
 
-(defn- assoc-testcase-entry [testsuite testcase-id fail-count]
-  (let [testcase {(peek testcase-id) {:failedCount fail-count}}
+(defn- assoc-testcase-entry [testsuite testcase-id testcase-data]
+  (let [testcase {(peek testcase-id) testcase-data}
         suite-path (pop testcase-id)]
     (update-in testsuite suite-path merge testcase)))
 
-(defn- build-suite-hierarchy-recursively [testsuite testcase-fail-frequencies]
-  (if-let [next-testcase (first testcase-fail-frequencies)]
+(defn- build-suite-hierarchy-recursively [testsuite testcase-entries]
+  (if-let [next-testcase (first testcase-entries)]
     (let [testcase-id (key next-testcase)
           fail-count (val next-testcase)]
       (recur
        (assoc-testcase-entry testsuite testcase-id fail-count)
-       (rest testcase-fail-frequencies)))
+       (rest testcase-entries)))
     testsuite))
 
-(defn- build-suite-hierarchy [testcase-fail-frequencies]
-  (build-suite-hierarchy-recursively {} testcase-fail-frequencies))
+(defn- build-suite-hierarchy [testcase-entries]
+  (build-suite-hierarchy-recursively {} testcase-entries))
 
 
 (defn accumulate-testsuite-failures [test-runs]
   (->> (mapcat unroll-testcases test-runs)
        (failed-testcase-ids)
        (frequencies)
+       (seq)
+       (map (fn [[testcase-id failedCount]]
+              [testcase-id {:failedCount failedCount}]))
+       (into {})
        (build-suite-hierarchy)
        (testsuites-map->list)))
+
+
+(defn- testcase-runtime [unrolled-testcases]
+  (map (fn [[testcase-id testcase]] [testcase-id (:runtime testcase)])
+       unrolled-testcases))
+
+(defn- avg [series]
+  (/ (reduce + series) (count series)))
+
+(defn- average-runtimes [testcase-runtimes]
+  (->> (group-by first testcase-runtimes)
+       (seq)
+       (map (fn [[testcase-id grouped-entries]]
+              [testcase-id (map second grouped-entries)]))
+       (map (fn [[testcase-id runtimes]]
+              [testcase-id {:averageRuntime (avg runtimes)}]))
+       (into {})))
+
+(defn average-testsuite-duration [test-runs]
+  (->> (mapcat unroll-testcases test-runs)
+       (testcase-runtime)
+       (average-runtimes)
+       (build-suite-hierarchy)
+       (testsuites-map->list)
+       ))

@@ -35,14 +35,17 @@
     (is (= [{:name "a suite"
              :children [{:name "a test"
                          :status :pass
-                         :duration 1234}]}]
+                         :runtime 1234}]}]
            (testsuites-for "<testsuite name=\"a suite\"><testcase name=\"a test\" time=\"1.234\"></testcase></testsuite>")))
     ))
 
 
-(defn- a-testcase [name status]
-  {:name name
-   :status status})
+(defn- a-testcase [name value]
+  (if (contains? #{:pass :fail} value)
+    {:name name
+     :status value}
+    {:name name
+     :runtime value}))
 
 (defn- a-testsuite [name & children]
   {:name name
@@ -87,4 +90,10 @@
                                                          (a-testsuite "nested suite" (a-testcase "a case" :fail)))]
                                            [(a-testsuite "suite"
                                                          (a-testsuite "nested suite" (a-testcase "another case" :fail)))]])))
-    ))
+    (testing "average-testsuite-duration"
+      (is (= []
+             (average-testsuite-duration [])))
+      (is (= [{:name "suite"
+               :children [{:name "a case" :averageRuntime 42}]}]
+             (average-testsuite-duration [[(a-testsuite "suite" (a-testcase "a case" 42))]])))
+      )))
