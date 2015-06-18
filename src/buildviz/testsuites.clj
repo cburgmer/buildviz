@@ -141,7 +141,7 @@
     (zipmap (keys groups)
             (map average-runtime-for-testcase-runs (vals groups)))))
 
-(defn average-testsuite-duration [test-runs]
+(defn average-testsuite-runtime [test-runs]
   (->> (mapcat unroll-testcases test-runs)
        testcase-runtime
        average-runtimes

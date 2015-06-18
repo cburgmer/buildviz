@@ -106,7 +106,7 @@
 (defn- testsuites-for [job]
   (let [test-results (@test-results job)
         test-runs (map testsuites/testsuites-for (vals test-results))]
-    {:children (testsuites/average-testsuite-duration test-runs)}))
+    {:children (testsuites/average-testsuite-runtime test-runs)}))
 
 (defn- get-testsuites []
   (let [job-names (keys @builds)]

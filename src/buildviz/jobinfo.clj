@@ -23,17 +23,17 @@
 (defn- avg [series]
   (/ (reduce + series) (count series)))
 
-(defn- duration-for [build]
+(defn- runtime-for [build]
   (if (and (contains? build :start)
            (contains? build :end))
     (- (build :end) (build :start))))
 
-(defn- build-durations [build-data-entries]
+(defn- build-runtime [build-data-entries]
   (filter (complement nil?)
-          (map duration-for build-data-entries)))
+          (map runtime-for build-data-entries)))
 
 (defn average-runtime [build-data-entries]
-  (if-let [runtimes (seq (build-durations build-data-entries))]
+  (if-let [runtimes (seq (build-runtime build-data-entries))]
     (avg runtimes)))
 
 ;; error count
