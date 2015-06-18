@@ -95,6 +95,9 @@
       (is (= []
              (average-testsuite-runtime [])))
       (is (= [{:name "suite"
+               :children [{:name "a case"}]}]
+             (average-testsuite-runtime [[(a-testsuite "suite" (a-testcase "a case" :fail))]])))
+      (is (= [{:name "suite"
                :children [{:name "a case" :averageRuntime 42}]}]
              (average-testsuite-runtime [[(a-testsuite "suite" (a-testcase "a case" 42))]])))
       (is (= [{:name "suite"

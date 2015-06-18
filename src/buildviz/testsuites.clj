@@ -134,7 +134,9 @@
 
 
 (defn- average-runtime-for-testcase-runs [testcases]
-  {:averageRuntime (avg (map second testcases))})
+  (if-let [runtimes (seq (keep second testcases))]
+    {:averageRuntime (avg runtimes)}
+    {}))
 
 (defn- average-runtimes [testcase-runtimes]
   (let [groups (group-by first testcase-runtimes)]
