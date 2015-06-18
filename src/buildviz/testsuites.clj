@@ -112,15 +112,15 @@
   (build-suite-hierarchy-recursively {} testcase-entries))
 
 
-(defn- build-testcase-data [unrolled-testcase-map]
+(defn- build-testcase-data-with-failures [unrolled-testcase-map]
   (zipmap (keys unrolled-testcase-map)
-                   (map #(assoc {} :failedCount %) (vals unrolled-testcase-map))))
+          (map #(assoc {} :failedCount %) (vals unrolled-testcase-map))))
 
 (defn accumulate-testsuite-failures [test-runs]
   (->> (mapcat unroll-testcases test-runs)
        failed-testcase-ids
        frequencies
-       build-testcase-data
+       build-testcase-data-with-failures
        build-suite-hierarchy
        testsuites-map->list))
 
@@ -132,14 +132,14 @@
 (defn- avg [series]
   (/ (reduce + series) (count series)))
 
+
+(defn- average-runtime-for-testcase-runs [testcases]
+  {:averageRuntime (avg (map second testcases))})
+
 (defn- average-runtimes [testcase-runtimes]
-  (->> (group-by first testcase-runtimes)
-       (seq)
-       (map (fn [[testcase-id grouped-entries]]
-              [testcase-id (map second grouped-entries)]))
-       (map (fn [[testcase-id runtimes]]
-              [testcase-id {:averageRuntime (avg runtimes)}]))
-       (into {})))
+  (let [groups (group-by first testcase-runtimes)]
+    (zipmap (keys groups)
+            (map average-runtime-for-testcase-runs (vals groups)))))
 
 (defn average-testsuite-duration [test-runs]
   (->> (mapcat unroll-testcases test-runs)

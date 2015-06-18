@@ -90,10 +90,28 @@
                                                          (a-testsuite "nested suite" (a-testcase "a case" :fail)))]
                                            [(a-testsuite "suite"
                                                          (a-testsuite "nested suite" (a-testcase "another case" :fail)))]])))
+
     (testing "average-testsuite-duration"
       (is (= []
              (average-testsuite-duration [])))
       (is (= [{:name "suite"
                :children [{:name "a case" :averageRuntime 42}]}]
              (average-testsuite-duration [[(a-testsuite "suite" (a-testcase "a case" 42))]])))
-      )))
+      (is (= [{:name "suite"
+               :children [{:name "a case" :averageRuntime 20}]}]
+             (average-testsuite-duration [[(a-testsuite "suite" (a-testcase "a case" 30))]
+                                          [(a-testsuite "suite" (a-testcase "a case" 10))]])))
+      (is (= [{:name "suite"
+               :children [{:name "a case" :averageRuntime 10}]}
+              {:name "another suite"
+               :children [{:name "another case" :averageRuntime 20}]}]
+             (average-testsuite-duration [[(a-testsuite "suite" (a-testcase "a case" 10))]
+                                          [(a-testsuite "another suite" (a-testcase "another case" 20))]])))
+      (is (= [{:name "suite"
+               :children [{:name "nested suite"
+                           :children [{:name "a case" :averageRuntime 10}
+                                      {:name "another case" :averageRuntime 20}]}]}]
+             (average-testsuite-duration [[(a-testsuite "suite"
+                                                           (a-testsuite "nested suite" (a-testcase "a case" 10)))]
+                                             [(a-testsuite "suite"
+                                                           (a-testsuite "nested suite" (a-testcase "another case" 20)))]]))))))
