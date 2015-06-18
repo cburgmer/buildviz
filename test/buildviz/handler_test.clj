@@ -212,6 +212,13 @@
                                      "children" [{"name" "a test"
                                                   "averageRuntime" 20000}]}]}}
              resp-data)))
+
+    ;; GET should not include builds without test cases
+    (reset-app!)
+    (a-build "aBuild" 1, {})
+    (let [response (app (request :get "/testsuites"))
+          resp-data (json/parse-string (:body response))]
+      (is (= {} resp-data)))
     ))
 
 (deftest EntryPoint

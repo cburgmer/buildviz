@@ -108,8 +108,11 @@
         test-runs (map testsuites/testsuites-for (vals test-results))]
     {:children (testsuites/average-testsuite-runtime test-runs)}))
 
+(defn- has-testsuites? [job]
+  (some? (@test-results job)))
+
 (defn- get-testsuites []
-  (let [job-names (keys @builds)]
+  (let [job-names (filter has-testsuites? (keys @builds))]
     {:body (zipmap job-names (map testsuites-for job-names))}))
 
 ;; app
