@@ -56,7 +56,7 @@ var zoomableSunburst = function (svg, diameter) {
 
         var enoughPlaceForText = function (d) {
             var currentDx = currentVisibleNode ? currentVisibleNode.dx : 1;
-            return (d.dx / currentDx) > 0.2;
+            return (d.dx / currentDx) > 0.05;
         };
 
         var displayText = function(d) {
