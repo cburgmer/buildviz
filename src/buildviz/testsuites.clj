@@ -23,12 +23,21 @@
       :error
       :pass)))
 
+(defn- add-runtime [testcase testcase-elem]
+  (if-let [runtime (parse-runtime testcase-elem)]
+    (assoc testcase :runtime runtime)
+    testcase))
+
+(defn- add-class [testcase testcase-elem]
+  (if-let [className (:class (:attrs testcase-elem))]
+    (assoc testcase :class className)
+    testcase))
+
 (defn- testcase [testcase-elem]
-  (let [testcase {:name (item-name testcase-elem)
-                  :status (parse-status testcase-elem)}]
-    (if-let [runtime (parse-runtime testcase-elem)]
-      (assoc testcase :runtime runtime)
-      testcase)))
+  (-> {:name (item-name testcase-elem)
+       :status (parse-status testcase-elem)}
+      (add-runtime testcase-elem)
+      (add-class testcase-elem)))
 
 (declare parse-testsuite)
 
@@ -71,11 +80,17 @@
              []
              testsuites))
 
+(defn- testcase-id [suite-id testcase]
+  (let [name (:name testcase)]
+    (if-let [class (:class testcase)]
+      (conj suite-id class name)
+      (conj suite-id name))))
+
 
 (defn- rolled-out-testcase [suite-id testcase]
-  (let [testcase-id (conj suite-id (:name testcase))
-        testcase-content (dissoc testcase :name)]
-    (vector testcase-id testcase-content)))
+  (let [testcase-content (dissoc testcase :name :class)]
+    (vector (testcase-id suite-id testcase)
+            testcase-content)))
 
 (defn- unroll-testcases-for-suite [parent-suite-id entry]
   (if-let [children (:children entry)]

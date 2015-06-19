@@ -17,6 +17,11 @@
                          :status :pass}]}]
            (testsuites-for "<testsuites><testsuite name=\"a suite\"><testcase name=\"a test\"></testcase></testsuite></testsuites>")))
     (is (= [{:name "a suite"
+             :children [{:name "a test"
+                         :class "the class"
+                         :status :fail}]}]
+       (testsuites-for "<testsuites><testsuite name=\"a suite\"><testcase class=\"the class\" name=\"a test\"><failure/></testcase></testsuite></testsuites>")))
+    (is (= [{:name "a suite"
              :children [{:name "a sub suite"
                          :children [{:name "a test"
                                      :status :pass}]}]}]
@@ -40,12 +45,14 @@
     ))
 
 
-(defn- a-testcase [name value]
-  (if (contains? #{:pass :fail} value)
-    {:name name
-     :status value}
-    {:name name
-     :runtime value}))
+(defn- a-testcase
+  ([name] {:name name})
+  ([name value] (merge (a-testcase name)
+                       (if (contains? #{:pass :fail} value)
+                         {:status value}
+                         {:runtime value})))
+  ([class name value] (merge (a-testcase name value)
+                             {:class class})))
 
 (defn- a-testsuite [name & children]
   {:name name
@@ -63,6 +70,10 @@
     (is (= [{:name "suite"
              :children [{:name "a case" :failedCount 1}]}]
            (accumulate-testsuite-failures [[(a-testsuite "suite" (a-testcase "a case" :error))]])))
+    (is (= [{:name "suite"
+             :children [{:name "the class"
+                         :children [{:name "a case" :failedCount 1}]}]}]
+           (accumulate-testsuite-failures [[(a-testsuite "suite" (a-testcase "the class" "a case" :error))]])))
     (is (= [{:name "suite"
              :children [{:name "a case" :failedCount 1}
                         {:name "another case" :failedCount 1}]}]
@@ -100,6 +111,10 @@
       (is (= [{:name "suite"
                :children [{:name "a case" :averageRuntime 42}]}]
              (average-testsuite-runtime [[(a-testsuite "suite" (a-testcase "a case" 42))]])))
+      (is (= [{:name "suite"
+               :children [{:name "a class"
+                           :children [{:name "the case" :averageRuntime 42}]}]}]
+             (average-testsuite-runtime [[(a-testsuite "suite" (a-testcase "a class" "the case" 42))]])))
       (is (= [{:name "suite"
                :children [{:name "a case" :averageRuntime 20}]}]
              (average-testsuite-runtime [[(a-testsuite "suite" (a-testcase "a case" 30))]
