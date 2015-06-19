@@ -29,8 +29,8 @@
     testcase))
 
 (defn- add-class [testcase testcase-elem]
-  (if-let [className (:class (:attrs testcase-elem))]
-    (assoc testcase :class className)
+  (if-let [classname (:classname (:attrs testcase-elem))]
+    (assoc testcase :classname classname)
     testcase))
 
 (defn- testcase [testcase-elem]
@@ -80,12 +80,12 @@
              []
              testsuites))
 
+
 (defn- testcase-id [suite-id testcase]
   (let [name (:name testcase)]
-    (if-let [class (:class testcase)]
-      (conj suite-id class name)
+    (if-let [classname (:classname testcase)]
+      (conj suite-id classname name)
       (conj suite-id name))))
-
 
 (defn- rolled-out-testcase [suite-id testcase]
   (let [testcase-content (dissoc testcase :name :class)]

@@ -2,11 +2,11 @@
 <testsuites>
   <testsuite name="Test Suite">
     <testsuite name="Sub Test Suite">
-      <testcase name="A Test Case" time="0.42">
+      <testcase classname="A Class" name="A Test Case" time="0.42">
         <failure>Meh</failure>
       </testcase>
     </testsuite>
-    <testcase name="Another Test Case" time="1.01">
+    <testcase classname="Another Class" name="Another Test Case" time="1.01">
       <failure>Meh</failure>
     </testcase>
   </testsuite>

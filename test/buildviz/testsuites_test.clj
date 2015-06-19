@@ -18,9 +18,9 @@
            (testsuites-for "<testsuites><testsuite name=\"a suite\"><testcase name=\"a test\"></testcase></testsuite></testsuites>")))
     (is (= [{:name "a suite"
              :children [{:name "a test"
-                         :class "the class"
+                         :classname "the class"
                          :status :fail}]}]
-       (testsuites-for "<testsuites><testsuite name=\"a suite\"><testcase class=\"the class\" name=\"a test\"><failure/></testcase></testsuite></testsuites>")))
+       (testsuites-for "<testsuites><testsuite name=\"a suite\"><testcase classname=\"the class\" name=\"a test\"><failure/></testcase></testsuite></testsuites>")))
     (is (= [{:name "a suite"
              :children [{:name "a sub suite"
                          :children [{:name "a test"
@@ -51,8 +51,8 @@
                        (if (contains? #{:pass :fail} value)
                          {:status value}
                          {:runtime value})))
-  ([class name value] (merge (a-testcase name value)
-                             {:class class})))
+  ([classname name value] (merge (a-testcase name value)
+                             {:classname classname})))
 
 (defn- a-testsuite [name & children]
   {:name name
