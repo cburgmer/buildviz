@@ -5,7 +5,8 @@
         ring.middleware.content-type
         ring.middleware.not-modified
         ring.middleware.accept
-        ring.util.response)
+        ring.util.response
+        [clojure.string :only (join)])
   (:require [compojure.handler :as handler]
             [buildviz.jobinfo :as jobinfo]
             [buildviz.testsuites :as testsuites]))
@@ -100,17 +101,31 @@
 
 ;; testsuites
 
+(defn- test-runs [job]
+  (let [test-results (@test-results job)]
+    (map testsuites/testsuites-for (vals test-results))))
+
 (defn- testsuites-for [job]
-  (let [test-results (@test-results job)
-        test-runs (map testsuites/testsuites-for (vals test-results))]
-    {:children (testsuites/average-testsuite-runtime test-runs)}))
+  {:children (testsuites/average-testsuite-runtime (test-runs job))})
+
+(defn- serialize-nested-testsuites [testsuite-id]
+  (join ": " testsuite-id))
+
+(defn- comma-separated-test-runtimes [job]
+  (->> (testsuites/average-testsuite-runtime-as-list (test-runs job))
+       (map (fn [{testsuite :testsuite classname :classname name :name average-runtime :averageRuntime}]
+              (join [(join "," [job (serialize-nested-testsuites testsuite) classname name average-runtime])
+                     "\n"])))))
 
 (defn- has-testsuites? [job]
   (some? (@test-results job)))
 
-(defn- get-testsuites []
+(defn- get-testsuites [accept]
   (let [job-names (filter has-testsuites? (keys @builds))]
-    {:body (zipmap job-names (map testsuites-for job-names))}))
+    (if (= (:mime accept) :json)
+      {:body (zipmap job-names (map testsuites-for job-names))}
+      {:body (join (cons "job,testsuite,classname,name,averageRuntime\n"
+                         (mapcat comma-separated-test-runtimes job-names)))})))
 
 ;; app
 
@@ -124,7 +139,7 @@
 
   (GET "/pipeline" [] (get-pipeline))
   (GET "/failures" [] (get-failures))
-  (GET "/testsuites" [] (get-testsuites)))
+  (GET "/testsuites" {accept :accept} (get-testsuites accept)))
 
 (defn- wrap-log-request [handler]
   (fn [req]
@@ -136,7 +151,9 @@
       wrap-log-request
       wrap-json-response
       (wrap-json-body {:keywords? true})
-      (wrap-accept {:mime ["application/json" :as :json, "application/xml" "text/xml" :as :xml]})
+      (wrap-accept {:mime ["application/json" :as :json,
+                           "application/xml" "text/xml" :as :xml
+                           "text/plain" :as :plain]})
       (wrap-resource "public")
       (wrap-content-type)
       (wrap-not-modified)))

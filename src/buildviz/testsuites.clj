@@ -158,9 +158,21 @@
     (zipmap (keys groups)
             (map average-runtime-for-testcase-runs (vals groups)))))
 
-(defn average-testsuite-runtime [test-runs]
+(defn- average-runtimes-by-testcase [test-runs]
   (->> (mapcat unroll-testcases test-runs)
        testcase-runtime
-       average-runtimes
+       average-runtimes))
+
+
+(defn average-testsuite-runtime [test-runs]
+  (->> (average-runtimes-by-testcase test-runs)
        build-suite-hierarchy
        testsuites-map->list))
+
+(defn average-testsuite-runtime-as-list [test-runs]
+  (->> (average-runtimes-by-testcase test-runs)
+       (map (fn [[testcase-id {average-runtime :averageRuntime}]]
+              {:testsuite (pop (pop testcase-id))
+               :classname (last (pop testcase-id))
+               :name (last testcase-id)
+               :averageRuntime average-runtime}))))

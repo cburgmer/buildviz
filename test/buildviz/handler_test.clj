@@ -1,7 +1,8 @@
 (ns buildviz.handler-test
   (:use clojure.test
         ring.mock.request
-        buildviz.handler)
+        buildviz.handler
+        [clojure.string :only (join)])
   (:require [cheshire.core :as json]))
 
 (defn- reset-app! []
@@ -192,11 +193,13 @@
 (deftest TestsuitesSummary
   (testing "GET to /testsuites"
     ;; GET should return 200
-    (let [response (app (request :get "/testsuites"))]
+    (let [response (app (-> (request :get "/testsuites")
+                            (header :accept "application/json")))]
       (is (= 200 (:status response))))
 
     ;; GET should return empty map by default
-    (let [response (app (request :get "/testsuites"))
+    (let [response (app (-> (request :get "/testsuites")
+                            (header :accept "application/json")))
           resp-data (json/parse-string (:body response))]
       (is (= {} resp-data)))
 
@@ -206,17 +209,39 @@
     (some-test-results "aBuild" "1" "<testsuites><testsuite name=\"a suite\"><testcase name=\"a test\" time=\"10\"></testcase></testsuite></testsuites>")
 (a-build "aBuild" 2, {})
     (some-test-results "aBuild" "2" "<testsuites><testsuite name=\"a suite\"><testcase name=\"a test\" time=\"30\"></testcase></testsuite></testsuites>")
-    (let [response (app (request :get "/testsuites"))
+    (let [response (app (-> (request :get "/testsuites")
+                            (header :accept "application/json")))
           resp-data (json/parse-string (:body response))]
       (is (= {"aBuild" {"children" [{"name" "a suite"
                                      "children" [{"name" "a test"
                                                   "averageRuntime" 20000}]}]}}
              resp-data)))
 
+    ;; GET should return CSV when client accepts text/plain
+    (reset-app!)
+    (a-build "aBuild" 1, {})
+    (some-test-results "aBuild" "1" "<testsuites><testsuite name=\"a suite\"><testcase name=\"a test\" classname=\"a class\" time=\"10\"></testcase></testsuite></testsuites>")
+    (let [response (app (-> (request :get "/testsuites")
+                            (header :accept "text/plain")))]
+      (is (= (:body response)
+             (join ["job,testsuite,classname,name,averageRuntime\n"
+                    "aBuild,a suite,a class,a test,10000\n"]))))
+
+    ;; GET should handle nested testsuites in CSV
+    (reset-app!)
+    (a-build "aBuild" 1, {})
+    (some-test-results "aBuild" "1" "<testsuites><testsuite name=\"a suite\"><testsuite name=\"nested suite\"><testcase name=\"a test\" classname=\"a class\" time=\"10\"></testcase></testsuite></testsuite></testsuites>")
+    (let [response (app (-> (request :get "/testsuites")
+                            (header :accept "text/plain")))]
+      (is (= (:body response)
+             (join ["job,testsuite,classname,name,averageRuntime\n"
+                    "aBuild,a suite: nested suite,a class,a test,10000\n"]))))
+
     ;; GET should not include builds without test cases
     (reset-app!)
     (a-build "aBuild" 1, {})
-    (let [response (app (request :get "/testsuites"))
+    (let [response (app (-> (request :get "/testsuites")
+                            (header :accept "application/json")))
           resp-data (json/parse-string (:body response))]
       (is (= {} resp-data)))
     ))
