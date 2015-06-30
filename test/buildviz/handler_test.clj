@@ -224,8 +224,8 @@
     (let [response (app (-> (request :get "/testsuites")
                             (header :accept "text/plain")))]
       (is (= (:body response)
-             (join ["job,testsuite,classname,name,averageRuntime\n"
-                    "\"aBuild\",\"a suite\",\"a class\",\"a test\",10000\n"]))))
+             (join ["averageRuntime,job,testsuite,classname,name\n"
+                    "10000,\"aBuild\",\"a suite\",\"a class\",\"a test\"\n"]))))
 
     ;; GET should handle nested testsuites in CSV
     (reset-app!)
@@ -234,8 +234,8 @@
     (let [response (app (-> (request :get "/testsuites")
                             (header :accept "text/plain")))]
       (is (= (:body response)
-             (join ["job,testsuite,classname,name,averageRuntime\n"
-                    "\"aBuild\",\"a suite: nested suite\",\"a class\",\"a test\",10000\n"]))))
+             (join ["averageRuntime,job,testsuite,classname,name\n"
+                    "10000,\"aBuild\",\"a suite: nested suite\",\"a class\",\"a test\"\n"]))))
 
     ;; GET should not include builds without test cases
     (reset-app!)

@@ -118,11 +118,11 @@
 (defn- comma-separated-test-runtimes [job]
   (->> (testsuites/average-testsuite-runtime-as-list (test-runs job))
        (map (fn [{testsuite :testsuite classname :classname name :name average-runtime :averageRuntime}]
-              (join [(join "," [(in-quotes job)
+              (join [(join "," [average-runtime
+                                (in-quotes job)
                                 (in-quotes (serialize-nested-testsuites testsuite))
                                 (in-quotes classname)
-                                (in-quotes name)
-                                average-runtime])
+                                (in-quotes name)])
                      "\n"])))))
 
 (defn- has-testsuites? [job]
@@ -132,7 +132,7 @@
   (let [job-names (filter has-testsuites? (keys @builds))]
     (if (= (:mime accept) :json)
       {:body (zipmap job-names (map testsuites-for job-names))}
-      {:body (join (cons "job,testsuite,classname,name,averageRuntime\n"
+      {:body (join (cons "averageRuntime,job,testsuite,classname,name\n"
                          (mapcat comma-separated-test-runtimes job-names)))})))
 
 ;; app
