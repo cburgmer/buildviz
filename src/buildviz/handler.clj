@@ -6,7 +6,7 @@
         ring.middleware.not-modified
         ring.middleware.accept
         ring.util.response
-        [clojure.string :only (join)])
+        [clojure.string :only (join escape)])
   (:require [compojure.handler :as handler]
             [buildviz.jobinfo :as jobinfo]
             [buildviz.testsuites :as testsuites]))
@@ -111,10 +111,18 @@
 (defn- serialize-nested-testsuites [testsuite-id]
   (join ": " testsuite-id))
 
+(defn- in-quotes [value]
+  (when-not (nil? value)
+    (join ["\"" (escape value {\" "\"\""}) "\""])))
+
 (defn- comma-separated-test-runtimes [job]
   (->> (testsuites/average-testsuite-runtime-as-list (test-runs job))
        (map (fn [{testsuite :testsuite classname :classname name :name average-runtime :averageRuntime}]
-              (join [(join "," [job (serialize-nested-testsuites testsuite) classname name average-runtime])
+              (join [(join "," [(in-quotes job)
+                                (in-quotes (serialize-nested-testsuites testsuite))
+                                (in-quotes classname)
+                                (in-quotes name)
+                                average-runtime])
                      "\n"])))))
 
 (defn- has-testsuites? [job]
