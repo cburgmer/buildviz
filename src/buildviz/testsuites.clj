@@ -145,7 +145,7 @@
        unrolled-testcases))
 
 (defn- avg [series]
-  (/ (reduce + series) (count series)))
+  (Math/round (float (/ (reduce + series) (count series)))))
 
 
 (defn- average-runtime-for-testcase-runs [testcases]
