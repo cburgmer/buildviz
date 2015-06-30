@@ -4,6 +4,7 @@
         ring.middleware.resource
         ring.middleware.content-type
         ring.middleware.not-modified
+        ring.middleware.accept
         ring.util.response)
   (:require [compojure.handler :as handler]
             [buildviz.jobinfo :as jobinfo]
@@ -42,14 +43,10 @@
     (swap! test-results assoc job updated-entry))
   {:status 204})
 
-(defn- accepts? [header-value media-type]
-  (and (some? header-value)
-       (.startsWith header-value media-type)))
-
-(defn- get-test-results [job build headers]
+(defn- get-test-results [job build accept]
   (if-let [job-results (@test-results job)]
     (if-let [content (job-results build)]
-      (if (accepts? (get headers "accept") "application/json")
+      (if (= (:mime accept) :json)
         {:body (testsuites/testsuites-for content)}
         {:body content
          :headers {"Content-Type" "application/xml;charset=UTF-8"}})
@@ -123,7 +120,7 @@
   (PUT "/builds/:job/:build" [job build :as {body :body}] (store-build! job build body))
   (GET "/builds/:job/:build" [job build] (get-build job build))
   (PUT "/builds/:job/:build/testresults" [job build :as {body :body}] (store-test-results! job build body))
-  (GET "/builds/:job/:build/testresults" [job build :as {headers :headers}] (get-test-results job build headers))
+  (GET "/builds/:job/:build/testresults" [job build :as {accept :accept}] (get-test-results job build accept))
 
   (GET "/pipeline" [] (get-pipeline))
   (GET "/failures" [] (get-failures))
@@ -139,6 +136,7 @@
       wrap-log-request
       wrap-json-response
       (wrap-json-body {:keywords? true})
+      (wrap-accept {:mime ["application/json" :as :json, "application/xml" "text/xml" :as :xml]})
       (wrap-resource "public")
       (wrap-content-type)
       (wrap-not-modified)))
