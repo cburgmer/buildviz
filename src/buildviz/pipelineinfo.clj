@@ -1,39 +1,41 @@
 (ns buildviz.pipelineinfo)
 
-(defn- update-ongoing-phase [fail-phases ongoing-phase]
-  (conj (pop fail-phases) ongoing-phase))
+(defn- update-ongoing-fail-phase [fail-phases ongoing-fail-phase]
+  (conj (pop fail-phases) ongoing-fail-phase))
+
+(defn- new-ongoing-phase [start culprit]
+  {:start start
+   :culprits #{culprit}
+   :ongoing-culprits #{culprit}})
 
 (defn- accumulate-fail-phases [fail-phases build]
   (let [outcome (:outcome build)
         start (:start build)
         job (:job build)]
-    (if (and (not (empty? fail-phases))
-             (not (contains? (last fail-phases) :end)))
-      (let [ongoing-phase (last fail-phases)]
+    (if (or (empty? fail-phases)
+             (empty? (:ongoing-culprits (last fail-phases))))
+
+      (if (= "fail" outcome)
+        (conj fail-phases (new-ongoing-phase start job))
+        fail-phases)
+
+      (let [ongoing-fail-phase (last fail-phases)]
         (if (and (= "pass" outcome)
-                 (contains? (:ongoing-culprits ongoing-phase) job))
-          (let [ongoing-culprits (disj (:ongoing-culprits ongoing-phase) job)]
-            (if (empty? ongoing-culprits)
-              (update-ongoing-phase fail-phases
-                                    (assoc ongoing-phase
-                                           :end start
-                                           :ongoing-culprits ongoing-culprits))
-              (update-ongoing-phase fail-phases
-                                    (assoc ongoing-phase
-                                           :ongoing-culprits ongoing-culprits))))
+                 (contains? (:ongoing-culprits ongoing-fail-phase) job))
+          (let [ongoing-culprits (disj (:ongoing-culprits ongoing-fail-phase) job)]
+            (update-ongoing-fail-phase fail-phases
+                                  (assoc ongoing-fail-phase
+                                         :ongoing-culprits ongoing-culprits
+                                         :end start)))
+
           (if (= "fail" outcome)
-            (let [culprits (conj (:culprits ongoing-phase) job)
-                  ongoing-culprits (conj (:ongoing-culprits ongoing-phase) job)]
-              (update-ongoing-phase fail-phases
-                                    (assoc ongoing-phase
+            (let [culprits (conj (:culprits ongoing-fail-phase) job)
+                  ongoing-culprits (conj (:ongoing-culprits ongoing-fail-phase) job)]
+              (update-ongoing-fail-phase fail-phases
+                                    (assoc ongoing-fail-phase
                                            :culprits culprits
                                            :ongoing-culprits ongoing-culprits)))
-            fail-phases)))
-      (if (= "fail" outcome)
-        (conj fail-phases {:start start
-                           :culprits #{job}
-                           :ongoing-culprits #{job}})
-        fail-phases))))
+            fail-phases))))))
 
 (defn pipeline-fail-phases [builds]
   (map #(dissoc % :ongoing-culprits)
