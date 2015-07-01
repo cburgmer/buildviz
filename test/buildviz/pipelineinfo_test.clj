@@ -49,4 +49,12 @@
                                   {:start 30 :end 40 :outcome "fail" :job "a job"}
                                   {:start 50 :end 60 :outcome "fail" :job "another job"}
                                   {:start 70 :end 80 :outcome "pass" :job "another job"}
-                                  {:start 90 :end 100 :outcome "pass" :job "a job"}])))))
+                                  {:start 90 :end 100 :outcome "pass" :job "a job"}])))
+    (is (= [{:start 30 :end 130 :culprits #{"a job", "another job", "yet another job"}}]
+           (pipeline-fail-phases [{:start 10 :end 20 :outcome "pass" :job "a job"}
+                                  {:start 30 :end 40 :outcome "fail" :job "a job"}
+                                  {:start 50 :end 60 :outcome "fail" :job "another job"}
+                                  {:start 70 :end 80 :outcome "pass" :job "another job"}
+                                  {:start 90 :end 100 :outcome "fail" :job "yet another job"}
+                                  {:start 110 :end 120 :outcome "pass" :job "yet another job"}
+                                  {:start 130 :end 140 :outcome "pass" :job "a job"}])))))
