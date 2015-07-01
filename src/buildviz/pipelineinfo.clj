@@ -10,13 +10,13 @@
 
 (defn- accumulate-fail-phases [fail-phases build]
   (let [outcome (:outcome build)
-        start (:start build)
+        end (:end build)
         job (:job build)]
     (if (or (empty? fail-phases)
              (empty? (:ongoing-culprits (last fail-phases))))
 
       (if (= "fail" outcome)
-        (conj fail-phases (new-ongoing-phase start job))
+        (conj fail-phases (new-ongoing-phase end job))
         fail-phases)
 
       (let [ongoing-fail-phase (last fail-phases)]
@@ -26,7 +26,7 @@
             (update-ongoing-fail-phase fail-phases
                                   (assoc ongoing-fail-phase
                                          :ongoing-culprits ongoing-culprits
-                                         :end start)))
+                                         :end end)))
 
           (if (= "fail" outcome)
             (let [culprits (conj (:culprits ongoing-fail-phase) job)
