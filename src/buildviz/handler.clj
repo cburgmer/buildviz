@@ -10,6 +10,7 @@
   (:require [compojure.handler :as handler]
             [buildviz.csv :as csv]
             [buildviz.jobinfo :as jobinfo]
+            [buildviz.pipelineinfo :as pipelineinfo]
             [buildviz.testsuites :as testsuites]))
 
 (def builds (atom {}))
@@ -85,6 +86,17 @@
         buildSummary (zipmap jobNames buildSummaries)]
     {:body buildSummary}))
 
+;; pipeline-info
+
+(defn- all-builds-in-order []
+  (mapcat (fn [[job builds]]
+            (map #(assoc % :job job) (vals builds)))
+          @builds))
+
+(defn- get-pipeline-info []
+  (let [annotated-builds-in-order (sort-by :end (all-builds-in-order))]
+    {:body (pipelineinfo/pipeline-fail-phases annotated-builds-in-order)}))
+
 ;; failures
 
 (defn- failures-for [job]
@@ -143,6 +155,7 @@
   (GET "/builds/:job/:build/testresults" [job build :as {accept :accept}] (get-test-results job build accept))
 
   (GET "/pipeline" [] (get-pipeline))
+  (GET "/pipelineinfo" {} (get-pipeline-info))
   (GET "/failures" [] (get-failures))
   (GET "/testsuites" {accept :accept} (get-testsuites accept)))
 

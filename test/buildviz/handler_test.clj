@@ -159,6 +159,26 @@
       (is (= resp-data {"flakyBuild" {"failedCount" 1 "totalCount" 2 "flakyCount" 1}})))
     ))
 
+(deftest PipelineInfoSummary
+  (testing "GET to /pipelineinfo"
+    ;; GET should return 200
+    (let [response (app (request :get "/pipelineinfo"))]
+      (is (= 200 (:status response))))
+
+    ;; GET should return empty map by default
+    (let [response (app (request :get "/pipelineinfo"))
+          resp-data (json/parse-string (:body response))]
+      (is (= [] resp-data)))
+
+    ;; GET should return
+    (reset-app!)
+    (a-build "badBuild" 1, {:end 42 :outcome "fail"})
+    (a-build "badBuild" 2, {:end 80 :outcome "pass"})
+    (let [response (app (request :get "/pipelineinfo"))
+          resp-data (json/parse-string (:body response))]
+      (is (= [{"start" 42 "end" 80 "culprits" ["badBuild"]}] resp-data)))
+    ))
+
 (deftest FailuresSummary
   (testing "GET to /failures"
     ;; GET should return 200
