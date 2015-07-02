@@ -93,9 +93,19 @@
             (map #(assoc % :job job) (vals builds)))
           @builds))
 
-(defn- get-pipeline-info []
-  (let [annotated-builds-in-order (sort-by :end (all-builds-in-order))]
-    {:body (pipelineinfo/pipeline-fail-phases annotated-builds-in-order)}))
+(defn- comma-separated-fail-phase [{start :start end :end culprits :culprits}]
+  (join [(csv/export [start
+                      end
+                      (join "|" culprits)])
+         "\n"]))
+
+(defn- get-pipeline-info [accept]
+  (let [annotated-builds-in-order (sort-by :end (all-builds-in-order))
+        fail-phases (pipelineinfo/pipeline-fail-phases annotated-builds-in-order)]
+    (if (= (:mime accept) :json)
+      {:body fail-phases}
+      (join (cons "start,end,culprits\n"
+                  (map comma-separated-fail-phase fail-phases))))))
 
 ;; failures
 
@@ -155,7 +165,7 @@
   (GET "/builds/:job/:build/testresults" [job build :as {accept :accept}] (get-test-results job build accept))
 
   (GET "/pipeline" [] (get-pipeline))
-  (GET "/pipelineinfo" {} (get-pipeline-info))
+  (GET "/pipelineinfo" {accept :accept} (get-pipeline-info accept))
   (GET "/failures" [] (get-failures))
   (GET "/testsuites" {accept :accept} (get-testsuites accept)))
 

@@ -165,16 +165,35 @@
     (let [response (app (request :get "/pipelineinfo"))]
       (is (= 200 (:status response))))
 
-    ;; GET should return empty map by default
+    ;; GET should return empty list by default
+    (reset-app!)
     (let [response (app (request :get "/pipelineinfo"))
+          resp-data (:body response)]
+      (is (= "start,end,culprits\n" resp-data)))
+
+    ;; GET should return fail phases
+    (reset-app!)
+    (a-build "badBuild" 1, {:end 42 :outcome "fail"})
+    (a-build "anotherBuild" 1, {:end 50 :outcome "fail"})
+    (a-build "anotherBuild" 2, {:end 60 :outcome "pass"})
+    (a-build "badBuild" 2, {:end 70 :outcome "pass"})
+    (let [response (app (request :get "/pipelineinfo"))
+          resp-data (:body response)]
+      (is (= "start,end,culprits\n42,70,anotherBuild|badBuild\n" resp-data)))
+
+    ;; GET should return empty list by default as JSON
+    (reset-app!)
+    (let [response (app (-> (request :get "/pipelineinfo")
+                            (header :accept "application/json")))
           resp-data (json/parse-string (:body response))]
       (is (= [] resp-data)))
 
-    ;; GET should return
+    ;; GET should return fail phases as JSON
     (reset-app!)
     (a-build "badBuild" 1, {:end 42 :outcome "fail"})
     (a-build "badBuild" 2, {:end 80 :outcome "pass"})
-    (let [response (app (request :get "/pipelineinfo"))
+    (let [response (app (-> (request :get "/pipelineinfo")
+                            (header :accept "application/json")))
           resp-data (json/parse-string (:body response))]
       (is (= [{"start" 42 "end" 80 "culprits" ["badBuild"]}] resp-data)))
     ))
