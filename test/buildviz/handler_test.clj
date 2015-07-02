@@ -159,15 +159,15 @@
       (is (= resp-data {"flakyBuild" {"failedCount" 1 "totalCount" 2 "flakyCount" 1}})))
     ))
 
-(deftest PipelineInfoSummary
-  (testing "GET to /pipelineinfo"
+(deftest FailPhases
+  (testing "GET to /failphases"
     ;; GET should return 200
-    (let [response (app (request :get "/pipelineinfo"))]
+    (let [response (app (request :get "/failphases"))]
       (is (= 200 (:status response))))
 
     ;; GET should return empty list by default
     (reset-app!)
-    (let [response (app (request :get "/pipelineinfo"))
+    (let [response (app (request :get "/failphases"))
           resp-data (:body response)]
       (is (= "start,end,culprits\n" resp-data)))
 
@@ -177,13 +177,13 @@
     (a-build "anotherBuild" 1, {:end 50 :outcome "fail"})
     (a-build "anotherBuild" 2, {:end 60 :outcome "pass"})
     (a-build "badBuild" 2, {:end 70 :outcome "pass"})
-    (let [response (app (request :get "/pipelineinfo"))
+    (let [response (app (request :get "/failphases"))
           resp-data (:body response)]
       (is (= "start,end,culprits\n42,70,anotherBuild|badBuild\n" resp-data)))
 
     ;; GET should return empty list by default as JSON
     (reset-app!)
-    (let [response (app (-> (request :get "/pipelineinfo")
+    (let [response (app (-> (request :get "/failphases")
                             (header :accept "application/json")))
           resp-data (json/parse-string (:body response))]
       (is (= [] resp-data)))
@@ -192,7 +192,7 @@
     (reset-app!)
     (a-build "badBuild" 1, {:end 42 :outcome "fail"})
     (a-build "badBuild" 2, {:end 80 :outcome "pass"})
-    (let [response (app (-> (request :get "/pipelineinfo")
+    (let [response (app (-> (request :get "/failphases")
                             (header :accept "application/json")))
           resp-data (json/parse-string (:body response))]
       (is (= [{"start" 42 "end" 80 "culprits" ["badBuild"]}] resp-data)))

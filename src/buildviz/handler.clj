@@ -56,7 +56,7 @@
       {:status 404})
     {:status 404}))
 
-;; pipeline
+;; jobs
 
 (defn- average-runtime-for [build-data-entries]
   (if-let [avg-runtime (jobinfo/average-runtime build-data-entries)]
@@ -86,7 +86,7 @@
         buildSummary (zipmap jobNames buildSummaries)]
     {:body buildSummary}))
 
-;; pipeline-info
+;; fail phases
 
 (defn- all-builds-in-order []
   (mapcat (fn [[job builds]]
@@ -99,7 +99,7 @@
                       (join "|" culprits)])
          "\n"]))
 
-(defn- get-pipeline-info [accept]
+(defn- get-fail-phases [accept]
   (let [annotated-builds-in-order (sort-by :end (all-builds-in-order))
         fail-phases (pipelineinfo/pipeline-fail-phases annotated-builds-in-order)]
     (if (= (:mime accept) :json)
@@ -165,7 +165,7 @@
   (GET "/builds/:job/:build/testresults" [job build :as {accept :accept}] (get-test-results job build accept))
 
   (GET "/jobs" [] (get-jobs))
-  (GET "/pipelineinfo" {accept :accept} (get-pipeline-info accept))
+  (GET "/failphases" {accept :accept} (get-fail-phases accept))
   (GET "/failures" [] (get-failures))
   (GET "/testsuites" {accept :accept} (get-testsuites accept)))
 
