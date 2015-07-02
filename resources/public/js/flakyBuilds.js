@@ -58,7 +58,7 @@
             .interpolate(d3.interpolateLab);
     };
 
-    d3.json('/pipeline', function (_, root) {
+    d3.json('/jobs', function (_, root) {
         var flakyRatio = maxFlakyRatio(root),
             color = colorScale(flakyRatio);
 

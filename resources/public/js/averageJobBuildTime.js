@@ -32,7 +32,7 @@
 
     var color = d3.scale.category20c();
 
-    d3.json('/pipeline', function (_, root) {
+    d3.json('/jobs', function (_, root) {
         var node = svg.selectAll("g")
                 .data(noGrouping(bubble.nodes({children: buildRuntimeAsBubbles(root)})))
                 .enter()

@@ -80,7 +80,7 @@
            (failed-count-for build-data-entries)
            (flaky-count-for build-data-entries))))
 
-(defn- get-pipeline []
+(defn- get-jobs []
   (let [jobNames (keys @builds)
         buildSummaries (map summary-for jobNames)
         buildSummary (zipmap jobNames buildSummaries)]
@@ -164,7 +164,7 @@
   (PUT "/builds/:job/:build/testresults" [job build :as {body :body}] (store-test-results! job build body))
   (GET "/builds/:job/:build/testresults" [job build :as {accept :accept}] (get-test-results job build accept))
 
-  (GET "/pipeline" [] (get-pipeline))
+  (GET "/jobs" [] (get-jobs))
   (GET "/pipelineinfo" {accept :accept} (get-pipeline-info accept))
   (GET "/failures" [] (get-failures))
   (GET "/testsuites" {accept :accept} (get-testsuites accept)))
