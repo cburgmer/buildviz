@@ -2,17 +2,7 @@
 
 Transparency for your build pipeline's results and runtime.
 
-**This is experimental, don't get your hopes up**
-
-![Screenshot](https://github.com/cburgmer/buildviz/raw/master/screenshot.png)
-
-## Motivation
-
-The [Toyota Production System](http://en.wikipedia.org/wiki/Toyota_Production_System) advocates the ["jidoka"](http://en.wikipedia.org/w/index.php?title=Jidoka&redirect=no) principle where manual supervision steps in when an anomaly is detected, the production line is then stopped and finally the anomaly is removed. So far our software build pipeline follows the lean manufacturing metaphor.
-
-Too often we seem to be forgetting though that this principle makes yet another step mandatory: *reflection* (["hansei"](http://en.wikipedia.org/wiki/Hansei)) including a root cause analysis that leads to the improvement of the production process (in the spirit of ["kaizen"](http://en.wikipedia.org/wiki/Kaizen)).
-
-May this tool evolve towards supporting us in reflecting on our software production line.
+![Screenshot](https://github.com/cburgmer/buildviz/raw/master/examples/data/screenshot.png)
 
 ## Usage
 
@@ -52,18 +42,13 @@ If you are using Go.cd, try the script `./scripts/gosync.clj`:
 
 ## Example
 
-Seed dummy data for a quick impression.
+Seed dummy data for a quick impression
 
-    $ ./seedDummyData.sh
+    $ ./examples/runSeedDataExample.sh
 
-### Full fledged example
+or run Go.cd in a Vagrant box and sync its job history with buildviz
 
-    # Install Go.cd
-    $ vagrant init gocd/gocd-demo; vagrant box update; vagrant up
-    # Start buildviz
-    $ ./lein ring server-headless
-    # Sync buildviz with the Go builds
-    $ ./lein exec scripts/gosync.clj http://localhost:8153/go
+    $ ./examples/runGoCdExample.sh
 
 ### More
 
