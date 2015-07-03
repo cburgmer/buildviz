@@ -85,11 +85,22 @@
           :pipelineRun pipelineRun})
        jobs))
 
+(defn get-stage-instances [pipeline stage offset]
+  (let [stage-history (get-json "/api/stages/%s/%s/history/%s" pipeline stage offset)
+        stage-instances (:stages stage-history)]
+    (if (empty? stage-instances)
+      []
+      (let [next-offset (+ offset (count stage-instances))]
+        (concat stage-instances
+                (lazy-seq (get-stage-instances pipeline stage next-offset)))))))
+
+(defn fetch-all-stage-history [pipeline stage]
+  (get-stage-instances pipeline stage 0))
+
 (defn job-instances-for-stage [{stage :stage pipeline :pipeline}]
-  (let [stageHistory (get-json "/api/stages/%s/%s/history" pipeline stage)
-        stageInstances (:stages stageHistory)]
-    (map #(assoc % :stageName stage :pipelineName pipeline)
-         (mapcat job-instances-for-stage-instance stageInstances))))
+  (map #(assoc % :stageName stage :pipelineName pipeline)
+       (mapcat job-instances-for-stage-instance
+               (fetch-all-stage-history pipeline stage))))
 
 
 ;; /api/pipelines/%pipelines/instance/%run
