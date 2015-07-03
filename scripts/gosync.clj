@@ -159,13 +159,20 @@
   ;; Also works around broken Go domain setup
   (clojure.string/replace url #"https?://[^/]+/go" go-url))
 
-(defn xml-artifacts-for-job-run [{pipeline-name :pipelineName
-                                  pipeline-run :pipelineRun
-                                  stage-name :stageName
-                                  stage-run :stageRun
-                                  job-name :jobName}]
-  (let [artifacts-url (format "/files/%s/%s/%s/%s/%s.json" pipeline-name pipeline-run stage-name stage-run job-name)
-        file-tree (get-json artifacts-url)]
+(defn try-get-artifact-tree [{pipeline-name :pipelineName
+                              pipeline-run :pipelineRun
+                              stage-name :stageName
+                              stage-run :stageRun
+                              job-name :jobName}]
+  (let [artifacts-url (format "/files/%s/%s/%s/%s/%s.json" pipeline-name pipeline-run stage-name stage-run job-name)]
+    (try
+      (get-json artifacts-url)
+      (catch Exception e
+        (println "Unable to get artifact list, might have been deleted by Go")
+        {}))))
+
+(defn xml-artifacts-for-job-run [job-instance]
+  (let [file-tree (try-get-artifact-tree job-instance)]
     (map replace-host-part-for-basic-auth
          (mapcat filter-xml-files file-tree))))
 
