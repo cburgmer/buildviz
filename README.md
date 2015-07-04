@@ -45,7 +45,7 @@ Buildviz does not care where the data is coming from. The general idea is to PUT
 If you are using [Go.cd](http://www.go.cd), try the script `./scripts/gosync.clj` to sync existing history:
 
 ```sh
-./lein exec scripts/gosync.clj http://$USER:$PW@localhost:8153/go $PIPELINE_GROUP $ANOTHER_PIPELINE_GROUP...
+./lein exec scripts/gosync.clj http://$USER:$PW@localhost:8153/go
 ```
 
 ### More

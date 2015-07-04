@@ -1,5 +1,3 @@
-(println "Syncing Go.cd builds to buildviz")
-
 (print "Loading dependencies...")
 (use '[leiningen.exec :only (deps)])
 (deps '[[clj-http "1.1.2"]
@@ -7,7 +5,8 @@
         [cheshire "5.4.0"]
         [org.clojure/tools.cli "0.3.1"]])
 
-(require '[cheshire.core :as j]
+(require '[clojure.string :as string]
+         '[cheshire.core :as j]
          '[clj-http.client :as client]
          '[clj-time.core :as t]
          '[clj-time.format :as tf]
@@ -19,6 +18,20 @@
 
 (def date-formatter (tf/formatter tz "YYYY-MM-dd" "YYYY/MM/dd" "YYYYMMdd" "dd.MM.YYYY"))
 
+
+(defn usage [options-summary]
+  (string/join "\n"
+               [""
+                "Syncs Go.cd build history with buildviz"
+                ""
+                "Usage: gosync.clj [OPTIONS] GO_URL [PIPELINE_GROUP] [ANOTHER PIPELINE GROUP] ..."
+                ""
+                "GO_URL            The URL of the Go.cd installation"
+                "PIPELINE_GROUP    Optional name of a pipeline group in Go"
+                ""
+                "Options"
+                options-summary]))
+
 (def cli-options
   [["-b" "--buildviz URL" "URL pointing to a running buildviz instance"
     :id :buildviz-url
@@ -26,9 +39,14 @@
    ["-f" "--from DATE" "DATE from which on builds are loaded"
     :id :load-builds-from
     :parse-fn #(tf/parse date-formatter %)
-    :default (t/minus (t/today-at-midnight tz) (t/weeks 1))]])
+    :default (t/minus (t/today-at-midnight tz) (t/weeks 1))]
+   ["-h" "--help"]])
 
 (def args (parse-opts *command-line-args* cli-options))
+
+(when (:help (:options args))
+  (println (usage (:summary args)))
+  (System/exit 0))
 
 (def go-url (second (:arguments args)))
 (def buildviz-url (:buildviz-url (:options args)))
