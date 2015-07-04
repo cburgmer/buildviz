@@ -51,7 +51,7 @@ wait_for_server http://localhost:8153/go
 
 # Sync buildviz with the Go builds
 echo "Syncing job history..."
-./lein exec scripts/gosync.clj http://localhost:8153/go
+./lein exec scripts/gosync.clj http://localhost:8153/go --from 2014-06-01
 
 echo "Done..."
 echo
