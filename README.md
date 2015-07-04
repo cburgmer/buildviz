@@ -4,15 +4,23 @@ Transparency for your build pipeline's results and runtime.
 
 ![Screenshot](https://github.com/cburgmer/buildviz/raw/master/examples/data/screenshot.png)
 
+## Example
+
+Seed dummy data for a quick impression
+
+    $ ./examples/runSeedDataExample.sh
+
+or run Go.cd in a Vagrant box and sync its job history with buildviz
+
+    $ ./examples/runGoCdExample.sh
+
 ## Usage
 
     $ ./lein npm install
     $ ./lein ring server-headless
     $ open http://localhost:3000/index.html
 
-Then `PUT` data to `http://localhost:3000/builds/$JOB_NAME/$BUILD_ID`
-
-Valid content (JSON) can be
+Then `PUT` JSON data in the following format to `http://localhost:3000/builds/$JOB_NAME/$BUILD_ID`
 
 ```js
 {
@@ -26,32 +34,22 @@ Valid content (JSON) can be
 }
 ```
 
-All values are optional.
+You can omit any of the above values, however some of the statistics will not be available then.
 
-JUnit XML output can be `PUT` to `http://localhost:3000/builds/$JOB_NAME/$BUILD_ID/testresults`
+JUnit XML formatted test results can be `PUT` to `http://localhost:3000/builds/$JOB_NAME/$BUILD_ID/testresults`
 
 ## Getting the data
 
-buildviz does not care where the data is coming from. It expects to be told via PUTs against `/builds`.
+Buildviz does not care where the data is coming from. The general idea is to PUT new outcomes to `/builds` whenever another build has run.
 
-If you are using Go.cd, try the script `./scripts/gosync.clj`:
+If you are using [Go.cd](http://www.go.cd), try the script `./scripts/gosync.clj` to sync existing history:
 
 ```sh
 ./lein exec scripts/gosync.clj http://$USER:$PW@localhost:8153/go $PIPELINE_GROUP $ANOTHER_PIPELINE_GROUP...
 ```
 
-## Example
-
-Seed dummy data for a quick impression
-
-    $ ./examples/runSeedDataExample.sh
-
-or run Go.cd in a Vagrant box and sync its job history with buildviz
-
-    $ ./examples/runGoCdExample.sh
-
 ### More
 
 [FAQ](https://github.com/cburgmer/buildviz/wiki)
 
-Maintained by [@cburgmer](https://twitter.com/cburgmer).
+Reach out to [@cburgmer](https://twitter.com/cburgmer) for feedback and ideas.
