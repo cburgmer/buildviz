@@ -1,6 +1,6 @@
 (println "Syncing Go.cd builds to buildviz")
 
-(println "Loading dependencies...")
+(print "Loading dependencies...")
 (use '[leiningen.exec :only (deps)])
 (deps '[[clj-http "1.1.2"]
         [clj-time "0.9.0"]
@@ -13,7 +13,7 @@
          '[clj-time.format :as tf]
          '[clj-time.coerce :as tc]
          '[clojure.tools.cli :refer [parse-opts]])
-(println "Loading dependencies done")
+(println "done")
 
 (def tz (t/default-time-zone))
 
@@ -37,9 +37,8 @@
 
 (def selected-pipeline-group-names (set (drop 2 (:arguments args))))
 
-(println "Storing build information to" buildviz-url)
-(println "Reading groups" selected-pipeline-group-names "from url" go-url)
-(println "Will load all builds starting from" (tf/unparse date-formatter load-builds-from))
+(println "Go" selected-pipeline-group-names go-url "-> buildviz" buildviz-url)
+(println "Syncing all builds starting from" (tf/unparse date-formatter load-builds-from))
 
 ;; util
 
