@@ -9,6 +9,7 @@
 
 (require '[cheshire.core :as j]
          '[clj-http.client :as client]
+         '[clj-time.core :as t]
          '[clj-time.format :as tf]
          '[clj-time.coerce :as tc]
          '[clojure.tools.cli :refer [parse-opts]])
@@ -24,10 +25,13 @@
 (def go-url (second (:arguments args)))
 (def buildviz-url (:buildviz-url (:options args)))
 
+(def load-builds-from (t/minus (t/today-at-midnight) (t/weeks 1)))
+
 (def selected-pipeline-group-names (set (drop 2 (:arguments args))))
 
 (println "Storing build information to" buildviz-url)
 (println "Reading groups" selected-pipeline-group-names "from url" go-url)
+(println "Will load all builds starting from" (tf/unparse (tf/formatter "yyyy-MM-dd") load-builds-from))
 
 ;; util
 
@@ -75,14 +79,15 @@
 
 ;; /api/stages/%pipeline/%stage/history
 
-(defn job-instances-for-stage-instance [{pipelineRun :pipeline_counter
-                                         stageRun :counter
+(defn job-instances-for-stage-instance [{pipeline-run :pipeline_counter
+                                         stage-run :counter
                                          jobs :jobs}]
-  (map (fn [{id :id name :name result :result}]
+  (map (fn [{id :id name :name result :result scheduled-date :scheduled_date}]
          {:jobId id
           :jobName name
-          :stageRun stageRun
-          :pipelineRun pipelineRun})
+          :stageRun stage-run
+          :pipelineRun pipeline-run
+          :scheduledDateTime (tc/from-long scheduled-date)})
        jobs))
 
 (defn get-stage-instances [pipeline stage offset]
@@ -99,8 +104,9 @@
 
 (defn job-instances-for-stage [{stage :stage pipeline :pipeline}]
   (map #(assoc % :stageName stage :pipelineName pipeline)
-       (mapcat job-instances-for-stage-instance
-               (fetch-all-stage-history pipeline stage))))
+       (take-while #(.isAfter (:scheduledDateTime %) load-builds-from)
+                   (mapcat job-instances-for-stage-instance
+                           (fetch-all-stage-history pipeline stage)))))
 
 
 ;; /api/pipelines/%pipelines/instance/%run
@@ -234,3 +240,5 @@
        (map augment-job-instance-with-junit-xml)))
 
 (put-to-buildviz (map make-build-instance job-instances))
+
+(println (format "Done, wrote %s build entries" (count job-instances)))
