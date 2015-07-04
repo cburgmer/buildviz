@@ -15,23 +15,31 @@
          '[clojure.tools.cli :refer [parse-opts]])
 (println "Loading dependencies done")
 
+(def tz (t/default-time-zone))
+
+(def date-formatter (tf/formatter tz "YYYY-MM-dd" "YYYY/MM/dd" "YYYYMMdd" "dd.MM.YYYY"))
+
 (def cli-options
   [["-b" "--buildviz URL" "URL pointing to a running buildviz instance"
     :id :buildviz-url
-    :default "http://localhost:3000"]])
+    :default "http://localhost:3000"]
+   ["-f" "--from DATE" "DATE from which on builds are loaded"
+    :id :load-builds-from
+    :parse-fn #(tf/parse date-formatter %)
+    :default (t/minus (t/today-at-midnight tz) (t/weeks 1))]])
 
 (def args (parse-opts *command-line-args* cli-options))
 
 (def go-url (second (:arguments args)))
 (def buildviz-url (:buildviz-url (:options args)))
 
-(def load-builds-from (t/minus (t/today-at-midnight) (t/weeks 1)))
+(def load-builds-from (:load-builds-from (:options args)))
 
 (def selected-pipeline-group-names (set (drop 2 (:arguments args))))
 
 (println "Storing build information to" buildviz-url)
 (println "Reading groups" selected-pipeline-group-names "from url" go-url)
-(println "Will load all builds starting from" (tf/unparse (tf/formatter "yyyy-MM-dd") load-builds-from))
+(println "Will load all builds starting from" (tf/unparse date-formatter load-builds-from))
 
 ;; util
 
