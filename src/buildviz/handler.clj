@@ -94,8 +94,8 @@
           @builds))
 
 (defn- comma-separated-fail-phase [{start :start end :end culprits :culprits}]
-  (join [(csv/export [start
-                      end
+  (join [(csv/export [(csv/format-timestamp start)
+                      (csv/format-timestamp end)
                       (join "|" culprits)])
          "\n"]))
 

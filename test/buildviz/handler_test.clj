@@ -3,7 +3,9 @@
         ring.mock.request
         buildviz.handler
         [clojure.string :only (join)])
-  (:require [cheshire.core :as json]))
+  (:require [cheshire.core :as json]
+            [clj-time.core :as t]
+            [clj-time.coerce :as tc]))
 
 (defn- reset-app! []
   (reset! builds {})
@@ -159,6 +161,8 @@
       (is (= resp-data {"flakyBuild" {"failedCount" 1 "totalCount" 2 "flakyCount" 1}})))
     ))
 
+(def a-timestamp (tc/to-long (t/from-time-zone (t/date-time 1986 10 14 4 3 27 456) (t/default-time-zone))))
+
 (deftest FailPhases
   (testing "GET to /failphases"
     ;; GET should return 200
@@ -173,13 +177,13 @@
 
     ;; GET should return fail phases
     (reset-app!)
-    (a-build "badBuild" 1, {:end 42 :outcome "fail"})
-    (a-build "anotherBuild" 1, {:end 50 :outcome "fail"})
-    (a-build "anotherBuild" 2, {:end 60 :outcome "pass"})
-    (a-build "badBuild" 2, {:end 70 :outcome "pass"})
+    (a-build "badBuild" 1, {:end a-timestamp :outcome "fail"})
+    (a-build "anotherBuild" 1, {:end (+ a-timestamp 10000) :outcome "fail"})
+    (a-build "anotherBuild" 2, {:end (+ a-timestamp 20000) :outcome "pass"})
+    (a-build "badBuild" 2, {:end (+ a-timestamp 30000) :outcome "pass"})
     (let [response (app (request :get "/failphases"))
           resp-data (:body response)]
-      (is (= "start,end,culprits\n42,70,anotherBuild|badBuild\n" resp-data)))
+      (is (= "start,end,culprits\n1986-10-14 04:03:27,1986-10-14 04:03:57,anotherBuild|badBuild\n" resp-data)))
 
     ;; GET should return empty list by default as JSON
     (reset-app!)
