@@ -86,13 +86,13 @@
         buildSummary (zipmap jobNames buildSummaries)]
     (if (= (:mime accept) :json)
       {:body buildSummary}
-      (csv/export-table ["job" "averageRuntime" "totalCount" "failedCount" "flakyCount"]
-                        (map (fn [[job-name job]] [job-name
-                                                   (:averageRuntime job)
-                                                   (:totalCount job)
-                                                   (:failedCount job)
-                                                   (:flakyCount job)])
-                             buildSummary)))))
+      {:body (csv/export-table ["job" "averageRuntime" "totalCount" "failedCount" "flakyCount"]
+                               (map (fn [[job-name job]] [job-name
+                                                          (:averageRuntime job)
+                                                          (:totalCount job)
+                                                          (:failedCount job)
+                                                          (:flakyCount job)])
+                                    buildSummary))})))
 
 ;; fail phases
 
@@ -101,19 +101,17 @@
             (map #(assoc % :job job) (vals builds)))
           @builds))
 
-(defn- comma-separated-fail-phase [{start :start end :end culprits :culprits}]
-  (join [(csv/export [(csv/format-timestamp start)
-                      (csv/format-timestamp end)
-                      (join "|" culprits)])
-         "\n"]))
-
 (defn- get-fail-phases [accept]
   (let [annotated-builds-in-order (sort-by :end (all-builds-in-order))
         fail-phases (pipelineinfo/pipeline-fail-phases annotated-builds-in-order)]
     (if (= (:mime accept) :json)
       {:body fail-phases}
-      (join (cons "start,end,culprits\n"
-                  (map comma-separated-fail-phase fail-phases))))))
+      {:body (csv/export-table ["start" "end" "culprits"]
+                               (map (fn [{start :start end :end culprits :culprits}]
+                                      [(csv/format-timestamp start)
+                                       (csv/format-timestamp end)
+                                       (join "|" culprits)])
+                                    fail-phases))})))
 
 ;; failures
 
@@ -142,15 +140,14 @@
 (defn- serialize-nested-testsuites [testsuite-id]
   (join ": " testsuite-id))
 
-(defn- comma-separated-test-runtimes [job]
+(defn- flat-test-runtimes [job]
   (->> (testsuites/average-testsuite-runtime-as-list (test-runs job))
        (map (fn [{testsuite :testsuite classname :classname name :name average-runtime :averageRuntime}]
-              (join [(csv/export [average-runtime
-                                  job
-                                  (serialize-nested-testsuites testsuite)
-                                  classname
-                                  name])
-                     "\n"])))))
+              [average-runtime
+               job
+               (serialize-nested-testsuites testsuite)
+               classname
+               name]))))
 
 (defn- has-testsuites? [job]
   (some? (@test-results job)))
@@ -159,8 +156,9 @@
   (let [job-names (filter has-testsuites? (keys @builds))]
     (if (= (:mime accept) :json)
       {:body (zipmap job-names (map testsuites-for job-names))}
-      {:body (join (cons "averageRuntime,job,testsuite,classname,name\n"
-                         (mapcat comma-separated-test-runtimes job-names)))})))
+      {:body (csv/export-table ["averageRuntime" "job" "testsuite" "classname" "name"]
+                               (mapcat flat-test-runtimes
+                                       job-names))})))
 
 ;; app
 
