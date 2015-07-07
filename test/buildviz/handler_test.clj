@@ -260,12 +260,11 @@
                                                   "averageRuntime" 20000}]}]}}
              resp-data)))
 
-    ;; GET should return CSV when client accepts text/plain
+    ;; GET should return CSV by default
     (reset-app!)
     (a-build "aBuild" 1, {})
     (some-test-results "aBuild" "1" "<testsuites><testsuite name=\"a suite\"><testcase name=\"a,test\" classname=\"a class\" time=\"10\"></testcase></testsuite></testsuites>")
-    (let [response (app (-> (request :get "/testsuites")
-                            (header :accept "text/plain")))]
+    (let [response (app (request :get "/testsuites"))]
       (is (= (:body response)
              (join ["averageRuntime,job,testsuite,classname,name\n"
                     "10000,aBuild,a suite,a class,\"a,test\"\n"]))))
