@@ -80,23 +80,19 @@
            (failed-count-for build-data-entries)
            (flaky-count-for build-data-entries))))
 
-(defn- job-summary-as-comma-separated [job-name job]
-  (csv/export [job-name
-               (:averageRuntime job)
-               (:totalCount job)
-               (:failedCount job)
-               (:flakyCount job)]))
-
 (defn- get-jobs [accept]
   (let [jobNames (keys @builds)
         buildSummaries (map summary-for jobNames)
         buildSummary (zipmap jobNames buildSummaries)]
     (if (= (:mime accept) :json)
       {:body buildSummary}
-      (join [(join "\n" (cons (csv/export ["job" "averageRuntime" "totalCount" "failedCount" "flakyCount"])
-                              (map (fn [[job-name job]] (job-summary-as-comma-separated job-name job))
-                                   buildSummary)))
-             "\n"]))))
+      (csv/export-table ["job" "averageRuntime" "totalCount" "failedCount" "flakyCount"]
+                        (map (fn [[job-name job]] [job-name
+                                                   (:averageRuntime job)
+                                                   (:totalCount job)
+                                                   (:failedCount job)
+                                                   (:flakyCount job)])
+                             buildSummary)))))
 
 ;; fail phases
 

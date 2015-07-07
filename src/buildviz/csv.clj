@@ -24,6 +24,7 @@
   (->> (map quote-separator values)
        (join separator)))
 
+
 ;; http://stackoverflow.com/questions/804118/best-timestamp-format-for-csv-excel
 (def excel-datetime-formatter (tf/formatter "yyyy-MM-dd HH:mm:ss" (t/default-time-zone)))
 
@@ -31,3 +32,9 @@
   (if (nil? timestamp)
     nil
     (tf/unparse excel-datetime-formatter (tc/from-long (long timestamp)))))
+
+
+(defn export-table [header entries]
+  (join [(join "\n" (cons (export header)
+                          (map export entries)))
+         "\n"]))
