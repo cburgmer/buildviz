@@ -80,11 +80,23 @@
            (failed-count-for build-data-entries)
            (flaky-count-for build-data-entries))))
 
-(defn- get-jobs []
+(defn- job-summary-as-comma-separated [job-name job]
+  (csv/export [job-name
+               (:averageRuntime job)
+               (:totalCount job)
+               (:failedCount job)
+               (:flakyCount job)]))
+
+(defn- get-jobs [accept]
   (let [jobNames (keys @builds)
         buildSummaries (map summary-for jobNames)
         buildSummary (zipmap jobNames buildSummaries)]
-    {:body buildSummary}))
+    (if (= (:mime accept) :json)
+      {:body buildSummary}
+      (join [(join "\n" (cons (csv/export ["job" "averageRuntime" "totalCount" "failedCount" "flakyCount"])
+                              (map (fn [[job-name job]] (job-summary-as-comma-separated job-name job))
+                                   buildSummary)))
+             "\n"]))))
 
 ;; fail phases
 
@@ -164,7 +176,7 @@
   (PUT "/builds/:job/:build/testresults" [job build :as {body :body}] (store-test-results! job build body))
   (GET "/builds/:job/:build/testresults" [job build :as {accept :accept}] (get-test-results job build accept))
 
-  (GET "/jobs" [] (get-jobs))
+  (GET "/jobs" {accept :accept} (get-jobs accept))
   (GET "/failphases" {accept :accept} (get-fail-phases accept))
   (GET "/failures" [] (get-failures))
   (GET "/testsuites" {accept :accept} (get-testsuites accept)))

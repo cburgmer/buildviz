@@ -36,6 +36,7 @@
     (is (= nil (average-runtime [{:end 0}])))
     (is (= 42 (average-runtime [{:start 0 :end 42}])))
     (is (= 20 (average-runtime [{:start 10 :end 20} {:start 50 :end 80}])))
+    (is (= 2 (average-runtime [{:start 1 :end 2} {:start 3 :end 5}])))
     (is (= 42 (average-runtime [{:start 0 :end 42}, {:outcome "pass"}]))))
 
   (testing "fail-count"

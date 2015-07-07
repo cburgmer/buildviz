@@ -21,7 +21,7 @@
 ;; avg runtime
 
 (defn- avg [series]
-  (/ (reduce + series) (count series)))
+  (Math/round (float (/ (reduce + series) (count series)))))
 
 (defn- runtime-for [build]
   (if (and (contains? build :start)

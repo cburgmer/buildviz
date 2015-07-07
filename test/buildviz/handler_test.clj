@@ -112,15 +112,37 @@
     (let [response (app (request :get "/jobs"))]
       (is (= (:status response) 200)))
 
-    ;; GET should return empty map by default
-    (let [response (app (request :get "/jobs"))
+    ;; GET should return empty list
+    (let [response (app (-> (request :get "/jobs")
+                            (header :accept "text/plain")))]
+      (is (= (:body response)
+             "job,averageRuntime,totalCount,failedCount,flakyCount\n")))
+
+    ;; GET should return job summary
+    (reset-app!)
+    (a-build "someBuild" 1, {:start 10 :end 20 :outcome "pass" :inputs {:id 42 :revision "dat_revision"}})
+    (a-build "someBuild" 2, {:start 30 :end 60 :outcome "fail" :inputs {:id 42 :revision "dat_revision"}})
+    (a-build "someBuild" 3, {:start 70 :end 90 :outcome "fail" :inputs {:id 42 :revision "other_revision"}})
+    (a-build "someBuild" 4, {:start 100 :end 120 :outcome "pass" :inputs {:id 42 :revision "yet_another_revision"}})
+    (let [response (app (-> (request :get "/jobs")
+                            (header :accept "text/plain")))]
+      (is (= (:body response)
+             (join ["job,averageRuntime,totalCount,failedCount,flakyCount\n"
+                    "someBuild,20,4,2,1\n"]))))
+
+    ;; GET should return empty map for json by default
+    (reset-app!)
+    (let [response (app (-> (request :get "/jobs")
+                            (header :accept "application/json")))
           resp-data (json/parse-string (:body response))]
       (is (= resp-data {})))
 
     ;; GET should return job summary
+    (reset-app!)
     (a-build "someBuild" 1, {:start 42 :end 43})
     (a-build "anotherBuild" 1, {:start 10 :end 12})
-    (let [response (app (request :get "/jobs"))
+    (let [response (app (-> (request :get "/jobs")
+                            (header :accept "application/json")))
           resp-data (json/parse-string (:body response))]
       (is (= resp-data {"someBuild" {"averageRuntime" 1 "totalCount" 1}
                         "anotherBuild" {"averageRuntime" 2 "totalCount" 1}})))
@@ -130,7 +152,8 @@
     (a-build "runOnce" 1, {})
     (a-build "runTwice" 1, {})
     (a-build "runTwice" 2, {})
-    (let [response (app (request :get "/jobs"))
+    (let [response (app (-> (request :get "/jobs")
+                            (header :accept "application/json")))
           resp-data (json/parse-string (:body response))]
       (is (= resp-data {"runTwice" {"totalCount" 2}
                         "runOnce" {"totalCount" 1}})))
@@ -140,7 +163,8 @@
     (a-build "flakyBuild" 1, {:outcome "pass"})
     (a-build "flakyBuild" 2, {:outcome "fail"})
     (a-build "brokenBuild" 1, {:outcome "fail"})
-    (let [response (app (request :get "/jobs"))
+    (let [response (app (-> (request :get "/jobs")
+                            (header :accept "application/json")))
           resp-data (json/parse-string (:body response))]
       (is (= resp-data {"flakyBuild" {"failedCount" 1 "totalCount" 2 "flakyCount" 0}
                         "brokenBuild" {"failedCount" 1 "totalCount" 1 "flakyCount" 0}})))
@@ -148,7 +172,8 @@
     ;; GET should return error build count
     (reset-app!)
     (a-build "goodBuild" 1, {:outcome "pass"})
-    (let [response (app (request :get "/jobs"))
+    (let [response (app (-> (request :get "/jobs")
+                            (header :accept "application/json")))
           resp-data (json/parse-string (:body response))]
       (is (= resp-data {"goodBuild" {"failedCount" 0 "totalCount" 1 "flakyCount" 0}})))
 
@@ -156,7 +181,8 @@
     (reset-app!)
     (a-build "flakyBuild" 1, {:outcome "pass" :inputs {:id 42 :revision "dat_revision"}})
     (a-build "flakyBuild" 2, {:outcome "fail" :inputs {:id 42 :revision "dat_revision"}})
-    (let [response (app (request :get "/jobs"))
+    (let [response (app (-> (request :get "/jobs")
+                            (header :accept "application/json")))
           resp-data (json/parse-string (:body response))]
       (is (= resp-data {"flakyBuild" {"failedCount" 1 "totalCount" 2 "flakyCount" 1}})))
     ))
