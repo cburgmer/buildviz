@@ -128,7 +128,7 @@
                             (header :accept "text/plain")))]
       (is (= (:body response)
              (join ["job,averageRuntime,totalCount,failedCount,flakyCount\n"
-                    "someBuild,20,4,2,1\n"]))))
+                    (format "someBuild,%.8f,4,2,1\n" 0.00000023)]))))
 
     ;; GET should return empty map for json by default
     (reset-app!)

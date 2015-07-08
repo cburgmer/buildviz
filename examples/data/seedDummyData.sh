@@ -1,8 +1,10 @@
 #!/bin/bash
 
+
 function anyBuild {
-    START=$RANDOM
-    END=$[ $START + ( $RANDOM % 100 ) ]
+    START=$[ $RANDOM * 60 * 60 * 1000 / 32767]
+    DURATION=$[ $RANDOM * 60 * 60 * 1000 / 32767]
+    END=$[ $START + $DURATION ]
     if [[ $[ $RANDOM % 2 ] -eq 0 ]]; then
         OUTCOME="pass"
     else
@@ -13,8 +15,9 @@ function anyBuild {
 }
 
 function aBrokenBuild {
-    START=$RANDOM
-    END=$[ $START + ( $RANDOM % 100 ) ]
+    START=$[ $RANDOM * 60 * 60 * 1000 / 32767]
+    DURATION=$[ $RANDOM * 60 * 60 * 1000 / 32767]
+    END=$[ $START + $DURATION ]
     OUTCOME="fail"
     aBuild $START $END $OUTCOME
 }
@@ -87,5 +90,5 @@ anotherFailingTestCase | sendTestResult "aBrokenBuild" 2
 anotherFailingTestCase | sendTestResult "aBrokenBuild" 3
 
 
-aBuild 0 20 'fail' 'abcd' | send "aFlakyBuild" 1
-aBuild 100 120 'pass' 'abcd' | send "aFlakyBuild" 2
+aBuild 0 200000 'fail' 'abcd' | send "aFlakyBuild" 1
+aBuild 1000000 1200000 'pass' 'abcd' | send "aFlakyBuild" 2

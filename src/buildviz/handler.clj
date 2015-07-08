@@ -88,7 +88,7 @@
       {:body buildSummary}
       {:body (csv/export-table ["job" "averageRuntime" "totalCount" "failedCount" "flakyCount"]
                                (map (fn [[job-name job]] [job-name
-                                                          (:averageRuntime job)
+                                                          (csv/format-duration (:averageRuntime job))
                                                           (:totalCount job)
                                                           (:failedCount job)
                                                           (:flakyCount job)])

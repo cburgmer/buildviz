@@ -34,6 +34,13 @@
     (tf/unparse excel-datetime-formatter (tc/from-long (long timestamp)))))
 
 
+(def day-in-millis (* 24 60 60 1000))
+
+(defn format-duration [duration]
+  (if (nil? duration)
+    nil
+    (format "%.8f" (float (/ duration day-in-millis)))))
+
 (defn export-table [header entries]
   (join [(join "\n" (cons (export header)
                           (map export entries)))

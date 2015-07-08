@@ -27,4 +27,12 @@
 
   (testing "format-timestamp"
     (is (= "1986-10-14 04:03:27"
-           (format-timestamp (tc/to-long a-datetime))))))
+           (format-timestamp (tc/to-long a-datetime)))))
+
+  (testing "format-duration"
+    (is (= (format "%.8f" 1.)
+           (format-duration (* 24 60 60 1000))))
+    (is (= 1
+           (Math/round (* 24. 60 60 1000
+                          (Float/parseFloat
+                           (format-duration 1))))))))
