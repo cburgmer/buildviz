@@ -3,17 +3,35 @@
     var diameter = 600,
         className = "averageJobBuildTime";
 
+    var padZero = function (value) {
+        if (value < 10) {
+            return '0' + value;
+        } else {
+            return '' + value;
+        }
+    };
+
+    var formatTimeInMs = function (timeInMs) {
+        var hours = Math.floor(timeInMs / (60 * 60 * 1000)),
+            minutes = Math.floor(timeInMs % (60 * 60 * 1000) / (60 * 1000)),
+            seconds = Math.round(timeInMs % (60 * 1000) / 1000);
+
+        return hours + ':' + padZero(minutes) + ':' + padZero(seconds);
+    };
+
     var buildRuntimeAsBubbles = function (pipeline) {
         return Object.keys(pipeline)
             .filter(function (jobName) {
                 return pipeline[jobName].averageRuntime;
             })
             .map(function (jobName) {
-                var avgRuntime = pipeline[jobName].averageRuntime;
+                var averageRuntime = pipeline[jobName].averageRuntime,
+                    runtime = averageRuntime ? ' (' + formatTimeInMs(averageRuntime) + ')' : '';
+
                 return {
                     name: jobName,
-                    title: jobName + ': ' + avgRuntime,
-                    value: avgRuntime
+                    title: jobName + ': ' + runtime,
+                    value: averageRuntime
                 };
             });
     };
