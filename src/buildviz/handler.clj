@@ -26,16 +26,27 @@
     (@test-results job)
     {}))
 
+(defn- respond-with-json [content]
+  {:body content})
+
+(defn- respond-with-csv [content]
+  {:body content
+   :headers {"Content-Type" "text/csv;charset=UTF-8"}})
+
+(defn- respond-with-xml [content]
+  {:body content
+   :headers {"Content-Type" "application/xml;charset=UTF-8"}})
+
 (defn- store-build! [job build build-data]
   (let [entry (job-entry job)
         updated-entry (assoc entry build build-data)]
     (swap! builds assoc job updated-entry)
-    {:body build-data}))
+    (respond-with-json build-data)))
 
 (defn- get-build [job build]
   (if (contains? @builds job)
     (if-let [build-data ((@builds job) build)]
-      {:body build-data}
+      (respond-with-json build-data)
       {:status 404})
     {:status 404}))
 
@@ -50,11 +61,13 @@
   (if-let [job-results (@test-results job)]
     (if-let [content (job-results build)]
       (if (= (:mime accept) :json)
-        {:body (testsuites/testsuites-for content)}
-        {:body content
-         :headers {"Content-Type" "application/xml;charset=UTF-8"}})
+        (respond-with-json (testsuites/testsuites-for content))
+        (respond-with-xml content))
       {:status 404})
     {:status 404}))
+
+(defn- serialize-nested-testsuites [testsuite-id]
+  (join ": " testsuite-id))
 
 ;; jobs
 
@@ -85,14 +98,15 @@
         buildSummaries (map summary-for jobNames)
         buildSummary (zipmap jobNames buildSummaries)]
     (if (= (:mime accept) :json)
-      {:body buildSummary}
-      {:body (csv/export-table ["job" "averageRuntime" "totalCount" "failedCount" "flakyCount"]
-                               (map (fn [[job-name job]] [job-name
-                                                          (csv/format-duration (:averageRuntime job))
-                                                          (:totalCount job)
-                                                          (:failedCount job)
-                                                          (:flakyCount job)])
-                                    buildSummary))})))
+      (respond-with-json buildSummary)
+      (respond-with-csv
+       (csv/export-table ["job" "averageRuntime" "totalCount" "failedCount" "flakyCount"]
+                         (map (fn [[job-name job]] [job-name
+                                                    (csv/format-duration (:averageRuntime job))
+                                                    (:totalCount job)
+                                                    (:failedCount job)
+                                                    (:flakyCount job)])
+                              buildSummary))))))
 
 ;; fail phases
 
@@ -105,13 +119,14 @@
   (let [annotated-builds-in-order (sort-by :end (all-builds-in-order))
         fail-phases (pipelineinfo/pipeline-fail-phases annotated-builds-in-order)]
     (if (= (:mime accept) :json)
-      {:body fail-phases}
-      {:body (csv/export-table ["start" "end" "culprits"]
-                               (map (fn [{start :start end :end culprits :culprits}]
-                                      [(csv/format-timestamp start)
-                                       (csv/format-timestamp end)
-                                       (join "|" culprits)])
-                                    fail-phases))})))
+      (respond-with-json fail-phases)
+      (respond-with-csv
+       (csv/export-table ["start" "end" "culprits"]
+                         (map (fn [{start :start end :end culprits :culprits}]
+                                [(csv/format-timestamp start)
+                                 (csv/format-timestamp end)
+                                 (join "|" culprits)])
+                              fail-phases))))))
 
 ;; failures
 
@@ -122,9 +137,6 @@
       (let [build-data-entries (vals (@builds job))]
         {job (merge {:children failed-tests}
                     (failed-count-for build-data-entries))}))))
-
-(defn- serialize-nested-testsuites [testsuite-id]
-  (join ": " testsuite-id))
 
 (defn- failures-as-list [job]
   (when-let [test-results (@test-results job)]
@@ -141,9 +153,9 @@
   (let [jobs (keys @builds)]
     (if (= (:mime accept) :json)
       (let [failures (map failures-for jobs)]
-        {:body (into {} (apply merge failures))})
-      (csv/export-table ["failedCount" "job" "testsuite" "classname" "name"]
-                        (mapcat failures-as-list jobs)))))
+        (respond-with-json (into {} (apply merge failures))))
+      (respond-with-csv (csv/export-table ["failedCount" "job" "testsuite" "classname" "name"]
+                                          (mapcat failures-as-list jobs))))))
 
 ;; testsuites
 
@@ -169,10 +181,10 @@
 (defn- get-testsuites [accept]
   (let [job-names (filter has-testsuites? (keys @builds))]
     (if (= (:mime accept) :json)
-      {:body (zipmap job-names (map testsuites-for job-names))}
-      {:body (csv/export-table ["averageRuntime" "job" "testsuite" "classname" "name"]
-                               (mapcat flat-test-runtimes
-                                       job-names))})))
+      (respond-with-json (zipmap job-names (map testsuites-for job-names)))
+      (respond-with-csv (csv/export-table
+                         ["averageRuntime" "job" "testsuite" "classname" "name"]
+                         (mapcat flat-test-runtimes job-names))))))
 
 ;; app
 
@@ -203,5 +215,5 @@
                            "application/xml" "text/xml" :as :xml
                            "text/plain" :as :plain]})
       (wrap-resource "public")
-      (wrap-content-type)
-      (wrap-not-modified)))
+      wrap-content-type
+      wrap-not-modified))
