@@ -116,17 +116,17 @@
 ;; failures
 
 (defn- failures-for [job]
-  (let [build-data-entries (vals (@builds job))]
-    (merge (if-let [test-results (@test-results job)]
-             (let [test-runs (map testsuites/testsuites-for (vals test-results))]
-               {:children (testsuites/accumulate-testsuite-failures test-runs)})
-             {})
-           (failed-count-for build-data-entries))))
+  (when-let [test-results (@test-results job)]
+    (when-let [failed-tests (seq (testsuites/accumulate-testsuite-failures
+                                  (map testsuites/testsuites-for (vals test-results))))]
+      (let [build-data-entries (vals (@builds job))]
+        {job (merge {:children failed-tests}
+                   (failed-count-for build-data-entries))}))))
 
 (defn- get-failures []
-  (let [job-names (keys @builds)
-        failures (map failures-for job-names)]
-    {:body (zipmap job-names failures)}))
+  (let [jobs (keys @builds)
+        failures (map failures-for jobs)]
+    {:body (into {} (apply merge failures))}))
 
 ;; testsuites
 

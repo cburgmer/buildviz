@@ -41,6 +41,18 @@ function send {
     curl -H "Content-Type: application/json" --data @- -XPUT "http://localhost:3000/builds/${JOB}/${BUILD}"
 }
 
+function passingTestCase {
+    cat <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="Test Suite">
+    <testcase classname="A Class" name="A Test Case" time="0.0042">
+    </testcase>
+  </testsuite>
+</testsuites>
+EOF
+}
+
 function failingTestCase {
     cat <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
@@ -73,9 +85,12 @@ function sendTestResult {
     curl -X PUT -d@- "http://localhost:3000/builds/${JOB}/${BUILD}/testresults"
 }
 
-anyBuild | send "someBuild" 1
-anyBuild | send "someBuild" 2
-anyBuild | send "someBuild" 3
+anyBuild | send "passingBuild" 1
+anyBuild | send "passingBuild" 2
+anyBuild | send "passingBuild" 3
+passingTestCase | sendTestResult "passingBuild" 1
+passingTestCase | sendTestResult "passingBuild" 2
+passingTestCase | sendTestResult "passingBuild" 3
 
 anyBuild | send "anotherBuild" 1
 
@@ -91,4 +106,6 @@ anotherFailingTestCase | sendTestResult "aBrokenBuild" 3
 
 
 aBuild 0 200000 'fail' 'abcd' | send "aFlakyBuild" 1
+failingTestCase | sendTestResult "aFlakyBuild" 1
 aBuild 1000000 1200000 'pass' 'abcd' | send "aFlakyBuild" 2
+passingTestCase | sendTestResult "aFlakyBuild" 2

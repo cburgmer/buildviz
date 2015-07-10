@@ -239,23 +239,23 @@
           resp-data (json/parse-string (:body response))]
       (is (= {} resp-data)))
 
-    ;; GET should return list of failing builds
-    (reset-app!)
-    (a-build "failingBuild" 1, {:outcome "fail"})
-    (a-build "anotherFailingBuild" 1, {:outcome "fail"})
-    (let [response (app (request :get "/failures"))
-          resp-data (json/parse-string (:body response))]
-      (is (= {"anotherFailingBuild" {"failedCount" 1} "failingBuild" {"failedCount" 1}} resp-data)))
-
     ;; GET should include a list of failing test cases
     (reset-app!)
     (a-build "failingBuild" 1, {:outcome "fail"})
     (some-test-results "failingBuild" "1" "<testsuites><testsuite name=\"a suite\"><testcase name=\"a test\"><failure/></testcase></testsuite></testsuites>")
+    (a-build "anotherFailingBuild" 1, {:outcome "fail"})
+    (some-test-results "anotherFailingBuild" "1" "<testsuites><testsuite name=\"another suite\"><testcase name=\"another test\"><failure/></testcase></testsuite></testsuites>")
+    (a-build "failingBuildWithoutTestResults" 1, {:outcome "fail"})
+    (a-build "passingBuild" 1, {:outcome "pass"})
+    (some-test-results "passingBuild" "1" "<testsuites><testsuite name=\"suite\"><testcase name=\"test\"></testcase></testsuite></testsuites>")
     (let [response (app (request :get "/failures"))
           resp-data (json/parse-string (:body response))]
       (is (= {"failingBuild" {"failedCount" 1 "children" [{"name" "a suite"
                                                            "children" [{"name" "a test"
-                                                                        "failedCount" 1}]}]}}
+                                                                        "failedCount" 1}]}]}
+              "anotherFailingBuild" {"failedCount" 1 "children" [{"name" "another suite"
+                                                                  "children" [{"name" "another test"
+                                                                               "failedCount" 1}]}]}}
              resp-data)))
     ))
 
