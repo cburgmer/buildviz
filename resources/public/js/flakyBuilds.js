@@ -1,7 +1,6 @@
 (function (widget) {
     // Roughly following http://bl.ocks.org/mbostock/4063269
-    var diameter = 600,
-        className = "flakyBuilds";
+    var diameter = 600;
 
     var flakyRatio = function (job) {
         var flakyCount = job.flakyCount || 0;
@@ -40,8 +39,7 @@
     };
 
     var svg = widget.create("Flaky Builds","Color: Flaky Ratio, Diameter: Flaky Count")
-            .svg(diameter)
-            .attr("class", className);
+            .svg(diameter);
 
     var bubble = d3.layout.pack()
             .sort(null)

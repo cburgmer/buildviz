@@ -1,7 +1,6 @@
 (function (widget) {
     // Roughly following http://bl.ocks.org/mbostock/4063269
-    var diameter = 600,
-        className = "averageJobBuildTime";
+    var diameter = 600;
 
     var padZero = function (value) {
         if (value < 10) {
@@ -37,8 +36,7 @@
     };
 
     var svg = widget.create("Average Job Build Time","Color: jobGroup, Diameter: avg. Runtime")
-            .svg(diameter)
-            .attr("class", className);
+            .svg(diameter);
 
     var bubble = d3.layout.pack()
             .sort(null)

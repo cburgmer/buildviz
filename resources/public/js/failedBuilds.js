@@ -1,7 +1,6 @@
 (function (widget) {
     // Roughly following http://bl.ocks.org/mbostock/4063269
-    var diameter = 600,
-        className = "failedBuilds";
+    var diameter = 600;
 
     var failRatio = function (job) {
         var failCount = job.failedCount || 0;
@@ -40,8 +39,7 @@
     };
 
     var svg = widget.create("Failed Builds", "Color: Failure Ratio, Diameter: Number of Failures")
-            .svg(diameter)
-            .attr("class", className);
+            .svg(diameter);
 
     var bubble = d3.layout.pack()
             .sort(null)
