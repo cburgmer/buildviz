@@ -1,11 +1,11 @@
 (function (widget, zoomableSunburst) {
     // Following http://bl.ocks.org/metmajer/5480307
-    var diameter = 600,
-        className = "testRuntime";
+    var diameter = 600;
 
-    var svg = widget.create("Avg test runtime", "Color: Job/Test Suite, Arc size: duration")
-            .svg(diameter)
-            .attr("class", className);
+    var svg = widget.create("Avg test runtime",
+                            "Color: Job/Test Suite, Arc size: duration",
+                            "/testsuites.csv")
+            .svg(diameter);
 
     var graph = zoomableSunburst(svg, diameter);
 

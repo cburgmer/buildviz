@@ -35,7 +35,9 @@
             });
     };
 
-    var svg = widget.create("Average Job Build Time","Color: jobGroup, Diameter: avg. Runtime")
+    var svg = widget.create("Average Job Build Time",
+                            "Color: jobGroup, Diameter: avg. Runtime",
+                            "/jobs.csv")
             .svg(diameter);
 
     var bubble = d3.layout.pack()

@@ -21,10 +21,14 @@ var widget = function () {
             .attr("viewBox", "0 0 " + size + " " + size);
     };
 
-    module.create = function (headline,description) {
+    module.create = function (headline, description, csvUrl) {
         var widget = d3.select("body").append("section");
         widget.append("h1")
             .text(headline);
+
+        widget.append("a")
+            .attr("href", csvUrl)
+            .text("CSV");
 
         widget.append("p")
             .text(description);

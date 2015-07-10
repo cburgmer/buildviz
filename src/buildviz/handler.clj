@@ -187,9 +187,13 @@
   (GET "/builds/:job/:build/testresults" [job build :as {accept :accept}] (get-test-results job build accept))
 
   (GET "/jobs" {accept :accept} (get-jobs accept))
+  (GET "/jobs.csv" {} (get-jobs {:mime :csv}))
   (GET "/failphases" {accept :accept} (get-fail-phases accept))
+  (GET "/failphases.csv" {} (get-fail-phases {:mime :csv}))
   (GET "/failures" {accept :accept} (get-failures accept))
-  (GET "/testsuites" {accept :accept} (get-testsuites accept)))
+  (GET "/failures.csv" {} (get-failures {:mime :csv}))
+  (GET "/testsuites" {accept :accept} (get-testsuites accept))
+  (GET "/testsuites.csv" {} (get-testsuites {:mime :csv})))
 
 (defn- wrap-log-request [handler]
   (fn [req]

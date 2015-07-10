@@ -38,7 +38,9 @@
         }
     };
 
-    var svg = widget.create("Flaky Builds","Color: Flaky Ratio, Diameter: Flaky Count")
+    var svg = widget.create("Flaky Builds",
+                            "Color: Flaky Ratio, Diameter: Flaky Count",
+                           "/jobs.csv")
             .svg(diameter);
 
     var bubble = d3.layout.pack()

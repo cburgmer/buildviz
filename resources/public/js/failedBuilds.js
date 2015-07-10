@@ -38,7 +38,9 @@
         }
     };
 
-    var svg = widget.create("Failed Builds", "Color: Failure Ratio, Diameter: Number of Failures")
+    var svg = widget.create("Failed Builds",
+                            "Color: Failure Ratio, Diameter: Number of Failures",
+                            "/jobs.csv")
             .svg(diameter);
 
     var bubble = d3.layout.pack()

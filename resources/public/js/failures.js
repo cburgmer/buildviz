@@ -2,7 +2,9 @@
     // Following http://bl.ocks.org/metmajer/5480307
     var diameter = 600;
 
-    var svg = widget.create("Test failures", "Color: Job/Test Suite, Arc size: Number of Failures")
+    var svg = widget.create("Test failures",
+                            "Color: Job/Test Suite, Arc size: Number of Failures",
+                           "/failures.csv")
             .svg(diameter);
 
     var graph = zoomableSunburst(svg, diameter);
