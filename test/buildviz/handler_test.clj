@@ -293,7 +293,7 @@
     (let [response (app (request :get "/testsuites"))]
       (is (= (:body response)
              (join ["averageRuntime,job,testsuite,classname,name\n"
-                    "10000,aBuild,a suite,a class,\"a,test\"\n"]))))
+                    (format "%.8f,aBuild,a suite,a class,\"a,test\"\n" 0.00011574)]))))
 
     ;; GET should handle nested testsuites in CSV
     (reset-app!)
@@ -303,7 +303,7 @@
                             (header :accept "text/plain")))]
       (is (= (:body response)
              (join ["averageRuntime,job,testsuite,classname,name\n"
-                    "10000,aBuild,a suite: nested suite,a class,\"a,test\"\n"]))))
+                    (format "%.8f,aBuild,a suite: nested suite,a class,\"a,test\"\n" 0.00011574)]))))
 
     ;; GET should not include builds without test cases
     (reset-app!)

@@ -143,7 +143,7 @@
 (defn- flat-test-runtimes [job]
   (->> (testsuites/average-testsuite-runtime-as-list (test-runs job))
        (map (fn [{testsuite :testsuite classname :classname name :name average-runtime :averageRuntime}]
-              [average-runtime
+              [(csv/format-duration average-runtime)
                job
                (serialize-nested-testsuites testsuite)
                classname
