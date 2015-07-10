@@ -131,13 +131,24 @@
   (zipmap (keys unrolled-testcase-map)
           (map #(assoc {} :failedCount %) (vals unrolled-testcase-map))))
 
-(defn accumulate-testsuite-failures [test-runs]
+(defn- accumulate-testsuite-failures-by-testcase [test-runs]
   (->> (mapcat unroll-testcases test-runs)
        failed-testcase-ids
        frequencies
-       build-testcase-data-with-failures
+       build-testcase-data-with-failures))
+
+(defn accumulate-testsuite-failures [test-runs]
+  (->> (accumulate-testsuite-failures-by-testcase test-runs)
        build-suite-hierarchy
        testsuites-map->list))
+
+(defn accumulate-testsuite-failures-as-list [test-runs]
+  (->> (accumulate-testsuite-failures-by-testcase test-runs)
+       (map (fn [[testcase-id {failed-count :failedCount}]]
+              {:testsuite (pop (pop testcase-id))
+               :classname (last (pop testcase-id))
+               :name (last testcase-id)
+               :failedCount failed-count}))))
 
 
 (defn- testcase-runtime [unrolled-testcases]

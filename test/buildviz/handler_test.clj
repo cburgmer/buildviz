@@ -234,12 +234,38 @@
     (let [response (app (request :get "/failures"))]
       (is (= 200 (:status response))))
 
-    ;; GET should return empty map by default
-    (let [response (app (request :get "/failures"))
+    ;; GET should return an empty list in CSV
+    (reset-app!)
+    (let [response (app (request :get "/failures"))]
+      (is (= "failedCount,job,testsuite,classname,name\n"
+             (:body response))))
+
+    ;; GET should include a list of failing test cases
+    (reset-app!)
+    (a-build "failingBuild" 1, {:outcome "fail"})
+    (some-test-results "failingBuild" "1" "<testsuites><testsuite name=\"a suite\"><testcase name=\"a test\" classname=\"a class\"><failure/></testcase></testsuite></testsuites>")
+    (a-build "failingBuild" 2, {:outcome "fail"})
+    (some-test-results "failingBuild" "2" "<testsuites><testsuite name=\"a suite\"><testcase name=\"a test\" classname=\"a class\"><failure/></testcase></testsuite></testsuites>")
+    (a-build "anotherFailingBuild" 1, {:outcome "fail"})
+    (some-test-results "anotherFailingBuild" "1" "<testsuites><testsuite name=\"another suite\"><testsuite name=\"nested suite\"><testcase name=\"another test\" classname=\"some class\"><failure/></testcase></testsuite></testsuite></testsuites>")
+    (a-build "failingBuildWithoutTestResults" 1, {:outcome "fail"})
+    (a-build "passingBuild" 1, {:outcome "pass"})
+    (some-test-results "passingBuild" "1" "<testsuites><testsuite name=\"suite\"><testcase name=\"test\" classname=\"class\"></testcase></testsuite></testsuites>")
+    (let [response (app (request :get "/failures"))]
+      (is (= (join "\n" ["failedCount,job,testsuite,classname,name"
+                         "1,anotherFailingBuild,another suite: nested suite,some class,another test"
+                         "2,failingBuild,a suite,a class,a test"
+                         ""])
+             (:body response))))
+
+    ;; GET should return empty map by default for JSON
+    (reset-app!)
+    (let [response (app (-> (request :get "/failures")
+                            (header :accept "application/json")))
           resp-data (json/parse-string (:body response))]
       (is (= {} resp-data)))
 
-    ;; GET should include a list of failing test cases
+    ;; GET should include a list of failing test cases for JSON
     (reset-app!)
     (a-build "failingBuild" 1, {:outcome "fail"})
     (some-test-results "failingBuild" "1" "<testsuites><testsuite name=\"a suite\"><testcase name=\"a test\"><failure/></testcase></testsuite></testsuites>")
@@ -248,7 +274,8 @@
     (a-build "failingBuildWithoutTestResults" 1, {:outcome "fail"})
     (a-build "passingBuild" 1, {:outcome "pass"})
     (some-test-results "passingBuild" "1" "<testsuites><testsuite name=\"suite\"><testcase name=\"test\"></testcase></testsuite></testsuites>")
-    (let [response (app (request :get "/failures"))
+    (let [response (app (-> (request :get "/failures")
+                            (header :accept "application/json")))
           resp-data (json/parse-string (:body response))]
       (is (= {"failingBuild" {"failedCount" 1 "children" [{"name" "a suite"
                                                            "children" [{"name" "a test"

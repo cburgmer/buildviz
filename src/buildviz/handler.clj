@@ -121,12 +121,29 @@
                                   (map testsuites/testsuites-for (vals test-results))))]
       (let [build-data-entries (vals (@builds job))]
         {job (merge {:children failed-tests}
-                   (failed-count-for build-data-entries))}))))
+                    (failed-count-for build-data-entries))}))))
 
-(defn- get-failures []
-  (let [jobs (keys @builds)
-        failures (map failures-for jobs)]
-    {:body (into {} (apply merge failures))}))
+(defn- serialize-nested-testsuites [testsuite-id]
+  (join ": " testsuite-id))
+
+(defn- failures-as-list [job]
+  (when-let [test-results (@test-results job)]
+    (->> (map testsuites/testsuites-for (vals test-results))
+         (testsuites/accumulate-testsuite-failures-as-list)
+         (map (fn [{testsuite :testsuite classname :classname name :name failed-count :failedCount}]
+                [failed-count
+                 job
+                 (serialize-nested-testsuites testsuite)
+                 classname
+                 name])))))
+
+(defn- get-failures [accept]
+  (let [jobs (keys @builds)]
+    (if (= (:mime accept) :json)
+      (let [failures (map failures-for jobs)]
+        {:body (into {} (apply merge failures))})
+      (csv/export-table ["failedCount" "job" "testsuite" "classname" "name"]
+                        (mapcat failures-as-list jobs)))))
 
 ;; testsuites
 
@@ -136,9 +153,6 @@
 
 (defn- testsuites-for [job]
   {:children (testsuites/average-testsuite-runtime (test-runs job))})
-
-(defn- serialize-nested-testsuites [testsuite-id]
-  (join ": " testsuite-id))
 
 (defn- flat-test-runtimes [job]
   (->> (testsuites/average-testsuite-runtime-as-list (test-runs job))
@@ -172,7 +186,7 @@
 
   (GET "/jobs" {accept :accept} (get-jobs accept))
   (GET "/failphases" {accept :accept} (get-fail-phases accept))
-  (GET "/failures" [] (get-failures))
+  (GET "/failures" {accept :accept} (get-failures accept))
   (GET "/testsuites" {accept :accept} (get-testsuites accept)))
 
 (defn- wrap-log-request [handler]
