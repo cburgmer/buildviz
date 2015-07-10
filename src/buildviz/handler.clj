@@ -6,6 +6,7 @@
         ring.middleware.not-modified
         ring.middleware.accept
         ring.util.response
+        buildviz.util
         [clojure.string :only (join escape)])
   (:require [compojure.handler :as handler]
             [buildviz.csv :as csv]
@@ -25,17 +26,6 @@
   (if (contains? @test-results job)
     (@test-results job)
     {}))
-
-(defn- respond-with-json [content]
-  {:body content})
-
-(defn- respond-with-csv [content]
-  {:body content
-   :headers {"Content-Type" "text/csv;charset=UTF-8"}})
-
-(defn- respond-with-xml [content]
-  {:body content
-   :headers {"Content-Type" "application/xml;charset=UTF-8"}})
 
 (defn- store-build! [job build build-data]
   (let [entry (job-entry job)
