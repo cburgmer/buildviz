@@ -11,6 +11,9 @@
                 margin: 0;
                 font-size: 0;
             }
+            h1 {
+                margin-bottom: 0;
+            }
             h1, a {
                 display: inline-block;
             }
@@ -28,6 +31,26 @@
             svg text {
                 font-size: 0.8rem;
             }
+
+            .failphases .axis path,
+            .failphases .axis line {
+                fill: none;
+                stroke: #000;
+                shape-rendering: crispEdges;
+            }
+
+            .failphases .x.axis text {
+                font-size: 0.6rem;
+            }
+            .failphases .x.axis path {
+                display: none;
+            }
+
+            .failphases .line {
+                fill: none;
+                stroke: red;
+                stroke-width: 1.5px;
+            }
         </style>
     </head>
     <body>
@@ -39,5 +62,6 @@
         <script src="js/flakyBuilds.js"></script>
         <script src="js/failures.js"></script>
         <script src="js/testRuntime.js"></script>
+        <script src="js/failPhases.js"></script>
     </body>
 </html>
