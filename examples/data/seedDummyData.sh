@@ -1,8 +1,10 @@
 #!/bin/bash
 
+TODAY=$(date +%s000)
+TWO_WEEKS_AGO=$[ $TODAY - 2 * 7 * 24 * 60 * 60 * 1000 ]
 
 function anyBuild {
-    START=$[ $RANDOM * 60 * 60 * 1000 / 32767]
+    START=$[ $TODAY - ( $RANDOM * 10000 ) ]
     DURATION=$[ $RANDOM * 60 * 60 * 1000 / 32767]
     END=$[ $START + $DURATION ]
     if [[ $[ $RANDOM % 2 ] -eq 0 ]]; then
@@ -14,8 +16,16 @@ function anyBuild {
     aBuild $START $END $OUTCOME $REVISION
 }
 
+function aPassingBuild {
+    START=$[ $TODAY - ( $RANDOM * 10000 ) ]
+    DURATION=$[ $RANDOM * 60 * 60 * 1000 / 32767]
+    END=$[ $START + $DURATION ]
+    OUTCOME="pass"
+    aBuild $START $END $OUTCOME
+}
+
 function aBrokenBuild {
-    START=$[ $RANDOM * 60 * 60 * 1000 / 32767]
+    START=$[ $TODAY - ( $RANDOM * 100 ) ] # Make broken builds start later
     DURATION=$[ $RANDOM * 60 * 60 * 1000 / 32767]
     END=$[ $START + $DURATION ]
     OUTCOME="fail"
@@ -85,17 +95,20 @@ function sendTestResult {
     curl -X PUT -d@- "http://localhost:3000/builds/${JOB}/${BUILD}/testresults"
 }
 
-anyBuild | send "passingBuild" 1
-anyBuild | send "passingBuild" 2
-anyBuild | send "passingBuild" 3
+aPassingBuild | send "passingBuild" 1
+aPassingBuild | send "passingBuild" 2
+aPassingBuild | send "passingBuild" 3
 passingTestCase | sendTestResult "passingBuild" 1
 passingTestCase | sendTestResult "passingBuild" 2
 passingTestCase | sendTestResult "passingBuild" 3
 
-anyBuild | send "anotherBuild" 1
+for i in $(seq 1 20); do
+    anyBuild | send "anotherBuild" "$i"
+done
 
-anyBuild | send "yetAnotherBuild" 1
-anyBuild | send "yetAnotherBuild" 2
+for i in $(seq 1 20); do
+    anyBuild | send "yetAnotherBuild" "$i"
+done
 
 aBrokenBuild | send "aBrokenBuild" 1
 aBrokenBuild | send "aBrokenBuild" 2
@@ -105,7 +118,7 @@ anotherFailingTestCase | sendTestResult "aBrokenBuild" 2
 anotherFailingTestCase | sendTestResult "aBrokenBuild" 3
 
 
-aBuild 0 200000 'fail' 'abcd' | send "aFlakyBuild" 1
+aBuild $TWO_WEEKS_AGO $[ $TWO_WEEKS_AGO + 200000 ] 'fail' 'abcd' | send "aFlakyBuild" 1
 failingTestCase | sendTestResult "aFlakyBuild" 1
-aBuild 1000000 1200000 'pass' 'abcd' | send "aFlakyBuild" 2
+aBuild $[ $TWO_WEEKS_AGO + 4000000 ] $[ $TWO_WEEKS_AGO + 4800000 ] 'pass' 'abcd' | send "aFlakyBuild" 2
 passingTestCase | sendTestResult "aFlakyBuild" 2
