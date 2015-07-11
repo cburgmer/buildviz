@@ -1,48 +1,34 @@
 #!/bin/bash
 
 TODAY=$(date +%s000)
-TWO_WEEKS_AGO=$[ $TODAY - 2 * 7 * 24 * 60 * 60 * 1000 ]
+A_WEEK_AGO=$(( TODAY - 7 * 24 * 60 * 60 * 1000 ))
 
-function anyBuild {
-    START=$[ $TODAY - ( $RANDOM * 10000 ) ]
-    DURATION=$[ $RANDOM * 60 * 60 * 1000 / 32767]
-    END=$[ $START + $DURATION ]
-    if [[ $[ $RANDOM % 2 ] -eq 0 ]]; then
-        OUTCOME="pass"
-    else
-        OUTCOME="fail"
-    fi
-    REVISION=$[ $RANDOM % 4 ]
-    aBuild $START $END $OUTCOME $REVISION
-}
-
-function aPassingBuild {
-    START=$[ $TODAY - ( $RANDOM * 10000 ) ]
-    DURATION=$[ $RANDOM * 60 * 60 * 1000 / 32767]
-    END=$[ $START + $DURATION ]
-    OUTCOME="pass"
-    aBuild $START $END $OUTCOME
-}
-
-function aBrokenBuild {
-    START=$[ $TODAY - ( $RANDOM * 100 ) ] # Make broken builds start later
-    DURATION=$[ $RANDOM * 60 * 60 * 1000 / 32767]
-    END=$[ $START + $DURATION ]
-    OUTCOME="fail"
-    aBuild $START $END $OUTCOME
-}
 
 function aBuild {
-    START=$1
-    END=$2
-    OUTCOME=$3
-    REVISION=$4
-    SOURCE_ID=42
-    if [[ -z "$REVISION" ]]; then
-        echo '{"start": '$START', "end": '$END', "outcome": "'$OUTCOME'"}'
-    else
-        echo '{"start": '$START', "end": '$END', "outcome": "'$OUTCOME'", "inputs": [{"revision": "'$REVISION'", "source_id": "'$SOURCE_ID'"}]}'
+    OUTCOME=$1
+    if [ -z "$OUTCOME" ]; then
+        if [ $(( RANDOM % 3 )) -eq 0 ]; then
+            OUTCOME="fail"
+        else
+            OUTCOME="pass"
+        fi
     fi
+
+    START=$2
+    if [ -z "$START" ]; then
+        START=$(( TODAY - ( RANDOM * 10000 ) ))
+    fi
+
+    DURATION=$(( RANDOM * 10 ))
+    END=$(( START + DURATION ))
+
+    REVISION=$3
+    if [ -z "$REVISION" ]; then
+        REVISION=$(( RANDOM % 4 ))
+    fi
+
+    SOURCE_ID=42
+    echo '{"start": '$START', "end": '$END', "outcome": "'$OUTCOME'", "inputs": [{"revision": "'$REVISION'", "source_id": "'$SOURCE_ID'"}]}'
 }
 
 function send {
@@ -95,30 +81,27 @@ function sendTestResult {
     curl -X PUT -d@- "http://localhost:3000/builds/${JOB}/${BUILD}/testresults"
 }
 
-aPassingBuild | send "passingBuild" 1
-aPassingBuild | send "passingBuild" 2
-aPassingBuild | send "passingBuild" 3
-passingTestCase | sendTestResult "passingBuild" 1
-passingTestCase | sendTestResult "passingBuild" 2
-passingTestCase | sendTestResult "passingBuild" 3
-
-for i in $(seq 1 20); do
-    anyBuild | send "anotherBuild" "$i"
+for i in $(seq 1 3); do
+    aBuild "pass" | send "passingBuild" "$i"
+    passingTestCase | sendTestResult "passingBuild" "$i"
 done
 
 for i in $(seq 1 20); do
-    anyBuild | send "yetAnotherBuild" "$i"
+    aBuild | send "anotherBuild" "$i"
 done
 
-aBrokenBuild | send "aBrokenBuild" 1
-aBrokenBuild | send "aBrokenBuild" 2
-aBrokenBuild | send "aBrokenBuild" 3
+for i in $(seq 1 15); do
+    aBuild | send "yetAnotherBuild" "$i"
+done
+
+for i in $(seq 1 3); do
+    aBuild "fail" $[ $TODAY - $i * 5000000 ] | send "aBrokenBuild" "$i"
+done
 failingTestCase | sendTestResult "aBrokenBuild" 1
 anotherFailingTestCase | sendTestResult "aBrokenBuild" 2
 anotherFailingTestCase | sendTestResult "aBrokenBuild" 3
 
-
-aBuild $TWO_WEEKS_AGO $[ $TWO_WEEKS_AGO + 200000 ] 'fail' 'abcd' | send "aFlakyBuild" 1
+aBuild 'fail' $A_WEEK_AGO "abcd" | send "aFlakyBuild" 1
 failingTestCase | sendTestResult "aFlakyBuild" 1
-aBuild $[ $TWO_WEEKS_AGO + 4000000 ] $[ $TWO_WEEKS_AGO + 4800000 ] 'pass' 'abcd' | send "aFlakyBuild" 2
+aBuild 'pass' $(( A_WEEK_AGO + 8000000 )) "abcd" | send "aFlakyBuild" 2
 passingTestCase | sendTestResult "aFlakyBuild" 2
