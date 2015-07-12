@@ -212,8 +212,8 @@
     (let [response (app (request :get "/pipelineruntime"))
           resp-data (:body response)]
       (is (= (join "\n" ["date,aBuild,anotherBuild"
-                         "1986-10-14,1501,4000"
-                         "1986-10-15,4000,"
+                         (format "1986-10-14,%.8f,%.8f" 0.00001737 0.00004630)
+                         (format "1986-10-15,%.8f," 0.00004630)
                          ""])
              resp-data)))
     ))

@@ -121,9 +121,14 @@
        (map (fn [[date entries]]
               [date (apply merge (map second entries))]))))
 
+(defn- runtime-table-entry [date runtimes job-names]
+  (->> (map #(get runtimes %) job-names)
+       (map csv/format-duration)
+       (cons date)))
+
 (defn- runtimes-as-table [job-names runtimes]
   (map (fn [[date runtimes-by-day]]
-         (cons date (map #(get runtimes-by-day %) job-names)))
+         (runtime-table-entry date runtimes-by-day job-names))
        runtimes))
 
 (defn- get-pipeline-runtime []
