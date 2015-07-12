@@ -1,4 +1,7 @@
-(ns buildviz.jobinfo)
+(ns buildviz.jobinfo
+  (:require [clj-time.core :as t]
+            [clj-time.format :as tf]
+            [clj-time.coerce :as tc]))
 
 (defn builds-with-outcome [build-data-entries]
   (filter #(contains? % :outcome) build-data-entries))
@@ -35,6 +38,18 @@
 (defn average-runtime [build-data-entries]
   (if-let [runtimes (seq (build-runtime build-data-entries))]
     (avg runtimes)))
+
+
+(def date-only-formatter (tf/formatter "yyyy-MM-dd" (t/default-time-zone)))
+
+(defn- date-for [{end :end}]
+  (tf/unparse date-only-formatter (tc/from-long end)))
+
+(defn average-runtime-by-day [build-data-entries]
+  (->> (group-by date-for build-data-entries)
+       (map (fn [[date builds]] [date (average-runtime builds)]))
+       (filter second)
+       (into {})))
 
 ;; error count
 

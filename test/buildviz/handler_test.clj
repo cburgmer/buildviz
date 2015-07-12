@@ -188,6 +188,35 @@
     ))
 
 (def a-timestamp (tc/to-long (t/from-time-zone (t/date-time 1986 10 14 4 3 27 456) (t/default-time-zone))))
+(def a-day (* 24 60 60 1000))
+
+(deftest PipelineRuntimeSummary
+  (testing "GET to /pipelineruntime"
+    ;; GET should return 200
+    (let [response (app (request :get "/pipelineruntime"))]
+      (is (= 200 (:status response))))
+
+    ;; GET should return empty list by default
+    (reset-app!)
+    (let [response (app (request :get "/pipelineruntime"))
+          resp-data (:body response)]
+      (is (= "date\n" resp-data)))
+
+    ;; GET should return the average runtime for each job as well as total
+    (reset-app!)
+    (a-build "aBuild" 1, {:start a-timestamp :end (+ a-timestamp 1000)})
+    (a-build "aBuild" 2, {:start (+ a-timestamp 2000) :end (+ a-timestamp 4001)})
+    (a-build "aBuild" 3, {:start (+ a-timestamp a-day) :end (+ a-timestamp a-day 4000)})
+    (a-build "anotherBuild" 1, {:start a-timestamp :end (+ a-timestamp 4000)})
+    (a-build "buildWithoutTimestamps" 1, {:outcome "pass"})
+    (let [response (app (request :get "/pipelineruntime"))
+          resp-data (:body response)]
+      (is (= (join "\n" ["date,aBuild,anotherBuild"
+                         "1986-10-14,1501,4000"
+                         "1986-10-15,4000,"
+                         ""])
+             resp-data)))
+    ))
 
 (deftest FailPhases
   (testing "GET to /failphases"

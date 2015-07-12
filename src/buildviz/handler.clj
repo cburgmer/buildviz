@@ -98,6 +98,43 @@
                                                     (:flakyCount job)])
                               buildSummary))))))
 
+;; pipelineruntime
+
+(defn- runtimes-by-day-for [job]
+  (let [build-data-entries (vals (@builds job))]
+    (jobinfo/average-runtime-by-day build-data-entries)))
+
+(defn- runtimes-by-day []
+  (let [job-names (keys @builds)]
+    (->> (map runtimes-by-day-for job-names)
+         (zipmap job-names)
+         (filter #(not-empty (second %))))))
+
+(defn- remap-date-first [[job runtimes-by-day]]
+  (map (fn [[day avg-runtime]]
+              [day {job avg-runtime}])
+            runtimes-by-day))
+
+(defn- merge-runtimes [all-runtimes-by-day]
+  (->> (mapcat remap-date-first all-runtimes-by-day)
+       (group-by first)
+       (map (fn [[date entries]]
+              [date (apply merge (map second entries))]))))
+
+(defn- runtimes-as-table [job-names runtimes]
+  (map (fn [[date runtimes-by-day]]
+         (cons date (map #(get runtimes-by-day %) job-names)))
+       runtimes))
+
+(defn- get-pipeline-runtime []
+  (let [runtimes-by-day (runtimes-by-day)
+        job-names (keys runtimes-by-day)]
+
+    (respond-with-csv (csv/export-table (cons "date" job-names)
+                                        (->> (merge-runtimes runtimes-by-day)
+                                             (runtimes-as-table job-names)
+                                             (sort-by first))))))
+
 ;; fail phases
 
 (defn- all-builds-in-order []
@@ -188,6 +225,7 @@
 
   (GET "/jobs" {accept :accept} (get-jobs accept))
   (GET "/jobs.csv" {} (get-jobs {:mime :csv}))
+  (GET "/pipelineruntime" {} (get-pipeline-runtime))
   (GET "/failphases" {accept :accept} (get-fail-phases accept))
   (GET "/failphases.csv" {} (get-fail-phases {:mime :csv}))
   (GET "/failures" {accept :accept} (get-failures accept))
