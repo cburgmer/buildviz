@@ -41,11 +41,16 @@
     {:status 404}))
 
 (defn- store-test-results! [job build body]
-  (let [content (slurp body)
-        entry (test-results-entry job)
-        updated-entry (assoc entry build content)]
-    (swap! test-results assoc job updated-entry))
-  {:status 204})
+  (let [content (slurp body)]
+    (try
+      (testsuites/testsuites-for content) ; try parse
+
+      (let [entry (test-results-entry job)
+            updated-entry (assoc entry build content)]
+        (swap! test-results assoc job updated-entry)
+        {:status 204})
+      (catch Exception e
+        {:status 400}))))
 
 (defn- get-test-results [job build accept]
   (if-let [job-results (@test-results job)]

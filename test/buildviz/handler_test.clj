@@ -76,24 +76,28 @@
   (testing "PUT to /builds/:job/:build/testresults"
     (is (= 204 (:status (app (-> (request :put "/builds/mybuild/1/testresults")
                                  (body "<testsuites></testsuites>")
+                                 (content-type "application/xml"))))))
+    (is (= 400 (:status (app (-> (request :put "/builds/mybuild/1/testresults")
+                                 (body "not xml")
                                  (content-type "application/xml")))))))
+
   (testing "GET to /builds/:job/:build/testresults"
-    (some-test-results "abuild" "42" "bla bla")
+    (some-test-results "abuild" "42" "<testsuites></testsuites>")
     (let [response (app (request :get "/builds/abuild/42/testresults"))]
       (is (= 200 (:status response))))
 
-    (some-test-results "anotherBuild" "2" "some content")
+    (some-test-results "anotherBuild" "2" "<testsuites></testsuites>")
     (let [response (app (request :get "/builds/anotherBuild/2/testresults"))]
-      (is (= "some content" (:body response))))
+      (is (= "<testsuites></testsuites>" (:body response))))
 
-    (some-test-results "anotherBuild" "2" "some content")
+    (some-test-results "anotherBuild" "2" "<testsuites></testsuites>")
     (let [response (app (request :get "/builds/anotherBuild/2/testresults"))]
       (is (= {"Content-Type" "application/xml;charset=UTF-8"} (:headers response))))
 
     (let [response (app (request :get "/builds/missingJob/1/testresults"))]
       (is (= 404 (:status response))))
 
-    (some-test-results "jobMissingABuild" "1" "something")
+    (some-test-results "jobMissingABuild" "1" "<testsuites></testsuites>")
     (let [response (app (request :get "/builds/jobMissingABuild/2/testresults"))]
       (is (= 404 (:status response))))
 
