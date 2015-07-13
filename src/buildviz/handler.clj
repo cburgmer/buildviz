@@ -7,6 +7,7 @@
         ring.middleware.accept
         ring.util.response
         buildviz.util
+        buildviz.storage
         [clojure.string :only (join escape)])
   (:require [compojure.handler :as handler]
             [buildviz.csv :as csv]
@@ -14,7 +15,9 @@
             [buildviz.pipelineinfo :as pipelineinfo]
             [buildviz.testsuites :as testsuites]))
 
-(def builds (atom {}))
+(def jobs-filename "buildviz_jobs")
+
+(def builds (atom (load-jobs jobs-filename)))
 (def test-results (atom {}))
 
 (defn- job-entry [job]
@@ -31,6 +34,7 @@
   (let [entry (job-entry job)
         updated-entry (assoc entry build build-data)]
     (swap! builds assoc job updated-entry)
+    (store-jobs! @builds jobs-filename)
     (respond-with-json build-data)))
 
 (defn- get-build [job build]
