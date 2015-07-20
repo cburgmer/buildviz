@@ -141,10 +141,10 @@
 
     ;; GET should return job summary
     (reset-app!)
-    (a-build "someBuild" 1, {:start 10 :end 20 :outcome "pass" :inputs {:id 42 :revision "dat_revision"}})
-    (a-build "someBuild" 2, {:start 30 :end 60 :outcome "fail" :inputs {:id 42 :revision "dat_revision"}})
-    (a-build "someBuild" 3, {:start 70 :end 90 :outcome "fail" :inputs {:id 42 :revision "other_revision"}})
-    (a-build "someBuild" 4, {:start 100 :end 120 :outcome "pass" :inputs {:id 42 :revision "yet_another_revision"}})
+    (a-build "someBuild" 1, {:start 10 :end 20 :outcome "pass" :inputs [{:id 42 :revision "dat_revision"}]})
+    (a-build "someBuild" 2, {:start 30 :end 60 :outcome "fail" :inputs [{:id 42 :revision "dat_revision"}]})
+    (a-build "someBuild" 3, {:start 70 :end 90 :outcome "fail" :inputs [{:id 42 :revision "other_revision"}]})
+    (a-build "someBuild" 4, {:start 100 :end 120 :outcome "pass" :inputs [{:id 42 :revision "yet_another_revision"}]})
     (let [response (app (-> (request :get "/jobs")
                             (header :accept "text/plain")))]
       (is (= (:body response)
@@ -200,8 +200,8 @@
 
     ;; GET should return a flaky build count
     (reset-app!)
-    (a-build "flakyBuild" 1, {:outcome "pass" :inputs {:id 42 :revision "dat_revision"}})
-    (a-build "flakyBuild" 2, {:outcome "fail" :inputs {:id 42 :revision "dat_revision"}})
+    (a-build "flakyBuild" 1, {:outcome "pass" :inputs [{:id 42 :revision "dat_revision"}]})
+    (a-build "flakyBuild" 2, {:outcome "fail" :inputs [{:id 42 :revision "dat_revision"}]})
     (let [response (app (-> (request :get "/jobs")
                             (header :accept "application/json")))
           resp-data (json/parse-string (:body response))]

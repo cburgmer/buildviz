@@ -22,7 +22,8 @@
                    :properties {:start {:type "integer"}
                                 :end {:type "integer"}
                                 :outcome {:enum ["pass" "fail"]}
-                                :inputs {:type "object"}}
+                                :inputs {:type "array"
+                                         :items {:type "object"}}}
                    :additionalProperties false})
 
 (def builds (atom (load-jobs jobs-filename)))
