@@ -13,9 +13,17 @@
             [buildviz.csv :as csv]
             [buildviz.jobinfo :as jobinfo]
             [buildviz.pipelineinfo :as pipelineinfo]
-            [buildviz.testsuites :as testsuites]))
+            [buildviz.testsuites :as testsuites]
+            [closchema.core :as schema]))
 
 (def jobs-filename "buildviz_jobs")
+
+(def build-schema {:type "object"
+                   :properties {:start {:type "integer"}
+                                :end {:type "integer"}
+                                :outcome {:enum ["pass" "fail"]}
+                                :inputs {:type "object"}}
+                   :additionalProperties false})
 
 (def builds (atom (load-jobs jobs-filename)))
 (def test-results (atom {}))
@@ -30,12 +38,21 @@
     (@test-results job)
     {}))
 
-(defn- store-build! [job build build-data]
+(defn- build-data-validation-errors [build-data]
+  (schema/report-errors (schema/validate build-schema build-data)))
+
+(defn- do-store-build! [job build build-data]
   (let [entry (job-entry job)
         updated-entry (assoc entry build build-data)]
     (swap! builds assoc job updated-entry)
     (store-jobs! @builds jobs-filename)
     (respond-with-json build-data)))
+
+(defn- store-build! [job build build-data]
+  (if-let [errors (seq (build-data-validation-errors build-data))]
+    {:status 400
+     :body errors}
+    (do-store-build! job build build-data)))
 
 (defn- get-build [job build]
   (if (contains? @builds job)

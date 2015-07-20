@@ -31,8 +31,25 @@
 (deftest Storage
   (testing "PUT to /builds/:job/:build"
     ;; PUT should return 200
-    (let [response (app (request :put "/builds/mybuild/1"))]
+    (let [response (app (-> (request :put
+                                     "/builds/abuild/1")
+                            (body (json/generate-string {}))
+                            (content-type "application/json")))]
       (is (= (:status response) 200)))
+
+    ;; PUT should return 400 for unknown parameters
+    (let [response (app (-> (request :put
+                                     "/builds/abuild/1")
+                            (body (json/generate-string {:unknown "value"}))
+                            (content-type "application/json")))]
+      (is (= (:status response) 400)))
+
+    ;; PUT should return 400 for illegal outcome
+    (let [response (app (-> (request :put
+                                     "/builds/abuild/1")
+                            (body (json/generate-string {:outcome "banana"}))
+                            (content-type "application/json")))]
+      (is (= (:status response) 400)))
 
     ; PUT should return content
     (let [response (app (-> (request :put
