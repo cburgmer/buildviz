@@ -28,12 +28,7 @@ function wait_for_server() {
 # Install Go.cd
 echo "Installing Go.cd..."
 
-mkdir -p "${SCRIPT_DIR}/go"
 cd "${SCRIPT_DIR}/go"
-if [ ! -f "${SCRIPT_DIR}/go/Vagrantfile" ]; then
-    vagrant init gocd/gocd-demo
-fi
-vagrant box update
 vagrant up
 cd -
 

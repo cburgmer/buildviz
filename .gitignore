@@ -8,5 +8,5 @@ pom.xml.asc
 /.lein-*
 /.nrepl-port
 /resources/public/js/node_modules/
-/examples/go/
+/examples/go/.vagrant/
 /buildviz_jobs
