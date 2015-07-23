@@ -10,6 +10,7 @@
         buildviz.storage
         [clojure.string :only (join escape)])
   (:require [compojure.handler :as handler]
+            [clojure.tools.logging :as log]
             [buildviz.csv :as csv]
             [buildviz.jobinfo :as jobinfo]
             [buildviz.pipelineinfo :as pipelineinfo]
@@ -267,12 +268,27 @@
 
 (defn- wrap-log-request [handler]
   (fn [req]
-    (println (:request-method req) (:uri req))
-    (handler req)))
+    (let [resp (handler req)
+          method (.toUpperCase (name (:request-method req)))
+          uri (:uri req)
+          status (:status resp)]
+      (log/info (format "\"%s %s\" %s" method uri status))
+      resp)))
+
+(defn- wrap-log-errors [handler]
+  (fn [req]
+    (let [resp (handler req)
+          status (:status resp)
+          body (:body resp)
+          uri (:uri req)]
+      (when (>= status 400)
+        (log/warn (format "Returned %s for %s: \"%s\"" status uri body)))
+      resp)))
 
 (def app
   (-> app-routes
       wrap-log-request
+      wrap-log-errors
       wrap-json-response
       (wrap-json-body {:keywords? true})
       (wrap-accept {:mime ["application/json" :as :json,
