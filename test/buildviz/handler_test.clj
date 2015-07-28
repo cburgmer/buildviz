@@ -1,11 +1,16 @@
 (ns buildviz.handler-test
   (:use clojure.test
         ring.mock.request
-        buildviz.handler
+        [buildviz.handler :only (create-app test-results)]
         [clojure.string :only (join)])
   (:require [cheshire.core :as json]
             [clj-time.core :as t]
             [clj-time.coerce :as tc]))
+
+
+(def builds (atom {}))
+
+(def app (create-app builds #()))
 
 (defn- reset-app! []
   (reset! builds {})
