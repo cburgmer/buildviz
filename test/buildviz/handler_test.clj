@@ -51,7 +51,7 @@
                             (content-type "application/json")))]
       (is (= (:status response) 400)))
 
-    ; PUT should return content
+    ;; PUT should return content
     (let [response (app (-> (request :put
                                      "/builds/abuild/1")
                             (body (json/generate-string {:start 42 :end 43}))
@@ -123,13 +123,13 @@
                             (header :accept "application/json")))]
       (is (= [{"name" "suite"
                "children" [{"name" "case"
-                           "status" "pass"}]}] (json/parse-string (:body response)))))
-  ))
+                            "status" "pass"}]}] (json/parse-string (:body response)))))
+    ))
 
 
 (deftest JobsSummary
   (testing "GET to /jobs"
-    ; GET should return 200
+    ;; GET should return 200
     (let [response (app (request :get "/jobs"))]
       (is (= (:status response) 200)))
 
@@ -353,7 +353,7 @@
     (reset-app!)
     (a-build "aBuild" 1, {})
     (some-test-results "aBuild" "1" "<testsuites><testsuite name=\"a suite\"><testcase name=\"a test\" time=\"10\"></testcase></testsuite></testsuites>")
-(a-build "aBuild" 2, {})
+    (a-build "aBuild" 2, {})
     (some-test-results "aBuild" "2" "<testsuites><testsuite name=\"a suite\"><testcase name=\"a test\" time=\"30\"></testcase></testsuite></testsuites>")
     (let [response (app (-> (request :get "/testsuites")
                             (header :accept "application/json")))
