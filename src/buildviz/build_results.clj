@@ -22,12 +22,11 @@
     (keys @builds))
 
   (builds [_ job-name]
-    (when (contains? @builds job-name)
-      (vals (get @builds job-name))))
+    (when-some [builds (get @builds job-name)]
+      (vals builds)))
 
   (build [_ job-name build-id]
-    (when-let [job-builds (get @builds job-name)]
-      (get job-builds build-id)))
+    (get-in @builds [job-name build-id]))
 
   (set-build! [_ job-name build-id build-data]
     (swap! builds assoc-in [job-name build-id] build-data)))

@@ -1,6 +1,6 @@
 (ns buildviz.main
-  (:use buildviz.build-results)
-  (:require [buildviz.handler :as handler]
+  (:require [buildviz.build-results :as results]
+            [buildviz.handler :as handler]
             [buildviz.storage :as storage]
             [clojure.tools.logging :as log]))
 
@@ -31,6 +31,6 @@
 
 (def app
   (let [builds (atom (storage/load-jobs jobs-filename))] ; TODO hide atom inside record
-    (-> (handler/create-app (build-results builds) persist-jobs!)
+    (-> (handler/create-app (results/build-results builds) persist-jobs!)
         wrap-log-request
         wrap-log-errors)))
