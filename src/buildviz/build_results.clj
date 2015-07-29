@@ -1,5 +1,14 @@
 (ns buildviz.build-results)
 
+(def build-schema {:type "object"
+                   :properties {:start {:type "integer"}
+                                :end {:type "integer"}
+                                :outcome {:enum ["pass" "fail"]}
+                                :inputs {:type "array"
+                                         :items {:type "object"}}}
+                   :additionalProperties false})
+
+
 (defprotocol BuildResultsProtocol
   (job-names [this])
   (builds    [this job-name])

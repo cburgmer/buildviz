@@ -21,7 +21,7 @@
             [lein-npm "0.6.1"]]
   :npm {:dependencies [[d3 "3.5.5"]]
         :root "resources/public/js"}
-  :ring {:handler buildviz.handler/app
+  :ring {:handler buildviz.main/app
          :nrepl {:start? true
                  :port 9998}}
   :profiles {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]

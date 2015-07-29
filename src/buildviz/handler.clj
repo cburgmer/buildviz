@@ -7,26 +7,17 @@
         ring.middleware.accept
         ring.util.response
         buildviz.util
-        buildviz.storage
         buildviz.build-results
         [compojure.core :only (GET PUT)]
         [clojure.string :only (join escape)])
   (:require [compojure.handler :as handler]
+            [buildviz.storage :as storage]
             [buildviz.csv :as csv]
             [buildviz.jobinfo :as jobinfo]
             [buildviz.pipelineinfo :as pipelineinfo]
             [buildviz.testsuites :as testsuites]
             [closchema.core :as schema]))
 
-(def jobs-filename "buildviz_jobs")
-
-(def build-schema {:type "object"
-                   :properties {:start {:type "integer"}
-                                :end {:type "integer"}
-                                :outcome {:enum ["pass" "fail"]}
-                                :inputs {:type "array"
-                                         :items {:type "object"}}}
-                   :additionalProperties false})
 
 (def test-results (atom {}))
 
@@ -41,7 +32,7 @@
 
 (defn- do-store-build! [build-results job-name build-id build-data persist-jobs!]
   (set-build! build-results job-name build-id build-data)
-  (persist-jobs! @(:builds build-results) jobs-filename)
+  (persist-jobs! @(:builds build-results))
   (respond-with-json build-data))
 
 (defn- store-build! [build-results job build build-data persist-jobs!]
@@ -266,7 +257,3 @@
       (wrap-resource "public")
       wrap-content-type
       wrap-not-modified))
-
-(def app
-  (let [builds (atom (load-jobs jobs-filename))] ; TODO hide atom inside record
-    (create-app (build-results builds) store-jobs!)))

@@ -2,22 +2,22 @@
   (:use clojure.test
         ring.mock.request
         [buildviz.build-results :only (build-results)]
-        [buildviz.handler :only (create-app test-results)]
         [clojure.string :only (join)])
   (:require [cheshire.core :as json]
             [clj-time.core :as t]
-            [clj-time.coerce :as tc]))
+            [clj-time.coerce :as tc]
+            [buildviz.handler :as handler]))
 
 
 (def builds (atom {}))
 
-(defn dummy-persist [_ _])
+(defn dummy-persist [_])
 
-(def app (create-app (build-results builds) dummy-persist))
+(def app (handler/create-app (build-results builds) dummy-persist))
 
 (defn- reset-app! []
   (reset! builds {})
-  (reset! test-results {}))
+  (reset! handler/test-results {}))
 
 (defn each-fixture [f]
   (reset-app!)

@@ -1,6 +1,11 @@
 (ns buildviz.main
+  (:use buildviz.build-results)
   (:require [buildviz.handler :as handler]
+            [buildviz.storage :as storage]
             [clojure.tools.logging :as log]))
+
+(def jobs-filename "buildviz_jobs")
+
 
 (defn- wrap-log-request [handler]
   (fn [req]
@@ -21,7 +26,11 @@
         (log/warn (format "Returned %s for %s: \"%s\"" status uri body)))
       resp)))
 
+(defn- persist-jobs! [build-data]
+  (storage/store-jobs! build-data jobs-filename))
+
 (def app
-  (-> handler/app
-      wrap-log-request
-      wrap-log-errors))
+  (let [builds (atom (storage/load-jobs jobs-filename))] ; TODO hide atom inside record
+    (-> (handler/create-app (build-results builds) persist-jobs!)
+        wrap-log-request
+        wrap-log-errors)))
