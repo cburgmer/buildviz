@@ -8,6 +8,7 @@
         ring.util.response
         buildviz.util
         buildviz.storage
+        buildviz.build-results
         [compojure.core :only (GET PUT)]
         [clojure.string :only (join escape)])
   (:require [compojure.handler :as handler]
@@ -29,10 +30,6 @@
 
 (def test-results (atom {}))
 
-(defn- job-entry [job builds]
-  (if (contains? @builds job)
-    (@builds job)
-    {}))
 
 (defn- test-results-entry [job]
   (if (contains? @test-results job)
@@ -42,24 +39,20 @@
 (defn- build-data-validation-errors [build-data]
   (schema/report-errors (schema/validate build-schema build-data)))
 
-(defn- do-store-build! [builds job build build-data persist-jobs!]
-  (let [entry (job-entry job builds)
-        updated-entry (assoc entry build build-data)]
-    (swap! builds assoc job updated-entry)
-    (persist-jobs! @builds jobs-filename)
-    (respond-with-json build-data)))
+(defn- do-store-build! [build-results job-name build-id build-data persist-jobs!]
+  (set-build! build-results job-name build-id build-data)
+  (persist-jobs! @(:builds build-results) jobs-filename)
+  (respond-with-json build-data))
 
-(defn- store-build! [builds job build build-data persist-jobs!]
+(defn- store-build! [build-results job build build-data persist-jobs!]
   (if-let [errors (seq (build-data-validation-errors build-data))]
     {:status 400
      :body errors}
-    (do-store-build! builds job build build-data persist-jobs!)))
+    (do-store-build! build-results job build build-data persist-jobs!)))
 
-(defn- get-build [builds job build]
-  (if (contains? @builds job)
-    (if-let [build-data ((@builds job) build)]
-      (respond-with-json build-data)
-      {:status 404})
+(defn- get-build [build-results job-name build-id]
+  (if-let [build-data (build build-results job-name build-id)]
+    (respond-with-json build-data)
     {:status 404}))
 
 (defn- store-test-results! [job build body]
@@ -103,19 +96,19 @@
   (if-let [builds (seq (jobinfo/builds-with-outcome build-data-entries))]
     {:flakyCount (jobinfo/flaky-build-count builds)}))
 
-(defn- summary-for [builds job]
-  (let [build-data-entries (vals (@builds job))]
+(defn- summary-for [build-results job-name]
+  (let [build-data-entries (builds build-results job-name)]
     (merge (average-runtime-for build-data-entries)
            (total-count-for build-data-entries)
            (failed-count-for build-data-entries)
            (flaky-count-for build-data-entries))))
 
-(defn- get-jobs [builds accept]
-  (let [jobNames (keys @builds)
-        buildSummaries (map #(summary-for builds %) jobNames)
-        buildSummary (zipmap jobNames buildSummaries)]
+(defn- get-jobs [build-results accept]
+  (let [job-names (job-names build-results)
+        build-summaries (map #(summary-for build-results %) job-names)
+        build-summary (zipmap job-names build-summaries)]
     (if (= (:mime accept) :json)
-      (respond-with-json buildSummary)
+      (respond-with-json build-summary)
       (respond-with-csv
        (csv/export-table ["job" "averageRuntime" "totalCount" "failedCount" "flakyCount"]
                          (map (fn [[job-name job]] [job-name
@@ -123,17 +116,14 @@
                                                     (:totalCount job)
                                                     (:failedCount job)
                                                     (:flakyCount job)])
-                              buildSummary))))))
+                              build-summary))))))
 
 ;; pipelineruntime
 
-(defn- runtimes-by-day-for [builds job]
-  (let [build-data-entries (vals (@builds job))]
-    (jobinfo/average-runtime-by-day build-data-entries)))
-
-(defn- runtimes-by-day [builds]
-  (let [job-names (keys @builds)]
-    (->> (map #(runtimes-by-day-for builds %) job-names)
+(defn- runtimes-by-day [build-results]
+  (let [job-names (job-names build-results)]
+    (->> (map #(jobinfo/average-runtime-by-day (builds build-results %))
+              job-names)
          (zipmap job-names)
          (filter #(not-empty (second %))))))
 
@@ -158,8 +148,8 @@
          (runtime-table-entry date runtimes-by-day job-names))
        runtimes))
 
-(defn- get-pipeline-runtime [builds]
-  (let [runtimes-by-day (runtimes-by-day builds)
+(defn- get-pipeline-runtime [build-results]
+  (let [runtimes-by-day (runtimes-by-day build-results)
         job-names (keys runtimes-by-day)]
 
     (respond-with-csv (csv/export-table (cons "date" job-names)
@@ -169,13 +159,13 @@
 
 ;; fail phases
 
-(defn- all-builds-in-order [builds]
+(defn- all-builds-in-order [build-results]
   (mapcat (fn [[job builds]]
             (map #(assoc % :job job) (vals builds)))
-          @builds))
+          @(:builds build-results)))
 
-(defn- get-fail-phases [builds accept]
-  (let [annotated-builds-in-order (sort-by :end (all-builds-in-order builds))
+(defn- get-fail-phases [build-results accept]
+  (let [annotated-builds-in-order (sort-by :end (all-builds-in-order build-results))
         fail-phases (pipelineinfo/pipeline-fail-phases annotated-builds-in-order)]
     (if (= (:mime accept) :json)
       (respond-with-json fail-phases)
@@ -189,12 +179,12 @@
 
 ;; failures
 
-(defn- failures-for [builds job]
-  (when-let [test-results (@test-results job)]
+(defn- failures-for [build-results job-name]
+  (when-let [test-results (@test-results job-name)]
     (when-let [failed-tests (seq (testsuites/accumulate-testsuite-failures
                                   (map testsuites/testsuites-for (vals test-results))))]
-      (let [build-data-entries (vals (@builds job))]
-        {job (merge {:children failed-tests}
+      (let [build-data-entries (builds build-results job-name)]
+        {job-name (merge {:children failed-tests}
                     (failed-count-for build-data-entries))}))))
 
 (defn- failures-as-list [job]
@@ -208,10 +198,10 @@
                  classname
                  name])))))
 
-(defn- get-failures [builds accept]
-  (let [jobs (keys @builds)]
+(defn- get-failures [build-results accept]
+  (let [jobs (job-names build-results)]
     (if (= (:mime accept) :json)
-      (let [failures (map #(failures-for builds %) jobs)]
+      (let [failures (map #(failures-for build-results %) jobs)]
         (respond-with-json (into {} (apply merge failures))))
       (respond-with-csv (csv/export-table ["failedCount" "job" "testsuite" "classname" "name"]
                                           (mapcat failures-as-list jobs))))))
@@ -237,8 +227,8 @@
 (defn- has-testsuites? [job]
   (some? (@test-results job)))
 
-(defn- get-testsuites [builds accept]
-  (let [job-names (filter has-testsuites? (keys @builds))]
+(defn- get-testsuites [build-results accept]
+  (let [job-names (filter has-testsuites? (job-names build-results))]
     (if (= (:mime accept) :json)
       (respond-with-json (zipmap job-names (map testsuites-for job-names)))
       (respond-with-csv (csv/export-table
@@ -247,27 +237,27 @@
 
 ;; app
 
-(defn- app-routes [builds persist-jobs!]
+(defn- app-routes [build-results persist-jobs!]
   (compojure.core/routes
    (GET "/" [] (redirect "/index.html"))
 
-   (PUT "/builds/:job/:build" [job build :as {body :body}] (store-build! builds job build body persist-jobs!))
-   (GET "/builds/:job/:build" [job build] (get-build builds job build))
+   (PUT "/builds/:job/:build" [job build :as {body :body}] (store-build! build-results job build body persist-jobs!))
+   (GET "/builds/:job/:build" [job build] (get-build build-results job build))
    (PUT "/builds/:job/:build/testresults" [job build :as {body :body}] (store-test-results! job build body))
    (GET "/builds/:job/:build/testresults" [job build :as {accept :accept}] (get-test-results job build accept))
 
-   (GET "/jobs" {accept :accept} (get-jobs builds accept))
-   (GET "/jobs.csv" {} (get-jobs builds {:mime :csv}))
-   (GET "/pipelineruntime" {} (get-pipeline-runtime builds))
-   (GET "/failphases" {accept :accept} (get-fail-phases builds accept))
-   (GET "/failphases.csv" {} (get-fail-phases builds {:mime :csv}))
-   (GET "/failures" {accept :accept} (get-failures builds accept))
-   (GET "/failures.csv" {} (get-failures builds {:mime :csv}))
-   (GET "/testsuites" {accept :accept} (get-testsuites builds accept))
-   (GET "/testsuites.csv" {} (get-testsuites builds {:mime :csv}))))
+   (GET "/jobs" {accept :accept} (get-jobs build-results accept))
+   (GET "/jobs.csv" {} (get-jobs build-results {:mime :csv}))
+   (GET "/pipelineruntime" {} (get-pipeline-runtime build-results))
+   (GET "/failphases" {accept :accept} (get-fail-phases build-results accept))
+   (GET "/failphases.csv" {} (get-fail-phases build-results {:mime :csv}))
+   (GET "/failures" {accept :accept} (get-failures build-results accept))
+   (GET "/failures.csv" {} (get-failures build-results {:mime :csv}))
+   (GET "/testsuites" {accept :accept} (get-testsuites build-results accept))
+   (GET "/testsuites.csv" {} (get-testsuites build-results {:mime :csv}))))
 
-(defn create-app [builds persist-jobs!]
-  (-> (app-routes builds store-jobs!)
+(defn create-app [build-results persist-jobs!]
+  (-> (app-routes build-results persist-jobs!)
       wrap-json-response
       (wrap-json-body {:keywords? true})
       (wrap-accept {:mime ["application/json" :as :json,
@@ -278,5 +268,5 @@
       wrap-not-modified))
 
 (def app
-  (let [builds (atom (load-jobs jobs-filename))]
-    (create-app builds store-jobs!)))
+  (let [builds (atom (load-jobs jobs-filename))] ; TODO hide atom inside record
+    (create-app (build-results builds) store-jobs!)))

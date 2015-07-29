@@ -1,6 +1,7 @@
 (ns buildviz.handler-test
   (:use clojure.test
         ring.mock.request
+        [buildviz.build-results :only (build-results)]
         [buildviz.handler :only (create-app test-results)]
         [clojure.string :only (join)])
   (:require [cheshire.core :as json]
@@ -10,7 +11,9 @@
 
 (def builds (atom {}))
 
-(def app (create-app builds #()))
+(defn dummy-persist [_ _])
+
+(def app (create-app (build-results builds) dummy-persist))
 
 (defn- reset-app! []
   (reset! builds {})
