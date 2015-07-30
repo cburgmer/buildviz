@@ -14,7 +14,7 @@
 
 (defn dummy-persist [_])
 
-(def app (handler/create-app (build-results builds tests) dummy-persist))
+(def app (handler/create-app (build-results builds tests) dummy-persist dummy-persist))
 
 (defn- reset-app! []
   (reset! builds {})

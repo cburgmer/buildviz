@@ -5,6 +5,7 @@
             [clojure.tools.logging :as log]))
 
 (def jobs-filename "buildviz_jobs")
+(def tests-filename "buildviz_tests")
 
 
 (defn- wrap-log-request [handler]
@@ -29,8 +30,12 @@
 (defn- persist-jobs! [build-data]
   (storage/store-jobs! build-data jobs-filename))
 
+(defn- persist-tests! [tests-data]
+  (storage/store-jobs! tests-data tests-filename))
+
 (def app
-  (let [builds (atom (storage/load-jobs jobs-filename))] ; TODO hide atom inside record
-    (-> (handler/create-app (results/build-results builds (atom {})) persist-jobs!)
+  (let [builds (atom (storage/load-jobs jobs-filename))
+        tests (atom (storage/load-jobs tests-filename))] ; TODO hide atom inside record
+    (-> (handler/create-app (results/build-results builds tests) persist-jobs! persist-tests!)
         wrap-log-request
         wrap-log-errors)))

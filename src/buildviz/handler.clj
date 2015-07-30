@@ -22,27 +22,28 @@
 (defn- build-data-validation-errors [build-data]
   (schema/report-errors (schema/validate results/build-schema build-data)))
 
-(defn- do-store-build! [build-results job-name build-id build-data persist-jobs!]
+(defn- do-store-build! [build-results job-name build-id build-data persist!]
   (results/set-build! build-results job-name build-id build-data)
-  (persist-jobs! @(:builds build-results))
+  (persist! @(:builds build-results))
   (respond-with-json build-data))
 
-(defn- store-build! [build-results job-name build-id build-data persist-jobs!]
+(defn- store-build! [build-results job-name build-id build-data persist!]
   (if-some [errors (seq (build-data-validation-errors build-data))]
     {:status 400
      :body errors}
-    (do-store-build! build-results job-name build-id build-data persist-jobs!)))
+    (do-store-build! build-results job-name build-id build-data persist!)))
 
 (defn- get-build [build-results job-name build-id]
   (if-some [build-data (results/build build-results job-name build-id)]
     (respond-with-json build-data)
     {:status 404}))
 
-(defn- store-test-results! [build-results job-name build-id body]
+(defn- store-test-results! [build-results job-name build-id body persist!]
   (let [content (slurp body)]
     (try
       (testsuites/testsuites-for content) ; try parse
       (results/set-tests! build-results job-name build-id content)
+      (persist! @(:tests build-results))
       {:status 204}
       (catch Exception e
         {:status 400}))))
@@ -212,13 +213,13 @@
 
 ;; app
 
-(defn- app-routes [build-results persist-jobs!]
+(defn- app-routes [build-results persist-jobs! persist-tests!]
   (compojure.core/routes
    (GET "/" [] (redirect "/index.html"))
 
    (PUT "/builds/:job/:build" [job build :as {body :body}] (store-build! build-results job build body persist-jobs!))
    (GET "/builds/:job/:build" [job build] (get-build build-results job build))
-   (PUT "/builds/:job/:build/testresults" [job build :as {body :body}] (store-test-results! build-results job build body))
+   (PUT "/builds/:job/:build/testresults" [job build :as {body :body}] (store-test-results! build-results job build body persist-tests!))
    (GET "/builds/:job/:build/testresults" [job build :as {accept :accept}] (get-test-results build-results job build accept))
 
    (GET "/jobs" {accept :accept} (get-jobs build-results accept))
@@ -231,8 +232,8 @@
    (GET "/testsuites" {accept :accept} (get-testsuites build-results accept))
    (GET "/testsuites.csv" {} (get-testsuites build-results {:mime :csv}))))
 
-(defn create-app [build-results persist-jobs!]
-  (-> (app-routes build-results persist-jobs!)
+(defn create-app [build-results persist-jobs! persist-tests!]
+  (-> (app-routes build-results persist-jobs! persist-tests!)
       wrap-json-response
       (wrap-json-body {:keywords? true})
       (wrap-accept {:mime ["application/json" :as :json,
