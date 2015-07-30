@@ -10,14 +10,15 @@
 
 
 (def builds (atom {}))
+(def tests (atom {}))
 
 (defn dummy-persist [_])
 
-(def app (handler/create-app (build-results builds) dummy-persist))
+(def app (handler/create-app (build-results builds tests) dummy-persist))
 
 (defn- reset-app! []
   (reset! builds {})
-  (reset! handler/test-results {}))
+  (reset! tests {}))
 
 (defn each-fixture [f]
   (reset-app!)

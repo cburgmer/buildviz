@@ -31,6 +31,6 @@
 
 (def app
   (let [builds (atom (storage/load-jobs jobs-filename))] ; TODO hide atom inside record
-    (-> (handler/create-app (results/build-results builds) persist-jobs!)
+    (-> (handler/create-app (results/build-results builds (atom {})) persist-jobs!)
         wrap-log-request
         wrap-log-errors)))

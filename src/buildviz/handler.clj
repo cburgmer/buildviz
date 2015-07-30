@@ -19,9 +19,6 @@
             [closchema.core :as schema]))
 
 
-(def test-results (atom {}))
-
-
 (defn- build-data-validation-errors [build-data]
   (schema/report-errors (schema/validate results/build-schema build-data)))
 
@@ -41,17 +38,17 @@
     (respond-with-json build-data)
     {:status 404}))
 
-(defn- store-test-results! [job-name build-id body]
+(defn- store-test-results! [build-results job-name build-id body]
   (let [content (slurp body)]
     (try
       (testsuites/testsuites-for content) ; try parse
-      (swap! test-results assoc-in [job-name build-id] content)
+      (results/set-tests! build-results job-name build-id content)
       {:status 204}
       (catch Exception e
         {:status 400}))))
 
-(defn- get-test-results [job build accept]
-  (if-some [content (get-in @test-results [job build])]
+(defn- get-test-results [build-results job-name build-id accept]
+  (if-some [content (results/tests build-results job-name build-id)]
     (if (= (:mime accept) :json)
       (respond-with-json (testsuites/testsuites-for content))
       (respond-with-xml content))
@@ -161,20 +158,20 @@
 ;; failures
 
 (defn- failures-for [build-results job-name]
-  (when-some [test-results (@test-results job-name)]
+  (when-some [test-results (results/chronological-tests build-results job-name)]
     (when-some [failed-tests (seq (testsuites/accumulate-testsuite-failures
-                                  (map testsuites/testsuites-for (vals test-results))))]
+                                  (map testsuites/testsuites-for test-results)))]
       (let [build-data-entries (results/builds build-results job-name)]
         {job-name (merge {:children failed-tests}
                     (failed-count-for build-data-entries))}))))
 
-(defn- failures-as-list [job]
-  (when-some [test-results (@test-results job)]
-    (->> (map testsuites/testsuites-for (vals test-results))
+(defn- failures-as-list [build-results job-name]
+  (when-some [test-results (results/chronological-tests build-results job-name)]
+    (->> (map testsuites/testsuites-for test-results)
          (testsuites/accumulate-testsuite-failures-as-list)
          (map (fn [{testsuite :testsuite classname :classname name :name failed-count :failedCount}]
                 [failed-count
-                 job
+                 job-name
                  (serialize-nested-testsuites testsuite)
                  classname
                  name])))))
@@ -185,19 +182,19 @@
       (let [failures (map #(failures-for build-results %) job-names)]
         (respond-with-json (into {} (apply merge failures))))
       (respond-with-csv (csv/export-table ["failedCount" "job" "testsuite" "classname" "name"]
-                                          (mapcat failures-as-list job-names))))))
+                                          (mapcat #(failures-as-list build-results %) job-names))))))
 
 ;; testsuites
 
-(defn- test-runs [job-name]
-  (let [test-results (@test-results job-name)]
-    (map testsuites/testsuites-for (vals test-results))))
+(defn- test-runs [build-results job-name]
+  (let [test-results (results/chronological-tests build-results job-name)]
+    (map testsuites/testsuites-for test-results)))
 
-(defn- testsuites-for [job-name]
-  {:children (testsuites/average-testsuite-runtime (test-runs job-name))})
+(defn- testsuites-for [build-results job-name]
+  {:children (testsuites/average-testsuite-runtime (test-runs build-results job-name))})
 
-(defn- flat-test-runtimes [job-name]
-  (->> (testsuites/average-testsuite-runtime-as-list (test-runs job-name))
+(defn- flat-test-runtimes [build-results job-name]
+  (->> (testsuites/average-testsuite-runtime-as-list (test-runs build-results job-name))
        (map (fn [{testsuite :testsuite classname :classname name :name average-runtime :averageRuntime}]
               [(csv/format-duration average-runtime)
                job-name
@@ -205,16 +202,13 @@
                classname
                name]))))
 
-(defn- has-testsuites? [job-name]
-  (some? (@test-results job-name)))
-
 (defn- get-testsuites [build-results accept]
-  (let [job-names (filter has-testsuites? (results/job-names build-results))]
+  (let [job-names (filter #(results/has-tests? build-results %) (results/job-names build-results))]
     (if (= (:mime accept) :json)
-      (respond-with-json (zipmap job-names (map testsuites-for job-names)))
+      (respond-with-json (zipmap job-names (map #(testsuites-for build-results %) job-names)))
       (respond-with-csv (csv/export-table
                          ["averageRuntime" "job" "testsuite" "classname" "name"]
-                         (mapcat flat-test-runtimes job-names))))))
+                         (mapcat #(flat-test-runtimes build-results %) job-names))))))
 
 ;; app
 
@@ -224,8 +218,8 @@
 
    (PUT "/builds/:job/:build" [job build :as {body :body}] (store-build! build-results job build body persist-jobs!))
    (GET "/builds/:job/:build" [job build] (get-build build-results job build))
-   (PUT "/builds/:job/:build/testresults" [job build :as {body :body}] (store-test-results! job build body))
-   (GET "/builds/:job/:build/testresults" [job build :as {accept :accept}] (get-test-results job build accept))
+   (PUT "/builds/:job/:build/testresults" [job build :as {body :body}] (store-test-results! build-results job build body))
+   (GET "/builds/:job/:build/testresults" [job build :as {accept :accept}] (get-test-results build-results job build accept))
 
    (GET "/jobs" {accept :accept} (get-jobs build-results accept))
    (GET "/jobs.csv" {} (get-jobs build-results {:mime :csv}))
