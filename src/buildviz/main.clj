@@ -23,7 +23,7 @@
           status (:status resp)
           body (:body resp)
           uri (:uri req)]
-      (when (>= status 400)
+      (when (and (some? status) (>= status 400))
         (log/warn (format "Returned %s for %s: \"%s\"" status uri body)))
       resp)))
 
