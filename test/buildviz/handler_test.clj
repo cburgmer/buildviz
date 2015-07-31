@@ -12,11 +12,9 @@
 (defn dummy-persist [_])
 
 (defn the-app []
-  (let [builds (atom {})
-        tests (atom {})]
-    (handler/create-app (build-results builds tests)
-                        dummy-persist
-                        dummy-persist)))
+  (handler/create-app (build-results {} {})
+                      dummy-persist
+                      dummy-persist))
 
 ;; helpers
 

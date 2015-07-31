@@ -51,4 +51,4 @@
 
 
 (defn build-results [builds tests]
-  (BuildResults. builds tests))
+  (BuildResults. (atom builds) (atom tests)))
