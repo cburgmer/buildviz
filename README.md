@@ -9,7 +9,7 @@ Transparency for your build pipeline's results and runtime.
 buildviz looks from different angles at a build pipeline. So far it does only know about
 
 * **jobs**, a job is part of the pipeline and executes some meaningful action,
-* **builds**, a build is an instance of the job being triggered, it has a **start** and **end time**, an **outcome** and possibly one or more **inputs** with a given **revision**,
+* **builds**, a build is an instance of the job being triggered, it has a unique **id**, a **start** and **end time**, an **outcome** and possibly one or more **inputs** with a given **revision**,
 * **test results**, a list of tests with **runtime** and **outcome**.
 
 ## Example
