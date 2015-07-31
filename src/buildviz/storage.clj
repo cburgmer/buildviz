@@ -1,10 +1,12 @@
 (ns buildviz.storage
   (:require [clojure.java.io :as io]
-            [taoensso.nippy :as nippy]))
+            [taoensso.nippy :as nippy]
+            [clojure.tools.logging :as log]))
 
 (import '[java.io DataInputStream DataOutputStream])
 
 (defn store-jobs! [jobs filename]
+  (log/info (format "Persisting to %s" filename))
   (with-open [w (io/output-stream filename)]
     (nippy/freeze-to-out! (DataOutputStream. w) jobs)))
 
