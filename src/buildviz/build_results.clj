@@ -1,4 +1,5 @@
-(ns buildviz.build-results)
+(ns buildviz.build-results
+  (:require [closchema.core :as schema]))
 
 (def build-schema {:type "object"
                    :properties {:start {:type "integer"}
@@ -7,6 +8,9 @@
                                 :inputs {:type "array"
                                          :items {:type "object"}}}
                    :additionalProperties false})
+
+(defn build-data-validation-errors [build-data]
+  (schema/report-errors (schema/validate build-schema build-data)))
 
 
 (defprotocol BuildResultsProtocol

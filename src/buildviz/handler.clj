@@ -20,19 +20,13 @@
             [closchema.core :as schema]))
 
 
-(defn- build-data-validation-errors [build-data]
-  (schema/report-errors (schema/validate results/build-schema build-data)))
-
-(defn- do-store-build! [build-results job-name build-id build-data persist!]
-  (results/set-build! build-results job-name build-id build-data)
-  (persist! @(:builds build-results))
-  (http/respond-with-json build-data))
-
 (defn- store-build! [build-results job-name build-id build-data persist!]
-  (if-some [errors (seq (build-data-validation-errors build-data))]
+  (if-some [errors (seq (results/build-data-validation-errors build-data))]
     {:status 400
      :body errors}
-    (do-store-build! build-results job-name build-id build-data persist!)))
+    (do (results/set-build! build-results job-name build-id build-data)
+        (persist! @(:builds build-results))
+        (http/respond-with-json build-data))))
 
 (defn- get-build [build-results job-name build-id]
   (if-some [build-data (results/build build-results job-name build-id)]
@@ -140,13 +134,13 @@
 ;; fail phases
 
 (defn- all-builds-in-order [build-results]
-  (mapcat (fn [[job builds]]
-            (map #(assoc % :job job) (vals builds)))
-          @(:builds build-results)))
+  (sort-by :end
+           (mapcat (fn [[job builds]]
+                     (map #(assoc % :job job) (vals builds)))
+                   @(:builds build-results))))
 
 (defn- get-fail-phases [build-results accept]
-  (let [annotated-builds-in-order (sort-by :end (all-builds-in-order build-results))
-        fail-phases (pipelineinfo/pipeline-fail-phases annotated-builds-in-order)]
+  (let [fail-phases (pipelineinfo/pipeline-fail-phases (all-builds-in-order build-results))]
     (if (= (:mime accept) :json)
       (http/respond-with-json fail-phases)
       (http/respond-with-csv
