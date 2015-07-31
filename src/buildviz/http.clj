@@ -1,6 +1,19 @@
 (ns buildviz.http
   (:require [clojure.tools.logging :as log]))
 
+
+(defn respond-with-json [content]
+  {:body content})
+
+(defn respond-with-csv [content]
+  {:body content
+   :headers {"Content-Type" "text/csv;charset=UTF-8"}})
+
+(defn respond-with-xml [content]
+  {:body content
+   :headers {"Content-Type" "application/xml;charset=UTF-8"}})
+
+
 (defn wrap-log-request [handler]
   (fn [req]
     (let [resp (handler req)

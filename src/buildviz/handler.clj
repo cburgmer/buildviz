@@ -6,11 +6,11 @@
         ring.middleware.not-modified
         ring.middleware.accept
         ring.util.response
-        buildviz.util
         [compojure.core :only (GET PUT)]
         [clojure.string :only (join escape)])
   (:require [compojure.handler :as handler]
             [buildviz.build-results :as results]
+            [buildviz.http :as http]
             [buildviz.storage :as storage]
             [buildviz.junit-xml :as junit-xml]
             [buildviz.csv :as csv]
@@ -26,7 +26,7 @@
 (defn- do-store-build! [build-results job-name build-id build-data persist!]
   (results/set-build! build-results job-name build-id build-data)
   (persist! @(:builds build-results))
-  (respond-with-json build-data))
+  (http/respond-with-json build-data))
 
 (defn- store-build! [build-results job-name build-id build-data persist!]
   (if-some [errors (seq (build-data-validation-errors build-data))]
@@ -36,7 +36,7 @@
 
 (defn- get-build [build-results job-name build-id]
   (if-some [build-data (results/build build-results job-name build-id)]
-    (respond-with-json build-data)
+    (http/respond-with-json build-data)
     {:status 404}))
 
 (defn- store-test-results! [build-results job-name build-id body persist!]
@@ -52,8 +52,8 @@
 (defn- get-test-results [build-results job-name build-id accept]
   (if-some [content (results/tests build-results job-name build-id)]
     (if (= (:mime accept) :json)
-      (respond-with-json (junit-xml/parse-testsuites content))
-      (respond-with-xml content))
+      (http/respond-with-json (junit-xml/parse-testsuites content))
+      (http/respond-with-xml content))
     {:status 404}))
 
 (defn- serialize-nested-testsuites [testsuite-id]
@@ -88,8 +88,8 @@
         build-summaries (map #(summary-for build-results %) job-names)
         build-summary (zipmap job-names build-summaries)]
     (if (= (:mime accept) :json)
-      (respond-with-json build-summary)
-      (respond-with-csv
+      (http/respond-with-json build-summary)
+      (http/respond-with-csv
        (csv/export-table ["job" "averageRuntime" "totalCount" "failedCount" "flakyCount"]
                          (map (fn [[job-name job]] [job-name
                                                     (csv/format-duration (:averageRuntime job))
@@ -132,7 +132,7 @@
   (let [runtimes-by-day (runtimes-by-day build-results)
         job-names (keys runtimes-by-day)]
 
-    (respond-with-csv (csv/export-table (cons "date" job-names)
+    (http/respond-with-csv (csv/export-table (cons "date" job-names)
                                         (->> (merge-runtimes runtimes-by-day)
                                              (runtimes-as-table job-names)
                                              (sort-by first))))))
@@ -148,8 +148,8 @@
   (let [annotated-builds-in-order (sort-by :end (all-builds-in-order build-results))
         fail-phases (pipelineinfo/pipeline-fail-phases annotated-builds-in-order)]
     (if (= (:mime accept) :json)
-      (respond-with-json fail-phases)
-      (respond-with-csv
+      (http/respond-with-json fail-phases)
+      (http/respond-with-csv
        (csv/export-table ["start" "end" "culprits"]
                          (map (fn [{start :start end :end culprits :culprits}]
                                 [(csv/format-timestamp start)
@@ -182,8 +182,8 @@
   (let [job-names (results/job-names build-results)]
     (if (= (:mime accept) :json)
       (let [failures (map #(failures-for build-results %) job-names)]
-        (respond-with-json (into {} (apply merge failures))))
-      (respond-with-csv (csv/export-table ["failedCount" "job" "testsuite" "classname" "name"]
+        (http/respond-with-json (into {} (apply merge failures))))
+      (http/respond-with-csv (csv/export-table ["failedCount" "job" "testsuite" "classname" "name"]
                                           (mapcat #(failures-as-list build-results %) job-names))))))
 
 ;; testsuites
@@ -207,8 +207,8 @@
 (defn- get-testsuites [build-results accept]
   (let [job-names (filter #(results/has-tests? build-results %) (results/job-names build-results))]
     (if (= (:mime accept) :json)
-      (respond-with-json (zipmap job-names (map #(testsuites-for build-results %) job-names)))
-      (respond-with-csv (csv/export-table
+      (http/respond-with-json (zipmap job-names (map #(testsuites-for build-results %) job-names)))
+      (http/respond-with-csv (csv/export-table
                          ["averageRuntime" "job" "testsuite" "classname" "name"]
                          (mapcat #(flat-test-runtimes build-results %) job-names))))))
 
