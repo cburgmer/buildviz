@@ -24,8 +24,7 @@ or run Go.cd in a Vagrant box and sync its job history with buildviz
 
 ## Usage
 
-    $ ./lein npm install
-    $ ./lein ring server-headless
+    $ ./lein do deps, ring server-headless
     $ open http://localhost:3000/index.html
 
 Then `PUT` JSON data in the following format to `http://localhost:3000/builds/$JOB_NAME/$BUILD_ID`

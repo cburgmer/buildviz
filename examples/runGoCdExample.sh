@@ -34,8 +34,7 @@ cd -
 
 # Start buildviz
 echo "Starting buildviz..."
-./lein npm install
-./lein ring server-headless > /tmp/buildviz.log &
+./lein do deps, ring server-headless > /tmp/buildviz.log &
 SERVER_PID=$!
 
 # Wait
