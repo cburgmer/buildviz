@@ -20,8 +20,10 @@ function wait_for_server() {
 
 
 # Start buildviz
-echo "Starting buildviz..."
-./lein do deps, ring server-headless > /tmp/buildviz.log &
+LOGGING_PATH="/tmp/buildviz.log"
+
+echo "Starting buildviz... (logging output to $LOGGING_PATH)"
+./lein do deps, ring server-headless > "$LOGGING_PATH" &
 SERVER_PID=$!
 
 # Wait
@@ -30,7 +32,7 @@ wait_for_server http://localhost:3000
 
 # Seed data
 echo "Seeding data..."
-$SCRIPT_DIR/data/seedDummyData.sh
+"$SCRIPT_DIR"/data/seedDummyData.sh
 
 echo "Done..."
 echo

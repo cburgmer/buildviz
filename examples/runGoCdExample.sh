@@ -33,8 +33,10 @@ vagrant up
 cd -
 
 # Start buildviz
-echo "Starting buildviz..."
-./lein do deps, ring server-headless > /tmp/buildviz.log &
+LOGGING_PATH="/tmp/buildviz.log"
+
+echo "Starting buildviz... (logging output to $LOGGING_PATH)"
+./lein do deps, ring server-headless > "$LOGGING_PATH" &
 SERVER_PID=$!
 
 # Wait
