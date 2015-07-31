@@ -10,4 +10,5 @@ pom.xml.asc
 /resources/public/js/node_modules/
 /examples/go/.vagrant/
 /buildviz_jobs
+/buildviz_tests
 /log

@@ -12,6 +12,7 @@
   (:require [compojure.handler :as handler]
             [buildviz.build-results :as results]
             [buildviz.storage :as storage]
+            [buildviz.junit-xml :as junit-xml]
             [buildviz.csv :as csv]
             [buildviz.jobinfo :as jobinfo]
             [buildviz.pipelineinfo :as pipelineinfo]
@@ -41,7 +42,7 @@
 (defn- store-test-results! [build-results job-name build-id body persist!]
   (let [content (slurp body)]
     (try
-      (testsuites/testsuites-for content) ; try parse
+      (junit-xml/parse-testsuites content) ; try parse
       (results/set-tests! build-results job-name build-id content)
       (persist! @(:tests build-results))
       {:status 204}
@@ -51,7 +52,7 @@
 (defn- get-test-results [build-results job-name build-id accept]
   (if-some [content (results/tests build-results job-name build-id)]
     (if (= (:mime accept) :json)
-      (respond-with-json (testsuites/testsuites-for content))
+      (respond-with-json (junit-xml/parse-testsuites content))
       (respond-with-xml content))
     {:status 404}))
 
@@ -161,14 +162,14 @@
 (defn- failures-for [build-results job-name]
   (when-some [test-results (results/chronological-tests build-results job-name)]
     (when-some [failed-tests (seq (testsuites/accumulate-testsuite-failures
-                                  (map testsuites/testsuites-for test-results)))]
+                                  (map junit-xml/parse-testsuites test-results)))]
       (let [build-data-entries (results/builds build-results job-name)]
         {job-name (merge {:children failed-tests}
                     (failed-count-for build-data-entries))}))))
 
 (defn- failures-as-list [build-results job-name]
   (when-some [test-results (results/chronological-tests build-results job-name)]
-    (->> (map testsuites/testsuites-for test-results)
+    (->> (map junit-xml/parse-testsuites test-results)
          (testsuites/accumulate-testsuite-failures-as-list)
          (map (fn [{testsuite :testsuite classname :classname name :name failed-count :failedCount}]
                 [failed-count
@@ -189,7 +190,7 @@
 
 (defn- test-runs [build-results job-name]
   (let [test-results (results/chronological-tests build-results job-name)]
-    (map testsuites/testsuites-for test-results)))
+    (map junit-xml/parse-testsuites test-results)))
 
 (defn- testsuites-for [build-results job-name]
   {:children (testsuites/average-testsuite-runtime (test-runs build-results job-name))})
