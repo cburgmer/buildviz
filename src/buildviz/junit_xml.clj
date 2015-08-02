@@ -11,6 +11,10 @@
   (some #(= :error (:tag %))
         (:content testcase-elem)))
 
+(defn- is-skipped? [testcase-elem]
+  (some #(= :skipped (:tag %))
+        (:content testcase-elem)))
+
 (defn- item-name [elem]
   (:name (:attrs elem)))
 
@@ -23,7 +27,9 @@
     :fail
     (if (is-error? testcase-elem)
       :error
-      :pass)))
+      (if (is-skipped? testcase-elem)
+        :skipped
+        :pass))))
 
 (defn- add-runtime [testcase testcase-elem]
   (if-let [runtime (parse-runtime testcase-elem)]

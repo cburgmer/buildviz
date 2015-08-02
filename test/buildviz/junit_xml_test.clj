@@ -14,6 +14,10 @@
            (junit-xml/parse-testsuites "<testsuites><testsuite name=\"a suite\"><testcase name=\"a test\"><error/></testcase></testsuite></testsuites>")))
     (is (= [{:name "a suite"
              :children [{:name "a test"
+                         :status :skipped}]}]
+           (junit-xml/parse-testsuites "<testsuites><testsuite name=\"a suite\"><testcase name=\"a test\"><skipped/></testcase></testsuite></testsuites>")))
+    (is (= [{:name "a suite"
+             :children [{:name "a test"
                          :status :pass}]}]
            (junit-xml/parse-testsuites "<testsuites><testsuite name=\"a suite\"><testcase name=\"a test\"></testcase></testsuite></testsuites>")))
     (is (= [{:name "a suite"

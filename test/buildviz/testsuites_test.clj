@@ -28,6 +28,9 @@
              :children [{:name "a case" :failedCount 1}]}]
            (accumulate-testsuite-failures [[(a-testsuite "suite" (a-testcase "a case" :error))]])))
     (is (= [{:name "suite"
+             :children [{:name "a case" :failedCount 1}]}]
+           (accumulate-testsuite-failures [[(a-testsuite "suite" (a-testcase "a case" :skipped))]])))
+    (is (= [{:name "suite"
              :children [{:name "the class"
                          :children [{:name "a case" :failedCount 1}]}]}]
            (accumulate-testsuite-failures [[(a-testsuite "suite" (a-testcase "the class" "a case" :error))]])))
