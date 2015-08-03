@@ -22,10 +22,10 @@
     var line = d3.svg.line()
             .interpolate("basis")
             .x(function(d) { return x(d.day); })
-            .y(function(d) { return y(d.averageDuration); });
+            .y(function(d) { return y(d.duration || 0); });
 
     var svg = widget.create("Fail duration",
-                            "Average duration of pipeline failure",
+                            "Average duration of pipeline failure vs. green phases",
                            "/failphases.csv")
             .svg(diameter)
             .attr('class', 'failphases');
@@ -34,30 +34,48 @@
             .append("g")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    var aggregateFailPhaseDurationPerDay = function (data) {
-        var failPhasesPerDay = d3.nest()
+    var durationInMinutes = function (duration) {
+        return duration / (60 * 1000);
+    };
+
+    var aggregatePhaseDurationByDay = function (data) {
+        var lastPhase;
+
+        var phases = data.map(function (phase) {
+            var greenPhaseDuration, redPhaseDuration;
+
+            if (lastPhase) {
+                phase.greenPhaseDuration = phase.start - lastPhase.end;
+            }
+            phase.redPhaseDuration = phase.end - phase.start;
+
+            lastPhase = phase;
+
+            return phase;
+        });
+
+        var phasesByDay = d3.nest()
                 .key(function (d) {
                     var date = new Date(d.end);
                     return new Date(date.getFullYear(), date.getMonth(), date.getDate()).valueOf();
                 })
                 .entries(data);
 
-        return failPhasesPerDay.map(function (e) {
+        return phasesByDay.map(function (e) {
             return {
                 day: new Date(parseInt(e.key)),
-                averageDuration: d3.mean(e.values, function (v) {
-                    return (v.end - v.start) / (60 * 1000);
-                })
+                redDuration: d3.mean(e.values.map(function (v) { return v.redPhaseDuration; }), durationInMinutes),
+                greenDuration: d3.mean(e.values.map(function (v) { return v.greenPhaseDuration; }), durationInMinutes)
             };
         });
     };
 
     d3.json('/failphases', function (_, data) {
 
-        var failPhaseDurationPerDay = aggregateFailPhaseDurationPerDay(data);
+        var phaseDurationByDay = aggregatePhaseDurationByDay(data);
 
-        x.domain(d3.extent(failPhaseDurationPerDay, function(d) { return d.day; }));
-        y.domain(d3.extent(failPhaseDurationPerDay, function(d) { return d.averageDuration; }));
+        x.domain(d3.extent(phaseDurationByDay, function(d) { return d.day; }));
+        y.domain(d3.extent(phaseDurationByDay, function(d) { return d.redDuration; }));
 
         g.append("g")
             .attr("class", "x axis")
@@ -74,14 +92,19 @@
             .style("text-anchor", "end")
             .text("Duration [minutes]");
 
-        g.selectAll('.line')
-            .data([failPhaseDurationPerDay])
+        g.selectAll('.redLine')
+            .data([phaseDurationByDay.map(function (d) { return {day: d.day, duration: d.redDuration}; })])
             .enter()
             .append("path")
-            .attr("d", function(d) {
-                return line(d);
-            })
-            .attr('class', 'line');
+            .attr("d", line)
+            .attr('class', 'redLine');
+
+        g.selectAll('.greenLine')
+            .data([phaseDurationByDay.map(function (d) { return {day: d.day, duration: d.greenDuration}; })])
+            .enter()
+            .append("path")
+            .attr("d", line)
+            .attr('class', 'greenLine');
 
     });
 }(widget));

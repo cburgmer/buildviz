@@ -46,10 +46,16 @@
                 display: none;
             }
 
-            .failphases .line {
+            .failphases .redLine,
+            .failphases .greenLine {
                 fill: none;
+                stroke-width: 2px;
+            }
+            .failphases .redLine {
                 stroke: red;
-                stroke-width: 1.5px;
+            }
+            .failphases .greenLine {
+                stroke: green;
             }
         </style>
     </head>
