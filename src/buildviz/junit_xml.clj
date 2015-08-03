@@ -1,6 +1,9 @@
 (ns buildviz.junit-xml
   (:require [clojure.xml :as xml]))
 
+(defn is-ok? [{status :status}]
+  (contains? #{:pass :skipped} status))
+
 ;; Parsing is following schema documented in http://llg.cubic.org/docs/junit/
 
 (defn- is-failure? [testcase-elem]

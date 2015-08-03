@@ -1,5 +1,5 @@
 (ns buildviz.testsuites
-  (:require [clojure.xml :as xml]))
+  (:require [buildviz.junit-xml :as junit-xml]))
 
 
 (declare testsuites-map->list)
@@ -44,7 +44,7 @@
 
 (defn- failed-testcase-ids [unrolled-testcases]
   (map #(first %)
-       (filter #(not= :pass (:status (last %)))
+       (filter #(not (junit-xml/is-ok? (last %)))
                unrolled-testcases)))
 
 

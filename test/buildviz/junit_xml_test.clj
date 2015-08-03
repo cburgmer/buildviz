@@ -2,6 +2,17 @@
   (:use clojure.test)
   (:require [buildviz.junit-xml :as junit-xml]))
 
+(deftest Info
+  (testing "is-ok?"
+    (is (= true
+           (junit-xml/is-ok? {:status :pass})))
+    (is (= true
+           (junit-xml/is-ok? {:status :skipped})))
+    (is (= false
+           (junit-xml/is-ok? {:status :fail})))
+    (is (= false
+           (junit-xml/is-ok? {:status :error})))))
+
 (deftest Parsing
   (testing "parse-testsuites"
     (is (= [{:name "a suite"
