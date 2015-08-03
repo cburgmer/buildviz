@@ -6,7 +6,7 @@ Transparency for your build pipeline's results and runtime.
 
 ## Concepts
 
-buildviz looks from different angles at a build pipeline. So far it does only know about
+buildviz provides different graphs about your build pipeline's behaviour. So far all it needs to know about is
 
 * **jobs**, a job is part of the pipeline and executes some meaningful action,
 * **builds**, a build is an instance of the job being triggered, it has a unique **id**, a **start** and **end time**, an **outcome** and possibly one or more **inputs** with a given **revision**,
