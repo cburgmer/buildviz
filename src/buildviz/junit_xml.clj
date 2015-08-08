@@ -26,13 +26,11 @@
     (Math/round (* 1000 (Float/parseFloat time)))))
 
 (defn- parse-status [testcase-elem]
-  (if (is-failure? testcase-elem)
-    :fail
-    (if (is-error? testcase-elem)
-      :error
-      (if (is-skipped? testcase-elem)
-        :skipped
-        :pass))))
+  (cond
+    (is-failure? testcase-elem) :fail
+    (is-error? testcase-elem) :error
+    (is-skipped? testcase-elem) :skipped
+    :else :pass))
 
 (defn- add-runtime [testcase testcase-elem]
   (if-let [runtime (parse-runtime testcase-elem)]
