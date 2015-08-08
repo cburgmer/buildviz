@@ -187,10 +187,10 @@
     (map junit-xml/parse-testsuites test-results)))
 
 (defn- testsuites-for [build-results job-name]
-  {:children (testsuites/average-testsuite-runtime (test-runs build-results job-name))})
+  {:children (testsuites/average-testcase-runtime (test-runs build-results job-name))})
 
 (defn- flat-test-runtimes [build-results job-name]
-  (->> (testsuites/average-testsuite-runtime-as-list (test-runs build-results job-name))
+  (->> (testsuites/average-testcase-runtime-as-list (test-runs build-results job-name))
        (map (fn [{testsuite :testsuite classname :classname name :name average-runtime :averageRuntime}]
               [(csv/format-duration average-runtime)
                job-name

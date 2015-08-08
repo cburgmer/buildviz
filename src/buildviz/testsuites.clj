@@ -114,12 +114,12 @@
        average-runtimes))
 
 
-(defn average-testsuite-runtime [test-runs]
+(defn average-testcase-runtime [test-runs]
   (->> (average-runtimes-by-testcase test-runs)
        build-suite-hierarchy
        testsuites-map->list))
 
-(defn average-testsuite-runtime-as-list [test-runs]
+(defn average-testcase-runtime-as-list [test-runs]
   (->> (average-runtimes-by-testcase test-runs)
        (map (fn [[testcase-id {average-runtime :averageRuntime}]]
               {:testsuite (pop (pop testcase-id))
