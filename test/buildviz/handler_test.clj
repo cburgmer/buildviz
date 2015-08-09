@@ -11,10 +11,13 @@
 
 (defn dummy-persist [_])
 
-(defn the-app []
-  (handler/create-app (build-results {} {})
-                      dummy-persist
-                      dummy-persist))
+(defn the-app
+  ([]
+   (the-app {} {}))
+  ([jobs builds]
+   (handler/create-app (build-results jobs builds)
+                       dummy-persist
+                       dummy-persist)))
 
 ;; helpers
 
@@ -359,6 +362,47 @@
       (is (= {}
              (json-body (json-get-request app "/testsuites")))))
     ))
+
+(deftest TestClassesSummary
+  (testing "GET to /testclasses as application/json"
+    (is (= 200
+           (:status (json-get-request (the-app) "/testclasses"))))
+    (is (= {}
+           (json-body (json-get-request (the-app) "/testclasses"))))
+    (let [app (the-app
+               {"aBuild" {"1" {} "2" {}}}
+               {"aBuild" {"1" "<testsuite name=\"a suite\"><testsuite name=\"nested suite\"><testcase name=\"testcase\" classname=\"class\" time=\"10\"/><testcase name=\"another testcase\" classname=\"class\" time=\"30\"/></testsuite></testsuite>"
+                          "2" "<testsuite name=\"a suite\"><testsuite name=\"nested suite\"><testcase name=\"testcase\" classname=\"class\" time=\"60\"/></testsuite></testsuite>"}})]
+      (is (= {"aBuild" {"children" [{"name" "a suite"
+                                     "children" [{"name" "nested suite"
+                                                  "children" [{"name" "class"
+                                                               "averageRuntime" 50000}]}]}]}}
+             (json-body (json-get-request app "/testclasses"))))
+
+      ;; GET should not include builds without test cases
+      (let [app (the-app
+                 {"aBuild" {"1" {}}}
+                 {})]
+        (is (= {}
+               (json-body (json-get-request app "/testclasses")))))))
+
+  (testing "GET to /testclasses as text/plain"
+    (is (= "averageRuntime,job,testsuite,classname\n"
+           (:body (plain-get-request (the-app) "/testclasses"))))
+    (let [app (the-app
+               {"aBuild" {"1" {} "2" {}}}
+               {"aBuild" {"1" "<testsuite name=\"a suite\"><testsuite name=\"nested suite\"><testcase name=\"testcase\" classname=\"class\" time=\"10\"/><testcase name=\"another testcase\" classname=\"class\" time=\"30\"/></testsuite></testsuite>"
+                          "2" "<testsuite name=\"a suite\"><testsuite name=\"nested suite\"><testcase name=\"testcase\" classname=\"class\" time=\"60\"/></testsuite></testsuite>"}})]
+      (is (= (join ["averageRuntime,job,testsuite,classname\n"
+                    (format "%.8f,aBuild,a suite: nested suite,class\n" 0.0005787)])
+             (:body (plain-get-request app "/testclasses")))))
+
+    ;; GET should not include builds without test cases
+    (let [app (the-app
+               {"aBuild" {"1" {}}}
+               {})]
+      (is (= "averageRuntime,job,testsuite,classname\n"
+             (:body (plain-get-request app "/testclasses")))))))
 
 (deftest EntryPoint
   (testing "GET to /"

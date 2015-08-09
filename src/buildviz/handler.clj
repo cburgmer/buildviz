@@ -198,13 +198,38 @@
                classname
                name]))))
 
+(defn- names-of-jobs-with-tests [build-results]
+  (filter #(results/has-tests? build-results %) (results/job-names build-results)))
+
 (defn- get-testsuites [build-results accept]
-  (let [job-names (filter #(results/has-tests? build-results %) (results/job-names build-results))]
+  (let [job-names (names-of-jobs-with-tests build-results)]
     (if (= (:mime accept) :json)
       (http/respond-with-json (zipmap job-names (map #(testsuites-for build-results %) job-names)))
       (http/respond-with-csv (csv/export-table
-                         ["averageRuntime" "job" "testsuite" "classname" "name"]
-                         (mapcat #(flat-test-runtimes build-results %) job-names))))))
+                              ["averageRuntime" "job" "testsuite" "classname" "name"]
+                              (mapcat #(flat-test-runtimes build-results %) job-names))))))
+
+;; testclasses
+
+(defn- testclass-runtime-for [build-results job-name]
+  {:children (testsuites/average-testclass-runtime (test-runs build-results job-name))})
+
+(defn- flat-testclass-runtimes [build-results job-name]
+  (->> (testsuites/average-testclass-runtime-as-list (test-runs build-results job-name))
+       (map (fn [{testsuite :testsuite classname :classname average-runtime :averageRuntime}]
+              [(csv/format-duration average-runtime)
+               job-name
+               (serialize-nested-testsuites testsuite)
+               classname]))))
+
+(defn- get-testclasses [build-results accept]
+  (let [job-names (names-of-jobs-with-tests build-results)]
+    (if (= (:mime accept) :json)
+      (http/respond-with-json (zipmap job-names
+                                      (map #(testclass-runtime-for build-results %) job-names)))
+      (http/respond-with-csv (csv/export-table
+                              ["averageRuntime" "job" "testsuite" "classname"]
+                              (mapcat #(flat-testclass-runtimes build-results %) job-names))))))
 
 ;; app
 
@@ -225,7 +250,9 @@
    (GET "/failures" {accept :accept} (get-failures build-results accept))
    (GET "/failures.csv" {} (get-failures build-results {:mime :csv}))
    (GET "/testsuites" {accept :accept} (get-testsuites build-results accept))
-   (GET "/testsuites.csv" {} (get-testsuites build-results {:mime :csv}))))
+   (GET "/testsuites.csv" {} (get-testsuites build-results {:mime :csv}))
+   (GET "/testclasses" {accept :accept} (get-testclasses build-results accept))
+   (GET "/testclasses.csv" {accept :accept} (get-testclasses build-results {:mime :csv}))))
 
 (defn create-app [build-results persist-jobs! persist-tests!]
   (-> (app-routes build-results persist-jobs! persist-tests!)
