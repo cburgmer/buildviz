@@ -132,6 +132,12 @@
            (concat (map accumulate-runtime-by-class nested-suites)
                    (accumulate-runtime-by-class-for-testcases testcases)))))
 
+(defn- average-runtimes-by-testclass [test-runs]
+  (->> (map #(map accumulate-runtime-by-class %) test-runs)
+       (mapcat unroll-testsuites)
+       extract-runtime
+       average-runtimes))
+
 
 (defn average-testcase-runtime [test-runs]
   (->> (average-runtimes-by-testcase test-runs)
@@ -139,10 +145,7 @@
        testsuites-map->list))
 
 (defn average-testclass-runtime [test-runs]
-  (->> (map #(map accumulate-runtime-by-class %) test-runs)
-       (mapcat unroll-testsuites)
-       extract-runtime
-       average-runtimes
+  (->> (average-runtimes-by-testclass test-runs)
        build-suite-hierarchy
        testsuites-map->list))
 
@@ -152,4 +155,11 @@
               {:testsuite (pop (pop testcase-id))
                :classname (last (pop testcase-id))
                :name (last testcase-id)
+               :averageRuntime average-runtime}))))
+
+(defn average-testclass-runtime-as-list [test-runs]
+  (->> (average-runtimes-by-testclass test-runs)
+       (map (fn [[testclass-id {average-runtime :averageRuntime}]]
+              {:testsuite (pop testclass-id)
+               :classname (last testclass-id)
                :averageRuntime average-runtime}))))
