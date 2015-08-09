@@ -2,9 +2,9 @@
     // Following http://bl.ocks.org/metmajer/5480307
     var diameter = 600;
 
-    var svg = widget.create("Avg test runtime",
+    var svg = widget.create("Avg test runtime by class",
                             "Color: Job/Test Suite, Arc size: duration",
-                            "/testsuites.csv")
+                            "/testclasses.csv")
             .svg(diameter);
 
     var graph = zoomableSunburst(svg, diameter);
@@ -46,7 +46,7 @@
             });
     };
 
-    d3.json('/testsuites', function (_, testsuites) {
+    d3.json('/testclasses', function (_, testsuites) {
         var data = {
             name: "Testsuites",
             children: transformTestsuites(testsuites)
