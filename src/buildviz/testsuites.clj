@@ -113,10 +113,15 @@
        extract-runtime
        average-runtimes))
 
+(defn- accumulated-runtime [testcases]
+  (let [runtimes (map :runtime testcases)]
+    (when (every? number? runtimes)
+      (apply + runtimes))))
+
 (defn- accumulate-runtime-by-class-for-testcases [testcases]
   (map (fn [[classname testcases]]
          {:name classname
-          :runtime (apply + (map :runtime testcases))})
+          :runtime (accumulated-runtime testcases)})
        (group-by :classname testcases)))
 
 (defn- accumulate-runtime-by-class [testsuite]
