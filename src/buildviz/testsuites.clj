@@ -144,11 +144,6 @@
        build-suite-hierarchy
        testsuites-map->list))
 
-(defn average-testclass-runtime [test-runs]
-  (->> (average-runtimes-by-testclass test-runs)
-       build-suite-hierarchy
-       testsuites-map->list))
-
 (defn average-testcase-runtime-as-list [test-runs]
   (->> (average-runtimes-by-testcase test-runs)
        (map (fn [[testcase-id {average-runtime :averageRuntime}]]
@@ -156,6 +151,11 @@
                :classname (last (pop testcase-id))
                :name (last testcase-id)
                :averageRuntime average-runtime}))))
+
+(defn average-testclass-runtime [test-runs]
+  (->> (average-runtimes-by-testclass test-runs)
+       build-suite-hierarchy
+       testsuites-map->list))
 
 (defn average-testclass-runtime-as-list [test-runs]
   (->> (average-runtimes-by-testclass test-runs)
