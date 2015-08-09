@@ -319,15 +319,15 @@
              (json-body (json-get-request app "/failures")))))
     ))
 
-(deftest TestsuitesSummary
-  (testing "GET to /testsuites"
+(deftest TestCasesSummary
+  (testing "GET to /testcases"
     ;; GET should return 200
     (is (= 200
-           (:status (json-get-request (the-app) "/testsuites"))))
+           (:status (json-get-request (the-app) "/testcases"))))
 
     ;; GET should return empty map by default
     (is (= {}
-           (json-body (json-get-request (the-app) "/testsuites"))))
+           (json-body (json-get-request (the-app) "/testcases"))))
 
     ;; GET should include a list of builds with test cases
     (let [app (the-app)]
@@ -338,13 +338,13 @@
       (is (= {"aBuild" {"children" [{"name" "a suite"
                                      "children" [{"name" "a test"
                                                   "averageRuntime" 20000}]}]}}
-             (json-body (json-get-request app "/testsuites")))))
+             (json-body (json-get-request app "/testcases")))))
 
     ;; GET should return CSV by default
     (let [app (the-app)]
       (a-build app  "aBuild" 1, {})
       (some-test-results app "aBuild" "1" "<testsuites><testsuite name=\"a suite\"><testcase name=\"a,test\" classname=\"a class\" time=\"10\"></testcase></testsuite></testsuites>")
-      (is (= (:body (get-request app "/testsuites"))
+      (is (= (:body (get-request app "/testcases"))
              (join ["averageRuntime,job,testsuite,classname,name\n"
                     (format "%.8f,aBuild,a suite,a class,\"a,test\"\n" 0.00011574)]))))
 
@@ -352,7 +352,7 @@
     (let [app (the-app)]
       (a-build app "aBuild" 1, {})
       (some-test-results app "aBuild" "1" "<testsuites><testsuite name=\"a suite\"><testsuite name=\"nested suite\"><testcase name=\"a,test\" classname=\"a class\" time=\"10\"></testcase></testsuite></testsuite></testsuites>")
-      (is (= (:body (plain-get-request app "/testsuites"))
+      (is (= (:body (plain-get-request app "/testcases"))
              (join ["averageRuntime,job,testsuite,classname,name\n"
                     (format "%.8f,aBuild,a suite: nested suite,a class,\"a,test\"\n" 0.00011574)]))))
 
@@ -360,7 +360,7 @@
     (let [app (the-app)]
       (a-build app "aBuild" 1, {})
       (is (= {}
-             (json-body (json-get-request app "/testsuites")))))
+             (json-body (json-get-request app "/testcases")))))
     ))
 
 (deftest TestClassesSummary

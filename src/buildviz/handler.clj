@@ -186,10 +186,13 @@
   (let [test-results (results/chronological-tests build-results job-name)]
     (map junit-xml/parse-testsuites test-results)))
 
-(defn- testsuites-for [build-results job-name]
+(defn- names-of-jobs-with-tests [build-results]
+  (filter #(results/has-tests? build-results %) (results/job-names build-results)))
+
+(defn- testcase-runtimes [build-results job-name]
   {:children (testsuites/average-testcase-runtime (test-runs build-results job-name))})
 
-(defn- flat-test-runtimes [build-results job-name]
+(defn- flat-testcase-runtimes [build-results job-name]
   (->> (testsuites/average-testcase-runtime-as-list (test-runs build-results job-name))
        (map (fn [{testsuite :testsuite classname :classname name :name average-runtime :averageRuntime}]
               [(csv/format-duration average-runtime)
@@ -198,20 +201,17 @@
                classname
                name]))))
 
-(defn- names-of-jobs-with-tests [build-results]
-  (filter #(results/has-tests? build-results %) (results/job-names build-results)))
-
-(defn- get-testsuites [build-results accept]
+(defn- get-testcases [build-results accept]
   (let [job-names (names-of-jobs-with-tests build-results)]
     (if (= (:mime accept) :json)
-      (http/respond-with-json (zipmap job-names (map #(testsuites-for build-results %) job-names)))
+      (http/respond-with-json (zipmap job-names (map #(testcase-runtimes build-results %) job-names)))
       (http/respond-with-csv (csv/export-table
                               ["averageRuntime" "job" "testsuite" "classname" "name"]
-                              (mapcat #(flat-test-runtimes build-results %) job-names))))))
+                              (mapcat #(flat-testcase-runtimes build-results %) job-names))))))
 
 ;; testclasses
 
-(defn- testclass-runtime-for [build-results job-name]
+(defn- testclass-runtimes [build-results job-name]
   {:children (testsuites/average-testclass-runtime (test-runs build-results job-name))})
 
 (defn- flat-testclass-runtimes [build-results job-name]
@@ -226,7 +226,7 @@
   (let [job-names (names-of-jobs-with-tests build-results)]
     (if (= (:mime accept) :json)
       (http/respond-with-json (zipmap job-names
-                                      (map #(testclass-runtime-for build-results %) job-names)))
+                                      (map #(testclass-runtimes build-results %) job-names)))
       (http/respond-with-csv (csv/export-table
                               ["averageRuntime" "job" "testsuite" "classname"]
                               (mapcat #(flat-testclass-runtimes build-results %) job-names))))))
@@ -249,8 +249,8 @@
    (GET "/failphases.csv" {} (get-fail-phases build-results {:mime :csv}))
    (GET "/failures" {accept :accept} (get-failures build-results accept))
    (GET "/failures.csv" {} (get-failures build-results {:mime :csv}))
-   (GET "/testsuites" {accept :accept} (get-testsuites build-results accept))
-   (GET "/testsuites.csv" {} (get-testsuites build-results {:mime :csv}))
+   (GET "/testcases" {accept :accept} (get-testcases build-results accept))
+   (GET "/testcases.csv" {} (get-testcases build-results {:mime :csv}))
    (GET "/testclasses" {accept :accept} (get-testclasses build-results accept))
    (GET "/testclasses.csv" {accept :accept} (get-testclasses build-results {:mime :csv}))))
 
