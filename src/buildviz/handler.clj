@@ -8,16 +8,13 @@
         ring.util.response
         [compojure.core :only (GET PUT)]
         [clojure.string :only (join escape)])
-  (:require [compojure.handler :as handler]
-            [buildviz.build-results :as results]
+  (:require [buildviz.build-results :as results]
             [buildviz.http :as http]
-            [buildviz.storage :as storage]
             [buildviz.junit-xml :as junit-xml]
             [buildviz.csv :as csv]
             [buildviz.jobinfo :as jobinfo]
             [buildviz.pipelineinfo :as pipelineinfo]
-            [buildviz.testsuites :as testsuites]
-            [closchema.core :as schema]))
+            [buildviz.testsuites :as testsuites]))
 
 
 (defn- store-build! [build-results job-name build-id build-data persist!]
