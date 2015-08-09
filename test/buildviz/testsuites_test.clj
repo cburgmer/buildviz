@@ -163,6 +163,37 @@
                                       [(a-testsuite "suite"
                                                     (a-testsuite "nested suite" (a-testcase-with-runtime "another case" 20)))]]))))
 
+  (testing "average-testclass-runtime"
+    (is (= []
+           (average-testclass-runtime [])))
+    (is (= [{:name "suite"
+             :children [{:name "a class"
+                         :averageRuntime 40}]}]
+           (average-testclass-runtime [[(a-testsuite "suite" (a-testcase-with-runtime "a class" "a case" 40))]])))
+    (is (= [{:name "suite"
+             :children [{:name "a class"
+                         :averageRuntime 60}]}]
+           (average-testclass-runtime [[(a-testsuite "suite"
+                                                     (a-testcase-with-runtime "a class" "a case" 40)
+                                                     (a-testcase-with-runtime "a class" "another case" 20))]])))
+    (is (= [{:name "suite"
+             :children [{:name "a class"
+                         :averageRuntime 30}]}]
+           (average-testclass-runtime [[(a-testsuite "suite" (a-testcase-with-runtime "a class" "a case" 20))]
+                                       [(a-testsuite "suite" (a-testcase-with-runtime "a class" "a case" 40))]])))
+    (is (= [{:name "suite"
+             :children [{:name "a class"
+                         :averageRuntime 30}]}]
+           (average-testclass-runtime [[(a-testsuite "suite" (a-testcase-with-runtime "a class" "a case" 20))]
+                                       [(a-testsuite "suite" (a-testcase-with-runtime "a class" "another case" 40))]])))
+    (is (= [{:name "suite"
+             :children [{:name "nested suite"
+                         :children [{:name "class"
+                                     :averageRuntime 10}]}]}]
+           (average-testclass-runtime [[(a-testsuite "suite"
+                                                    (a-testsuite "nested suite"
+                                                                 (a-testcase-with-runtime "class" "a case" 10)))]]))))
+
   (testing "average-testcase-runtime-as-list"
     (is (= []
            (average-testcase-runtime-as-list [])))

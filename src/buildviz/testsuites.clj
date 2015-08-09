@@ -38,7 +38,7 @@
       (mapcat (partial unroll-testcases-for-suite suite-id) children))
     (list (rolled-out-testcase parent-suite-id entry))))
 
-(defn- unroll-testcases [testsuites]
+(defn- unroll-testsuites [testsuites]
   (mapcat (partial unroll-testcases-for-suite []) testsuites))
 
 
@@ -71,7 +71,7 @@
           (map #(assoc {} :failedCount %) (vals unrolled-testcase-map))))
 
 (defn- accumulate-testsuite-failures-by-testcase [test-runs]
-  (->> (mapcat unroll-testcases test-runs)
+  (->> (mapcat unroll-testsuites test-runs)
        failed-testcase-ids
        frequencies
        build-testcase-data-with-failures))
@@ -90,7 +90,7 @@
                :failedCount failed-count}))))
 
 
-(defn- testcase-runtime [unrolled-testcases]
+(defn- extract-runtime [unrolled-testcases]
   (map (fn [[testcase-id testcase]] [testcase-id (:runtime testcase)])
        unrolled-testcases))
 
@@ -109,13 +109,35 @@
             (map average-runtime-for-testcase-runs (vals groups)))))
 
 (defn- average-runtimes-by-testcase [test-runs]
-  (->> (mapcat unroll-testcases test-runs)
-       testcase-runtime
+  (->> (mapcat unroll-testsuites test-runs)
+       extract-runtime
        average-runtimes))
+
+(defn- accumulate-runtime-by-class-for-testcases [testcases]
+  (map (fn [[classname testcases]]
+         {:name classname
+          :runtime (apply + (map :runtime testcases))})
+       (group-by :classname testcases)))
+
+(defn- accumulate-runtime-by-class [testsuite]
+  (let [nested-suites (filter :children (:children testsuite))
+        testcases (filter (complement :children) (:children testsuite))]
+    (assoc testsuite
+           :children
+           (concat (map accumulate-runtime-by-class nested-suites)
+                   (accumulate-runtime-by-class-for-testcases testcases)))))
 
 
 (defn average-testcase-runtime [test-runs]
   (->> (average-runtimes-by-testcase test-runs)
+       build-suite-hierarchy
+       testsuites-map->list))
+
+(defn average-testclass-runtime [test-runs]
+  (->> (map #(map accumulate-runtime-by-class %) test-runs)
+       (mapcat unroll-testsuites)
+       extract-runtime
+       average-runtimes
        build-suite-hierarchy
        testsuites-map->list))
 
