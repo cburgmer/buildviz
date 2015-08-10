@@ -14,26 +14,36 @@
         return entry.name + failures;
     };
 
-    var transformNode = function (node) {
-        var n = {
-            name: node.name
-        };
-
-        if (node.children) {
-            n.children = node.children.map(transformNode);
-        } else {
-            n.size = node.failedCount;
-            n.title = title(node);
-        }
-        return n;
+    var hasOnlyOneChildThatIsNotLeaf = function (node) {
+        return node.children && node.children.length === 1 && node.children[0].children !== undefined;
     };
 
-    var hasOnlyOneTestSuite = function (job) {
-        return job.children && job.children.length === 1 && job.children[0].children;
+    var skipTestSuiteWithOnlyOneClassOrNestedSuite = function (testSuite) {
+        var testSuiteHasOnlyOneChild = hasOnlyOneChildThatIsNotLeaf(testSuite);
+
+        return testSuiteHasOnlyOneChild ? testSuite.children[0] : testSuite;
     };
 
     var skipOnlyTestSuite = function (job) {
-        return hasOnlyOneTestSuite(job) ? job.children[0].children : job.children;
+        var hasOnlyOneTestSuite = hasOnlyOneChildThatIsNotLeaf(job);
+
+        return hasOnlyOneTestSuite ? job.children[0].children : job.children;
+    };
+
+    var transformNode = function (node) {
+        var elem = skipTestSuiteWithOnlyOneClassOrNestedSuite(node);
+
+        var e = {
+            name: elem.name
+        };
+
+        if (elem.children) {
+            e.children = elem.children.map(transformNode);
+        } else {
+            e.size = elem.failedCount;
+            e.title = title(elem);
+        }
+        return e;
     };
 
     var transformFailures = function (failureMap) {
