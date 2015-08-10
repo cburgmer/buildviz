@@ -50,6 +50,16 @@ var zoomableSunburst = function (svg, diameter) {
         };
     };
 
+    // poor man's text clipping
+    var maxLength = function (text, length) {
+        var ellipsis = '…';
+        if (text.length > length) {
+            return text.substr(0, length) + ellipsis;
+        } else {
+            return text;
+        }
+    };
+
     var render = function (data) {
 
         var currentVisibleNode = undefined;
@@ -90,7 +100,9 @@ var zoomableSunburst = function (svg, diameter) {
         var g = parent.datum(data).selectAll("g")
                 .data(partition.nodes)
                 .enter()
-                .append("g");
+                .append("g")
+                .style('cursor', 'pointer')
+                .on('click', click);
 
         var path = g.append("path")
                 .attr("d", arc)
@@ -101,19 +113,7 @@ var zoomableSunburst = function (svg, diameter) {
                     } else {
                         return 'transparent';
                     }
-                })
-                .style('cursor', 'pointer')
-                .on('click', click);
-
-        // poor man's text clipping
-        var maxLength = function (text, length) {
-            var ellipsis = '…';
-            if (text.length > length) {
-                return text.substr(0, length) + ellipsis;
-            } else {
-                return text;
-            }
-        };
+                });
 
         var text = g.append("text")
                 .attr("display", displayText)
