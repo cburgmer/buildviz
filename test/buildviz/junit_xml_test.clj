@@ -62,4 +62,14 @@
                          :status :pass
                          :runtime 1234}]}]
            (junit-xml/parse-testsuites "<testsuite name=\"a suite\"><properties></properties><testcase name=\"a test\" time=\"1.234\"></testcase></testsuite>")))
+    (is (= [{:name "a suite"
+             :children [{:name "a test"
+                         :status :pass
+                         :runtime 1234}]}]
+           (junit-xml/parse-testsuites "<testsuite name=\"a suite\"><testcase name=\"a test\" time=\"1.234\"></testcase><system-out>some sys out</system-out></testsuite>")))
+    (is (= [{:name "a suite"
+             :children [{:name "a test"
+                         :status :pass
+                         :runtime 1234}]}]
+           (junit-xml/parse-testsuites "<testsuite name=\"a suite\"><testcase name=\"a test\" time=\"1.234\"></testcase><system-err><![CDATA[]]></system-err></testsuite>")))
     ))

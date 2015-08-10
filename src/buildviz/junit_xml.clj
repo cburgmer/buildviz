@@ -50,19 +50,19 @@
 
 (declare parse-testsuite)
 
-(defn- properties? [elem]
-  (= :properties (:tag elem)))
-
 (defn- testsuite? [elem]
   (= :testsuite (:tag elem)))
 
-(defn- ignore-properties [children]
-  (filter (complement properties?) children))
+(defn- testcase? [elem]
+  (= :testcase (:tag elem)))
+
+(defn- parseable-elements [elements]
+  (filter #(or (testcase? %) (testsuite? %)) elements))
 
 (defn- testsuite [testsuite-elem]
   {:name (item-name testsuite-elem)
    :children (map parse-testsuite
-                  (ignore-properties (:content testsuite-elem)))})
+                  (parseable-elements (:content testsuite-elem)))})
 
 (defn- parse-testsuite [elem]
   (if (testsuite? elem)
