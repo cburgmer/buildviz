@@ -56,7 +56,7 @@ var zoomableSunburst = function (svg, diameter) {
 
         var enoughPlaceForText = function (d) {
             var currentDx = currentVisibleNode ? currentVisibleNode.dx : 1;
-            return (d.dx / currentDx) > 0.05;
+            return (d.dx / currentDx) > 0.015;
         };
 
         var displayText = function(d) {
@@ -105,13 +105,23 @@ var zoomableSunburst = function (svg, diameter) {
                 .style('cursor', 'pointer')
                 .on('click', click);
 
+        // poor man's text clipping
+        var maxLength = function (text, length) {
+            var ellipsis = '…';
+            if (text.length > length) {
+                return text.substr(0, length) + ellipsis;
+            } else {
+                return text;
+            }
+        };
+
         var text = g.append("text")
                 .attr("display", displayText)
                 .attr("transform", function(d) { return "rotate(" + computeTextRotation(d) + ")"; })
                 .attr("x", function(d) { return y(d.y); })
                 .attr("dx", "6") // margin
                 .attr("dy", ".35em") // vertical-align
-                .text(function(d) { return d.name; });
+                .text(function(d) { return maxLength(d.name, 15); });
 
         g.append("title")
             .text(function (d) {
