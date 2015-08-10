@@ -14,25 +14,26 @@
         return entry.name + failures;
     };
 
-    var transformTestcase = function (testcase) {
-        return {
-            name: testcase.name,
-            size: testcase.failedCount,
-            title: title(testcase)
+    var transformNode = function (node) {
+        var n = {
+            name: node.name
         };
+
+        if (node.children) {
+            n.children = node.children.map(transformNode);
+        } else {
+            n.size = node.failedCount;
+            n.title = title(node);
+        }
+        return n;
     };
 
-    var transformTestsuite = function (suite) {
-        return {
-            name: suite.name,
-            children: suite.children.map(function (child) {
-                if (child.children) {
-                    return transformTestsuite(child);
-                } else {
-                    return transformTestcase(child);
-                }
-            })
-        };
+    var hasOnlyOneTestSuite = function (job) {
+        return job.children && job.children.length === 1 && job.children[0].children;
+    };
+
+    var skipOnlyTestSuite = function (job) {
+        return hasOnlyOneTestSuite(job) ? job.children[0].children : job.children;
     };
 
     var transformFailures = function (failureMap) {
@@ -42,15 +43,14 @@
                 return job.failedCount;
             })
             .map(function (jobName) {
-                var job = failureMap[jobName];
-                var entry = {
+                var job = failureMap[jobName],
+                    children = skipOnlyTestSuite(job);
+
+                return {
                     name: jobName,
-                    size: job.failedCount
+                    size: job.failedCount,
+                    children: children.map(transformNode)
                 };
-                if (job.children) {
-                    entry.children = job.children.map(transformTestsuite);
-                }
-                return entry;
             });
     };
 
