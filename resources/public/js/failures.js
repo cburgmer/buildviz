@@ -59,6 +59,7 @@
                 return {
                     name: jobName,
                     size: job.failedCount,
+                    title: jobName + ' (' + job.failedCount + ')',
                     children: children.map(transformNode)
                 };
             });
