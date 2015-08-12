@@ -40,10 +40,34 @@
         if (elem.children) {
             e.children = elem.children.map(transformNode);
         } else {
-            e.size = elem.failedCount;
+            e.size = elem.discountedFailedCount;
             e.title = title(elem);
         }
         return e;
+    };
+
+    var totalTestCaseFailures = function (node) {
+        if (node.children) {
+            return d3.sum(node.children.map(totalTestCaseFailures));
+        } else {
+            return node.failedCount;
+        }
+    };
+
+    var setDiscountedFailure = function (node, discountFactor) {
+        if (node.children) {
+            node.children.forEach(function (child) {
+                setDiscountedFailure(child, discountFactor);
+            });
+        } else {
+            node.discountedFailedCount = node.failedCount * discountFactor;
+        }
+    };
+
+    var normalizeJobsByJobFailedCount = function (job) {
+        var normalizationFactor = job.failedCount / totalTestCaseFailures(job);
+
+        setDiscountedFailure(job, normalizationFactor);
     };
 
     var transformFailures = function (failureMap) {
@@ -55,6 +79,8 @@
             .map(function (jobName) {
                 var job = failureMap[jobName],
                     children = skipOnlyTestSuite(job);
+
+                normalizeJobsByJobFailedCount(job);
 
                 return {
                     name: jobName,
