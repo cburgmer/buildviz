@@ -58,4 +58,6 @@ If you are using [Go.cd](http://www.go.cd), try the script `./scripts/gosync.clj
 
 [FAQ](https://github.com/cburgmer/buildviz/wiki)
 
+You might also like [Kuona - Delivery Dashboard Generator](https://github.com/kuona/kuona).
+
 Reach out to [@cburgmer](https://twitter.com/cburgmer) for feedback and ideas.
