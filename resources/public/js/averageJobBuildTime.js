@@ -1,22 +1,6 @@
-(function (widget) {
+(function (widget, utils) {
     // Roughly following http://bl.ocks.org/mbostock/4063269
     var diameter = 600;
-
-    var padZero = function (value) {
-        if (value < 10) {
-            return '0' + value;
-        } else {
-            return '' + value;
-        }
-    };
-
-    var formatTimeInMs = function (timeInMs) {
-        var hours = Math.floor(timeInMs / (60 * 60 * 1000)),
-            minutes = Math.floor(timeInMs % (60 * 60 * 1000) / (60 * 1000)),
-            seconds = Math.round(timeInMs % (60 * 1000) / 1000);
-
-        return hours + ':' + padZero(minutes) + ':' + padZero(seconds);
-    };
 
     var buildRuntimeAsBubbles = function (pipeline) {
         return Object.keys(pipeline)
@@ -25,7 +9,7 @@
             })
             .map(function (jobName) {
                 var averageRuntime = pipeline[jobName].averageRuntime,
-                    runtime = averageRuntime ? ' (' + formatTimeInMs(averageRuntime) + ')' : '';
+                    runtime = averageRuntime ? ' (' + utils.formatTimeInMs(averageRuntime) + ')' : '';
 
                 return {
                     name: jobName,
@@ -73,4 +57,4 @@
                 widget.textWithLineBreaks(this, d.name.split(' '));
             });
     });
-}(widget));
+}(widget, utils));

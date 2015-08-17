@@ -1,4 +1,4 @@
-(function (widget, zoomableSunburst) {
+(function (widget, zoomableSunburst, utils) {
     // Following http://bl.ocks.org/metmajer/5480307
     var diameter = 600;
 
@@ -10,7 +10,7 @@
     var graph = zoomableSunburst(svg, diameter);
 
     var title = function (entry) {
-        var runtime = entry.averageRuntime ? ' (' + entry.averageRuntime + ' ms)' : '';
+        var runtime = entry.averageRuntime ? ' (' + utils.formatTimeInMs(entry.averageRuntime, {showMillis: true}) + ')' : '';
         return entry.name + runtime;
     };
 
@@ -67,4 +67,4 @@
 
         graph.render(data);
     });
-}(widget, zoomableSunburst));
+}(widget, zoomableSunburst, utils));
