@@ -1,13 +1,13 @@
 (ns buildviz.handler
   (:use
-        ring.middleware.json
-        ring.middleware.resource
-        ring.middleware.content-type
-        ring.middleware.not-modified
-        ring.middleware.accept
-        ring.util.response
-        [compojure.core :only (GET PUT)]
-        [clojure.string :only (join escape)])
+   ring.middleware.json
+   ring.middleware.resource
+   ring.middleware.content-type
+   ring.middleware.not-modified
+   ring.middleware.accept
+   ring.util.response
+   [compojure.core :only (GET PUT)]
+   [clojure.string :only (join escape)])
   (:require [buildviz.build-results :as results]
             [buildviz.http :as http]
             [buildviz.junit-xml :as junit-xml]
@@ -100,8 +100,8 @@
 
 (defn- remap-date-first [[job runtimes-by-day]]
   (map (fn [[day avg-runtime]]
-              [day {job avg-runtime}])
-            runtimes-by-day))
+         [day {job avg-runtime}])
+       runtimes-by-day))
 
 (defn- merge-runtimes [all-runtimes-by-day]
   (->> (mapcat remap-date-first all-runtimes-by-day)
@@ -124,9 +124,9 @@
         job-names (keys runtimes-by-day)]
 
     (http/respond-with-csv (csv/export-table (cons "date" job-names)
-                                        (->> (merge-runtimes runtimes-by-day)
-                                             (runtimes-as-table job-names)
-                                             (sort-by first))))))
+                                             (->> (merge-runtimes runtimes-by-day)
+                                                  (runtimes-as-table job-names)
+                                                  (sort-by first))))))
 
 ;; fail phases
 
@@ -153,10 +153,10 @@
 (defn- failures-for [build-results job-name]
   (when-some [test-results (results/chronological-tests build-results job-name)]
     (when-some [failed-tests (seq (testsuites/accumulate-testsuite-failures
-                                  (map junit-xml/parse-testsuites test-results)))]
+                                   (map junit-xml/parse-testsuites test-results)))]
       (let [build-data-entries (results/builds build-results job-name)]
         {job-name (merge {:children failed-tests}
-                    (failed-count-for build-data-entries))}))))
+                         (failed-count-for build-data-entries))}))))
 
 (defn- failures-as-list [build-results job-name]
   (when-some [test-results (results/chronological-tests build-results job-name)]
@@ -175,7 +175,7 @@
       (let [failures (map #(failures-for build-results %) job-names)]
         (http/respond-with-json (into {} (apply merge failures))))
       (http/respond-with-csv (csv/export-table ["failedCount" "job" "testsuite" "classname" "name"]
-                                          (mapcat #(failures-as-list build-results %) job-names))))))
+                                               (mapcat #(failures-as-list build-results %) job-names))))))
 
 ;; testsuites
 
@@ -249,7 +249,7 @@
    (GET "/testcases" {accept :accept} (get-testcases build-results accept))
    (GET "/testcases.csv" {} (get-testcases build-results {:mime :csv}))
    (GET "/testclasses" {accept :accept} (get-testclasses build-results accept))
-   (GET "/testclasses.csv" {accept :accept} (get-testclasses build-results {:mime :csv}))))
+   (GET "/testclasses.csv" {} (get-testclasses build-results {:mime :csv}))))
 
 (defn create-app [build-results persist-jobs! persist-tests!]
   (-> (app-routes build-results persist-jobs! persist-tests!)
