@@ -27,7 +27,7 @@
       (conj suite-id name))))
 
 (defn- rolled-out-testcase [suite-id testcase]
-  (let [testcase-content (dissoc testcase :name :class)]
+  (let [testcase-content (dissoc testcase :name :classname)]
     (vector (testcase-id suite-id testcase)
             testcase-content)))
 
@@ -163,3 +163,35 @@
               {:testsuite (pop testclass-id)
                :classname (last testclass-id)
                :averageRuntime average-runtime}))))
+
+
+(defn- find-flaky-build-groups [jobs]
+  (->> (seq jobs)
+       (map (fn [[build-id build-data]]
+              (assoc build-data :id build-id)))
+       (group-by :inputs)
+       vals
+       (map #(group-by :outcome %))
+       (filter #(< 1 (count %)))))
+
+(defn- flaky-build-ids [jobs]
+  (->> jobs
+       find-flaky-build-groups
+       (map #(get % "fail"))
+       (mapcat #(map :id %))))
+
+(defn- flaky-test-results [test-results jobs]
+  (->> jobs
+       flaky-build-ids
+       (select-keys test-results)
+       vals))
+
+(defn flaky-testcases-as-list [jobs test-results]
+  (->> (flaky-test-results test-results jobs)
+       (mapcat unroll-testsuites)
+       distinct
+       (filter (fn [[testcase-id {status :status}]] (= :fail status)))
+       (map (fn [[testcase-id {}]]
+              {:testsuite (pop (pop testcase-id))
+               :classname (last (pop testcase-id))
+               :name (last testcase-id)}))))
