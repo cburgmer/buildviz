@@ -404,10 +404,25 @@
       (is (= "averageRuntime,job,testsuite,classname\n"
              (:body (plain-get-request app "/testclasses")))))))
 
+(deftest FlakyTestCases
+  (testing "GET to /flakytestcases as text/plain"
+    (is (= 200
+           (:status (plain-get-request (the-app) "/flakytestcases"))))
+    (is (= "job,testsuite,classname,name\n"
+           (:body (plain-get-request (the-app) "/flakytestcases"))))
+    (let [app (the-app
+               {"aBuild" {"failing" {:outcome "fail"} "passing" {:outcome "pass"}}
+                "anotherBuild" {"failing" {:outcome "fail"} "passing" {:outcome "pass"}}}
+               {"aBuild" {"failing" "<testsuite name=\"a suite\"><testsuite name=\"nested suite\"><testcase name=\"testcase\" classname=\"class\"><failure/></testcase></testsuite></testsuite>"}
+                "anotherBuild" {"failing" "<testsuite name=\"a suite\"><testcase name=\"testcase\" classname=\"class\"><failure/></testcase></testsuite>"}})]
+      (is (= (join ["job,testsuite,classname,name\n"
+                    "anotherBuild,a suite,class,testcase\n"
+                    "aBuild,a suite: nested suite,class,testcase\n"])
+             (:body (plain-get-request app "/flakytestcases")))))))
+
 (deftest EntryPoint
   (testing "GET to /"
     (is (= 302
            (:status (get-request (the-app) "/"))))
-
     (is (= "/index.html"
            (get (:headers (get-request (the-app) "/")) "Location")))))

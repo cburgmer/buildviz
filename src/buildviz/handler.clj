@@ -228,6 +228,31 @@
                               ["averageRuntime" "job" "testsuite" "classname"]
                               (mapcat #(flat-testclass-runtimes build-results %) job-names))))))
 
+;; flaky testcases
+
+(defn- parse-test-results [test-results]
+  (->> test-results
+       (map (fn [[build-id test-result-xml]]
+              [build-id (junit-xml/parse-testsuites test-result-xml)]))
+       (into {})))
+
+(defn- flat-flaky-testcases [build-results job-name]
+  (let [builds (get @(:builds build-results) job-name)
+        test-results (parse-test-results                                  ; TODO don't parse all results up front, only those for flaky tests
+                      (get @(:tests build-results) job-name))]
+    (->> (testsuites/flaky-testcases-as-list builds test-results)
+         (map (fn [{testsuite :testsuite classname :classname name :name}]
+                [job-name
+                 (serialize-nested-testsuites testsuite)
+                 classname
+                 name])))))
+
+(defn get-flaky-testclasses [build-results]
+  (http/respond-with-csv (csv/export-table
+                          ["job" "testsuite" "classname" "name"]
+                          (mapcat #(flat-flaky-testcases build-results %)
+                                  (results/job-names build-results)))))
+
 ;; app
 
 (defn- app-routes [build-results persist-jobs! persist-tests!]
@@ -249,7 +274,8 @@
    (GET "/testcases" {accept :accept} (get-testcases build-results accept))
    (GET "/testcases.csv" {} (get-testcases build-results {:mime :csv}))
    (GET "/testclasses" {accept :accept} (get-testclasses build-results accept))
-   (GET "/testclasses.csv" {} (get-testclasses build-results {:mime :csv}))))
+   (GET "/testclasses.csv" {} (get-testclasses build-results {:mime :csv}))
+   (GET "/flakytestcases" {} (get-flaky-testclasses build-results))))
 
 (defn create-app [build-results persist-jobs! persist-tests!]
   (-> (app-routes build-results persist-jobs! persist-tests!)

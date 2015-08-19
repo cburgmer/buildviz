@@ -186,8 +186,8 @@
        (select-keys test-results)
        vals))
 
-(defn flaky-testcases-as-list [jobs test-results]
-  (->> (flaky-test-results test-results jobs)
+(defn flaky-testcases-as-list [builds test-results]
+  (->> (flaky-test-results test-results builds)
        (mapcat unroll-testsuites)
        distinct
        (filter (fn [[testcase-id {status :status}]] (= :fail status)))
