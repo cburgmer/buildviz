@@ -189,9 +189,10 @@
 (defn flaky-testcases-as-list [builds test-results]
   (->> (flaky-test-results test-results builds)
        (mapcat unroll-testsuites)
+       (filter (fn [[testcase-id testcase]] (not (junit-xml/is-ok? testcase))))
+       (map (fn [[testcase-id {}]] testcase-id))
        distinct
-       (filter (fn [[testcase-id {status :status}]] (= :fail status)))
-       (map (fn [[testcase-id {}]]
+       (map (fn [testcase-id]
               {:testsuite (pop (pop testcase-id))
                :classname (last (pop testcase-id))
                :name (last testcase-id)}))))
