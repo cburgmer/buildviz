@@ -241,15 +241,17 @@
         test-results (parse-test-results                                  ; TODO don't parse all results up front, only those for flaky tests
                       (get @(:tests build-results) job-name))]
     (->> (testsuites/flaky-testcases-as-list builds test-results)
-         (map (fn [{testsuite :testsuite classname :classname name :name}]
-                [job-name
+         (map (fn [{testsuite :testsuite classname :classname name :name build-id :build-id latest-failure :latest-failure}]
+                [latest-failure
+                 job-name
+                 build-id
                  (serialize-nested-testsuites testsuite)
                  classname
                  name])))))
 
 (defn get-flaky-testclasses [build-results]
   (http/respond-with-csv (csv/export-table
-                          ["job" "testsuite" "classname" "name"]
+                          ["latestFailure" "job" "latestBuildId" "testsuite" "classname" "name"]
                           (mapcat #(flat-flaky-testcases build-results %)
                                   (results/job-names build-results)))))
 

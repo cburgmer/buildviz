@@ -174,25 +174,36 @@
        (map #(group-by :outcome %))
        (filter #(< 1 (count %)))))
 
-(defn- flaky-build-ids [jobs]
+(defn- flaky-builds [jobs]
   (->> jobs
        find-flaky-build-groups
        (map #(get % "fail"))
-       (mapcat #(map :id %))))
+       (apply concat)))
 
-(defn- flaky-test-results [test-results jobs]
-  (->> jobs
-       flaky-build-ids
-       (select-keys test-results)
-       vals))
+(defn- flaky-testcases-for-build [{id :id start :start} test-results]
+  (->> (get test-results id)
+       unroll-testsuites
+       (filter (fn [[testcase-id testcase]] (not (junit-xml/is-ok? testcase))))
+       (map (fn [[testcase-id {}]] [testcase-id {:build-id id :failure-time start}]))))
+
+(defn- latest-flaky-testcase [unrolled-testcases]
+  (let [build-infos (map last unrolled-testcases)]
+    (apply max-key :failure-time build-infos)))
+
+(defn- flaky-testcase-summary [unrolled-testcases]
+  (->> unrolled-testcases
+       (group-by (fn [[testcase-id {}]] testcase-id))
+       (map (fn [[testcase-id testcases]]
+              [testcase-id (latest-flaky-testcase testcases)]))))
 
 (defn flaky-testcases-as-list [builds test-results]
-  (->> (flaky-test-results test-results builds)
-       (mapcat unroll-testsuites)
-       (filter (fn [[testcase-id testcase]] (not (junit-xml/is-ok? testcase))))
-       (map (fn [[testcase-id {}]] testcase-id))
-       distinct
-       (map (fn [testcase-id]
+  (->> builds
+       flaky-builds
+       (mapcat #(flaky-testcases-for-build % test-results))
+       flaky-testcase-summary
+       (map (fn [[testcase-id {build-id :build-id failure-time :failure-time}]]
               {:testsuite (pop (pop testcase-id))
                :classname (last (pop testcase-id))
-               :name (last testcase-id)}))))
+               :name (last testcase-id)
+               :build-id build-id
+               :latest-failure failure-time}))))
