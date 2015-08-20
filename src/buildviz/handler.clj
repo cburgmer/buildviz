@@ -242,7 +242,7 @@
                       (get @(:tests build-results) job-name))]
     (->> (testsuites/flaky-testcases-as-list builds test-results)
          (map (fn [{testsuite :testsuite classname :classname name :name build-id :build-id latest-failure :latest-failure}]
-                [latest-failure
+                [(csv/format-timestamp latest-failure)
                  job-name
                  build-id
                  (serialize-nested-testsuites testsuite)
