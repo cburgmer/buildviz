@@ -42,7 +42,8 @@
       (persist! @(:tests build-results))
       {:status 204}
       (catch Exception e
-        {:status 400}))))
+        {:status 400
+         :body (.getMessage e)}))))
 
 (defn- get-test-results [build-results job-name build-id accept]
   (if-some [content (results/tests build-results job-name build-id)]
