@@ -15,61 +15,71 @@
 
 (deftest Parsing
   (testing "parse-testsuites"
-    (is (= [{:name "a suite"
-             :children [{:name "a test"
-                         :status :fail}]}]
-           (junit-xml/parse-testsuites "<testsuites><testsuite name=\"a suite\"><testcase name=\"a test\"><failure/></testcase></testsuite></testsuites>")))
-    (is (= [{:name "a suite"
-             :children [{:name "a test"
-                         :status :error}]}]
-           (junit-xml/parse-testsuites "<testsuites><testsuite name=\"a suite\"><testcase name=\"a test\"><error/></testcase></testsuite></testsuites>")))
-    (is (= [{:name "a suite"
-             :children [{:name "a test"
-                         :status :skipped}]}]
-           (junit-xml/parse-testsuites "<testsuites><testsuite name=\"a suite\"><testcase name=\"a test\"><skipped/></testcase></testsuite></testsuites>")))
-    (is (= [{:name "a suite"
-             :children [{:name "a test"
-                         :status :pass}]}]
-           (junit-xml/parse-testsuites "<testsuites><testsuite name=\"a suite\"><testcase name=\"a test\"></testcase></testsuite></testsuites>")))
-    (is (= [{:name "a suite"
+    (testing "status"
+      (is (= [{:name "a suite"
+               :children [{:name "a test"
+                           :classname "the class"
+                           :status :fail}]}]
+             (junit-xml/parse-testsuites "<testsuite name=\"a suite\"><testcase classname=\"the class\" name=\"a test\"><failure/></testcase></testsuite>")))
+      (is (= [{:name "a suite"
+               :children [{:name "a test"
+                           :classname "the class"
+                           :status :error}]}]
+             (junit-xml/parse-testsuites "<testsuite name=\"a suite\"><testcase classname=\"the class\" name=\"a test\"><error/></testcase></testsuite>")))
+      (is (= [{:name "a suite"
+               :children [{:name "a test"
+                           :classname "the class"
+                           :status :skipped}]}]
+             (junit-xml/parse-testsuites "<testsuite name=\"a suite\"><testcase classname=\"the class\" name=\"a test\"><skipped/></testcase></testsuite>")))
+      (is (= [{:name "a suite"
+               :children [{:name "a test"
+                           :classname "the class"
+                           :status :pass}]}]
+             (junit-xml/parse-testsuites "<testsuite name=\"a suite\"><testcase classname=\"the class\" name=\"a test\"></testcase></testsuite>"))))
+
+    (testing "testsuite nesting"
+      (is (= [{:name "a suite"
+               :children [{:name "a sub suite"
+                           :children [{:name "a test"
+                                       :classname "the class"
+                                       :status :pass}]}]}]
+             (junit-xml/parse-testsuites "<testsuite name=\"a suite\"><testsuite name=\"a sub suite\"><testcase classname=\"the class\" name=\"a test\"></testcase></testsuite></testsuite>")))
+      (is (= [{:name "a suite"
+               :children [{:name "a test"
+                           :classname "the class"
+                           :status :pass}]}]
+             (junit-xml/parse-testsuites "<testsuites><testsuite name=\"a suite\"><testcase classname=\"the class\" name=\"a test\"></testcase></testsuite></testsuites>")))
+      (is (= [{:name "a suite"
+               :children [{:name "a test"
+                           :classname "some class"
+                           :status :pass}]}
+              {:name "another suite"
+               :children [{:name "another test"
+                           :classname "the class"
+                           :status :pass}]}]
+             (junit-xml/parse-testsuites "<testsuites><testsuite name=\"a suite\"><testcase classname=\"some class\" name=\"a test\"></testcase></testsuite><testsuite name=\"another suite\"><testcase classname=\"the class\" name=\"another test\"></testcase></testsuite></testsuites>"))))
+
+    (testing "optional runtime"
+      (is (= [{:name "a suite"
+               :children [{:name "a test"
+                           :classname "the class"
+                           :status :pass
+                           :runtime 1234}]}]
+             (junit-xml/parse-testsuites "<testsuite name=\"a suite\"><testcase classname=\"the class\" name=\"a test\" time=\"1.234\"></testcase></testsuite>"))))
+
+    (testing "ignored nodes"
+      (is (= [{:name "a suite"
              :children [{:name "a test"
                          :classname "the class"
-                         :status :fail}]}]
-       (junit-xml/parse-testsuites "<testsuites><testsuite name=\"a suite\"><testcase classname=\"the class\" name=\"a test\"><failure/></testcase></testsuite></testsuites>")))
-    (is (= [{:name "a suite"
-             :children [{:name "a sub suite"
-                         :children [{:name "a test"
-                                     :status :pass}]}]}]
-           (junit-xml/parse-testsuites "<testsuites><testsuite name=\"a suite\"><testsuite name=\"a sub suite\"><testcase name=\"a test\"></testcase></testsuite></testsuite></testsuites>")))
-    (is (= [{:name "a suite"
-             :children [{:name "a test"
-                         :status :pass}]}
-             {:name "another suite"
-              :children [{:name "another test"
-                          :status :pass}]}]
-           (junit-xml/parse-testsuites "<testsuites><testsuite name=\"a suite\"><testcase name=\"a test\"></testcase></testsuite><testsuite name=\"another suite\"><testcase name=\"another test\"></testcase></testsuite></testsuites>")))
-    (is (= [{:name "a suite"
-             :children [{:name "a test"
                          :status :pass}]}]
-           (junit-xml/parse-testsuites "<testsuite name=\"a suite\"><testcase name=\"a test\"></testcase></testsuite>")))
-    (is (= [{:name "a suite"
-             :children [{:name "a test"
-                         :status :pass
-                         :runtime 1234}]}]
-           (junit-xml/parse-testsuites "<testsuite name=\"a suite\"><testcase name=\"a test\" time=\"1.234\"></testcase></testsuite>")))
-    (is (= [{:name "a suite"
-             :children [{:name "a test"
-                         :status :pass
-                         :runtime 1234}]}]
-           (junit-xml/parse-testsuites "<testsuite name=\"a suite\"><properties></properties><testcase name=\"a test\" time=\"1.234\"></testcase></testsuite>")))
-    (is (= [{:name "a suite"
-             :children [{:name "a test"
-                         :status :pass
-                         :runtime 1234}]}]
-           (junit-xml/parse-testsuites "<testsuite name=\"a suite\"><testcase name=\"a test\" time=\"1.234\"></testcase><system-out>some sys out</system-out></testsuite>")))
-    (is (= [{:name "a suite"
-             :children [{:name "a test"
-                         :status :pass
-                         :runtime 1234}]}]
-           (junit-xml/parse-testsuites "<testsuite name=\"a suite\"><testcase name=\"a test\" time=\"1.234\"></testcase><system-err><![CDATA[]]></system-err></testsuite>")))
-    ))
+           (junit-xml/parse-testsuites "<testsuite name=\"a suite\"><properties></properties><testcase classname=\"the class\" name=\"a test\"></testcase></testsuite>")))
+      (is (= [{:name "a suite"
+               :children [{:name "a test"
+                           :classname "the class"
+                           :status :pass}]}]
+             (junit-xml/parse-testsuites "<testsuite name=\"a suite\"><testcase classname=\"the class\" name=\"a test\"></testcase><system-out>some sys out</system-out></testsuite>")))
+      (is (= [{:name "a suite"
+               :children [{:name "a test"
+                           :classname "the class"
+                           :status :pass}]}]
+             (junit-xml/parse-testsuites "<testsuite name=\"a suite\"><testcase classname=\"the class\" name=\"a test\"></testcase><system-err><![CDATA[]]></system-err></testsuite>"))))))
