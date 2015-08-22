@@ -32,21 +32,21 @@
     (is-skipped? testcase-elem) :skipped
     :else :pass))
 
+(defn- parse-classname [testcase-elem]
+  (if-let [classname (:classname (:attrs testcase-elem))]
+    classname
+    (:class (:attrs testcase-elem))))
+
 (defn- add-runtime [testcase testcase-elem]
   (if-let [runtime (parse-runtime testcase-elem)]
     (assoc testcase :runtime runtime)
     testcase))
 
-(defn- add-class [testcase testcase-elem]
-  (if-let [classname (:classname (:attrs testcase-elem))]
-    (assoc testcase :classname classname)
-    testcase))
-
 (defn- testcase [testcase-elem]
   (-> {:name (item-name testcase-elem)
-       :status (parse-status testcase-elem)}
-      (add-runtime testcase-elem)
-      (add-class testcase-elem)))
+       :status (parse-status testcase-elem)
+       :classname (parse-classname testcase-elem)}
+      (add-runtime testcase-elem)))
 
 (declare parse-testsuite)
 

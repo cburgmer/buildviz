@@ -37,6 +37,13 @@
                            :status :pass}]}]
              (junit-xml/parse-testsuites "<testsuite name=\"a suite\"><testcase classname=\"the class\" name=\"a test\"></testcase></testsuite>"))))
 
+    (testing "'class' instead of 'classname'" ; https://phpunit.de/manual/current/en/logging.html
+      (is (= [{:name "a suite"
+               :children [{:name "a test"
+                           :classname "the class"
+                           :status :pass}]}]
+             (junit-xml/parse-testsuites "<testsuite name=\"a suite\"><testcase class=\"the class\" name=\"a test\"></testcase></testsuite>"))))
+
     (testing "testsuite nesting"
       (is (= [{:name "a suite"
                :children [{:name "a sub suite"
