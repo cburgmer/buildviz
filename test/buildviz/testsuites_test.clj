@@ -256,7 +256,8 @@
              :classname "a class"
              :name "the testcase"
              :build-id "failed-run-id"
-             :latest-failure (:start failed-build-input-1)}]
+             :latest-failure (:start failed-build-input-1)
+             :flaky-count 1}]
            (flaky-testcases-as-list {"passed-run-id" passed-build-input-1
                                      "failed-run-id" failed-build-input-1}
                                     {"failed-run-id" [(a-testsuite "a suite"
@@ -265,7 +266,8 @@
              :classname "a class"
              :name "the testcase"
              :build-id "failed-run-id"
-             :latest-failure (:start failed-build-input-1)}]
+             :latest-failure (:start failed-build-input-1)
+             :flaky-count 1}]
            (flaky-testcases-as-list {"passed-run-id" passed-build-input-1
                                      "failed-run-id" failed-build-input-1}
                                     {"failed-run-id" [(a-testsuite "a suite"
@@ -279,7 +281,8 @@
              :classname "some class"
              :name "another testcase"
              :build-id "failed-run-id"
-             :latest-failure (:start failed-build-input-1)}]
+             :latest-failure (:start failed-build-input-1)
+             :flaky-count 1}]
            (flaky-testcases-as-list {"passed-run-id" passed-build-input-1
                                      "failed-run-id" failed-build-input-1}
                                     {"failed-run-id" [(a-testsuite "a suite"
@@ -299,7 +302,8 @@
              :classname "a class"
              :name "the testcase"
              :build-id "failed-run-id"
-             :latest-failure (:start failed-build-input-1)}]
+             :latest-failure (:start failed-build-input-1)
+             :flaky-count 1}]
            (flaky-testcases-as-list {"passed-run-id" passed-build-input-1
                                      "failed-run-id" failed-build-input-1
                                      "another-failed-run-id" failed-build-input-2}
@@ -311,12 +315,14 @@
              :classname "a class"
              :name "the testcase"
              :build-id "failed-run-id"
-             :latest-failure (:start failed-build-input-1)}
+             :latest-failure (:start failed-build-input-1)
+             :flaky-count 1}
             {:testsuite ["another suite"]
              :classname "another class"
              :name "another testcase"
              :build-id "another-failed-run-id"
-             :latest-failure (:start another-failed-build-input-1)}]
+             :latest-failure (:start another-failed-build-input-1)
+             :flaky-count 1}]
         (flaky-testcases-as-list {"passed-run-id" passed-build-input-1
                                   "failed-run-id" failed-build-input-1
                                   "another-failed-run-id" another-failed-build-input-1}
@@ -328,7 +334,8 @@
              :classname "a class"
              :name "the testcase"
              :build-id "another-failed-run-id"
-             :latest-failure (:start another-failed-build-input-1)}]
+             :latest-failure (:start another-failed-build-input-1)
+             :flaky-count 2}]
            (flaky-testcases-as-list {"passed-run-id" passed-build-input-1
                                      "failed-run-id" failed-build-input-1
                                      "another-failed-run-id" another-failed-build-input-1}
@@ -340,7 +347,8 @@
              :classname "a class"
              :name "the testcase"
              :build-id "another-failed-run-id"
-             :latest-failure (:start another-failed-build-input-1)}]
+             :latest-failure (:start another-failed-build-input-1)
+             :flaky-count 2}]
            (flaky-testcases-as-list {"passed-run-id" passed-build-input-1
                                      "failed-run-id" failed-build-input-1
                                      "another-failed-run-id" another-failed-build-input-1}
@@ -358,7 +366,8 @@
              :classname "a class"
              :name "the testcase"
              :build-id "another-failed-run-id"
-             :latest-failure (:start failed-build-input-2)}]
+             :latest-failure (:start failed-build-input-2)
+             :flaky-count 2}]
            (flaky-testcases-as-list {"passed-run-id" passed-build-input-1
                                      "failed-run-id" failed-build-input-1
                                      "another-passed-run-id" passed-build-input-2

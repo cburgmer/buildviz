@@ -186,24 +186,26 @@
        (filter (fn [[testcase-id testcase]] (not (junit-xml/is-ok? testcase))))
        (map (fn [[testcase-id {}]] [testcase-id {:build-id id :failure-time start}]))))
 
-(defn- latest-flaky-testcase [unrolled-testcases]
-  (let [build-infos (map last unrolled-testcases)]
-    (apply max-key :failure-time build-infos)))
-
 (defn- flaky-testcase-summary [unrolled-testcases]
+  (let [build-infos (map last unrolled-testcases)
+        last-build (apply max-key :failure-time build-infos)]
+    {:build-id (:build-id last-build)
+     :latest-failure (:failure-time last-build)
+     :flaky-count (count unrolled-testcases)}))
+
+(defn- flaky-testcase-summaries [unrolled-testcases]
   (->> unrolled-testcases
        (group-by (fn [[testcase-id {}]] testcase-id))
        (map (fn [[testcase-id testcases]]
-              [testcase-id (latest-flaky-testcase testcases)]))))
+              [testcase-id (flaky-testcase-summary testcases)]))))
 
 (defn flaky-testcases-as-list [builds test-results]
   (->> builds
        flaky-builds
        (mapcat #(flaky-testcases-for-build % test-results))
-       flaky-testcase-summary
-       (map (fn [[testcase-id {build-id :build-id failure-time :failure-time}]]
-              {:testsuite (pop (pop testcase-id))
-               :classname (last (pop testcase-id))
-               :name (last testcase-id)
-               :build-id build-id
-               :latest-failure failure-time}))))
+       flaky-testcase-summaries
+       (map (fn [[testcase-id summary]]
+              (assoc summary
+                     :testsuite (pop (pop testcase-id))
+                     :classname (last (pop testcase-id))
+                     :name (last testcase-id))))))
