@@ -140,12 +140,12 @@
              (:status (get-request app "/builds/jobMissingABuild/2/testresults")))))
 
     (let [app (the-app)]
-      (some-test-results app "job" "1" "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuite name=\"suite\"><testcase name=\"case\"></testcase></testsuite>")
+      (some-test-results app "job" "1" "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuite name=\"suite\"><testcase name=\"case\" classname=\"the class\"></testcase></testsuite>")
       (is (= [{"name" "suite"
                "children" [{"name" "case"
+                            "classname" "the class"
                             "status" "pass"}]}]
-             (json-body (json-get-request app "/builds/job/1/testresults")))))
-    ))
+             (json-body (json-get-request app "/builds/job/1/testresults")))))))
 
 
 (deftest JobsSummary
