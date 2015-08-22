@@ -7,7 +7,8 @@
    ring.middleware.accept
    ring.util.response
    [compojure.core :only (GET PUT)]
-   [clojure.string :only (join escape)])
+   [clojure.string :only (join escape)]
+   [clojure.walk :only (postwalk)])
   (:require [buildviz.build-results :as results]
             [buildviz.http :as http]
             [buildviz.junit-xml :as junit-xml]
@@ -30,10 +31,13 @@
     (http/respond-with-json build-data)
     {:status 404}))
 
+(defn- force-evaluate-junit-xml [content]
+  (postwalk identity (junit-xml/parse-testsuites content)))
+
 (defn- store-test-results! [build-results job-name build-id body persist!]
   (let [content (slurp body)]
     (try
-      (junit-xml/parse-testsuites content) ; try parse
+      (force-evaluate-junit-xml content)
       (results/set-tests! build-results job-name build-id content)
       (persist! @(:tests build-results))
       {:status 204}

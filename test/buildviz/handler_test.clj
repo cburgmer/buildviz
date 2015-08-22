@@ -112,7 +112,8 @@
 (deftest JUnitStorage
   (testing "PUT to /builds/:job/:build/testresults"
     (is (= 204 (:status (xml-put-request (the-app) "/builds/mybuild/1/testresults" "<testsuites></testsuites>"))))
-    (is (= 400 (:status (xml-put-request (the-app) "/builds/mybuild/1/testresults" "not xml")))))
+    (is (= 400 (:status (xml-put-request (the-app) "/builds/mybuild/1/testresults" "not xml"))))
+    (is (= 400 (:status (xml-put-request (the-app) "/builds/mybuild/1/testresults" "<testsuite name=\"suite\"><testcase classname=\"class\"/></testsuite>")))))
 
   (testing "GET to /builds/:job/:build/testresults"
     (let [app (the-app)]
@@ -304,18 +305,20 @@
     ;; GET should include a list of failing test cases for JSON
     (let [app (the-app)]
       (a-build app "failingBuild" 1, {:outcome "fail"})
-      (some-test-results app "failingBuild" "1" "<testsuites><testsuite name=\"a suite\"><testcase name=\"a test\"><failure/></testcase></testsuite></testsuites>")
+      (some-test-results app "failingBuild" "1" "<testsuites><testsuite name=\"a suite\"><testcase classname=\"class\" name=\"a test\"><failure/></testcase></testsuite></testsuites>")
       (a-build app "anotherFailingBuild" 1, {:outcome "fail"})
-      (some-test-results app "anotherFailingBuild" "1" "<testsuites><testsuite name=\"another suite\"><testcase name=\"another test\"><failure/></testcase></testsuite></testsuites>")
+      (some-test-results app "anotherFailingBuild" "1" "<testsuites><testsuite name=\"another suite\"><testcase classname=\"class\" name=\"another test\"><failure/></testcase></testsuite></testsuites>")
       (a-build app "failingBuildWithoutTestResults" 1, {:outcome "fail"})
       (a-build app "passingBuild" 1, {:outcome "pass"})
-      (some-test-results app "passingBuild" "1" "<testsuites><testsuite name=\"suite\"><testcase name=\"test\"></testcase></testsuite></testsuites>")
+      (some-test-results app "passingBuild" "1" "<testsuites><testsuite name=\"suite\"><testcase classname=\"class\" name=\"test\"></testcase></testsuite></testsuites>")
       (is (= {"failingBuild" {"failedCount" 1 "children" [{"name" "a suite"
-                                                           "children" [{"name" "a test"
-                                                                        "failedCount" 1}]}]}
+                                                           "children" [{"name" "class"
+                                                                        "children" [{"name" "a test"
+                                                                                     "failedCount" 1}]}]}]}
               "anotherFailingBuild" {"failedCount" 1 "children" [{"name" "another suite"
-                                                                  "children" [{"name" "another test"
-                                                                               "failedCount" 1}]}]}}
+                                                                  "children" [{"name" "class"
+                                                                               "children" [{"name" "another test"
+                                                                                            "failedCount" 1}]}]}]}}
              (json-body (json-get-request app "/failures")))))
     ))
 
@@ -332,12 +335,13 @@
     ;; GET should include a list of builds with test cases
     (let [app (the-app)]
       (a-build app "aBuild" 1, {})
-      (some-test-results app "aBuild" "1" "<testsuites><testsuite name=\"a suite\"><testcase name=\"a test\" time=\"10\"></testcase></testsuite></testsuites>")
+      (some-test-results app "aBuild" "1" "<testsuites><testsuite name=\"a suite\"><testcase classname=\"class\" name=\"a test\" time=\"10\"></testcase></testsuite></testsuites>")
       (a-build app "aBuild" 2, {})
-      (some-test-results app "aBuild" "2" "<testsuites><testsuite name=\"a suite\"><testcase name=\"a test\" time=\"30\"></testcase></testsuite></testsuites>")
+      (some-test-results app "aBuild" "2" "<testsuites><testsuite name=\"a suite\"><testcase classname=\"class\" name=\"a test\" time=\"30\"></testcase></testsuite></testsuites>")
       (is (= {"aBuild" {"children" [{"name" "a suite"
-                                     "children" [{"name" "a test"
-                                                  "averageRuntime" 20000}]}]}}
+                                     "children" [{"name" "class"
+                                                  "children" [{"name" "a test"
+                                                               "averageRuntime" 20000}]}]}]}}
              (json-body (json-get-request app "/testcases")))))
 
     ;; GET should return CSV by default

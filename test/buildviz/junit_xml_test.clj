@@ -1,5 +1,6 @@
 (ns buildviz.junit-xml-test
-  (:use clojure.test)
+  (:use clojure.test
+        [clojure.walk :only (postwalk)])
   (:require [buildviz.junit-xml :as junit-xml]))
 
 (deftest Info
@@ -36,6 +37,11 @@
                            :classname "the class"
                            :status :pass}]}]
              (junit-xml/parse-testsuites "<testsuite name=\"a suite\"><testcase classname=\"the class\" name=\"a test\"></testcase></testsuite>"))))
+
+    (testing "invalid input"
+      (is (thrown? IllegalArgumentException (postwalk identity (junit-xml/parse-testsuites "<testsuite><testcase classname=\"the class\" name=\"a test\"></testcase></testsuite>"))))
+      (is (thrown? IllegalArgumentException (postwalk identity (junit-xml/parse-testsuites "<testsuite name=\"a suite\"><testcase classname=\"the class\"></testcase></testsuite>"))))
+      (is (thrown? IllegalArgumentException (postwalk identity (junit-xml/parse-testsuites "<testsuite name=\"a suite\"><testcase name=\"a test\"></testcase></testsuite>")))))
 
     (testing "'class' instead of 'classname'" ; https://phpunit.de/manual/current/en/logging.html
       (is (= [{:name "a suite"

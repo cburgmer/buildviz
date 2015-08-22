@@ -18,7 +18,12 @@
   (some #(= :skipped (:tag %))
         (:content testcase-elem)))
 
-(defn- item-name [elem]
+(defn- assert-not-nil [value msg]
+  (if (nil? value)
+    (throw (IllegalArgumentException. msg)))
+  value)
+
+(defn- parse-name [elem]
   (:name (:attrs elem)))
 
 (defn- parse-runtime [testcase-elem]
@@ -43,9 +48,9 @@
     testcase))
 
 (defn- testcase [testcase-elem]
-  (-> {:name (item-name testcase-elem)
+  (-> {:name (assert-not-nil (parse-name testcase-elem) "No name given for testcase")
        :status (parse-status testcase-elem)
-       :classname (parse-classname testcase-elem)}
+       :classname (assert-not-nil (parse-classname testcase-elem) "No classname given for testcase")}
       (add-runtime testcase-elem)))
 
 (declare parse-testsuite)
@@ -60,7 +65,7 @@
   (filter #(or (testcase? %) (testsuite? %)) elements))
 
 (defn- testsuite [testsuite-elem]
-  {:name (item-name testsuite-elem)
+  {:name (assert-not-nil (parse-name testsuite-elem) "No name given for testsuite")
    :children (map parse-testsuite
                   (parseable-elements (:content testsuite-elem)))})
 
