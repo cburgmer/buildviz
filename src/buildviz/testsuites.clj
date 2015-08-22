@@ -180,11 +180,11 @@
        (map #(get % "fail"))
        (apply concat)))
 
-(defn- flaky-testcases-for-build [{id :id start :start} test-results]
-  (->> (get test-results id)
+(defn- flaky-testcases-for-build [{build-id :id start :start} test-results-func]
+  (->> (test-results-func build-id)
        unroll-testsuites
        (filter (fn [[testcase-id testcase]] (not (junit-xml/is-ok? testcase))))
-       (map (fn [[testcase-id {}]] [testcase-id {:build-id id :failure-time start}]))))
+       (map (fn [[testcase-id {}]] [testcase-id {:build-id build-id :failure-time start}]))))
 
 (defn- flaky-testcase-summary [unrolled-testcases]
   (let [build-infos (map last unrolled-testcases)
@@ -199,10 +199,10 @@
        (map (fn [[testcase-id testcases]]
               [testcase-id (flaky-testcase-summary testcases)]))))
 
-(defn flaky-testcases-as-list [builds test-results]
+(defn flaky-testcases-as-list [builds test-results-func]
   (->> builds
        flaky-builds
-       (mapcat #(flaky-testcases-for-build % test-results))
+       (mapcat #(flaky-testcases-for-build % test-results-func))
        flaky-testcase-summaries
        (map (fn [[testcase-id summary]]
               (assoc summary

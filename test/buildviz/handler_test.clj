@@ -414,7 +414,9 @@
                {"aBuild" {"failing" {:outcome "fail" :start a-timestamp}
                           "passing" {:outcome "pass"}}
                 "anotherBuild" {"failing" {:outcome "fail" :start a-timestamp}
-                                "passing" {:outcome "pass"}}}
+                                "passing" {:outcome "pass"}}
+                "buildWithoutTests" {"failing" {:outcome "fail"}
+                                     "passing" {:outcome "pass"}}}
                {"aBuild" {"failing" "<testsuite name=\"a suite\"><testsuite name=\"nested suite\"><testcase name=\"testcase\" classname=\"class\"><failure/></testcase></testsuite></testsuite>"}
                 "anotherBuild" {"failing" "<testsuite name=\"a suite\"><testcase name=\"testcase\" classname=\"class\"><failure/></testcase></testsuite>"}})]
       (is (= (join ["latestFailure,flakyCount,job,latestBuildId,testsuite,classname,name\n"

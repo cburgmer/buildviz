@@ -25,6 +25,10 @@
 (def failed-build-input-2 {:outcome "fail" :start 4 :inputs '({:revision "2" :id 42})})
 (def passed-build-input-2 {:outcome "pass" :start 5 :inputs '({:revision "2" :id 42})})
 
+(defn- dummy-test-lookup [tests]
+  (fn [build-id]
+    (get tests build-id)))
+
 (deftest TestSuiteAccumulation
   (testing "accumulate-testsuite-failures"
     (is (= []
@@ -251,7 +255,8 @@
 
   (testing "flaky-testcases-as-list"
     (is (= []
-           (flaky-testcases-as-list {} {})))
+           (flaky-testcases-as-list {}
+                                    (dummy-test-lookup {}))))
     (is (= [{:testsuite ["a suite"]
              :classname "a class"
              :name "the testcase"
@@ -260,8 +265,8 @@
              :flaky-count 1}]
            (flaky-testcases-as-list {"passed-run-id" passed-build-input-1
                                      "failed-run-id" failed-build-input-1}
-                                    {"failed-run-id" [(a-testsuite "a suite"
-                                                                   (a-testcase "a class" "the testcase" :fail))]})))
+                                    (dummy-test-lookup {"failed-run-id" [(a-testsuite "a suite"
+                                                                                      (a-testcase "a class" "the testcase" :fail))]}))))
     (is (= [{:testsuite ["a suite"]
              :classname "a class"
              :name "the testcase"
@@ -270,13 +275,13 @@
              :flaky-count 1}]
            (flaky-testcases-as-list {"passed-run-id" passed-build-input-1
                                      "failed-run-id" failed-build-input-1}
-                                    {"failed-run-id" [(a-testsuite "a suite"
-                                                                   (a-testcase "a class" "the testcase" :error))]})))
+                                    (dummy-test-lookup {"failed-run-id" [(a-testsuite "a suite"
+                                                                                      (a-testcase "a class" "the testcase" :error))]}))))
     (is (= []
            (flaky-testcases-as-list {"passed-run-id" passed-build-input-1
                                      "failed-run-id" failed-build-input-1}
-                                    {"failed-run-id" [(a-testsuite "a suite"
-                                                                   (a-testcase "a class" "the testcase" :pass))]})))
+                                    (dummy-test-lookup {"failed-run-id" [(a-testsuite "a suite"
+                                                                                      (a-testcase "a class" "the testcase" :pass))]}))))
     (is (= [{:testsuite ["some suite"]
              :classname "some class"
              :name "another testcase"
@@ -285,19 +290,19 @@
              :flaky-count 1}]
            (flaky-testcases-as-list {"passed-run-id" passed-build-input-1
                                      "failed-run-id" failed-build-input-1}
-                                    {"failed-run-id" [(a-testsuite "a suite"
-                                                                   (a-testcase "a class" "the testcase" :pass))
-                                                      (a-testsuite "some suite"
-                                                                   (a-testcase "some class" "another testcase" :fail))]})))
+                                    (dummy-test-lookup {"failed-run-id" [(a-testsuite "a suite"
+                                                                                      (a-testcase "a class" "the testcase" :pass))
+                                                                         (a-testsuite "some suite"
+                                                                                      (a-testcase "some class" "another testcase" :fail))]}))))
     (is (= []
            (flaky-testcases-as-list {"failed-run-id" failed-build-input-1}
-                                    {"failed-run-id" [(a-testsuite "a suite"
-                                                                   (a-testcase "a class" "the testcase" :fail))]})))
+                                    (dummy-test-lookup {"failed-run-id" [(a-testsuite "a suite"
+                                                                                      (a-testcase "a class" "the testcase" :fail))]}))))
     (is (= []
            (flaky-testcases-as-list {"passed-run-id" passed-build-input-2
                                      "failed-run-id" failed-build-input-1}
-                                    {"failed-run-id" [(a-testsuite "a suite"
-                                                                   (a-testcase "a class" "the testcase" :fail))]})))
+                                    (dummy-test-lookup {"failed-run-id" [(a-testsuite "a suite"
+                                                                                      (a-testcase "a class" "the testcase" :fail))]}))))
     (is (= [{:testsuite ["a suite"]
              :classname "a class"
              :name "the testcase"
@@ -307,10 +312,10 @@
            (flaky-testcases-as-list {"passed-run-id" passed-build-input-1
                                      "failed-run-id" failed-build-input-1
                                      "another-failed-run-id" failed-build-input-2}
-                                    {"failed-run-id" [(a-testsuite "a suite"
-                                                                   (a-testcase "a class" "the testcase" :fail))]
-                                     "another-failed-run-id" [(a-testsuite "another suite"
-                                                                           (a-testcase "another class" "another testcase" :fail))]})))
+                                    (dummy-test-lookup {"failed-run-id" [(a-testsuite "a suite"
+                                                                                      (a-testcase "a class" "the testcase" :fail))]
+                                                        "another-failed-run-id" [(a-testsuite "another suite"
+                                                                                              (a-testcase "another class" "another testcase" :fail))]}))))
     (is (= [{:testsuite ["a suite"]
              :classname "a class"
              :name "the testcase"
@@ -326,10 +331,10 @@
         (flaky-testcases-as-list {"passed-run-id" passed-build-input-1
                                   "failed-run-id" failed-build-input-1
                                   "another-failed-run-id" another-failed-build-input-1}
-                                 {"failed-run-id" [(a-testsuite "a suite"
-                                                                (a-testcase "a class" "the testcase" :fail))]
-                                  "another-failed-run-id" [(a-testsuite "another suite"
-                                                                        (a-testcase "another class" "another testcase" :fail))]})))
+                                 (dummy-test-lookup {"failed-run-id" [(a-testsuite "a suite"
+                                                                                   (a-testcase "a class" "the testcase" :fail))]
+                                                     "another-failed-run-id" [(a-testsuite "another suite"
+                                                                                           (a-testcase "another class" "another testcase" :fail))]}))))
     (is (= [{:testsuite ["a suite"]
              :classname "a class"
              :name "the testcase"
@@ -339,10 +344,10 @@
            (flaky-testcases-as-list {"passed-run-id" passed-build-input-1
                                      "failed-run-id" failed-build-input-1
                                      "another-failed-run-id" another-failed-build-input-1}
-                                    {"failed-run-id" [(a-testsuite "a suite"
-                                                                   (a-testcase "a class" "the testcase" :fail))]
-                                     "another-failed-run-id" [(a-testsuite "a suite"
-                                                                           (a-testcase "a class" "the testcase" :fail))]})))
+                                    (dummy-test-lookup {"failed-run-id" [(a-testsuite "a suite"
+                                                                                      (a-testcase "a class" "the testcase" :fail))]
+                                                        "another-failed-run-id" [(a-testsuite "a suite"
+                                                                                              (a-testcase "a class" "the testcase" :fail))]}))))
     (is (= [{:testsuite ["a suite"]
              :classname "a class"
              :name "the testcase"
@@ -352,16 +357,16 @@
            (flaky-testcases-as-list {"passed-run-id" passed-build-input-1
                                      "failed-run-id" failed-build-input-1
                                      "another-failed-run-id" another-failed-build-input-1}
-                                    {"failed-run-id" [{:name "a suite"
-                                                       :children [{:name "the testcase"
-                                                                   :classname "a class"
-                                                                   :status :fail
-                                                                   :runtime 42}]}]
-                                     "another-failed-run-id" [{:name "a suite"
-                                                               :children [{:name "the testcase"
-                                                                           :classname "a class"
-                                                                           :status :fail
-                                                                           :runtime 1}]}]})))
+                                    (dummy-test-lookup {"failed-run-id" [{:name "a suite"
+                                                                          :children [{:name "the testcase"
+                                                                                      :classname "a class"
+                                                                                      :status :fail
+                                                                                      :runtime 42}]}]
+                                                        "another-failed-run-id" [{:name "a suite"
+                                                                                  :children [{:name "the testcase"
+                                                                                              :classname "a class"
+                                                                                              :status :fail
+                                                                                              :runtime 1}]}]}))))
     (is (= [{:testsuite ["a suite"]
              :classname "a class"
              :name "the testcase"
@@ -372,7 +377,7 @@
                                      "failed-run-id" failed-build-input-1
                                      "another-passed-run-id" passed-build-input-2
                                      "another-failed-run-id" failed-build-input-2}
-                                    {"failed-run-id" [(a-testsuite "a suite"
-                                                                   (a-testcase "a class" "the testcase" :fail))]
-                                     "another-failed-run-id" [(a-testsuite "a suite"
-                                                                           (a-testcase "a class" "the testcase" :fail))]})))))
+                                    (dummy-test-lookup {"failed-run-id" [(a-testsuite "a suite"
+                                                                                      (a-testcase "a class" "the testcase" :fail))]
+                                                        "another-failed-run-id" [(a-testsuite "a suite"
+                                                                                              (a-testcase "a class" "the testcase" :fail))]}))))))
