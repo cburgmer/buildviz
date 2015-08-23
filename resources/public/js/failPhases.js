@@ -38,41 +38,45 @@
         return duration / (60 * 1000);
     };
 
-    var aggregatePhaseDurationByDay = function (data) {
+    var calculatePhases = function (data) {
         var lastPhase;
 
-        var phases = data.map(function (phase) {
-            var greenPhaseDuration, redPhaseDuration;
+        return data.map(function (phase) {
+            var calculatedPhase = {
+                end: phase.end
+            };
 
             if (lastPhase) {
-                phase.greenPhaseDuration = phase.start - lastPhase.end;
+                calculatedPhase.previousGreenPhaseDuration = phase.start - lastPhase.end;
             }
-            phase.redPhaseDuration = phase.end - phase.start;
+            calculatedPhase.redPhaseDuration = phase.end - phase.start;
 
             lastPhase = phase;
 
-            return phase;
+            return calculatedPhase;
         });
+    };
 
+    var aggregatePhaseDurationByDay = function (phases) {
         var phasesByDay = d3.nest()
                 .key(function (d) {
                     var date = new Date(d.end);
                     return new Date(date.getFullYear(), date.getMonth(), date.getDate()).valueOf();
                 })
-                .entries(data);
+                .entries(phases);
 
         return phasesByDay.map(function (e) {
             return {
                 day: new Date(parseInt(e.key)),
                 redDuration: d3.mean(e.values.map(function (v) { return v.redPhaseDuration; }), durationInMinutes),
-                greenDuration: d3.mean(e.values.map(function (v) { return v.greenPhaseDuration; }), durationInMinutes)
+                greenDuration: d3.mean(e.values.map(function (v) { return v.previousGreenPhaseDuration; }), durationInMinutes)
             };
         });
     };
 
     d3.json('/failphases', function (_, data) {
 
-        var phaseDurationByDay = aggregatePhaseDurationByDay(data);
+        var phaseDurationByDay = aggregatePhaseDurationByDay(calculatePhases(data));
 
         x.domain(d3.extent(phaseDurationByDay, function(d) { return d.day; }));
         y.domain(d3.extent(phaseDurationByDay, function(d) { return d.redDuration; }));
