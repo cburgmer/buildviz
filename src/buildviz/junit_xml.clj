@@ -53,21 +53,22 @@
        :classname (assert-not-nil (parse-classname testcase-elem) "No classname given for testcase")}
       (add-runtime testcase-elem)))
 
-(declare parse-testsuite)
-
 (defn- testsuite? [elem]
   (= :testsuite (:tag elem)))
 
 (defn- testcase? [elem]
   (= :testcase (:tag elem)))
 
-(defn- parseable-elements [elements]
-  (filter #(or (testcase? %) (testsuite? %)) elements))
+(defn- parseable-content [elem]
+  (let [children (:content elem)]
+    (filter #(or (testcase? %) (testsuite? %)) children)))
+
+(declare parse-testsuite)
 
 (defn- testsuite [testsuite-elem]
-  {:name (assert-not-nil (parse-name testsuite-elem) "No name given for testsuite")
+  {:name (assert-not-nil (parse-name testsuite-elem) "No name given for testsuite (or invalid element)")
    :children (map parse-testsuite
-                  (parseable-elements (:content testsuite-elem)))})
+                  (parseable-content testsuite-elem))})
 
 (defn- parse-testsuite [elem]
   (if (testsuite? elem)
@@ -76,7 +77,7 @@
 
 (defn parse-testsuites [junit-xml-result]
   (let [root (xml/parse (java.io.ByteArrayInputStream. (.getBytes junit-xml-result)))]
-    (if (= :testsuites (:tag root))
+    (if (testsuite? root)
+      (list (parse-testsuite root))
       (map parse-testsuite
-           (:content root))
-      (list (parse-testsuite root)))))
+           (:content root)))))
