@@ -29,16 +29,14 @@
 (def excel-datetime-formatter (tf/formatter "yyyy-MM-dd HH:mm:ss" (t/default-time-zone)))
 
 (defn format-timestamp [timestamp]
-  (if (nil? timestamp)
-    nil
+  (when-not (nil? timestamp)
     (tf/unparse excel-datetime-formatter (tc/from-long (long timestamp)))))
 
 
 (def day-in-millis (* 24 60 60 1000))
 
 (defn format-duration [duration]
-  (if (nil? duration)
-    nil
+  (when-not (nil? duration)
     (format "%.8f" (float (/ duration day-in-millis)))))
 
 (defn export-table [header entries]

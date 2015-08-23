@@ -32,7 +32,7 @@
     (- (build :end) (build :start))))
 
 (defn- build-runtime [build-data-entries]
-  (filter (complement nil?)
+  (filter some?
           (map runtime-for build-data-entries)))
 
 (defn average-runtime [build-data-entries]

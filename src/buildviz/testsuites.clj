@@ -44,7 +44,7 @@
 
 (defn- failed-testcase-ids [unrolled-testcases]
   (map #(first %)
-       (filter #(not (junit-xml/is-ok? (last %)))
+       (remove #(junit-xml/is-ok? (last %))
                unrolled-testcases)))
 
 
@@ -126,7 +126,7 @@
 
 (defn- accumulate-runtime-by-class [testsuite]
   (let [nested-suites (filter :children (:children testsuite))
-        testcases (filter (complement :children) (:children testsuite))]
+        testcases (remove :children (:children testsuite))]
     (assoc testsuite
            :children
            (concat (map accumulate-runtime-by-class nested-suites)
@@ -184,7 +184,7 @@
 (defn- flaky-testcases-for-build [{build-id :id start :start} test-results-func]
   (->> (test-results-func build-id)
        unroll-testsuites
-       (filter (fn [[testcase-id testcase]] (not (junit-xml/is-ok? testcase))))
+       (remove (fn [[testcase-id testcase]] (junit-xml/is-ok? testcase)))
        (map (fn [[testcase-id {}]] [testcase-id {:build-id build-id :failure-time start}]))))
 
 (defn- flaky-testcase-summary [unrolled-testcases]
