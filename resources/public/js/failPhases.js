@@ -12,7 +12,7 @@
             .range([height, 0]);
 
     var y2 = d3.scale.linear()
-            .domain([0, 24 * 60 * 60 * 1000])
+            .domain([0, 24])
             .range([height, 0]);
 
     var xAxis = d3.svg.axis()
@@ -23,13 +23,17 @@
             .scale(y)
             .orient("left");
 
+    var y2Axis = d3.svg.axis()
+            .scale(y2)
+            .orient("left");
+
     var line = d3.svg.line()
             .interpolate("basis")
             .x(function(d) { return x(d.day); })
             .y(function(d) { return y(d.duration || 0); });
 
-    var svg = widget.create("Fail duration",
-                            "Average duration of pipeline failure vs. green phases",
+    var svg = widget.create("Fail phases",
+                            "Pipeline failure vs. green phases",
                            "/failphases.csv")
             .svg(diameter)
             .attr('class', 'failphases');
@@ -43,7 +47,7 @@
     };
 
     var timeOfDay = function (date) {
-        return (date.getTime() - (date.getTimezoneOffset() * 60 * 1000)) % (24 * 60 * 60 * 1000);
+        return (date.getTime() - (date.getTimezoneOffset() * 60 * 1000)) % (24 * 60 * 60 * 1000) / (60 * 60 * 1000);
     };
 
     var startOfDay = function (date) {
@@ -157,15 +161,25 @@
             .attr("transform", "translate(0," + height + ")")
             .call(xAxis);
 
+        // g.append("g")
+        //     .attr("class", "y axis")
+        //     .call(yAxis)
+        //     .append("text")
+        //     .attr("transform", "rotate(-90)")
+        //     .attr("y", 6)
+        //     .attr("dy", ".71em")
+        //     .style("text-anchor", "end")
+        //     .text("Duration [minutes]");
+
         g.append("g")
             .attr("class", "y axis")
-            .call(yAxis)
+            .call(y2Axis)
             .append("text")
             .attr("transform", "rotate(-90)")
             .attr("y", 6)
             .attr("dy", ".71em")
             .style("text-anchor", "end")
-            .text("Duration [minutes]");
+            .text("Time of the day");
 
         g.selectAll('rect')
             .data(calculatePhasesByDay(data))
@@ -195,19 +209,19 @@
                 return duration;
             });
 
-        g.selectAll('.redLine')
-            .data([phaseDurationByDay.map(function (d) { return {day: d.day, duration: d.redDuration}; })])
-            .enter()
-            .append("path")
-            .attr("d", line)
-            .attr('class', 'redLine');
+        // g.selectAll('.redLine')
+        //     .data([phaseDurationByDay.map(function (d) { return {day: d.day, duration: d.redDuration}; })])
+        //     .enter()
+        //     .append("path")
+        //     .attr("d", line)
+        //     .attr('class', 'redLine');
 
-        g.selectAll('.greenLine')
-            .data([phaseDurationByDay.map(function (d) { return {day: d.day, duration: d.greenDuration}; })])
-            .enter()
-            .append("path")
-            .attr("d", line)
-            .attr('class', 'greenLine');
+        // g.selectAll('.greenLine')
+        //     .data([phaseDurationByDay.map(function (d) { return {day: d.day, duration: d.greenDuration}; })])
+        //     .enter()
+        //     .append("path")
+        //     .attr("d", line)
+        //     .attr('class', 'greenLine');
 
     });
 }(widget, utils));
