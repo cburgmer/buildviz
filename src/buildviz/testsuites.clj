@@ -169,6 +169,7 @@
   (->> (seq jobs)
        (map (fn [[build-id build-data]]
               (assoc build-data :id build-id)))
+       (filter :inputs)
        (group-by :inputs)
        vals
        (map #(group-by :outcome %))
