@@ -1,4 +1,4 @@
-(function (widget) {
+(function (widget, utils) {
     var diameter = 600;
 
     var margin = {top: 10, right: 0, bottom: 30, left: 50},
@@ -94,6 +94,7 @@
             if (lastEntry) {
                 greenPhases = phasesByDay(lastEntry.end + 1, entry.start - 1).map(function (phase) {
                     phase.color = 'green';
+                    phase.duration = entry.start - lastEntry.end;
                     return phase;
                 });
             }
@@ -102,6 +103,8 @@
 
             return greenPhases.concat(phasesByDay(entry.start, entry.end).map(function (phase) {
                 phase.color = 'red';
+                phase.culprits = entry.culprits;
+                phase.duration = entry.end - entry.start;
                 return phase;
             }));
         }));
@@ -183,6 +186,13 @@
             })
             .attr('fill', function (d) {
                 return d.color;
+            })
+            .attr('title', function (d) {
+                var duration = utils.formatTimeInMs(d.duration);
+                if (d.color === 'red') {
+                    return duration + '\n' + d.culprits.join(', ');
+                }
+                return duration;
             });
 
         g.selectAll('.redLine')
@@ -200,4 +210,4 @@
             .attr('class', 'greenLine');
 
     });
-}(widget));
+}(widget, utils));
