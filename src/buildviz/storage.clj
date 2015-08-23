@@ -5,12 +5,12 @@
 
 (import '[java.io DataInputStream DataOutputStream])
 
-(defn store-jobs! [jobs filename]
+(defn store! [jobs filename]
   (log/info (format "Persisting to %s" filename))
   (with-open [w (io/output-stream filename)]
     (nippy/freeze-to-out! (DataOutputStream. w) jobs)))
 
-(defn load-jobs [filename]
+(defn load [filename]
   (if (.exists (io/file filename))
     (with-open
       [r (io/input-stream filename)]

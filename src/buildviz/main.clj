@@ -9,15 +9,15 @@
 
 
 (defn- persist-jobs! [build-data]
-  (storage/store-jobs! build-data jobs-filename))
+  (storage/store! build-data jobs-filename))
 
 (defn- persist-tests! [tests-data]
-  (storage/store-jobs! tests-data tests-filename))
+  (storage/store! tests-data tests-filename))
 
 
 (def app
-  (let [builds (storage/load-jobs jobs-filename)
-        tests (storage/load-jobs tests-filename)]
+  (let [builds (storage/load jobs-filename)
+        tests (storage/load tests-filename)]
     (-> (handler/create-app (results/build-results builds tests)
                             persist-jobs!
                             persist-tests!)
