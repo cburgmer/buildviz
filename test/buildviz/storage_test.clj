@@ -9,13 +9,13 @@
     (testing "read/write"
       (let [jobs {}]
         (store! jobs temp-file)
-        (is (= (load temp-file)
+        (is (= (load-from-file temp-file)
                jobs)))
 
       (let [jobs {"someBuild" {"1" {:start 42 :end 50 :outcome "pass"}}}]
         (store! jobs temp-file)
-        (is (= (load temp-file)
+        (is (= (load-from-file temp-file)
                jobs)))
 
       (is (= {}
-             (load "non-existing-file"))))))
+             (load-from-file "non-existing-file"))))))

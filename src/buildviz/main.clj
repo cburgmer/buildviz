@@ -16,8 +16,8 @@
 
 
 (def app
-  (let [builds (storage/load jobs-filename)
-        tests (storage/load tests-filename)]
+  (let [builds (storage/load-from-file jobs-filename)
+        tests (storage/load-from-file tests-filename)]
     (-> (handler/create-app (results/build-results builds tests)
                             persist-jobs!
                             persist-tests!)

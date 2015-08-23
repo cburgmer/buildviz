@@ -10,7 +10,7 @@
   (with-open [w (io/output-stream filename)]
     (nippy/freeze-to-out! (DataOutputStream. w) jobs)))
 
-(defn load [filename]
+(defn load-from-file [filename]
   (if (.exists (io/file filename))
     (with-open
       [r (io/input-stream filename)]
