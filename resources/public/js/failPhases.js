@@ -11,6 +11,10 @@
     var y = d3.scale.linear()
             .range([height, 0]);
 
+    var y2 = d3.scale.linear()
+            .domain([0, 24 * 60 * 60 * 1000])
+            .range([height, 0]);
+
     var xAxis = d3.svg.axis()
             .scale(x)
             .orient("bottom");
@@ -36,6 +40,71 @@
 
     var durationInMinutes = function (duration) {
         return duration / (60 * 1000);
+    };
+
+    var timeOfDay = function (date) {
+        return (date.getTime() - (date.getTimezoneOffset() * 60 * 1000)) % (24 * 60 * 60 * 1000);
+    };
+
+    var startOfDay = function (date) {
+        return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    };
+
+    var endOfDay = function (date) {
+        var nextDay = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
+
+        return new Date(nextDay.getTime() - 1);
+    };
+
+    var phasesByDay = function (start, end) {
+        var phases = [],
+            startDate = new Date(start),
+            endDate = new Date(end),
+            endOfCurrentDay = endOfDay(startDate);
+
+        while (endOfCurrentDay < endDate) {
+            phases.push({
+                start: startDate,
+                end: endOfCurrentDay
+            });
+
+            startDate = new Date(endOfCurrentDay.getTime() + 1);
+            endOfCurrentDay = endOfDay(startDate);
+        }
+
+        phases.push({
+            start: startDate,
+            end: endDate
+        });
+
+        return phases;
+    };
+
+    var flatten = function (listOfLists) {
+        return listOfLists.reduce(function (a, b) { return a.concat(b); });
+    };
+
+    var calculatePhasesByDay = function (data) {
+        var lastEntry;
+
+        return flatten(data.map(function (entry) {
+            var greenPhases = [],
+                start = entry.start;
+
+            if (lastEntry) {
+                greenPhases = phasesByDay(lastEntry.end + 1, entry.start - 1).map(function (phase) {
+                    phase.color = 'green';
+                    return phase;
+                });
+            }
+
+            lastEntry = entry;
+
+            return greenPhases.concat(phasesByDay(entry.start, entry.end).map(function (phase) {
+                phase.color = 'red';
+                return phase;
+            }));
+        }));
     };
 
     var calculatePhases = function (data) {
@@ -75,7 +144,6 @@
     };
 
     d3.json('/failphases', function (_, data) {
-
         var phaseDurationByDay = aggregatePhaseDurationByDay(calculatePhases(data));
 
         x.domain(d3.extent(phaseDurationByDay, function(d) { return d.day; }));
@@ -95,6 +163,27 @@
             .attr("dy", ".71em")
             .style("text-anchor", "end")
             .text("Duration [minutes]");
+
+        g.selectAll('rect')
+            .data(calculatePhasesByDay(data))
+            .enter()
+            .append('rect')
+            .attr('x', function (d) {
+                return x(startOfDay(d.start));
+            })
+            .attr('width', function (d) {
+                // TODO this is constant, make it so
+                return x(endOfDay(d.start)) - x(startOfDay(d.start));
+            })
+            .attr('y', function (d) {
+                return y2(timeOfDay(d.end));
+            })
+            .attr('height', function (d) {
+                return y2(timeOfDay(d.start)) - y2(timeOfDay(d.end));
+            })
+            .attr('fill', function (d) {
+                return d.color;
+            });
 
         g.selectAll('.redLine')
             .data([phaseDurationByDay.map(function (d) { return {day: d.day, duration: d.redDuration}; })])
