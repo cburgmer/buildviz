@@ -28,7 +28,8 @@
     (let [resp (handler req)
           status (:status resp)
           body (:body resp)
+          method (.toUpperCase (name (:request-method req)))
           uri (:uri req)]
       (when (and (some? status) (>= status 400))
-        (log/warn (format "Returned %s for %s: \"%s\"" status uri body)))
+        (log/warn (format "Returned %s for %s %s: \"%s\"" status method uri body)))
       resp)))
