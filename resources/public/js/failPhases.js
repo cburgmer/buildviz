@@ -133,6 +133,16 @@
         });
     };
 
+    var annotateDateAndTime = function (phases) {
+        return phases.map(function (phase) {
+            phase.startOfDay = startOfDay(phase.start);
+            phase.endOfDay = endOfDay(phase.end);
+            phase.startTime = timeOfDay(phase.start);
+            phase.endTime = timeOfDay(phase.end);
+            return phase;
+        });
+    };
+
     var aggregatePhaseDurationByDay = function (phases) {
         var phasesByDay = d3.nest()
                 .key(function (d) {
@@ -151,10 +161,11 @@
     };
 
     d3.json('/failphases', function (_, data) {
-        var phaseDurationByDay = aggregatePhaseDurationByDay(calculatePhases(data));
+        var phasesByDay = annotateDateAndTime(calculatePhasesByDay(data));
+        // var phaseDurationByDay = aggregatePhaseDurationByDay(calculatePhases(data));
 
-        x.domain(d3.extent(phaseDurationByDay, function(d) { return d.day; }));
-        y.domain(d3.extent(phaseDurationByDay, function(d) { return d.redDuration; }));
+        x.domain(d3.extent(phasesByDay, function(d) { return d.startOfDay; }));
+        // y.domain(d3.extent(phaseDurationByDay, function(d) { return d.redDuration; }));
 
         g.append("g")
             .attr("class", "x axis")
@@ -182,21 +193,20 @@
             .text("Time of the day");
 
         g.selectAll('rect')
-            .data(calculatePhasesByDay(data))
+            .data(phasesByDay)
             .enter()
             .append('rect')
             .attr('x', function (d) {
                 return x(startOfDay(d.start));
             })
             .attr('width', function (d) {
-                // TODO this is constant, make it so
-                return x(endOfDay(d.start)) - x(startOfDay(d.start));
+              return x(d.endOfDay) - x(d.startOfDay);
             })
             .attr('y', function (d) {
-                return y2(timeOfDay(d.end));
+                return y2(d.endTime);
             })
             .attr('height', function (d) {
-                return y2(timeOfDay(d.start)) - y2(timeOfDay(d.end));
+                return y2(d.startTime) - y2(d.endTime);
             })
             .attr('fill', function (d) {
                 return d.color;
