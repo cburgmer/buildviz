@@ -1,5 +1,6 @@
 (ns buildviz.gosync
   (:require [clojure.string :as string]
+            [clojure.tools.logging :as log]
             [cheshire.core :as j]
             [clj-http.client :as client]
             [clj-time.core :as t]
@@ -181,7 +182,7 @@
     (try
       (get-json artifacts-url)
       (catch Exception e
-        (println "Unable to get artifact list, might have been deleted by Go")
+        (log/warn (format "Unable to get artifact list from %s, might have been deleted by Go" artifacts-url))
         {}))))
 
 (defn xml-artifacts-for-job-run [job-instance]
@@ -194,7 +195,7 @@
     (assoc job-instance
            :junit-xml-func
            (fn []
-             (println xml-file-url)
+             (log/info (format "Reading test results from %s" xml-file-url))
              (:body (client/get xml-file-url))))
     job-instance))
 
@@ -221,9 +222,14 @@
   (client/put (clojure.string/join [(buildviz-build-base-url job-name build-no) "/testresults"])
               {:body xml-content}))
 
+(defn dot []
+  (print ".")
+  (flush))
+
 (defn put-to-buildviz [builds]
   (doseq [{jobName :jobName buildNo :buildNo build :build junit-xml-func :junit-xml-func} builds]
-    (println jobName buildNo build)
+    (dot)
+    (log/info (format "Syncing %s %s: build" jobName buildNo build))
     (put-build jobName buildNo  build)
     (when (some? junit-xml-func)
       (put-junit-xml jobName buildNo (junit-xml-func)))))
@@ -266,4 +272,5 @@
 
   (put-to-buildviz (map make-build-instance job-instances))
 
+  (println)
   (println (format "Done, wrote %s build entries" (count job-instances))))
