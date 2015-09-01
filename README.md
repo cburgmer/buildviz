@@ -30,13 +30,13 @@ Then `PUT` JSON data in the following format to `http://localhost:3000/builds/$J
 
 ```js
 {
-"start": $START_TIMESTAMP,
-"end": $END_TIMESTAMP,
-"outcome": "pass", /* or "fail" */
-"inputs": [{
+  "start": $START_TIMESTAMP,
+  "end": $END_TIMESTAMP,
+  "outcome": "pass", /* or "fail" */
+  "inputs": [{
     "revision": "$REVISION",
     "source_id": "$SOURCE_ID"
-}]
+  }]
 }
 ```
 
