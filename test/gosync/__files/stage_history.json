@@ -1,0 +1,16 @@
+{
+    "stages": [
+        {
+            "counter": "1",
+            "jobs": [
+                {
+                    "id": 42,
+                    "name": "A_Job",
+                    "result": "Passed",
+                    "scheduled_date": 1431560352151
+                }
+            ],
+            "pipeline_counter": 41
+        }
+    ]
+}

@@ -1,0 +1,13 @@
+{
+  "request" : {
+    "url" : "/api/stages/A_Pipeline/A_Stage/history/1",
+    "method" : "GET"
+  },
+  "response" : {
+    "status" : 200,
+    "bodyFileName" : "stage_history_end.json",
+    "headers" : {
+      "Content-Type" : "application/json; charset=utf-8"
+    }
+  }
+}

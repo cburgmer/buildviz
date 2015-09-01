@@ -1,0 +1,15 @@
+[
+    {
+        "name": "A_Pipeline_Group",
+        "pipelines": [
+            {
+                "name": "A_Pipeline",
+                "stages": [
+                    {
+                        "name": "A_Stage"
+                    }
+                ]
+            }
+        ]
+    }
+]

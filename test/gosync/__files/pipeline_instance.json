@@ -1,0 +1,16 @@
+{
+    "build_cause": {
+        "material_revisions": [
+            {
+                "material": {
+                    "id": 6
+                },
+                "modifications": [
+                    {
+                        "id": 189
+                    }
+                ]
+            }
+        ]
+    }
+}
