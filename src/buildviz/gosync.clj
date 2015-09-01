@@ -227,12 +227,15 @@
   (flush))
 
 (defn put-to-buildviz [builds]
-  (doseq [{jobName :jobName buildNo :buildNo build :build junit-xml-func :junit-xml-func} builds]
+  (doseq [{job-name :jobName build-no :buildNo build :build junit-xml-func :junit-xml-func} builds]
     (dot)
-    (log/info (format "Syncing %s %s: build" jobName buildNo build))
-    (put-build jobName buildNo  build)
+    (log/info (format "Syncing %s %s: build" job-name build-no build))
+    (put-build job-name build-no  build)
     (when (some? junit-xml-func)
-      (put-junit-xml jobName buildNo (junit-xml-func)))))
+      (try
+        (put-junit-xml job-name build-no (junit-xml-func))
+        (catch Exception e
+          (log/warn (format "Unable to sync testresults for %s %s" job-name build-no)))))))
 
 ;; run
 
