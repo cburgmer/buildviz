@@ -1,23 +1,21 @@
-(print "Loading dependencies...")
-(use '[leiningen.exec :only (deps)])
-(deps '[[clj-http "1.1.2"]
-        [clj-time "0.9.0"]
-        [cheshire "5.4.0"]
-        [org.clojure/tools.cli "0.3.1"]])
+(ns buildviz.gosync
+  (:require [clojure.string :as string]
+            [cheshire.core :as j]
+            [clj-http.client :as client]
+            [clj-time.core :as t]
+            [clj-time.format :as tf]
+            [clj-time.coerce :as tc]
+            [clojure.tools.cli :refer [parse-opts]])
+  (:gen-class))
 
-(require '[clojure.string :as string]
-         '[cheshire.core :as j]
-         '[clj-http.client :as client]
-         '[clj-time.core :as t]
-         '[clj-time.format :as tf]
-         '[clj-time.coerce :as tc]
-         '[clojure.tools.cli :refer [parse-opts]])
-(println "done")
 
 (def tz (t/default-time-zone))
 
 (def date-formatter (tf/formatter tz "YYYY-MM-dd" "YYYY/MM/dd" "YYYYMMdd" "dd.MM.YYYY"))
 
+(declare go-url)
+(declare load-builds-from)
+(declare buildviz-url)
 
 (defn usage [options-summary]
   (string/join "\n"
@@ -41,22 +39,6 @@
     :parse-fn #(tf/parse date-formatter %)
     :default (t/minus (t/today-at-midnight tz) (t/weeks 1))]
    ["-h" "--help"]])
-
-(def args (parse-opts *command-line-args* cli-options))
-
-(when (:help (:options args))
-  (println (usage (:summary args)))
-  (System/exit 0))
-
-(def go-url (second (:arguments args)))
-(def buildviz-url (:buildviz-url (:options args)))
-
-(def load-builds-from (:load-builds-from (:options args)))
-
-(def selected-pipeline-group-names (set (drop 2 (:arguments args))))
-
-(println "Go" selected-pipeline-group-names go-url "-> buildviz" buildviz-url)
-(println "Syncing all builds starting from" (tf/unparse date-formatter load-builds-from))
 
 ;; util
 
@@ -248,22 +230,40 @@
 
 ;; run
 
-(def pipeline-groups (get-pipeline-groups))
+(defn -main [& c-args]
+  (def args (parse-opts c-args cli-options))
 
-(def selected-pipeline-groups
-  (if (seq selected-pipeline-group-names)
-    (select-pipeline-groups pipeline-groups selected-pipeline-group-names)
-    pipeline-groups))
+  (when (or (:help (:options args))
+            (empty? (:arguments args)))
+    (println (usage (:summary args)))
+    (System/exit 0))
 
-(def job-instances
-  (->> selected-pipeline-groups
-       (mapcat stages-for-pipeline-group)
-       (mapcat job-instances-for-stage)
-       (map augment-job-with-inputs)
-       (map job-data-for-instance)
-       (filter #(some? (:build %)))
-       (map augment-job-instance-with-junit-xml)))
+  (def go-url (first (:arguments args)))
+  (def buildviz-url (:buildviz-url (:options args)))
 
-(put-to-buildviz (map make-build-instance job-instances))
+  (def load-builds-from (:load-builds-from (:options args)))
 
-(println (format "Done, wrote %s build entries" (count job-instances)))
+  (def selected-pipeline-group-names (set (drop 1 (:arguments args))))
+
+  (println "Go" selected-pipeline-group-names go-url "-> buildviz" buildviz-url)
+  (println "Syncing all builds starting from" (tf/unparse date-formatter load-builds-from))
+
+  (def pipeline-groups (get-pipeline-groups))
+
+  (def selected-pipeline-groups
+    (if (seq selected-pipeline-group-names)
+      (select-pipeline-groups pipeline-groups selected-pipeline-group-names)
+      pipeline-groups))
+
+  (def job-instances
+    (->> selected-pipeline-groups
+         (mapcat stages-for-pipeline-group)
+         (mapcat job-instances-for-stage)
+         (map augment-job-with-inputs)
+         (map job-data-for-instance)
+         (filter #(some? (:build %)))
+         (map augment-job-instance-with-junit-xml)))
+
+  (put-to-buildviz (map make-build-instance job-instances))
+
+  (println (format "Done, wrote %s build entries" (count job-instances))))

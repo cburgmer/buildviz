@@ -48,10 +48,10 @@ JUnit XML formatted test results can be `PUT` to `http://localhost:3000/builds/$
 
 Buildviz does not care where the data is coming from. The general idea is to PUT new outcomes to `/builds` whenever another build has run.
 
-If you are using [Go.cd](http://www.go.cd), try the script `./scripts/gosync.clj` to sync existing history:
+If you are using [Go.cd](http://www.go.cd), you might like the shipped script to sync existing history:
 
 ```sh
-./lein exec scripts/gosync.clj http://$USER:$PW@localhost:8153/go
+./lein run -m buildviz.gosync http://$USER:$PW@localhost:8153/go
 ```
 
 ### More

@@ -15,7 +15,11 @@
                  [ring-middleware-accept "2.0.3"]
                  [compojure "1.1.6"]
                  [bigml/closchema "0.6.1"]
-                 [com.taoensso/nippy "2.9.0"]]
+                 [com.taoensso/nippy "2.9.0"]
+                 [clj-http "1.1.2"]
+                 [clj-time "0.9.0"]
+                 [cheshire "5.4.0"]
+                 [org.clojure/tools.cli "0.3.1"]]
   :plugins [[lein-ring "0.9.3"]
             [lein-exec "0.3.4"]
             [lein-npm "0.6.1"]]
@@ -24,6 +28,7 @@
   :ring {:handler buildviz.main/app
          :nrepl {:start? true
                  :port 9998}}
+  :aot [buildviz.gosync]
   :profiles {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
                                   [cheshire "5.4.0"]
                                   [ring-mock "0.1.5"]]}})
