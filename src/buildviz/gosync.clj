@@ -156,7 +156,7 @@
 (defn select-pipeline-groups [pipeline-groups filter-by-names]
   (filter #(contains? filter-by-names (:name %)) pipeline-groups))
 
-;; /files/%pipeline/%run/%stage/%run/job.json
+;; /files/%pipeline/%run/%stage/%run/%job.json
 
 (defn looks-like-xml? [file-name]
   (.endsWith file-name "xml"))
