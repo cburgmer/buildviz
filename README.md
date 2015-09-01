@@ -6,7 +6,7 @@ Transparency for your build pipeline's results and runtime.
 
 ## Concepts
 
-buildviz provides different graphs about your build pipeline's behaviour. So far all it needs to know about is
+buildviz provides various graphs detailing your build pipeline's behaviour. So far it cares about
 
 * **jobs**, a job is part of the pipeline and executes some meaningful action,
 * **builds**, a build is an instance of the job being triggered, it has a unique **id**, a **start** and **end time**, an **outcome** and possibly one or more **inputs** with a given **revision**,
@@ -46,7 +46,7 @@ JUnit XML formatted test results can be `PUT` to `http://localhost:3000/builds/$
 
 ## Getting the data
 
-Buildviz does not care where the data is coming from. The general idea is to PUT new outcomes to `/builds` whenever another build has run.
+Buildviz does not care where the data is coming from. The idea is for you to PUT new outcomes to `/builds` whenever another build has run.
 
 If you are using [Go.cd](http://www.go.cd), you might like the shipped script to sync existing history:
 

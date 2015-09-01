@@ -22,7 +22,7 @@ function wait_for_server() {
 # Start buildviz
 LOGGING_PATH="/tmp/buildviz.log"
 
-echo "Starting buildviz... (logging output to $LOGGING_PATH)"
+echo "Starting buildviz... (sending output to $LOGGING_PATH)"
 ./lein do deps, ring server-headless > "$LOGGING_PATH" &
 SERVER_PID=$!
 

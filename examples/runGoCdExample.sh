@@ -35,7 +35,7 @@ cd -
 # Start buildviz
 LOGGING_PATH="/tmp/buildviz.log"
 
-echo "Starting buildviz... (logging output to $LOGGING_PATH)"
+echo "Starting buildviz... (sending output to $LOGGING_PATH)"
 ./lein do deps, ring server-headless > "$LOGGING_PATH" &
 SERVER_PID=$!
 
@@ -47,7 +47,7 @@ wait_for_server http://localhost:8153/go
 
 # Sync buildviz with the Go builds
 echo "Syncing job history..."
-./lein exec scripts/gosync.clj http://localhost:8153/go --from 2014-06-01
+./lein run -m buildviz.gosync http://localhost:8153/go --from 2014-06-01
 
 echo "Done..."
 echo
