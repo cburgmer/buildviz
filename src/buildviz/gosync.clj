@@ -238,7 +238,9 @@
       (try
         (put-junit-xml job-name build-no (junit-xml-func))
         (catch Exception e
-          (log/errorf e "Unable to sync testresults for %s %s" job-name build-no))))))
+          (if-let [data (ex-data e)]
+            (log/errorf "Unable to sync testresults for %s %s (status %s): %s" job-name build-no (:status data) (:body data))
+            (log/errorf e "Unable to sync testresults for %s %s" job-name build-no)))))))
 
 ;; run
 
