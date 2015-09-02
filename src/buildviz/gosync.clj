@@ -9,6 +9,7 @@
             [clojure.tools.cli :refer [parse-opts]])
   (:gen-class))
 
+(import com.fasterxml.jackson.core.JsonParseException)
 
 (def tz (t/default-time-zone))
 
@@ -180,7 +181,9 @@
                               job-name :jobName}]
   (let [artifacts-url (format "/files/%s/%s/%s/%s/%s.json" pipeline-name pipeline-run stage-name stage-run job-name)]
     (try
-      (get-json artifacts-url)
+      (doall (get-json artifacts-url))
+      (catch JsonParseException e
+        (log/errorf e "Unable to parse artifact list for %s" artifacts-url))
       (catch Exception e
         (log/warn (format "Unable to get artifact list from %s, might have been deleted by Go" artifacts-url))
         {}))))
@@ -235,7 +238,7 @@
       (try
         (put-junit-xml job-name build-no (junit-xml-func))
         (catch Exception e
-          (log/warn (format "Unable to sync testresults for %s %s" job-name build-no)))))))
+          (log/errorf e "Unable to sync testresults for %s %s" job-name build-no))))))
 
 ;; run
 

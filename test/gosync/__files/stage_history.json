@@ -8,6 +8,12 @@
                     "name": "A_Job",
                     "result": "Passed",
                     "scheduled_date": 1431560352151
+                },
+                {
+                    "id": 43,
+                    "name": "A_Job_With_Broken_Files",
+                    "result": "Passed",
+                    "scheduled_date": 1431560352151
                 }
             ],
             "pipeline_counter": 41
