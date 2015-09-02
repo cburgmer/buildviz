@@ -169,10 +169,12 @@
       (list (:url file-node))
       [])))
 
-(defn replace-host-part-for-basic-auth [url]
+(defn replace-file-url-host-part-for-basic-auth [url]
   ;; Replace host part with go url supplied by user
   ;; Also works around broken Go domain setup
-  (clojure.string/replace url #"https?://[^/]+/go" go-url))
+  (clojure.string/replace url
+                          #"https?://[^/]+(/.+?)?/files/"
+                          (clojure.string/join [go-url "/files/"])))
 
 (defn try-get-artifact-tree [{pipeline-name :pipelineName
                               pipeline-run :pipelineRun
@@ -190,7 +192,7 @@
 
 (defn xml-artifacts-for-job-run [job-instance]
   (let [file-tree (try-get-artifact-tree job-instance)]
-    (map replace-host-part-for-basic-auth
+    (map replace-file-url-host-part-for-basic-auth
          (mapcat filter-xml-files file-tree))))
 
 (defn augment-job-instance-with-junit-xml [job-instance]
