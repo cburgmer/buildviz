@@ -44,7 +44,7 @@ function passingTestCase {
   <testsuite name="Test Suite">
     <testsuite name="Nesting 1">
       <testsuite name="Nesting 2">
-        <testcase classname="A Class" name="A Test Case" time="0.0042"/>
+        <testcase classname="some.package.with.class" name="A Test Case" time="0.0042"/>
       </testsuite>
     </testsuite>
   </testsuite>
@@ -57,14 +57,16 @@ function failingTestCase {
 <?xml version="1.0" encoding="UTF-8"?>
 <testsuites>
   <testsuite name="Test Suite">
-    <testcase classname="A Class" name="A Test Case" time="0.0062">
+    <testcase classname="a.package.class" name="A Test Case" time="0.0062">
       <failure>Meh</failure>
     </testcase>
+    <testcase classname="a.package.another_class" name="Some Test Case" time="0.0060">
+    </testcase>
     <testsuite name="Nested Test Suite">
-      <testcase classname="Another Class" name="A Test Case" time="0.0062">
+      <testcase classname="another.package.class" name="A Test Case" time="0.0062">
         <failure/>
       </testcase>
-      <testcase classname="Another Class" name="Another Test Case" time="0.0050">
+      <testcase classname="another.package.class" name="Another Test Case" time="0.0050">
         <failure/>
       </testcase>
     </testsuite>
@@ -79,7 +81,7 @@ function anotherFailingTestCase {
 <testsuites>
   <testsuite name="Another Test Suite">
     <testsuite name="Nested Test Suite">
-      <testcase classname="A Class" name="Another Test Case" time="0.0021">
+      <testcase classname="some.class" name="Another Test Case" time="0.0021">
         <failure>Meh</failure>
       </testcase>
     </testsuite>

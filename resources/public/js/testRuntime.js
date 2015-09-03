@@ -1,5 +1,4 @@
 (function (widget, zoomableSunburst, utils) {
-    // Following http://bl.ocks.org/metmajer/5480307
     var diameter = 600;
 
     var svg = widget.create("Avg test runtime by class",
@@ -14,28 +13,87 @@
         return entry.name + runtime;
     };
 
-    var hasOnlyOneChild = function (node) {
-        return node.children && node.children.length === 1;
+    var hasOnlyOneChild = function (children) {
+        return children && children.length === 1;
     };
 
-    var skipOnlyTestSuite = function (job) {
-        var hasOnlyOneTestSuite = hasOnlyOneChild(job);
+    var skipOnlyTestSuite = function (children) {
+        var hasOnlyOneTestSuite = hasOnlyOneChild(children);
 
-        return hasOnlyOneTestSuite ? job.children[0].children : job.children;
+        return hasOnlyOneTestSuite ? children[0].children : children;
     };
 
-    var transformNode = function (elem) {
+    var buildNodeStructure = function (hierarchy) {
+        return Object.keys(hierarchy).map(function (nodeName) {
+            var entry = hierarchy[nodeName];
+
+            if (entry.name) {
+                return {
+                    name: nodeName,
+                    averageRuntime: entry.averageRuntime
+                };
+            } else {
+                return {
+                    name: nodeName,
+                    children: buildNodeStructure(entry)
+                };
+            }
+        });
+    };
+
+    var buildPackageHiearchy = function (classEntries) {
+        var packageHierarchy = {};
+
+        classEntries.forEach(function (entry) {
+            var packageClassName = entry.name,
+                components = packageClassName.split('.'),
+                packagePath = components.slice(0, -1),
+                className = components.pop();
+
+            var branch = packagePath.reduce(function (packageBranch, packageName) {
+                if (!packageBranch[packageName]) {
+                    packageBranch[packageName] = {};
+                }
+                return packageBranch[packageName];
+            }, packageHierarchy);
+
+            branch[className] = entry;
+        });
+
+        return buildNodeStructure(packageHierarchy);
+    };
+
+    var transformClassNode = function (elem) {
         var e = {
             name: elem.name
         };
 
         if (elem.children) {
-            e.children = elem.children.map(transformNode);
+            e.children = elem.children.map(transformClassNode);
         } else {
             e.size = elem.averageRuntime;
             e.title = title(elem);
         }
         return e;
+    };
+
+    var transformTestSuite = function (node) {
+        if (!node.children) {
+            return buildPackageHiearchy([node]).map(transformClassNode)[0];
+        }
+
+        var leafNodes = node.children.filter(function (child) {
+            return !child.children;
+        });
+
+        var nestedSuites = node.children.filter(function (child) {
+            return child.children;
+        });
+
+        return {
+            name: node.name,
+            children: buildPackageHiearchy(leafNodes).map(transformClassNode).concat(nestedSuites.map(transformTestSuite))
+        };
     };
 
     var skipParentNodesIfAllOnlyHaveOneChild = function (nodes) {
@@ -56,11 +114,11 @@
         return Object.keys(jobMap)
             .map(function (jobName) {
                 var job = jobMap[jobName],
-                    children = skipOnlyTestSuite(job);
+                    children = job.children;
 
                 return {
                     name: jobName,
-                    children: skipParentNodesIfAllOnlyHaveOneChild(children).map(transformNode)
+                    children: skipParentNodesIfAllOnlyHaveOneChild(skipOnlyTestSuite(children.map(transformTestSuite)))
                 };
             });
     };
