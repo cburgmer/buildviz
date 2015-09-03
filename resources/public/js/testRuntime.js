@@ -18,21 +18,13 @@
         return node.children && node.children.length === 1;
     };
 
-    var skipTestSuiteWithOnlyOneClassOrNestedSuite = function (testSuite) {
-        var testSuiteHasOnlyOneChild = hasOnlyOneChild(testSuite);
-
-        return testSuiteHasOnlyOneChild ? testSuite.children[0] : testSuite;
-    };
-
     var skipOnlyTestSuite = function (job) {
         var hasOnlyOneTestSuite = hasOnlyOneChild(job);
 
         return hasOnlyOneTestSuite ? job.children[0].children : job.children;
     };
 
-    var transformNode = function (node) {
-        var elem = skipTestSuiteWithOnlyOneClassOrNestedSuite(node);
-
+    var transformNode = function (elem) {
         var e = {
             name: elem.name
         };
@@ -46,6 +38,20 @@
         return e;
     };
 
+    var skipParentNodesIfAllOnlyHaveOneChild = function (nodes) {
+        var allHaveOneChild = nodes.reduce(function (allHaveOneChild, node) {
+            return allHaveOneChild && hasOnlyOneChild(node);
+        }, true);
+
+        if (allHaveOneChild) {
+            return skipParentNodesIfAllOnlyHaveOneChild(nodes.map(function (node) {
+                return node.children[0];
+            }));
+        } else {
+            return nodes;
+        }
+    };
+
     var transformTestsuites = function (jobMap) {
         return Object.keys(jobMap)
             .map(function (jobName) {
@@ -54,7 +60,7 @@
 
                 return {
                     name: jobName,
-                    children: children.map(transformNode)
+                    children: skipParentNodesIfAllOnlyHaveOneChild(children).map(transformNode)
                 };
             });
     };

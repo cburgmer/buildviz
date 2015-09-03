@@ -42,8 +42,11 @@ function passingTestCase {
 <?xml version="1.0" encoding="UTF-8"?>
 <testsuites>
   <testsuite name="Test Suite">
-    <testcase classname="A Class" name="A Test Case" time="0.0042">
-    </testcase>
+    <testsuite name="Nesting 1">
+      <testsuite name="Nesting 2">
+        <testcase classname="A Class" name="A Test Case" time="0.0042"/>
+      </testsuite>
+    </testsuite>
   </testsuite>
 </testsuites>
 EOF
@@ -57,6 +60,14 @@ function failingTestCase {
     <testcase classname="A Class" name="A Test Case" time="0.0062">
       <failure>Meh</failure>
     </testcase>
+    <testsuite name="Nested Test Suite">
+      <testcase classname="Another Class" name="A Test Case" time="0.0062">
+        <failure/>
+      </testcase>
+      <testcase classname="Another Class" name="Another Test Case" time="0.0050">
+        <failure/>
+      </testcase>
+    </testsuite>
   </testsuite>
 </testsuites>
 EOF
@@ -66,10 +77,12 @@ function anotherFailingTestCase {
     cat <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <testsuites>
-  <testsuite name="Test Suite">
-    <testcase classname="A Class" name="Another Test Case" time="0.0021">
-      <failure>Meh</failure>
-    </testcase>
+  <testsuite name="Another Test Suite">
+    <testsuite name="Nested Test Suite">
+      <testcase classname="A Class" name="Another Test Case" time="0.0021">
+        <failure>Meh</failure>
+      </testcase>
+    </testsuite>
   </testsuite>
 </testsuites>
 EOF
