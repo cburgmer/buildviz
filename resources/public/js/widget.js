@@ -21,13 +21,28 @@ var widget = function () {
             .attr("viewBox", "0 0 " + size + " " + size);
     };
 
+    var nextId = 0;
+
+    var uniqueId = function () {
+        var id = nextId;
+        nextId += 1;
+        return id;
+    };
+
     module.create = function (headline, description, csvUrl) {
-        var widget = d3.select("body").append("section");
+        var id = 'widget_' + uniqueId(),
+            widget = d3.select("body")
+                .append("section")
+                .attr('id', id)
+                .append("a")
+                .attr("href", '#' + id);
+
         widget.append("h1")
             .text(headline);
 
         widget.append("a")
             .attr("href", csvUrl)
+            .attr('class', 'csv')
             .text("CSV");
 
         widget.append("p")

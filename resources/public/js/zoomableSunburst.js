@@ -78,6 +78,8 @@ var zoomableSunburst = function (svg, diameter) {
         };
 
         var click = function (d) {
+            d3.event.preventDefault();
+
             currentVisibleNode = d;
 
             text.transition().attr("opacity", 0);

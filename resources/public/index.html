@@ -14,12 +14,17 @@
             h1 {
                 margin-bottom: 0;
             }
-            h1, a {
+            h1, .csv {
                 display: inline-block;
             }
-            a {
+            .csv {
                 margin-left: 1em;
                 font-size: 70%;
+                text-decoration: underline;
+            }
+            a {
+                text-decoration: none;
+                color: inherit;
             }
             section {
                 font-size: 1rem;
@@ -27,6 +32,28 @@
                 box-sizing: border-box;
                 display: inline-block;
                 padding: 10px;
+            }
+            section:target {
+                position: fixed;
+                width: 80vmin;
+                height: 80vmin;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                margin: auto;
+                z-index: 0;
+            }
+            section:target::before {
+                content: '';
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                opacity: 0.95;
+                background-color: white;
+                z-index: -1;
             }
             svg text {
                 font-size: 0.8rem;
