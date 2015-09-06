@@ -1,7 +1,7 @@
 (function (widget, utils) {
     var diameter = 600;
 
-    var margin = {top: 10, right: 0, bottom: 30, left: 50},
+    var margin = {top: 10, right: 0, bottom: 30, left: 30},
         width = diameter - margin.left - margin.right,
         height = diameter - margin.top - margin.bottom;
 
@@ -111,7 +111,8 @@
     d3.json('/failphases', function (_, data) {
         var phasesByDay = annotateDateAndTime(calculatePhasesByDay(data));
 
-        x.domain(d3.extent(phasesByDay, function(d) { return d.startOfDay; }));
+        x.domain([d3.min(phasesByDay, function(d) { return d.startOfDay; }),
+                  d3.max(phasesByDay, function(d) { return d.endOfDay; })]);
 
         g.append("g")
             .attr("class", "x axis")
