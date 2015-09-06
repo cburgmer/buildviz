@@ -36,7 +36,8 @@ var widget = function () {
                 .attr('id', id)
                 .append("a")
                 .attr('class', 'enlarge')
-                .attr("href", '#' + id);
+                .attr("href", '#' + id)
+                .attr('title', description);
 
         var header = widget.append('header');
         header.append("h1")
@@ -47,8 +48,6 @@ var widget = function () {
             .attr('class', 'csv')
             .text("CSV");
 
-        widget.append("p")
-            .text(description);
         return {
             svg: function (size) {
                 return responsiveSvg(widget, size);
