@@ -45,6 +45,7 @@ function passingTestCase {
     <testsuite name="Nesting 1">
       <testsuite name="Nesting 2">
         <testcase classname="some.package.with.class" name="A Test Case" time="0.0042"/>
+        <testcase classname="some.package.another_class" name="Another Test Case" time="0.0030"/>
       </testsuite>
     </testsuite>
   </testsuite>

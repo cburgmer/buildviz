@@ -64,17 +64,27 @@
     };
 
     var transformClassNode = function (elem) {
-        var e = {
-            name: elem.name
-        };
+        var children = elem.children && elem.children.map(transformClassNode);
 
-        if (elem.children) {
-            e.children = elem.children.map(transformClassNode);
+        if (children) {
+            if (children.length === 1 && children[0].children) {
+                return {
+                    name: elem.name + '.' + children[0].name,
+                    children: children[0].children
+                };
+            } else {
+                return {
+                    name: elem.name,
+                    children: children
+                };
+            }
         } else {
-            e.size = elem.averageRuntime;
-            e.title = title(elem);
+            return {
+                name: elem.name,
+                size: elem.averageRuntime,
+                title: title(elem)
+            };
         }
-        return e;
     };
 
     var transformTestSuite = function (node) {
