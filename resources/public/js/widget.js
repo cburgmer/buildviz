@@ -35,12 +35,14 @@ var widget = function () {
                 .append("section")
                 .attr('id', id)
                 .append("a")
+                .attr('class', 'enlarge')
                 .attr("href", '#' + id);
 
-        widget.append("h1")
+        var header = widget.append('header');
+        header.append("h1")
             .text(headline);
 
-        widget.append("a")
+        header.append("a")
             .attr("href", csvUrl)
             .attr('class', 'csv')
             .text("CSV");

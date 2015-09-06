@@ -33,10 +33,19 @@
                 display: inline-block;
                 padding: 10px;
             }
+            section .enlarge {
+                height: 100%;
+                display: flex;
+                flex-flow: column;
+            }
+            section svg {
+                flex: 2;
+                overflow: auto;
+            }
             section:target {
                 position: fixed;
-                width: 80vmin;
-                height: 80vmin;
+                width: 100vmin;
+                height: 100vmin;
                 top: 0;
                 left: 0;
                 right: 0;
