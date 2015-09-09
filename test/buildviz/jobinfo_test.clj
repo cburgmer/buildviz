@@ -27,6 +27,10 @@
   (testing "flaky-build-count"
     (is (= 1 (flaky-build-count [failed-test-input-1 passed-test-input-1])))
     (is (= 1 (flaky-build-count [passed-test-input-1 failed-test-input-1])))
+    (is (= 1 (flaky-build-count [{:outcome "pass" :inputs '({:revision "b" :id 43}
+                                                            {:revision "1" :id 42})}
+                                 {:outcome "fail" :inputs '({:revision "1" :id 42}
+                                                            {:revision "b" :id 43})}])))
     (is (= 0 (flaky-build-count [passed-test-input-1 passed-test-input-1])))
     (is (= 0 (flaky-build-count [failed-test-input-1 passed-test-input-2])))
     (is (= 0 (flaky-build-count [failed-test-multiple-inputs-changed passed-test-multiple-inputs-changed])))

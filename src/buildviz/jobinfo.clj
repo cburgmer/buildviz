@@ -8,8 +8,16 @@
 
 ;; flaky builds
 
+(defn- job-inputs-as-map [job]
+  (let [inputs (:inputs job)
+        input-map (->> inputs
+                       (map (fn [{id :id revision :revision}] {id revision}))
+                       (into {}))]
+    (assoc job :inputs input-map)))
+
 (defn- outcomes-for-builds-grouped-by-input [build-data-entries]
   (->> (filter #(contains? % :inputs) build-data-entries)
+       (map job-inputs-as-map)
        (group-by :inputs)
        vals
        (map #(map :outcome %))
