@@ -1,5 +1,6 @@
 (ns buildviz.testsuites
-  (:require [buildviz.junit-xml :as junit-xml]))
+  (:require [buildviz.junit-xml :as junit-xml]
+            [buildviz.jobinfo :as jobinfo]))
 
 
 (declare testsuites-map->list)
@@ -169,9 +170,7 @@
   (->> (seq jobs)
        (map (fn [[build-id build-data]]
               (assoc build-data :id build-id)))
-       (filter :inputs)
-       (group-by :inputs)
-       vals
+       (jobinfo/builds-grouped-by-same-inputs)
        (map #(group-by :outcome %))
        (filter #(< 1 (count %)))))
 

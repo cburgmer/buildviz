@@ -19,9 +19,9 @@
   {:name name
    :children children})
 
-(def failed-build-input-1 {:outcome "fail" :start 1 :inputs '({:revision "1" :id 42})})
-(def another-failed-build-input-1 {:outcome "fail" :start 2 :inputs '({:revision "1" :id 42})})
-(def passed-build-input-1 {:outcome "pass" :start 3 :inputs '({:revision "1" :id 42})})
+(def failed-build-input-1 {:outcome "fail" :start 1 :inputs '({:revision "abcd" :id 21} {:revision "1" :id 42})})
+(def another-failed-build-input-1 {:outcome "fail" :start 2 :inputs '({:revision "abcd" :id 21} {:revision "1" :id 42})})
+(def passed-build-input-1 {:outcome "pass" :start 3 :inputs '({:revision "1" :id 42} {:revision "abcd" :id 21})})
 (def failed-build-input-2 {:outcome "fail" :start 4 :inputs '({:revision "2" :id 42})})
 (def passed-build-input-2 {:outcome "pass" :start 5 :inputs '({:revision "2" :id 42})})
 

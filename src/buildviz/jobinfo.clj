@@ -6,20 +6,26 @@
 (defn builds-with-outcome [build-data-entries]
   (filter #(contains? % :outcome) build-data-entries))
 
-;; flaky builds
 
-(defn- job-inputs-as-map [job]
-  (let [inputs (:inputs job)
+(defn- build-inputs-as-map [build]
+  (let [inputs (:inputs build)
         input-map (->> inputs
                        (map (fn [{id :id revision :revision}] {id revision}))
                        (into {}))]
-    (assoc job :inputs input-map)))
+    (assoc build :inputs input-map)))
+
+(defn builds-grouped-by-same-inputs [builds]
+  (->> builds
+       (filter :inputs)
+       (map build-inputs-as-map)
+       (group-by :inputs)
+       vals))
+
+;; flaky builds
 
 (defn- outcomes-for-builds-grouped-by-input [build-data-entries]
-  (->> (filter #(contains? % :inputs) build-data-entries)
-       (map job-inputs-as-map)
-       (group-by :inputs)
-       vals
+  (->> build-data-entries
+       builds-grouped-by-same-inputs
        (map #(map :outcome %))
        (map distinct)))
 
