@@ -108,6 +108,11 @@
         });
     };
 
+    var isWeekend = function (date) {
+        var dayOfWeek = date.getDay();
+        return dayOfWeek === 0 || dayOfWeek === 6;
+    };
+
     d3.json('/failphases', function (_, data) {
         var phasesByDay = annotateDateAndTime(calculatePhasesByDay(data));
 
@@ -145,8 +150,14 @@
             .attr('height', function (d) {
                 return y(d.startTime) - y(d.endTime);
             })
-            .attr('fill', function (d) {
-                return d.color;
+            .attr('class', function (d) {
+                var classNames = [];
+                if (isWeekend(d.start)) {
+                    classNames.push('weekend');
+                }
+                classNames.push(d.color);
+
+                return classNames.join(' ');
             })
             .attr('title', function (d) {
                 var duration = utils.formatTimeInMs(d.duration);
