@@ -1,0 +1,20 @@
+Just a few pointers if you want to make changes to buildviz:
+
+## Run the server locally
+
+    $ ./lein do deps, ring server
+
+## Run gosync locally
+
+    $ ./lein run -m buildviz.gosync http://$USER:$PW@localhost:8153/go
+
+## Run the tests
+
+    $ ./lein test
+
+## Run gosync against mock for testing
+
+    $ cd test/gosync
+    $ ./mock.sh
+    # In a 2nd session
+    $ ./lein run -m buildviz.gosync http://localhost:8080 --from 2014-01-01

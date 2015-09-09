@@ -24,9 +24,14 @@ or run Go.cd in a Vagrant box and sync its job history with buildviz
 
 ## Usage
 
-    $ ./lein do deps, ring server
+    $ curl -OL https://github.com/cburgmer/buildviz/releases/download/0.3.0/buildviz-0.3.0-standalone.jar
+    $ java -jar buildviz-0.3.0-standalone.jar
 
-Then `PUT` JSON data in the following format to `http://localhost:3000/builds/$JOB_NAME/$BUILD_ID`
+Now, buildviz takes in new build results via `PUT` to `/builds`. Some suggestions how to do the setup:
+
+#### DIY
+
+For every build `PUT` JSON data in the following format to `http://localhost:3000/builds/$JOB_NAME/$BUILD_ID`
 
 ```js
 {
@@ -44,17 +49,13 @@ You can omit any of the above values, however some of the statistics will not be
 
 JUnit XML formatted test results can be `PUT` to `http://localhost:3000/builds/$JOB_NAME/$BUILD_ID/testresults`
 
-## Getting the data
+#### Sync from [Go.cd](http://www.go.cd)
 
-Buildviz does not care where the data is coming from. The idea is for you to PUT new outcomes to `/builds` whenever another build has run.
+Sync existing history (see `--help` for details):
 
-If you are using [Go.cd](http://www.go.cd), you might like the shipped script to sync existing history:
+    $ java -cp buildviz-0.3.0-standalone.jar buildviz.gosync http://$USER:$PW@localhost:8153/go
 
-```sh
-./lein run -m buildviz.gosync http://$USER:$PW@localhost:8153/go
-```
-
-### More
+## More
 
 [FAQ](https://github.com/cburgmer/buildviz/wiki)
 
