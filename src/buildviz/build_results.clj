@@ -6,7 +6,10 @@
                                 :end {:type "integer"}
                                 :outcome {:enum ["pass" "fail"]}
                                 :inputs {:type "array"
-                                         :items {:type "object"}}}
+                                         :items {:type "object"
+                                                 :properties {:revision {:type ["string" "integer"]}
+                                                              :source_id {:type ["string" "integer"]}}
+                                                 :additionalProperties false}}}
                    :additionalProperties false})
 
 (defn build-data-validation-errors [build-data]
