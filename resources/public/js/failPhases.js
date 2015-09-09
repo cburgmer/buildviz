@@ -83,6 +83,8 @@
                 greenPhases = phasesByDay(lastEntry.end + 1, entry.start - 1).map(function (phase) {
                     phase.color = 'green';
                     phase.duration = entry.start - lastEntry.end;
+                    phase.phaseStart = new Date(lastEntry.end);
+                    phase.phaseEnd = new Date(entry.start);
                     return phase;
                 });
             }
@@ -93,6 +95,8 @@
                 phase.color = 'red';
                 phase.culprits = entry.culprits;
                 phase.duration = entry.end - entry.start;
+                phase.phaseStart = new Date(entry.start);
+                phase.phaseEnd = new Date(entry.end);
                 return phase;
             }));
         }));
@@ -111,6 +115,14 @@
     var isWeekend = function (date) {
         var dayOfWeek = date.getDay();
         return dayOfWeek === 0 || dayOfWeek === 6;
+    };
+
+    var shortTimeString = function (date, referenceDate) {
+        if (startOfDay(date).valueOf() === startOfDay(referenceDate).valueOf()) {
+            return date.toLocaleTimeString();
+        } else {
+            return date.toLocaleTimeString() + ' (' + date.toLocaleDateString() + ')';
+        }
     };
 
     d3.json('/failphases', function (_, data) {
@@ -160,11 +172,20 @@
                 return classNames.join(' ');
             })
             .attr('title', function (d) {
-                var duration = utils.formatTimeInMs(d.duration);
+                var duration = utils.formatTimeInMs(d.duration),
+                    lines = [];
+
+                lines.push(d.start.toLocaleDateString());
+                lines.push('start ' + shortTimeString(d.phaseStart, d.start));
+                lines.push('end ' + shortTimeString(d.phaseEnd, d.end));
+                lines.push('');
+                lines.push('for ' + duration);
+
                 if (d.color === 'red') {
-                    return duration + '\n' + d.culprits.join(', ');
+                    lines.push('');
+                    lines = lines.concat(d.culprits);
                 }
-                return duration;
+                return lines.join('\n');
             });
     });
 }(widget, utils));
