@@ -161,10 +161,10 @@
 
     ;; GET should return job summary
     (let [app (the-app)]
-      (a-build app "someBuild" 1, {:start 10 :end 20 :outcome "pass" :inputs [{:id 42 :revision "dat_revision"}]})
-      (a-build app "someBuild" 2, {:start 30 :end 60 :outcome "fail" :inputs [{:id 42 :revision "dat_revision"}]})
-      (a-build app "someBuild" 3, {:start 70 :end 90 :outcome "fail" :inputs [{:id 42 :revision "other_revision"}]})
-      (a-build app "someBuild" 4, {:start 100 :end 120 :outcome "pass" :inputs [{:id 42 :revision "yet_another_revision"}]})
+      (a-build app "someBuild" 1, {:start 10 :end 20 :outcome "pass" :inputs [{:source_id 42 :revision "dat_revision"}]})
+      (a-build app "someBuild" 2, {:start 30 :end 60 :outcome "fail" :inputs [{:source_id 42 :revision "dat_revision"}]})
+      (a-build app "someBuild" 3, {:start 70 :end 90 :outcome "fail" :inputs [{:source_id 42 :revision "other_revision"}]})
+      (a-build app "someBuild" 4, {:start 100 :end 120 :outcome "pass" :inputs [{:source_id 42 :revision "yet_another_revision"}]})
       (is (= (:body (plain-get-request app "/jobs"))
              (join ["job,averageRuntime,totalCount,failedCount,flakyCount\n"
                     (format "someBuild,%.8f,4,2,1\n" 0.00000023)]))))
@@ -207,8 +207,8 @@
 
     ;; GET should return a flaky build count
     (let [app (the-app)]
-      (a-build app "flakyBuild" 1, {:outcome "pass" :inputs [{:id 42 :revision "dat_revision"}]})
-      (a-build app "flakyBuild" 2, {:outcome "fail" :inputs [{:id 42 :revision "dat_revision"}]})
+      (a-build app "flakyBuild" 1, {:outcome "pass" :inputs [{:source_id 42 :revision "dat_revision"}]})
+      (a-build app "flakyBuild" 2, {:outcome "fail" :inputs [{:source_id 42 :revision "dat_revision"}]})
       (is (= (json-body (json-get-request app "/jobs"))
              {"flakyBuild" {"failedCount" 1 "totalCount" 2 "flakyCount" 1}})))
     ))
