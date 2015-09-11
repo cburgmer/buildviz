@@ -77,6 +77,12 @@ var zoomableSunburst = function (svg, diameter) {
             return '';
         };
 
+        var isParent = function (parent, elem) {
+            var parentMaxY = parent.y + parent.dy,
+                parentMaxX = parent.x + parent.dx;
+            return parentMaxY === elem.y && parent.x <= elem.x && elem.x <= parentMaxX;
+        };
+
         var click = function (d) {
             d3.event.preventDefault();
 
@@ -87,6 +93,10 @@ var zoomableSunburst = function (svg, diameter) {
             path.transition()
                 .duration(750)
                 .attrTween("d", arcTween(d))
+                .each("start", function () {
+                    d3.select(this.parentNode)
+                        .attr("display", "inherit");
+                })
                 .each("end", function(e, i) {
                     // check if the animated element's data e lies within the visible angle span given in d
                     if (e.x >= d.x && e.x < (d.x + d.dx)) {
@@ -95,6 +105,11 @@ var zoomableSunburst = function (svg, diameter) {
                             .attr("opacity", 1)
                             .attr("transform", function() { return "rotate(" + computeTextRotation(e) + ")"; })
                             .attr("x", function(d) { return y(d.y); });
+                    } else {
+                        if (!isParent(e, currentVisibleNode)) {
+                            d3.select(this.parentNode)
+                                .attr("display", "none");
+                        }
                     }
                 });
         };
