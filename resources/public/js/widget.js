@@ -15,10 +15,16 @@ var widget = function () {
     };
 
     var responsiveSvg = function (d3Node, size) {
-        return d3Node
-            .append("svg")
-            .attr("preserveAspectRatio", "xMinYMin meet")
-            .attr("viewBox", "0 0 " + size + " " + size);
+        var svg = d3Node
+                .append("svg")
+                .attr("preserveAspectRatio", "xMinYMin meet")
+                .attr("viewBox", "0 0 " + size + " " + size);
+
+        d3Node.append("p")
+            .attr('class', 'nodata')
+            .text("No data");
+
+        return svg;
     };
 
     var nextId = 0;

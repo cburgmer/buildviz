@@ -59,6 +59,10 @@
     };
 
     d3.json('/jobs', function (_, root) {
+        if (!Object.keys(root).length) {
+            return;
+        }
+
         var flakyRatio = maxFlakyRatio(root),
             color = colorScale(flakyRatio);
 

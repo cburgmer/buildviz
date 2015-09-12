@@ -126,6 +126,10 @@
     };
 
     d3.json('/failphases', function (_, data) {
+        if (!Object.keys(data).length) {
+            return;
+        }
+
         var phasesByDay = annotateDateAndTime(calculatePhasesByDay(data));
 
         x.domain([d3.min(phasesByDay, function(d) { return d.startOfDay; }),

@@ -35,6 +35,10 @@
     var color = d3.scale.category20c();
 
     d3.json('/jobs', function (_, root) {
+        if (!Object.keys(root).length) {
+            return;
+        }
+
         var node = svg.selectAll("g")
                 .data(noGrouping(bubble.nodes({children: buildRuntimeAsBubbles(root)})))
                 .enter()

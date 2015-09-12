@@ -35,6 +35,7 @@
                 box-sizing: border-box;
                 display: inline-block;
                 padding: 10px;
+                position: relative;
             }
             section:hover:not(:target) {
                 background-color: #f7f7f7;
@@ -69,6 +70,17 @@
                 opacity: 0.95;
                 background-color: white;
                 z-index: -1;
+            }
+            .nodata {
+                display: none;
+            }
+            svg:empty + .nodata {
+                display: block;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translateY(-50%) translateX(-50%);
+                color: grey;
             }
             svg text {
                 font-size: 0.8rem;
