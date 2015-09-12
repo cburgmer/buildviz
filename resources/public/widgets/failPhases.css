@@ -1,28 +1,28 @@
-.failphases .axis path,
-.failphases .axis line {
+.failPhases .axis path,
+.failPhases .axis line {
     fill: none;
     stroke: #000;
     shape-rendering: crispEdges;
 }
 
-.failphases .x.axis text {
+.failPhases .x.axis text {
     font-size: 0.6rem;
 }
-.failphases .x.axis path {
+.failPhases .x.axis path {
     display: none;
 }
-.failphases rect {
+.failPhases rect {
     opacity: 0.8;
 }
-.failphases rect.red {
+.failPhases rect.red {
     fill: red;
 }
-.failphases rect.green {
+.failPhases rect.green {
     fill: green;
 }
-.failphases rect.weekend.red {
+.failPhases rect.weekend.red {
     fill: darkred;
 }
-.failphases rect.weekend.green {
+.failPhases rect.weekend.green {
     fill: darkgreen;
 }

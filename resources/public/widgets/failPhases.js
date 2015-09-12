@@ -24,7 +24,7 @@
                             "Pipeline failure vs. green phases",
                            "/failphases.csv")
             .svg(diameter)
-            .attr('class', 'failphases');
+            .attr('class', 'failPhases');
 
     var timeOfDay = function (date) {
         return (date.getTime() - (date.getTimezoneOffset() * 60 * 1000)) % (24 * 60 * 60 * 1000) / (60 * 60 * 1000);

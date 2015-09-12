@@ -1,22 +1,22 @@
-h1 {
+.widget h1 {
     margin: 5px 0 0;
     font-weight: normal;
     font-size: 100%;
     letter-spacing: 0.08em;
 }
-h1, .csv {
+.widget h1, .widget .csv {
     display: inline-block;
 }
-.csv {
+.widget .csv {
     margin-left: 1em;
     font-size: 70%;
     text-decoration: underline;
 }
-a {
+.widget a {
     text-decoration: none;
     color: inherit;
 }
-section {
+.widget {
     font-size: 1rem;
     width: 33.3%;
     box-sizing: border-box;
@@ -25,19 +25,19 @@ section {
     position: relative;
     z-index: 0;
 }
-section:hover:not(:target) {
+.widget:hover:not(:target) {
     background-color: #f7f7f7;
 }
-section .enlarge {
+.widget .enlarge {
     height: 100%;
     display: flex;
     flex-flow: column;
 }
-section svg {
+.widget svg {
     flex: 2;
     overflow: auto;
 }
-section:target {
+.widget:target {
     position: fixed;
     width: 100vmin;
     height: 100vmin;
@@ -48,7 +48,7 @@ section:target {
     margin: auto;
     z-index: 1;
 }
-section:target::before {
+.widget:target::before {
     content: '';
     position: fixed;
     top: 0;
@@ -59,10 +59,10 @@ section:target::before {
     background-color: white;
     z-index: -1;
 }
-.nodata {
+.widget .nodata {
     display: none;
 }
-svg:empty + .nodata {
+.widget svg:empty + .nodata {
     display: block;
     position: absolute;
     top: 50%;
@@ -70,6 +70,6 @@ svg:empty + .nodata {
     transform: translateY(-50%) translateX(-50%);
     color: grey;
 }
-svg text {
+.widget svg text {
     font-size: 0.8rem;
 }

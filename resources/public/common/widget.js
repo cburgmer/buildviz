@@ -39,6 +39,7 @@ var widget = function () {
         var id = 'widget_' + uniqueId(),
             widget = d3.select("body")
                 .append("section")
+                .attr("class", "widget")
                 .attr('id', id)
                 .append("a")
                 .attr('class', 'enlarge')
