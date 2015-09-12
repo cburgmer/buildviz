@@ -19,9 +19,6 @@ var zoomableSunburst = function (svg, diameter) {
             .innerRadius(function(d) { return Math.max(0, y(d.y)); })
             .outerRadius(function(d) { return Math.max(0, y(d.y + d.dy)); });
 
-    var parent = svg.append("g")
-        .attr("transform", "translate(" + diameter / 2 + "," + diameter * .52 + ")");
-
     var inheritDirectParentColorForLeafs = function(d) {
         var key;
         if (d.children) {
@@ -61,6 +58,9 @@ var zoomableSunburst = function (svg, diameter) {
     };
 
     var render = function (data) {
+        if (!data.children.length) {
+            return;
+        }
 
         var currentVisibleNode = undefined;
 
@@ -113,6 +113,9 @@ var zoomableSunburst = function (svg, diameter) {
                     }
                 });
         };
+
+        var parent = svg.append("g")
+                .attr("transform", "translate(" + diameter / 2 + "," + diameter * .52 + ")");
 
         var g = parent.datum(data).selectAll("g")
                 .data(partition.nodes)

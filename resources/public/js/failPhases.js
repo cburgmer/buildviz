@@ -26,10 +26,6 @@
             .svg(diameter)
             .attr('class', 'failphases');
 
-    var g = svg
-            .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
     var timeOfDay = function (date) {
         return (date.getTime() - (date.getTimezoneOffset() * 60 * 1000)) % (24 * 60 * 60 * 1000) / (60 * 60 * 1000);
     };
@@ -134,6 +130,10 @@
 
         x.domain([d3.min(phasesByDay, function(d) { return d.startOfDay; }),
                   d3.max(phasesByDay, function(d) { return d.endOfDay; })]);
+
+        var g = svg
+                .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
         g.append("g")
             .attr("class", "x axis")
