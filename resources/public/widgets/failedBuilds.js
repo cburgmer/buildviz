@@ -1,4 +1,4 @@
-(function (widget) {
+(function (widget, dataSource) {
     // Roughly following http://bl.ocks.org/mbostock/4063269
     var diameter = 600;
 
@@ -58,7 +58,7 @@
             .interpolate(d3.interpolateLab);
     };
 
-    d3.json('/jobs', function (_, root) {
+    dataSource.load('/jobs', function (root) {
         if (!Object.keys(root).length) {
             return;
         }
@@ -85,4 +85,4 @@
                 widget.textWithLineBreaks(this, d.name.split(' '));
             });
     });
-}(widget));
+}(widget, dataSource));

@@ -1,4 +1,4 @@
-(function (widget, zoomableSunburst) {
+(function (widget, zoomableSunburst, dataSource) {
     // Following http://bl.ocks.org/metmajer/5480307
     var diameter = 600;
 
@@ -91,7 +91,7 @@
             });
     };
 
-    d3.json('/failures', function (_, failures) {
+    dataSource.load('/failures', function (failures) {
         var data = {
             name: "Failures",
             children: transformFailures(failures)
@@ -99,4 +99,4 @@
 
         graph.render(data);
     });
-}(widget, zoomableSunburst));
+}(widget, zoomableSunburst, dataSource));

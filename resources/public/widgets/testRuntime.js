@@ -1,4 +1,4 @@
-(function (widget, zoomableSunburst, utils) {
+(function (widget, zoomableSunburst, utils, dataSource) {
     var diameter = 600;
 
     var svg = widget.create("Avg test runtime by class",
@@ -133,7 +133,7 @@
             });
     };
 
-    d3.json('/testclasses', function (_, testsuites) {
+    dataSource.load('/testclasses', function (testsuites) {
         var data = {
             name: "Testsuites",
             children: transformTestsuites(testsuites)
@@ -141,4 +141,4 @@
 
         graph.render(data);
     });
-}(widget, zoomableSunburst, utils));
+}(widget, zoomableSunburst, utils, dataSource));

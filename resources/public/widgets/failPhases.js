@@ -1,4 +1,4 @@
-(function (widget, utils) {
+(function (widget, utils, dataSource) {
     var diameter = 600;
 
     var margin = {top: 10, right: 0, bottom: 30, left: 30},
@@ -121,7 +121,7 @@
         }
     };
 
-    d3.json('/failphases', function (_, data) {
+    dataSource.load('/failphases', function (data) {
         if (!Object.keys(data).length) {
             return;
         }
@@ -192,4 +192,4 @@
                 return lines.join('\n');
             });
     });
-}(widget, utils));
+}(widget, utils, dataSource));
