@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Regression Runner</title>
+    <meta charset="utf-8"/>
+
+    <script src="node_modules/csscritic/csscritic.js"></script>
+
+    <script>
+        window.onload = function() {
+            csscritic
+                .addReporter(csscritic.NiceReporter())
+                .component('Runtime by class')
+                .add({
+                    description: "should render classes correctly",
+                    url: 'ui/runtimeByClass.html',
+                    width: 400
+                })
+                .add({
+                    description: "should show 'no data'",
+                    url: 'ui/runtimeByClassEmpty.html',
+                    width: 400
+                })
+                .execute();
+        };
+    </script>
+</head>
+<body>
+</body>
+</html>
