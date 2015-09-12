@@ -36,6 +36,7 @@
                 display: inline-block;
                 padding: 10px;
                 position: relative;
+                z-index: 0;
             }
             section:hover:not(:target) {
                 background-color: #f7f7f7;
@@ -58,7 +59,7 @@
                 right: 0;
                 bottom: 0;
                 margin: auto;
-                z-index: 0;
+                z-index: 1;
             }
             section:target::before {
                 content: '';
