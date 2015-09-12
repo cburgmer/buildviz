@@ -7,7 +7,7 @@ pom.xml.asc
 *.class
 /.lein-*
 /.nrepl-port
-/resources/public/js/node_modules/
+/resources/public/node_modules/
 /examples/go/.vagrant/
 /buildviz_jobs
 /buildviz_tests
