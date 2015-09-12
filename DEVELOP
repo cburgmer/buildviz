@@ -18,3 +18,7 @@ Just a few pointers if you want to make changes to buildviz:
     $ ./mock.sh
     # In a 2nd session
     $ ./lein run -m buildviz.gosync http://localhost:8080 --from 2014-01-01
+
+## Generate the standalone jar
+
+    $ ./lein ring uberjar
