@@ -16,7 +16,6 @@
 (def date-formatter (tf/formatter tz "YYYY-MM-dd" "YYYY/MM/dd" "YYYYMMdd" "dd.MM.YYYY"))
 
 (declare go-url)
-(declare load-builds-from)
 (declare buildviz-url)
 
 (defn usage [options-summary]
@@ -111,7 +110,7 @@
 (defn fetch-all-stage-history [pipeline stage]
   (get-stage-instances pipeline stage 0))
 
-(defn job-instances-for-stage [{stage :stage pipeline :pipeline}]
+(defn job-instances-for-stage [load-builds-from {stage :stage pipeline :pipeline}]
   (map #(assoc % :stageName stage :pipelineName pipeline)
        (take-while #(.isAfter (:scheduledDateTime %) load-builds-from)
                    (mapcat job-instances-for-stage-instance
@@ -257,21 +256,20 @@
   (def go-url (first (:arguments args)))
   (def buildviz-url (:buildviz-url (:options args)))
 
-  (def load-builds-from (:load-builds-from (:options args)))
-
-  (def selected-pipeline-group-names (set (drop 1 (:arguments args))))
-
-  (println "Go" selected-pipeline-group-names go-url "-> buildviz" buildviz-url)
-  (println "Syncing all builds starting from" (tf/unparse date-formatter load-builds-from))
-
-  (let [pipeline-groups (get-pipeline-groups)
+  (let [load-builds-from (:load-builds-from (:options args))
+        selected-pipeline-group-names (set (drop 1 (:arguments args)))
+        pipeline-groups (get-pipeline-groups)
         selected-pipeline-groups (if (seq selected-pipeline-group-names)
                                    (select-pipeline-groups pipeline-groups selected-pipeline-group-names)
                                    pipeline-groups)
         builds-to-be-synced (->> selected-pipeline-groups
                                  (mapcat stages-for-pipeline-group)
-                                 (mapcat job-instances-for-stage)
+                                 (mapcat (partial job-instances-for-stage load-builds-from))
                                  (sort-by :scheduledDateTime))]
+
+    (println "Go" selected-pipeline-group-names go-url "-> buildviz" buildviz-url)
+    (println "Syncing all builds starting from" (tf/unparse date-formatter load-builds-from))
+
     (println (format "Found %s builds to be synced, starting" (count builds-to-be-synced)))
 
     (let [builds-with-full-information (->> builds-to-be-synced
