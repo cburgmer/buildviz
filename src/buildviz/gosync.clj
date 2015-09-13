@@ -35,10 +35,9 @@
   [["-b" "--buildviz URL" "URL pointing to a running buildviz instance"
     :id :buildviz-url
     :default "http://localhost:3000"]
-   ["-f" "--from DATE" "DATE from which on builds are loaded"
+   ["-f" "--from DATE" "DATE from which on builds are loaded (by default tries to pick up where the last run finished)"
     :id :load-builds-from
-    :parse-fn #(tf/parse date-formatter %)
-    :default (t/minus (t/today-at-midnight tz) (t/weeks 1))]
+    :parse-fn #(tf/parse date-formatter %)]
    ["-h" "--help"]])
 
 ;; util
@@ -243,6 +242,23 @@
             (log/errorf "Unable to sync testresults for %s %s (status %s): %s" job-name build-no (:status data) (:body data))
             (log/errorf e "Unable to sync testresults for %s %s" job-name build-no)))))))
 
+;; build load start date
+
+(def last-week (t/minus (t/today-at-midnight tz) (t/weeks 1)))
+
+(defn- get-latest-synced-build-start []
+  (let [response (client/get (format "%s/status" buildviz-url))
+        buildviz-status (j/parse-string (:body response) true)]
+    (when-let [latest-build-start (:latest-build-start buildviz-status)]
+      (tc/from-long latest-build-start))))
+
+(defn- get-start-date [date-from-config]
+  (if (some? date-from-config)
+    date-from-config
+    (if-let [latest-sync-build-start (get-latest-synced-build-start)]
+      latest-sync-build-start
+      last-week)))
+
 ;; run
 
 (defn -main [& c-args]
@@ -256,7 +272,7 @@
   (def go-url (first (:arguments args)))
   (def buildviz-url (:buildviz-url (:options args)))
 
-  (let [load-builds-from (:load-builds-from (:options args))
+  (let [load-builds-from (get-start-date (:load-builds-from (:options args)))
         selected-pipeline-group-names (set (drop 1 (:arguments args)))
         pipeline-groups (get-pipeline-groups)
         selected-pipeline-groups (if (seq selected-pipeline-group-names)
@@ -268,7 +284,7 @@
                                  (sort-by :scheduledDateTime))]
 
     (println "Go" selected-pipeline-group-names go-url "-> buildviz" buildviz-url)
-    (println "Syncing all builds starting from" (tf/unparse date-formatter load-builds-from))
+    (println "Syncing all builds starting from" (tf/unparse (:date-time tf/formatters) load-builds-from))
 
     (println (format "Found %s builds to be synced, starting" (count builds-to-be-synced)))
 
