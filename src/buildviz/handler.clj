@@ -55,6 +55,16 @@
 (defn- serialize-nested-testsuites [testsuite-id]
   (join ": " testsuite-id))
 
+;; status
+
+(defn- get-status [build-results]
+  (let [all-builds (mapcat #(results/builds build-results %)
+                           (results/job-names build-results))
+        total-build-count (count all-builds)
+        latest-build-start (apply max (map :start all-builds))]
+    (http/respond-with-json {:total-build-count total-build-count
+                             :latest-build-start latest-build-start})))
+
 ;; jobs
 
 (defn- average-runtime-for [build-data-entries]
@@ -274,6 +284,7 @@
    (PUT "/builds/:job/:build/testresults" [job build :as {body :body}] (store-test-results! build-results job build body persist-tests!))
    (GET "/builds/:job/:build/testresults" [job build :as {accept :accept}] (get-test-results build-results job build accept))
 
+   (GET "/status" {} (get-status build-results))
    (GET "/jobs" {accept :accept} (get-jobs build-results accept))
    (GET "/jobs.csv" {} (get-jobs build-results {:mime :csv}))
    (GET "/pipelineruntime" {} (get-pipeline-runtime build-results))

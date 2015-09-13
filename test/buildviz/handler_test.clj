@@ -19,6 +19,9 @@
                        dummy-persist
                        dummy-persist)))
 
+(def a-timestamp (tc/to-long (t/from-time-zone (t/date-time 1986 10 14 4 3 27 456) (t/default-time-zone))))
+(def a-day (* 24 60 60 1000))
+
 ;; helpers
 
 (defn get-request [app url]
@@ -148,8 +151,19 @@
                             "status" "pass"}]}]
              (json-body (json-get-request app "/builds/job/1/testresults")))))))
 
+(deftest Status
+  (testing "should return total number of builds and time of latest build"
+    (let [app (the-app
+               {"aBuild" {"1" {:start a-timestamp}
+                          "2" {:start (+ a-timestamp (* 2 a-day))}}
+                "anotherBuild" {"3" {:start (+ a-timestamp a-day)}}}
+               {})]
+      (is (= (json-body (json-get-request app "/status"))
+             {"total-build-count" 3
+              "latest-build-start" (+ a-timestamp (* 2 a-day))})))))
 
 (deftest JobsSummary
+
   (testing "GET to /jobs"
     ;; GET should return 200
     (is (= (:status (get-request (the-app) "/jobs"))
@@ -212,9 +226,6 @@
       (is (= (json-body (json-get-request app "/jobs"))
              {"flakyBuild" {"failedCount" 1 "totalCount" 2 "flakyCount" 1}})))
     ))
-
-(def a-timestamp (tc/to-long (t/from-time-zone (t/date-time 1986 10 14 4 3 27 456) (t/default-time-zone))))
-(def a-day (* 24 60 60 1000))
 
 (deftest PipelineRuntimeSummary
   (testing "GET to /pipelineruntime"
