@@ -58,12 +58,13 @@
 ;; status
 
 (defn- get-status [build-results]
-  (let [all-builds (mapcat #(results/builds build-results %)
-                           (results/job-names build-results))
-        total-build-count (count all-builds)
-        latest-build-start (apply max (map :start all-builds))]
-    (http/respond-with-json {:total-build-count total-build-count
-                             :latest-build-start latest-build-start})))
+  (if-let [all-builds (seq (mapcat #(results/builds build-results %)
+                                     (results/job-names build-results)))]
+    (let [total-build-count (count all-builds)
+          latest-build-start (apply max (map :start all-builds))]
+      (http/respond-with-json {:total-build-count total-build-count
+                               :latest-build-start latest-build-start}))
+    (http/respond-with-json {:total-build-count 0})))
 
 ;; jobs
 

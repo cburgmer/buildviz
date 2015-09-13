@@ -160,7 +160,11 @@
                {})]
       (is (= (json-body (json-get-request app "/status"))
              {"total-build-count" 3
-              "latest-build-start" (+ a-timestamp (* 2 a-day))})))))
+              "latest-build-start" (+ a-timestamp (* 2 a-day))}))))
+
+  (testing "should handle no builds"
+    (is (= (json-body (json-get-request (the-app) "/status"))
+           {"total-build-count" 0}))))
 
 (deftest JobsSummary
 
