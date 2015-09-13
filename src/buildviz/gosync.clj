@@ -250,7 +250,7 @@
 (defn- get-latest-synced-build-start []
   (let [response (client/get (format "%s/status" buildviz-url))
         buildviz-status (j/parse-string (:body response) true)]
-    (when-let [latest-build-start (:latest-build-start buildviz-status)]
+    (when-let [latest-build-start (:latestBuildStart buildviz-status)]
       (tc/from-long latest-build-start))))
 
 (defn- get-start-date [date-from-config]

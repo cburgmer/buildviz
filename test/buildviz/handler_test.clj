@@ -159,12 +159,12 @@
                 "anotherBuild" {"3" {:start (+ a-timestamp a-day)}}}
                {})]
       (is (= (json-body (json-get-request app "/status"))
-             {"total-build-count" 3
-              "latest-build-start" (+ a-timestamp (* 2 a-day))}))))
+             {"totalBuildCount" 3
+              "latestBuildStart" (+ a-timestamp (* 2 a-day))}))))
 
   (testing "should handle no builds"
     (is (= (json-body (json-get-request (the-app) "/status"))
-           {"total-build-count" 0}))))
+           {"totalBuildCount" 0}))))
 
 (deftest JobsSummary
 

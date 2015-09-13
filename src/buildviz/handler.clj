@@ -62,9 +62,9 @@
                                      (results/job-names build-results)))]
     (let [total-build-count (count all-builds)
           latest-build-start (apply max (map :start all-builds))]
-      (http/respond-with-json {:total-build-count total-build-count
-                               :latest-build-start latest-build-start}))
-    (http/respond-with-json {:total-build-count 0})))
+      (http/respond-with-json {:totalBuildCount total-build-count
+                               :latestBuildStart latest-build-start}))
+    (http/respond-with-json {:totalBuildCount 0})))
 
 ;; jobs
 
