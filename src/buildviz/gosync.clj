@@ -110,10 +110,11 @@
   (get-stage-instances pipeline stage 0))
 
 (defn job-instances-for-stage [load-builds-from {stage :stage pipeline :pipeline}]
-  (map #(assoc % :stageName stage :pipelineName pipeline)
-       (take-while #(.isAfter (:scheduledDateTime %) load-builds-from)
-                   (mapcat job-instances-for-stage-instance
-                           (fetch-all-stage-history pipeline stage)))))
+  (let [safe-build-start-date (t/minus load-builds-from (t/millis 1))]
+    (map #(assoc % :stageName stage :pipelineName pipeline)
+         (take-while #(t/after? (:scheduledDateTime %) safe-build-start-date)
+                     (mapcat job-instances-for-stage-instance
+                             (fetch-all-stage-history pipeline stage))))))
 
 
 ;; /api/pipelines/%pipelines/instance/%run
