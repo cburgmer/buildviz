@@ -264,23 +264,22 @@
   (println "Go" selected-pipeline-group-names go-url "-> buildviz" buildviz-url)
   (println "Syncing all builds starting from" (tf/unparse date-formatter load-builds-from))
 
-  (def pipeline-groups (get-pipeline-groups))
+  (let [pipeline-groups (get-pipeline-groups)
+        selected-pipeline-groups (if (seq selected-pipeline-group-names)
+                                   (select-pipeline-groups pipeline-groups selected-pipeline-group-names)
+                                   pipeline-groups)
+        builds-to-be-synced (->> selected-pipeline-groups
+                                 (mapcat stages-for-pipeline-group)
+                                 (mapcat job-instances-for-stage)
+                                 (sort-by :scheduledDateTime))]
+    (println (format "Found %s builds to be synced, starting" (count builds-to-be-synced)))
 
-  (def selected-pipeline-groups
-    (if (seq selected-pipeline-group-names)
-      (select-pipeline-groups pipeline-groups selected-pipeline-group-names)
-      pipeline-groups))
+    (let [builds-with-full-information (->> builds-to-be-synced
+                                            (map augment-job-with-inputs)
+                                            (map job-data-for-instance)
+                                            (filter #(some? (:build %)))
+                                            (map augment-job-instance-with-junit-xml))]
+      (put-to-buildviz (map make-build-instance builds-with-full-information))
 
-  (def job-instances
-    (->> selected-pipeline-groups
-         (mapcat stages-for-pipeline-group)
-         (mapcat job-instances-for-stage)
-         (map augment-job-with-inputs)
-         (map job-data-for-instance)
-         (filter #(some? (:build %)))
-         (map augment-job-instance-with-junit-xml)))
-
-  (put-to-buildviz (map make-build-instance job-instances))
-
-  (println)
-  (println (format "Done, wrote %s build entries" (count job-instances))))
+      (println)
+      (println (format "Done, wrote %s build entries" (count builds-with-full-information))))))
