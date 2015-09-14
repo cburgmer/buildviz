@@ -103,18 +103,21 @@
         return elem;
     };
 
+    var transformClasses = function (classNodes) {
+        return buildPackageHiearchy(classNodes)
+            .map(transformClassNode)
+            .map(addAccumulatedApproximateRuntime)
+            .map(addTitle);
+    };
+
     var transformTestSuite = function (node) {
         if (!node.children) {
-            return buildPackageHiearchy([node]).map(transformClassNode).map(addAccumulatedApproximateRuntime).map(addTitle)[0];
+            return transformClasses([node])[0];
         }
 
-        var leafNodes = node.children.filter(function (child) {
+        var classNodes = node.children.filter(function (child) {
             return !child.children;
         });
-        var transformedClassNodes = buildPackageHiearchy(leafNodes)
-                .map(transformClassNode)
-                .map(addAccumulatedApproximateRuntime)
-                .map(addTitle);
 
         var nestedSuites = node.children.filter(function (child) {
             return child.children;
@@ -122,7 +125,7 @@
 
         return {
             name: node.name,
-            children: transformedClassNodes.concat(nestedSuites.map(transformTestSuite))
+            children: transformClasses(classNodes).concat(nestedSuites.map(transformTestSuite))
         };
     };
 
