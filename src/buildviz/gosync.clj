@@ -273,20 +273,23 @@
   (def go-url (first (:arguments args)))
   (def buildviz-url (:buildviz-url (:options args)))
 
+  (println "Go" go-url "-> buildviz" buildviz-url)
+
   (let [load-builds-from (get-start-date (:load-builds-from (:options args)))
         selected-pipeline-group-names (set (drop 1 (:arguments args)))
         pipeline-groups (get-pipeline-groups)
         selected-pipeline-groups (if (seq selected-pipeline-group-names)
                                    (select-pipeline-groups pipeline-groups selected-pipeline-group-names)
-                                   pipeline-groups)
-        builds-to-be-synced (->> selected-pipeline-groups
+                                   pipeline-groups)]
+    (println "Looking at pipeline groups" (map :name selected-pipeline-groups))
+    (println "Syncing all builds starting from" (tf/unparse (:date-time tf/formatters) load-builds-from))
+
+    (println "Finding all builds for syncing...")
+
+    (let [builds-to-be-synced (->> selected-pipeline-groups
                                  (mapcat stages-for-pipeline-group)
                                  (mapcat (partial job-instances-for-stage load-builds-from))
                                  (sort-by :scheduledDateTime))]
-
-    (println "Go" selected-pipeline-group-names go-url "-> buildviz" buildviz-url)
-    (println "Syncing all builds starting from" (tf/unparse (:date-time tf/formatters) load-builds-from))
-
     (println (format "Found %s builds to be synced, starting" (count builds-to-be-synced)))
 
     (let [builds-with-full-information (->> builds-to-be-synced
@@ -297,4 +300,4 @@
       (put-to-buildviz (map make-build-instance builds-with-full-information))
 
       (println)
-      (println (format "Done, wrote %s build entries" (count builds-with-full-information))))))
+      (println (format "Done, wrote %s build entries" (count builds-with-full-information)))))))
