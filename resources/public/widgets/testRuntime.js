@@ -9,8 +9,7 @@
     var graph = zoomableSunburst(svg, diameter);
 
     var title = function (entry) {
-        var runtime = entry.averageRuntime ? ' (' + utils.formatTimeInMs(entry.averageRuntime, {showMillis: true}) + ')' : '';
-        return entry.name + runtime;
+        return entry.name + ' (' + utils.formatTimeInMs(entry.size, {showMillis: true}) + ')';
     };
 
     var hasOnlyOneChild = function (children) {
@@ -81,20 +80,41 @@
         } else {
             return {
                 name: elem.name,
-                size: elem.averageRuntime,
-                title: title(elem)
+                size: elem.averageRuntime
             };
         }
     };
 
+    var addAccumulatedApproximateRuntime = function (elem) {
+        if (elem.children) {
+            elem.children = elem.children.map(addAccumulatedApproximateRuntime);
+            elem.size = elem.children.reduce(function (acc, child) {
+                return acc + child.size;
+            }, 0);
+        }
+        return elem;
+    };
+
+    var addTitle = function (elem) {
+        elem.title = title(elem);
+        if (elem.children) {
+            elem.children = elem.children.map(addTitle);
+        }
+        return elem;
+    };
+
     var transformTestSuite = function (node) {
         if (!node.children) {
-            return buildPackageHiearchy([node]).map(transformClassNode)[0];
+            return buildPackageHiearchy([node]).map(transformClassNode).map(addAccumulatedApproximateRuntime).map(addTitle)[0];
         }
 
         var leafNodes = node.children.filter(function (child) {
             return !child.children;
         });
+        var transformedClassNodes = buildPackageHiearchy(leafNodes)
+                .map(transformClassNode)
+                .map(addAccumulatedApproximateRuntime)
+                .map(addTitle);
 
         var nestedSuites = node.children.filter(function (child) {
             return child.children;
@@ -102,7 +122,7 @@
 
         return {
             name: node.name,
-            children: buildPackageHiearchy(leafNodes).map(transformClassNode).concat(nestedSuites.map(transformTestSuite))
+            children: transformedClassNodes.concat(nestedSuites.map(transformTestSuite))
         };
     };
 
