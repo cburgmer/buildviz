@@ -57,14 +57,17 @@
 
 ;; status
 
+(defn- with-latest-build-start [all-builds response]
+  (if-let [build-starts (seq (remove nil? (map :start all-builds)))]
+    (assoc response :latestBuildStart (apply max build-starts))
+    response))
+
 (defn- get-status [build-results]
-  (if-let [all-builds (seq (mapcat #(results/builds build-results %)
-                                     (results/job-names build-results)))]
-    (let [total-build-count (count all-builds)
-          latest-build-start (apply max (map :start all-builds))]
-      (http/respond-with-json {:totalBuildCount total-build-count
-                               :latestBuildStart latest-build-start}))
-    (http/respond-with-json {:totalBuildCount 0})))
+  (let [all-builds (seq (mapcat #(results/builds build-results %)
+                                (results/job-names build-results)))
+        total-build-count (count all-builds)]
+    (http/respond-with-json (with-latest-build-start all-builds
+                              {:totalBuildCount total-build-count}))))
 
 ;; jobs
 

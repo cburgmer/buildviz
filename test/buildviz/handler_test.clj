@@ -162,6 +162,13 @@
              {"totalBuildCount" 3
               "latestBuildStart" (+ a-timestamp (* 2 a-day))}))))
 
+  (testing "should handle a build without a start"
+    (let [app (the-app
+               {"aBuild" {"1" {}}}
+               {})]
+      (is (= (json-body (json-get-request app "/status"))
+             {"totalBuildCount" 1}))))
+
   (testing "should handle no builds"
     (is (= (json-body (json-get-request (the-app) "/status"))
            {"totalBuildCount" 0}))))
