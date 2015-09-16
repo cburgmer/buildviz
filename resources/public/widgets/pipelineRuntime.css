@@ -1,0 +1,15 @@
+.pipelineRuntime .axis path,
+.pipelineRuntime .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.pipelineRuntime .x.axis path {
+  display: none;
+}
+
+.pipelineRuntime .line {
+  fill: none;
+  stroke-width: 1.5px;
+}
