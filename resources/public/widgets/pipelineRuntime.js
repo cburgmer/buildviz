@@ -47,12 +47,15 @@
         var runtimes = jobNames.map(function (jobName) {
             return {
                 jobName: jobName,
-                values: data.map(function (d) {
-                    return {
-                        date: d.date,
-                        runtime: new Number(d[jobName]) || 0
-                    };
-                })
+                values: data
+                    .map(function (d) {
+                        return {
+                            date: d.date,
+                            runtime: d[jobName] ? new Number(d[jobName]) : undefined
+                        };
+                    }).filter(function (d) {
+                        return d.runtime !== undefined;
+                    })
             };
         });
 
