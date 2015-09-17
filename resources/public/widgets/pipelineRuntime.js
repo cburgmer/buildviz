@@ -38,6 +38,10 @@
     d3.csv('/pipelineruntime', function (_, data) {
         var jobNames = d3.keys(data[0]).filter(function(key) { return key !== "date"; });
 
+        if (!jobNames.length) {
+            return;
+        }
+
         color.domain(jobNames);
 
         data.forEach(function (d) {
