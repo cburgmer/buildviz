@@ -38,6 +38,10 @@
    ["-f" "--from DATE" "DATE from which on builds are loaded (by default tries to pick up where the last run finished)"
     :id :load-builds-from
     :parse-fn #(tf/parse date-formatter %)]
+   ["-s" "--aggregate PIPELINE" "PIPELINE for which a complete stage will be synced as a job"
+    :id :aggregate-jobs-for-pipelines
+    :default '()
+    :assoc-fn (fn [previous key val] (assoc previous key (conj (get previous key) val)))]
    ["-h" "--help"]])
 
 ;; util
@@ -80,8 +84,24 @@
   (let [build (get-json "/jobStatus.json?pipelineName=&stageName=&jobId=%s" jobId)]
     (parse-build-info build)))
 
+(defn accumulate-builds [builds]
+  (let [outcomes (map :outcome builds)
+        start-times (map :start builds)
+        end-times (map :end builds)]
+    {:start (apply min start-times)
+     :end (apply max end-times)
+     :outcome (if (every? #(= "pass" %) outcomes)
+                "pass"
+                "fail")}))
+
+(defn build-for-job [job-instance]
+  (if-let [jobs-for-accumulation (:jobs-for-accumulation job-instance)]
+    (let [builds (map build-for jobs-for-accumulation)]
+      (accumulate-builds builds))
+    (build-for job-instance)))
+
 (defn job-data-for-instance [jobInstance]
-  (assoc jobInstance :build (build-for jobInstance)))
+  (assoc jobInstance :build (build-for-job jobInstance)))
 
 
 ;; /api/stages/%pipeline/%stage/history
@@ -89,13 +109,31 @@
 (defn job-instances-for-stage-instance [{pipeline-run :pipeline_counter
                                          stage-run :counter
                                          jobs :jobs}]
-  (map (fn [{id :id name :name result :result scheduled-date :scheduled_date}]
+  (map (fn [{id :id name :name scheduled-date :scheduled_date}]
          {:jobId id
           :jobName name
           :stageRun stage-run
           :pipelineRun pipeline-run
           :scheduledDateTime (tc/from-long scheduled-date)})
        jobs))
+
+(defn job-instance-for-accumulated-stage-instance [{pipeline-run :pipeline_counter
+                                                    stage-run :counter
+                                                    jobs :jobs}]
+  (let [job-instances (map (fn [{id :id name :name}]
+                             {:jobId id :jobName name})
+                           jobs)]
+    {:jobId 0
+     :jobName "accumulated"
+     :stageRun stage-run
+     :pipelineRun pipeline-run
+     :scheduledDateTime (tc/from-long (apply min (map :scheduled_date jobs)))
+     :jobs-for-accumulation job-instances}))
+
+(defn fetch-job-instances-for-stage-instance [accumulate-stages-for-pipelines stage-name stage-instance]
+  (if (contains? accumulate-stages-for-pipelines stage-name)
+    (list (job-instance-for-accumulated-stage-instance stage-instance))
+    (job-instances-for-stage-instance stage-instance)))
 
 (defn get-stage-instances [pipeline stage-name offset]
   (let [stage-history (get-json "/api/stages/%s/%s/history/%s" pipeline stage-name offset)
@@ -109,11 +147,11 @@
 (defn fetch-all-stage-history [pipeline stage]
   (get-stage-instances pipeline stage 0))
 
-(defn job-instances-for-stage [load-builds-from {stage-name :stage pipeline :pipeline}]
+(defn job-instances-for-stage [load-builds-from accumulate-stages-for-pipelines {stage-name :stage pipeline :pipeline}]
   (let [safe-build-start-date (t/minus load-builds-from (t/millis 1))]
     (->> stage-name
          (fetch-all-stage-history pipeline)
-         (mapcat job-instances-for-stage-instance)
+         (mapcat (partial fetch-job-instances-for-stage-instance accumulate-stages-for-pipelines pipeline))
          (take-while #(t/after? (:scheduledDateTime %) safe-build-start-date))
          (map #(assoc % :stageName stage-name :pipelineName pipeline)))))
 
@@ -277,6 +315,7 @@
   (println "Go" go-url "-> buildviz" buildviz-url)
 
   (let [load-builds-from (get-start-date (:load-builds-from (:options args)))
+        accumulate-stages-for-pipelines (set (:aggregate-jobs-for-pipelines (:options args)))
         selected-pipeline-group-names (set (drop 1 (:arguments args)))
         pipeline-groups (get-pipeline-groups)
         selected-pipeline-groups (if (seq selected-pipeline-group-names)
@@ -284,12 +323,14 @@
                                    pipeline-groups)]
     (println "Looking at pipeline groups" (map :name selected-pipeline-groups))
     (println "Syncing all builds starting from" (tf/unparse (:date-time tf/formatters) load-builds-from))
+    (when (some? accumulate-stages-for-pipelines)
+      (println "Aggregating jobs for stages of" accumulate-stages-for-pipelines))
 
     (println "Finding all builds for syncing...")
 
     (let [builds-to-be-synced (->> selected-pipeline-groups
                                  (mapcat stages-for-pipeline-group)
-                                 (mapcat (partial job-instances-for-stage load-builds-from))
+                                 (mapcat (partial job-instances-for-stage load-builds-from accumulate-stages-for-pipelines))
                                  (sort-by :scheduledDateTime))]
     (println (format "Found %s builds to be synced, starting" (count builds-to-be-synced)))
 
