@@ -97,24 +97,25 @@
           :scheduledDateTime (tc/from-long scheduled-date)})
        jobs))
 
-(defn get-stage-instances [pipeline stage offset]
-  (let [stage-history (get-json "/api/stages/%s/%s/history/%s" pipeline stage offset)
+(defn get-stage-instances [pipeline stage-name offset]
+  (let [stage-history (get-json "/api/stages/%s/%s/history/%s" pipeline stage-name offset)
         stage-instances (:stages stage-history)]
     (if (empty? stage-instances)
       []
       (let [next-offset (+ offset (count stage-instances))]
         (concat stage-instances
-                (lazy-seq (get-stage-instances pipeline stage next-offset)))))))
+                (lazy-seq (get-stage-instances pipeline stage-name next-offset)))))))
 
 (defn fetch-all-stage-history [pipeline stage]
   (get-stage-instances pipeline stage 0))
 
-(defn job-instances-for-stage [load-builds-from {stage :stage pipeline :pipeline}]
+(defn job-instances-for-stage [load-builds-from {stage-name :stage pipeline :pipeline}]
   (let [safe-build-start-date (t/minus load-builds-from (t/millis 1))]
-    (map #(assoc % :stageName stage :pipelineName pipeline)
-         (take-while #(t/after? (:scheduledDateTime %) safe-build-start-date)
-                     (mapcat job-instances-for-stage-instance
-                             (fetch-all-stage-history pipeline stage))))))
+    (->> stage-name
+         (fetch-all-stage-history pipeline)
+         (mapcat job-instances-for-stage-instance)
+         (take-while #(t/after? (:scheduledDateTime %) safe-build-start-date))
+         (map #(assoc % :stageName stage-name :pipelineName pipeline)))))
 
 
 ;; /api/pipelines/%pipelines/instance/%run
