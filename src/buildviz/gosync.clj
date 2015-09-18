@@ -84,15 +84,21 @@
   (let [build (get-json "/jobStatus.json?pipelineName=&stageName=&jobId=%s" jobId)]
     (parse-build-info build)))
 
+(defn accumulate-build-times [builds]
+  (let [start-times (map :start builds)
+        end-times (map :end builds)]
+    (if (empty? (filter nil? end-times))
+      {:start (apply min start-times)
+       :end (apply max end-times)}
+      {})))
+
 (defn accumulate-builds [builds]
   (let [outcomes (map :outcome builds)
-        start-times (map :start builds)
-        end-times (map :end builds)]
-    {:start (apply min start-times)
-     :end (apply max end-times)
-     :outcome (if (every? #(= "pass" %) outcomes)
-                "pass"
-                "fail")}))
+        accumulated-outcome (if (every? #(= "pass" %) outcomes)
+                              "pass"
+                              "fail")]
+    (assoc (accumulate-build-times builds)
+           :outcome accumulated-outcome)))
 
 (defn build-for-job [job-instance]
   (if-let [jobs-for-accumulation (:jobs-for-accumulation job-instance)]
