@@ -125,7 +125,8 @@
          (map build-for)
          (ignore-old-runs-for-rerun-stages job-instance)
          accumulate-builds)
-    (build-for job-instance)))
+    (dissoc (build-for job-instance)
+            :actual-stage-run)))
 
 (defn job-data-for-instance [jobInstance]
   (assoc jobInstance :build (build-for-job jobInstance)))
