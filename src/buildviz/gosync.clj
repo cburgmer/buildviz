@@ -84,9 +84,11 @@
     (when-not (= "Unknown" result)
       (let [start-time (parse-datetime property-map "cruise_timestamp_04_building")
             end-time (parse-datetime property-map "cruise_timestamp_06_completed")
+            actual-stage-run (get property-map "cruise_stage_counter")
             outcome (if (= "Passed" result) "pass" "fail")]
         (assoc (build-times start-time end-time)
-               :outcome outcome)))))
+               :outcome outcome
+               :actual-stage-run actual-stage-run)))))
 
 (defn build-for [{pipeline-name :pipelineName
                   pipeline-run :pipelineRun
@@ -113,11 +115,15 @@
     (assoc (accumulate-build-times builds)
            :outcome accumulated-outcome)))
 
+(defn ignore-old-runs-for-rerun-stages [{stage-run :stageRun} builds]
+  (filter #(= stage-run (:actual-stage-run %)) builds))
+
 (defn build-for-job [job-instance]
   (if-let [jobs-for-accumulation (:jobs-for-accumulation job-instance)]
     (->> jobs-for-accumulation
          (map #(merge job-instance %))
          (map build-for)
+         (ignore-old-runs-for-rerun-stages job-instance)
          accumulate-builds)
     (build-for job-instance)))
 
