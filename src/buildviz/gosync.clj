@@ -115,8 +115,10 @@
 
 (defn build-for-job [job-instance]
   (if-let [jobs-for-accumulation (:jobs-for-accumulation job-instance)]
-    (let [builds (map build-for jobs-for-accumulation)]
-      (accumulate-builds builds))
+    (->> jobs-for-accumulation
+         (map #(merge job-instance %))
+         (map build-for)
+         accumulate-builds)
     (build-for job-instance)))
 
 (defn job-data-for-instance [jobInstance]
