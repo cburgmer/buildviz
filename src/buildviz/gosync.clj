@@ -54,35 +54,48 @@
         response (client/get (absolute-url-for relative-url))]
     (j/parse-string (:body response) true)))
 
+(defn get-plain [relative-url-template & url-params]
+  (let [relative-url (apply format relative-url-template url-params)
+        response (client/get (absolute-url-for relative-url))]
+    (:body response)))
 
-;; /jobStatus.json
+;; /properties/%pipeline/%pipeline_run/%stage/%stage_run/%job
 
 (defn handle-missing-start-time-when-cancelled [build-start-time build-end-time]
   (if (nil? build-start-time)
     build-end-time
     build-start-time))
 
-(defn build-times [info start-time end-time]
+(defn build-times [start-time end-time]
   (if-not (nil? end-time)
-    (assoc info
-           :start (handle-missing-start-time-when-cancelled start-time end-time)
-           :end end-time)
-    info))
+    {:start (handle-missing-start-time-when-cancelled start-time end-time)
+     :end end-time}
+    {}))
 
-(defn parse-build-info [json-response]
-  (let [build-info (:building_info (first json-response))
-        result (:result build-info)]
+(defn- parse-datetime [property-map key]
+  (tc/to-long (tf/parse (get property-map key))))
+
+(defn parse-build-properties [properties]
+  (let [lines (string/split properties #"\n")
+        keys (string/split (first lines) #",")
+        values (string/split (second lines) #",")
+        property-map (zipmap keys values)
+        result (get property-map "cruise_job_result")]
     (when-not (= "Unknown" result)
-      (let [start-time (tc/to-long (tf/parse (:build_building_date build-info)))
-            end-time (tc/to-long (tf/parse (:build_completed_date build-info)))
+      (let [start-time (parse-datetime property-map "cruise_timestamp_04_building")
+            end-time (parse-datetime property-map "cruise_timestamp_06_completed")
             outcome (if (= "Passed" result) "pass" "fail")]
-        (-> {}
-            (build-times start-time end-time)
-            (assoc :outcome outcome))))))
+        (assoc (build-times start-time end-time)
+               :outcome outcome)))))
 
-(defn build-for [{jobId :jobId}]
-  (let [build (get-json "/jobStatus.json?pipelineName=&stageName=&jobId=%s" jobId)]
-    (parse-build-info build)))
+(defn build-for [{pipeline-name :pipelineName
+                  pipeline-run :pipelineRun
+                  stage-name :stageName
+                  stage-run :stageRun
+                  job-name :jobName}]
+  (let [build-properties (get-plain "/properties/%s/%s/%s/%s/%s"
+                                    pipeline-name pipeline-run stage-name stage-run job-name)]
+    (parse-build-properties build-properties)))
 
 (defn accumulate-build-times [builds]
   (let [start-times (map :start builds)
