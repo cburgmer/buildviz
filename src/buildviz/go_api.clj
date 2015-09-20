@@ -1,11 +1,11 @@
 (ns buildviz.go-api
-  (:require [clojure.string :as string]
-            [clojure.tools.logging :as log]
-            [cheshire.core :as j]
+  (:require [cheshire.core :as j]
             [clj-http.client :as client]
-            [clj-time.core :as t]
-            [clj-time.format :as tf]
-            [clj-time.coerce :as tc]))
+            [clj-time
+             [coerce :as tc]
+             [format :as tf]]
+            [clojure.string :as string]
+            [clojure.tools.logging :as log]))
 
 (import com.fasterxml.jackson.core.JsonParseException)
 
@@ -152,7 +152,7 @@
           (log/errorf e "Unable to get artifact list from %s" artifacts-url))))))
 
 (defn- xml-artifacts-for-job-run [go-url job-instance]
-  (let [file-tree (try-get-artifact-tree go-url job-instance)]
+  (when-let [file-tree (try-get-artifact-tree go-url job-instance)]
     (map make-file-url-path-only
          (mapcat filter-xml-files file-tree))))
 

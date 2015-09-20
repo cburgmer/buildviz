@@ -1,14 +1,17 @@
 (ns buildviz.gosync
-  (:require [clojure.string :as string]
-            [clojure.tools.logging :as log]
+  (:require [buildviz.go-api :as goapi]
             [cheshire.core :as j]
             [clj-http.client :as client]
-            [clj-time.core :as t]
-            [clj-time.format :as tf]
-            [clj-time.coerce :as tc]
-            [clojure.xml :as xml]
-            [clojure.tools.cli :refer [parse-opts]]
-            [buildviz.go-api :as goapi])
+            [clj-time
+             [coerce :as tc]
+             [core :as t]
+             [format :as tf]]
+            [clojure
+             [string :as string]
+             [xml :as xml]]
+            [clojure.tools
+             [cli :refer [parse-opts]]
+             [logging :as log]])
   (:gen-class))
 
 (def tz (t/default-time-zone))
@@ -125,7 +128,9 @@
 
 
 (defn select-stages [stages filter-groups]
-  (filter #(contains? filter-groups (:group %)) stages))
+  (if (seq filter-groups)
+    (filter #(contains? filter-groups (:group %)) stages)
+    stages))
 
 
 (defn- testsuite? [elem]
@@ -247,9 +252,7 @@
         accumulate-stages-for-pipelines (set (:aggregate-jobs-for-pipelines (:options args)))
         selected-pipeline-group-names (set (drop 1 (:arguments args)))
         pipeline-stages (goapi/get-stages go-url)
-        selected-pipeline-stages (if (seq selected-pipeline-group-names)
-                                   (select-stages pipeline-stages selected-pipeline-group-names)
-                                   pipeline-stages)]
+        selected-pipeline-stages (select-stages pipeline-stages selected-pipeline-group-names)]
     (println "Looking at pipeline groups" (distinct (map :group selected-pipeline-stages)))
     (println "Syncing all builds starting from" (tf/unparse (:date-time tf/formatters) load-builds-from))
     (when (some? accumulate-stages-for-pipelines)
