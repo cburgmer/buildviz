@@ -158,4 +158,4 @@
 (defn get-junit-xml [go-url job-instance]
   (when-let [xml-file-url (first (xml-artifacts-for-job-run go-url job-instance))]
     (log/info (format "Reading test results from %s" xml-file-url))
-    (:body (get-plain go-url xml-file-url))))
+    (get-plain go-url xml-file-url)))
