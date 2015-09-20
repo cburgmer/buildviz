@@ -107,12 +107,12 @@
       (list (:url file-node))
       [])))
 
-(defn- replace-file-url-host-part-for-basic-auth [go-url url]
-  ;; Replace host part with go url supplied by user
+(defn- make-file-url-path-only [url]
+  ;; Transform to path-only url so basic auth as provided by the user can be used.
   ;; Also works around broken Go domain setup
-  (clojure.string/replace url
-                          #"https?://[^/]+(/.+?)?/files/"
-                          (clojure.string/join [go-url "/files/"])))
+  (string/replace url
+                  #"https?://[^/]+(/.+?)?/files/"
+                  "/files/"))
 
 (defn- try-get-artifact-tree [go-url
                               {pipeline-name :pipelineName
@@ -133,10 +133,10 @@
 
 (defn- xml-artifacts-for-job-run [go-url job-instance]
   (let [file-tree (try-get-artifact-tree go-url job-instance)]
-    (map (partial replace-file-url-host-part-for-basic-auth go-url)
+    (map make-file-url-path-only
          (mapcat filter-xml-files file-tree))))
 
 (defn get-junit-xml [go-url job-instance]
   (when-let [xml-file-url (first (xml-artifacts-for-job-run go-url job-instance))]
     (log/info (format "Reading test results from %s" xml-file-url))
-    (:body (client/get xml-file-url))))
+    (:body (get-plain go-url xml-file-url))))
