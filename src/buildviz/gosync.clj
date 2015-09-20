@@ -7,10 +7,9 @@
             [clj-time.format :as tf]
             [clj-time.coerce :as tc]
             [clojure.xml :as xml]
-            [clojure.tools.cli :refer [parse-opts]])
+            [clojure.tools.cli :refer [parse-opts]]
+            [buildviz.go-api :as goapi])
   (:gen-class))
-
-(import com.fasterxml.jackson.core.JsonParseException)
 
 (def tz (t/default-time-zone))
 
@@ -55,50 +54,6 @@
         response (client/get (absolute-url-for relative-url))]
     (j/parse-string (:body response) true)))
 
-(defn get-plain [relative-url-template & url-params]
-  (let [relative-url (apply format relative-url-template url-params)
-        response (client/get (absolute-url-for relative-url))]
-    (:body response)))
-
-;; /properties/%pipeline/%pipeline_run/%stage/%stage_run/%job
-
-(defn handle-missing-start-time-when-cancelled [build-start-time build-end-time]
-  (if (nil? build-start-time)
-    build-end-time
-    build-start-time))
-
-(defn build-times [start-time end-time]
-  (if-not (nil? end-time)
-    {:start (handle-missing-start-time-when-cancelled start-time end-time)
-     :end end-time}
-    {}))
-
-(defn- parse-datetime [property-map key]
-  (tc/to-long (tf/parse (get property-map key))))
-
-(defn parse-build-properties [properties]
-  (let [lines (string/split properties #"\n")
-        keys (string/split (first lines) #",")
-        values (string/split (second lines) #",")
-        property-map (zipmap keys values)
-        result (get property-map "cruise_job_result")]
-    (when-not (= "Unknown" result)
-      (let [start-time (parse-datetime property-map "cruise_timestamp_04_building")
-            end-time (parse-datetime property-map "cruise_timestamp_06_completed")
-            actual-stage-run (get property-map "cruise_stage_counter")
-            outcome (if (= "Passed" result) "pass" "fail")]
-        (assoc (build-times start-time end-time)
-               :outcome outcome
-               :actual-stage-run actual-stage-run)))))
-
-(defn build-for [{pipeline-name :pipelineName
-                  pipeline-run :pipelineRun
-                  stage-name :stageName
-                  stage-run :stageRun
-                  job-name :jobName}]
-  (let [build-properties (get-plain "/properties/%s/%s/%s/%s/%s"
-                                    pipeline-name pipeline-run stage-name stage-run job-name)]
-    (parse-build-properties build-properties)))
 
 (defn accumulate-build-times [builds]
   (let [start-times (map :start builds)
@@ -123,17 +78,15 @@
   (if-let [jobs-for-accumulation (:jobs-for-accumulation job-instance)]
     (->> jobs-for-accumulation
          (map #(merge job-instance %))
-         (map build-for)
+         (map (partial goapi/build-for go-url))
          (ignore-old-runs-for-rerun-stages job-instance)
          accumulate-builds)
-    (dissoc (build-for job-instance)
+    (dissoc (goapi/build-for go-url job-instance)
             :actual-stage-run)))
 
 (defn job-data-for-instance [jobInstance]
   (assoc jobInstance :build (build-for-job jobInstance)))
 
-
-;; /api/stages/%pipeline/%stage/history
 
 (defn job-instances-for-stage-instance [{pipeline-run :pipeline_counter
                                          stage-run :counter
@@ -164,44 +117,19 @@
     (list (job-instance-for-accumulated-stage-instance stage-instance))
     (job-instances-for-stage-instance stage-instance)))
 
-(defn get-stage-instances [pipeline stage-name offset]
-  (let [stage-history (get-json "/api/stages/%s/%s/history/%s" pipeline stage-name offset)
-        stage-instances (:stages stage-history)]
-    (if (empty? stage-instances)
-      []
-      (let [next-offset (+ offset (count stage-instances))]
-        (concat stage-instances
-                (lazy-seq (get-stage-instances pipeline stage-name next-offset)))))))
-
-(defn fetch-all-stage-history [pipeline stage]
-  (get-stage-instances pipeline stage 0))
-
 (defn job-instances-for-stage [load-builds-from accumulate-stages-for-pipelines {stage-name :stage pipeline :pipeline}]
   (let [safe-build-start-date (t/minus load-builds-from (t/millis 1))]
     (->> stage-name
-         (fetch-all-stage-history pipeline)
+         (goapi/get-stage-history go-url pipeline)
          (mapcat (partial fetch-job-instances-for-stage-instance accumulate-stages-for-pipelines pipeline))
          (take-while #(t/after? (:scheduledDateTime %) safe-build-start-date))
          (map #(assoc % :stageName stage-name :pipelineName pipeline)))))
 
 
-;; /api/pipelines/%pipelines/instance/%run
-
-(defn revision->input [{modifications :modifications material :material}]
-  (let [{revision :revision} (first modifications)
-        source_id (:id material)]
-    {:revision revision
-     :source_id source_id}))
-
-(defn inputs-for-pipeline-run [pipelineName run]
-  (let [pipelineInstance (get-json "/api/pipelines/%s/instance/%s" pipelineName run)
-        revisions (:material_revisions (:build_cause pipelineInstance))]
-    (map revision->input revisions)))
-
 (defn augment-job-with-inputs [job]
-  (let [pipelineRun (:pipelineRun job)
-        pipelineName (:pipelineName job)
-        inputs (inputs-for-pipeline-run pipelineName pipelineRun)]
+  (let [pipeline-run (:pipelineRun job)
+        pipeline-name (:pipelineName job)
+        inputs (goapi/inputs-for-pipeline-run go-url pipeline-name pipeline-run)]
     (assoc job :inputs inputs)))
 
 
@@ -224,50 +152,6 @@
 (defn select-pipeline-groups [pipeline-groups filter-by-names]
   (filter #(contains? filter-by-names (:name %)) pipeline-groups))
 
-;; /files/%pipeline/%run/%stage/%run/%job.json
-
-(defn looks-like-xml? [file-name]
-  (.endsWith file-name "xml"))
-
-(defn filter-xml-files [file-node]
-  (if (contains? file-node :files)
-    (mapcat filter-xml-files (:files file-node))
-    (if (looks-like-xml? (:name file-node))
-      (list (:url file-node))
-      [])))
-
-(defn replace-file-url-host-part-for-basic-auth [url]
-  ;; Replace host part with go url supplied by user
-  ;; Also works around broken Go domain setup
-  (clojure.string/replace url
-                          #"https?://[^/]+(/.+?)?/files/"
-                          (clojure.string/join [go-url "/files/"])))
-
-(defn try-get-artifact-tree [{pipeline-name :pipelineName
-                              pipeline-run :pipelineRun
-                              stage-name :stageName
-                              stage-run :stageRun
-                              job-name :jobName}]
-  (let [artifacts-url (format "/files/%s/%s/%s/%s/%s.json" pipeline-name pipeline-run stage-name stage-run job-name)]
-    (try
-      (doall (get-json artifacts-url))
-      (catch JsonParseException e
-        (log/errorf e "Unable to parse artifact list for %s" artifacts-url))
-      (catch Exception e
-        (if-let [data (ex-data e)]
-          (log/errorf "Unable to get artifact list from %s (status %s): %s"
-                      artifacts-url (:status data) (:body data))
-          (log/errorf e "Unable to get artifact list from %s" artifacts-url))))))
-
-(defn xml-artifacts-for-job-run [job-instance]
-  (let [file-tree (try-get-artifact-tree job-instance)]
-    (map replace-file-url-host-part-for-basic-auth
-         (mapcat filter-xml-files file-tree))))
-
-(defn get-junit-xml [job-instance]
-  (when-let [xml-file-url (first (xml-artifacts-for-job-run job-instance))]
-    (log/info (format "Reading test results from %s" xml-file-url))
-    (:body (client/get xml-file-url))))
 
 (defn- testsuite? [elem]
   (= :testsuite (:tag elem)))
@@ -286,7 +170,7 @@
   (let [jobs (:jobs-for-accumulation job-instance)]
     (->> jobs
          (map #(merge job-instance %))
-         (map get-junit-xml))))
+         (map (partial goapi/get-junit-xml go-url)))))
 
 (defn get-accumulated-junit-xml [job-instance]
   (let [all-junit-xml (get-all-junit-xml job-instance)
@@ -304,7 +188,7 @@
 (defn fetch-junit-xml [job-instance]
   (if (contains? job-instance :jobs-for-accumulation)
     (get-accumulated-junit-xml job-instance)
-    (get-junit-xml job-instance)))
+    (goapi/get-junit-xml go-url job-instance)))
 
 (defn augment-job-instance-with-junit-xml [job-instance]
   (if-let [junit-xml (fetch-junit-xml job-instance)]
