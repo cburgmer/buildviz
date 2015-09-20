@@ -129,7 +129,7 @@
 (defn augment-job-with-inputs [job]
   (let [pipeline-run (:pipelineRun job)
         pipeline-name (:pipelineName job)
-        inputs (goapi/inputs-for-pipeline-run go-url pipeline-name pipeline-run)]
+        inputs (goapi/get-inputs-for-pipeline-run go-url pipeline-name pipeline-run)]
     (assoc job :inputs inputs)))
 
 

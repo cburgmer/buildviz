@@ -89,7 +89,7 @@
     {:revision revision
      :source_id source_id}))
 
-(defn inputs-for-pipeline-run [go-url pipeline-name run]
+(defn get-inputs-for-pipeline-run [go-url pipeline-name run]
   (let [pipeline-instance (get-json go-url "/api/pipelines/%s/instance/%s" pipeline-name run)
         revisions (:material_revisions (:build_cause pipeline-instance))]
     (map revision->input revisions)))
