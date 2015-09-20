@@ -9,18 +9,19 @@
 
 (import com.fasterxml.jackson.core.JsonParseException)
 
-(defn- absolute-url-for [go-url relativeUrl]
-  (string/join [go-url relativeUrl]))
-
-(defn- get-json [go-url relative-url-template & url-params]
-  (let [relative-url (apply format relative-url-template url-params)
-        response (client/get (absolute-url-for go-url relative-url))]
-    (j/parse-string (:body response) true)))
+(defn- absolute-url-for [go-url relative-url]
+  (string/join [go-url relative-url]))
 
 (defn- get-plain [go-url relative-url-template & url-params]
   (let [relative-url (apply format relative-url-template url-params)
         response (client/get (absolute-url-for go-url relative-url))]
     (:body response)))
+
+(defn- get-json [go-url relative-url-template & url-params]
+  (j/parse-string (apply get-plain (cons go-url
+                                         (cons relative-url-template
+                                               url-params)))
+                  true))
 
 
 ;; /properties/%pipeline/%pipeline_run/%stage/%stage_run/%job
