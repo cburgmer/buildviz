@@ -289,8 +289,16 @@
          (map get-junit-xml))))
 
 (defn get-accumulated-junit-xml [job-instance]
-  (let [junit-xml-list (remove nil? (get-all-junit-xml job-instance))]
+  (let [all-junit-xml (get-all-junit-xml job-instance)
+        junit-xml-list (remove nil? all-junit-xml)]
     (when-not (empty? junit-xml-list)
+      (when-not (= (count junit-xml-list) (count all-junit-xml))
+        (let [{pipeline-name :pipelineName
+               pipeline-run :pipelineRun
+               stage-name :stageName
+               stage-run :stageRun} job-instance]
+          (log/warnf "Unable to accumulate all JUnit XML for jobs of %s %s (%s %s)"
+                   pipeline-name stage-name pipeline-run stage-run)))
       (accumulate-junit-xml-results junit-xml-list))))
 
 (defn fetch-junit-xml [job-instance]
