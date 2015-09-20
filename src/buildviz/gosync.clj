@@ -6,6 +6,7 @@
             [clj-time.core :as t]
             [clj-time.format :as tf]
             [clj-time.coerce :as tc]
+            [clojure.xml :as xml]
             [clojure.tools.cli :refer [parse-opts]])
   (:gen-class))
 
@@ -263,12 +264,44 @@
     (map replace-file-url-host-part-for-basic-auth
          (mapcat filter-xml-files file-tree))))
 
+(defn get-junit-xml [job-instance]
+  (when-let [xml-file-url (first (xml-artifacts-for-job-run job-instance))]
+    (log/info (format "Reading test results from %s" xml-file-url))
+    (:body (client/get xml-file-url))))
+
+(defn- testsuite? [elem]
+  (= :testsuite (:tag elem)))
+
+(defn testsuite-list [junit-xml]
+  (let [root (xml/parse (java.io.ByteArrayInputStream. (.getBytes junit-xml)))]
+    (if (testsuite? root)
+      (list root)
+      (:content root))))
+
+(defn accumulate-junit-xml-results [junit-xml-list]
+  (with-out-str (xml/emit-element {:tag :testresults
+                                   :content (mapcat testsuite-list junit-xml-list)})))
+
+(defn get-all-junit-xml [job-instance]
+  (let [jobs (:jobs-for-accumulation job-instance)]
+    (->> jobs
+         (map #(merge job-instance %))
+         (map get-junit-xml))))
+
+(defn get-accumulated-junit-xml [job-instance]
+  (let [junit-xml-list (remove nil? (get-all-junit-xml job-instance))]
+    (when-not (empty? junit-xml-list)
+      (accumulate-junit-xml-results junit-xml-list))))
+
+(defn fetch-junit-xml [job-instance]
+  (if (contains? job-instance :jobs-for-accumulation)
+    (get-accumulated-junit-xml job-instance)
+    (get-junit-xml job-instance)))
+
 (defn augment-job-instance-with-junit-xml [job-instance]
-  (if-let [xml-file-url (first (xml-artifacts-for-job-run job-instance))]
-    (do
-      (log/info (format "Reading test results from %s" xml-file-url))
-      (assoc job-instance
-             :junit-xml (:body (client/get xml-file-url))))
+  (if-let [junit-xml (fetch-junit-xml job-instance)]
+    (assoc job-instance
+           :junit-xml junit-xml)
     job-instance))
 
 ;; upload
