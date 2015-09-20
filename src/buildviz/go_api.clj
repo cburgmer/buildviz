@@ -134,6 +134,9 @@
                   #"https?://[^/]+(/.+?)?/files/"
                   "/files/"))
 
+(defn- force-evaluate-json [json]
+  (doall json))
+
 (defn- try-get-artifact-tree [go-url
                               {pipeline-name :pipelineName
                               pipeline-run :pipelineRun
@@ -142,7 +145,7 @@
                               job-name :jobName}]
   (let [artifacts-url (format "/files/%s/%s/%s/%s/%s.json" pipeline-name pipeline-run stage-name stage-run job-name)]
     (try
-      (doall (get-json go-url artifacts-url))
+      (force-evaluate-json (get-json go-url artifacts-url))
       (catch JsonParseException e
         (log/errorf e "Unable to parse artifact list for %s" artifacts-url))
       (catch Exception e
