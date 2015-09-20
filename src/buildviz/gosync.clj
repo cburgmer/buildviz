@@ -263,22 +263,21 @@
 
 (defn augment-job-instance-with-junit-xml [job-instance]
   (if-let [xml-file-url (first (xml-artifacts-for-job-run job-instance))]
-    (assoc job-instance
-           :junit-xml-func
-           (fn []
-             (log/info (format "Reading test results from %s" xml-file-url))
-             (:body (client/get xml-file-url))))
+    (do
+      (log/info (format "Reading test results from %s" xml-file-url))
+      (assoc job-instance
+             :junit-xml (:body (client/get xml-file-url))))
     job-instance))
 
 ;; upload
 
 (defn make-build-instance [{jobName :jobName stageName :stageName pipelineName :pipelineName
                             stageRun :stageRun pipelineRun :pipelineRun
-                            junit-xml-func :junit-xml-func
+                            junit-xml :junit-xml
                             inputs :inputs build :build}]
   {:jobName (format "%s %s %s" pipelineName stageName jobName)
    :buildNo (format "%s %s" pipelineRun stageRun)
-   :junit-xml-func junit-xml-func
+   :junit-xml junit-xml
    :build (assoc build :inputs inputs)})
 
 (defn buildviz-build-base-url [job-name build-no]
@@ -298,13 +297,13 @@
   (flush))
 
 (defn put-to-buildviz [builds]
-  (doseq [{job-name :jobName build-no :buildNo build :build junit-xml-func :junit-xml-func} builds]
+  (doseq [{job-name :jobName build-no :buildNo build :build junit-xml :junit-xml} builds]
     (dot)
     (log/info (format "Syncing %s %s: build" job-name build-no build))
     (put-build job-name build-no  build)
-    (when (some? junit-xml-func)
+    (when (some? junit-xml)
       (try
-        (put-junit-xml job-name build-no (junit-xml-func))
+        (put-junit-xml job-name build-no junit-xml)
         (catch Exception e
           (if-let [data (ex-data e)]
             (log/errorf "Unable to sync testresults for %s %s (status %s): %s" job-name build-no (:status data) (:body data))
