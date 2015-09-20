@@ -253,8 +253,10 @@
       (catch JsonParseException e
         (log/errorf e "Unable to parse artifact list for %s" artifacts-url))
       (catch Exception e
-        (log/warn (format "Unable to get artifact list from %s, might have been deleted by Go" artifacts-url))
-        {}))))
+        (if-let [data (ex-data e)]
+          (log/errorf "Unable to get artifact list from %s (status %s): %s"
+                      artifacts-url (:status data) (:body data))
+          (log/errorf e "Unable to get artifact list from %s" artifacts-url))))))
 
 (defn xml-artifacts-for-job-run [job-instance]
   (let [file-tree (try-get-artifact-tree job-instance)]
