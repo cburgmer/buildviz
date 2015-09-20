@@ -46,15 +46,6 @@
 
 ;; util
 
-(defn absolute-url-for [relativeUrl]
-  (clojure.string/join [go-url relativeUrl]))
-
-(defn get-json [relative-url-template & url-params]
-  (let [relative-url (apply format relative-url-template url-params)
-        response (client/get (absolute-url-for relative-url))]
-    (j/parse-string (:body response) true)))
-
-
 (defn accumulate-build-times [builds]
   (let [start-times (map :start builds)
         end-times (map :end builds)]
@@ -133,24 +124,8 @@
     (assoc job :inputs inputs)))
 
 
-;; /api/config/pipeline_groups
-
-(defn stages-for-pipeline [pipeline]
-  (let [pipelineName (:name pipeline)
-        stages (:stages pipeline)]
-    (map (fn [{name :name}]
-           {:stage name :pipeline pipelineName})
-         stages)))
-
-(defn stages-for-pipeline-group [pipeline-group]
-  (let [pipelines (:pipelines pipeline-group)]
-    (mapcat stages-for-pipeline pipelines)))
-
-(defn get-pipeline-groups []
-  (get-json "/api/config/pipeline_groups"))
-
-(defn select-pipeline-groups [pipeline-groups filter-by-names]
-  (filter #(contains? filter-by-names (:name %)) pipeline-groups))
+(defn select-stages [stages filter-groups]
+  (filter #(contains? filter-groups (:group %)) stages))
 
 
 (defn- testsuite? [elem]
@@ -271,19 +246,18 @@
   (let [load-builds-from (get-start-date (:load-builds-from (:options args)))
         accumulate-stages-for-pipelines (set (:aggregate-jobs-for-pipelines (:options args)))
         selected-pipeline-group-names (set (drop 1 (:arguments args)))
-        pipeline-groups (get-pipeline-groups)
-        selected-pipeline-groups (if (seq selected-pipeline-group-names)
-                                   (select-pipeline-groups pipeline-groups selected-pipeline-group-names)
-                                   pipeline-groups)]
-    (println "Looking at pipeline groups" (map :name selected-pipeline-groups))
+        pipeline-stages (goapi/get-stages go-url)
+        selected-pipeline-stages (if (seq selected-pipeline-group-names)
+                                   (select-stages pipeline-stages selected-pipeline-group-names)
+                                   pipeline-stages)]
+    (println "Looking at pipeline groups" (distinct (map :group selected-pipeline-stages)))
     (println "Syncing all builds starting from" (tf/unparse (:date-time tf/formatters) load-builds-from))
     (when (some? accumulate-stages-for-pipelines)
       (println "Aggregating jobs for stages of" accumulate-stages-for-pipelines))
 
     (println "Finding all builds for syncing...")
 
-    (let [builds-to-be-synced (->> selected-pipeline-groups
-                                 (mapcat stages-for-pipeline-group)
+    (let [builds-to-be-synced (->> selected-pipeline-stages
                                  (mapcat (partial job-instances-for-stage load-builds-from accumulate-stages-for-pipelines))
                                  (sort-by :scheduledDateTime))]
     (println (format "Found %s builds to be synced, starting" (count builds-to-be-synced)))
