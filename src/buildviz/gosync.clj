@@ -143,7 +143,8 @@
 
 (defn accumulate-junit-xml-results [junit-xml-list]
   (xml/emit-str (apply xml/element (cons :testsuites
-                                         (mapcat testsuite-list junit-xml-list)))))
+                                         (cons {}
+                                               (mapcat testsuite-list junit-xml-list))))))
 
 (defn get-all-junit-xml [job-instance]
   (let [jobs (:jobs-for-accumulation job-instance)]
