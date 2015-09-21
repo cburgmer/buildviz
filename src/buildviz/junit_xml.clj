@@ -1,5 +1,5 @@
 (ns buildviz.junit-xml
-  (:require [clojure.xml :as xml]))
+  (:require [clojure.data.xml :as xml]))
 
 (defn is-ok? [{status :status}]
   (contains? #{:pass :skipped} status))
@@ -81,6 +81,6 @@
     (:content root)))
 
 (defn parse-testsuites [junit-xml-result]
-  (let [root (xml/parse (java.io.ByteArrayInputStream. (.getBytes junit-xml-result)))]
+  (let [root (xml/parse-str junit-xml-result)]
     (map parse-testsuite
          (all-testsuites root))))

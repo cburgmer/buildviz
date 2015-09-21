@@ -6,9 +6,8 @@
              [coerce :as tc]
              [core :as t]
              [format :as tf]]
-            [clojure
-             [string :as string]
-             [xml :as xml]]
+            [clojure.data.xml :as xml]
+            [clojure.string :as string]
             [clojure.tools
              [cli :refer [parse-opts]]
              [logging :as log]])
@@ -137,14 +136,14 @@
   (= :testsuite (:tag elem)))
 
 (defn testsuite-list [junit-xml]
-  (let [root (xml/parse (java.io.ByteArrayInputStream. (.getBytes junit-xml)))]
+  (let [root (xml/parse-str junit-xml)]
     (if (testsuite? root)
       (list root)
       (:content root))))
 
 (defn accumulate-junit-xml-results [junit-xml-list]
-  (with-out-str (xml/emit-element {:tag :testsuites
-                                   :content (mapcat testsuite-list junit-xml-list)})))
+  (xml/emit-str (apply xml/element (cons :testsuites
+                                         (mapcat testsuite-list junit-xml-list)))))
 
 (defn get-all-junit-xml [job-instance]
   (let [jobs (:jobs-for-accumulation job-instance)]

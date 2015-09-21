@@ -19,6 +19,7 @@
                  [clj-http "1.1.2"]
                  [clj-time "0.9.0"]
                  [cheshire "5.4.0"]
+                 [org.clojure/data.xml "0.0.8"]
                  [org.clojure/tools.cli "0.3.1"]]
   :plugins [[lein-ring "0.9.3"]
             [lein-exec "0.3.4"]
