@@ -143,7 +143,7 @@
       (:content root))))
 
 (defn accumulate-junit-xml-results [junit-xml-list]
-  (with-out-str (xml/emit-element {:tag :testresults
+  (with-out-str (xml/emit-element {:tag :testsuites
                                    :content (mapcat testsuite-list junit-xml-list)})))
 
 (defn get-all-junit-xml [job-instance]
@@ -213,7 +213,9 @@
         (put-junit-xml job-name build-no junit-xml)
         (catch Exception e
           (if-let [data (ex-data e)]
-            (log/errorf "Unable to sync testresults for %s %s (status %s): %s" job-name build-no (:status data) (:body data))
+            (do
+              (log/errorf "Unable to sync testresults for %s %s (status %s): %s" job-name build-no (:status data) (:body data))
+              (log/info "Offending XML content is:\n" junit-xml))
             (log/errorf e "Unable to sync testresults for %s %s" job-name build-no)))))))
 
 ;; build load start date
