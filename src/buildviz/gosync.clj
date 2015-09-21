@@ -126,7 +126,7 @@
     (assoc job :inputs inputs)))
 
 
-(defn select-stages [stages filter-groups]
+(defn select-stages [filter-groups stages]
   (if (seq filter-groups)
     (filter #(contains? filter-groups (:group %)) stages)
     stages))
@@ -203,20 +203,19 @@
   (print ".")
   (flush))
 
-(defn put-to-buildviz [builds]
-  (doseq [{job-name :jobName build-no :buildNo build :build junit-xml :junit-xml} builds]
-    (dot)
-    (log/info (format "Syncing %s %s: build" job-name build-no build))
-    (put-build job-name build-no  build)
-    (when (some? junit-xml)
-      (try
-        (put-junit-xml job-name build-no junit-xml)
-        (catch Exception e
-          (if-let [data (ex-data e)]
-            (do
-              (log/errorf "Unable to sync testresults for %s %s (status %s): %s" job-name build-no (:status data) (:body data))
-              (log/info "Offending XML content is:\n" junit-xml))
-            (log/errorf e "Unable to sync testresults for %s %s" job-name build-no)))))))
+(defn put-to-buildviz [{job-name :jobName build-no :buildNo build :build junit-xml :junit-xml}]
+  (dot)
+  (log/info (format "Syncing %s %s: build" job-name build-no build))
+  (put-build job-name build-no  build)
+  (when (some? junit-xml)
+    (try
+      (put-junit-xml job-name build-no junit-xml)
+      (catch Exception e
+        (if-let [data (ex-data e)]
+          (do
+            (log/errorf "Unable to sync testresults for %s %s (status %s): %s" job-name build-no (:status data) (:body data))
+            (log/info "Offending XML content is:\n" junit-xml))
+          (log/errorf e "Unable to sync testresults for %s %s" job-name build-no))))))
 
 ;; build load start date
 
@@ -237,6 +236,24 @@
 
 ;; run
 
+(defn- emit-start [load-builds-from accumulate-stages-for-pipelines pipeline-stages]
+  (println "Looking at pipeline groups" (distinct (map :group pipeline-stages)))
+  (println "Syncing all builds starting from" (tf/unparse (:date-time tf/formatters) load-builds-from))
+  (when (some? accumulate-stages-for-pipelines)
+    (println "Aggregating jobs for stages of" accumulate-stages-for-pipelines))
+
+  (println "Finding all builds for syncing...")
+
+  pipeline-stages)
+
+(defn- emit-count-items [builds]
+  (println (format "Found %s builds to be synced, starting" (count builds)))
+  builds)
+
+(defn- emit-end [builds]
+  (println)
+  (println (format "Done, wrote %s build entries" (count builds))))
+
 (defn -main [& c-args]
   (def args (parse-opts c-args cli-options))
 
@@ -252,27 +269,18 @@
 
   (let [load-builds-from (get-start-date (:load-builds-from (:options args)))
         accumulate-stages-for-pipelines (set (:aggregate-jobs-for-pipelines (:options args)))
-        selected-pipeline-group-names (set (drop 1 (:arguments args)))
-        pipeline-stages (goapi/get-stages go-url)
-        selected-pipeline-stages (select-stages pipeline-stages selected-pipeline-group-names)]
-    (println "Looking at pipeline groups" (distinct (map :group selected-pipeline-stages)))
-    (println "Syncing all builds starting from" (tf/unparse (:date-time tf/formatters) load-builds-from))
-    (when (some? accumulate-stages-for-pipelines)
-      (println "Aggregating jobs for stages of" accumulate-stages-for-pipelines))
+        selected-pipeline-group-names (set (drop 1 (:arguments args)))]
 
-    (println "Finding all builds for syncing...")
-
-    (let [builds-to-be-synced (->> selected-pipeline-stages
-                                 (mapcat (partial job-instances-for-stage load-builds-from accumulate-stages-for-pipelines))
-                                 (sort-by :scheduledDateTime))]
-    (println (format "Found %s builds to be synced, starting" (count builds-to-be-synced)))
-
-    (let [builds-with-full-information (->> builds-to-be-synced
-                                            (map augment-job-with-inputs)
-                                            (map job-data-for-instance)
-                                            (filter #(some? (:build %)))
-                                            (map augment-job-instance-with-junit-xml))]
-      (put-to-buildviz (map make-build-instance builds-with-full-information))
-
-      (println)
-      (println (format "Done, wrote %s build entries" (count builds-with-full-information)))))))
+    (->> (goapi/get-stages go-url)
+         (select-stages selected-pipeline-group-names)
+         (emit-start load-builds-from accumulate-stages-for-pipelines)
+         (mapcat (partial job-instances-for-stage load-builds-from accumulate-stages-for-pipelines))
+         (sort-by :scheduledDateTime)
+         emit-count-items
+         (map augment-job-with-inputs)
+         (map job-data-for-instance)
+         (filter #(some? (:build %)))
+         (map augment-job-instance-with-junit-xml)
+         (map make-build-instance)
+         (map put-to-buildviz)
+         emit-end)))
