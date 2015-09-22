@@ -29,7 +29,7 @@
   (fn [build-id]
     (get tests build-id)))
 
-(deftest TestSuiteAccumulation
+(deftest test-accumulate-testsuite-failures
   (testing "accumulate-testsuite-failures"
     (is (= []
            (accumulate-testsuite-failures [])))
@@ -73,8 +73,8 @@
            (accumulate-testsuite-failures [[(a-testsuite "suite"
                                                          (a-testsuite "nested suite" (a-testcase "a case" :fail)))]
                                            [(a-testsuite "suite"
-                                                         (a-testsuite "nested suite" (a-testcase "another case" :fail)))]]))))
-
+                                                         (a-testsuite "nested suite" (a-testcase "another case" :fail)))]])))))
+(deftest test-accumulate-testsuite-failures-as-list
   (testing "accumulate-testsuite-failures-as-list"
     (is (= []
            (accumulate-testsuite-failures-as-list [])))
@@ -134,8 +134,9 @@
            (accumulate-testsuite-failures-as-list [[(a-testsuite "suite"
                                                                  (a-testsuite "nested suite" (a-testcase "a class" "a case" :fail)))]
                                                    [(a-testsuite "suite"
-                                                                 (a-testsuite "nested suite" (a-testcase "a class" "another case" :fail)))]]))))
+                                                                 (a-testsuite "nested suite" (a-testcase "a class" "another case" :fail)))]])))))
 
+(deftest test-average-testcase-runtime
   (testing "average-testcase-runtime"
     (is (= []
            (average-testcase-runtime [])))
@@ -171,8 +172,9 @@
            (average-testcase-runtime [[(a-testsuite "suite"
                                                     (a-testsuite "nested suite" (a-testcase-with-runtime "a case" 10)))]
                                       [(a-testsuite "suite"
-                                                    (a-testsuite "nested suite" (a-testcase-with-runtime "another case" 20)))]]))))
+                                                    (a-testsuite "nested suite" (a-testcase-with-runtime "another case" 20)))]])))))
 
+(deftest test-average-testcase-runtime-as-list
   (testing "average-testcase-runtime-as-list"
     (is (= []
            (average-testcase-runtime-as-list [])))
@@ -190,8 +192,9 @@
            (average-testcase-runtime-as-list [[(a-testsuite "suite"
                                                             (a-testsuite "nested suite" (a-testcase-with-runtime "a class" "a case" 10)))]
                                               [(a-testsuite "suite"
-                                                            (a-testsuite "nested suite" (a-testcase-with-runtime "another class" "another case" 20)))]]))))
+                                                            (a-testsuite "nested suite" (a-testcase-with-runtime "another class" "another case" 20)))]])))))
 
+(deftest test-average-testclass-runtime
   (testing "average-testclass-runtime"
     (is (= []
            (average-testclass-runtime [])))
@@ -225,9 +228,17 @@
                          :children [{:name "class"
                                      :averageRuntime 10}]}]}]
            (average-testclass-runtime [[(a-testsuite "suite"
-                                                    (a-testsuite "nested suite"
-                                                                 (a-testcase-with-runtime "class" "a case" 10)))]]))))
+                                                     (a-testsuite "nested suite"
+                                                                  (a-testcase-with-runtime "class" "a case" 10)))]]))))
 
+  (testing "should properly accumulate runtime with multiple same suite and class entries"
+    (is (= [{:name "suite"
+             :children [{:name "a class"
+                         :averageRuntime 60}]}]
+           (average-testclass-runtime [[(a-testsuite "suite" (a-testcase-with-runtime "a class" "a case" 20))
+                                        (a-testsuite "suite" (a-testcase-with-runtime "a class" "another case" 40))]])))))
+
+(deftest test-average-testclass-runtime-as-list
   (testing "average-testclass-runtime-as-list"
     (is (= []
            (average-testclass-runtime-as-list [])))
@@ -251,14 +262,9 @@
     (is (= [{:testsuite ["suite" "nested suite"] :classname "class" :averageRuntime 10}]
            (average-testclass-runtime-as-list [[(a-testsuite "suite"
                                                              (a-testsuite "nested suite"
-                                                                          (a-testcase-with-runtime "class" "a case" 10)))]]))))
-  (testing "should properly accumulate runtime with multiple same suite and class entries"
-    (is (= [{:name "suite"
-             :children [{:name "a class"
-                         :averageRuntime 60}]}]
-           (average-testclass-runtime [[(a-testsuite "suite" (a-testcase-with-runtime "a class" "a case" 20))
-                                        (a-testsuite "suite" (a-testcase-with-runtime "a class" "another case" 40))]]))))
+                                                                          (a-testcase-with-runtime "class" "a case" 10)))]])))))
 
+(deftest test-flaky-testcases-as-list
   (testing "flaky-testcases-as-list"
     (is (= []
            (flaky-testcases-as-list {}
@@ -334,13 +340,13 @@
              :build-id "another-failed-run-id"
              :latest-failure (:start another-failed-build-input-1)
              :flaky-count 1}]
-        (flaky-testcases-as-list {"passed-run-id" passed-build-input-1
-                                  "failed-run-id" failed-build-input-1
-                                  "another-failed-run-id" another-failed-build-input-1}
-                                 (dummy-test-lookup {"failed-run-id" [(a-testsuite "a suite"
-                                                                                   (a-testcase "a class" "the testcase" :fail))]
-                                                     "another-failed-run-id" [(a-testsuite "another suite"
-                                                                                           (a-testcase "another class" "another testcase" :fail))]}))))
+           (flaky-testcases-as-list {"passed-run-id" passed-build-input-1
+                                     "failed-run-id" failed-build-input-1
+                                     "another-failed-run-id" another-failed-build-input-1}
+                                    (dummy-test-lookup {"failed-run-id" [(a-testsuite "a suite"
+                                                                                      (a-testcase "a class" "the testcase" :fail))]
+                                                        "another-failed-run-id" [(a-testsuite "another suite"
+                                                                                              (a-testcase "another class" "another testcase" :fail))]}))))
     (is (= [{:testsuite ["a suite"]
              :classname "a class"
              :name "the testcase"
