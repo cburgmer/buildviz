@@ -172,7 +172,15 @@
            (average-testcase-runtime [[(a-testsuite "suite"
                                                     (a-testsuite "nested suite" (a-testcase-with-runtime "a case" 10)))]
                                       [(a-testsuite "suite"
-                                                    (a-testsuite "nested suite" (a-testcase-with-runtime "another case" 20)))]])))))
+                                                    (a-testsuite "nested suite" (a-testcase-with-runtime "another case" 20)))]])))
+
+    (testing "should accumulate runtime of testcases with the same name/class/suite"
+      (is (= [{:name "suite"
+               :children [{:name "a class"
+                           :children [{:name "a case"
+                                       :averageRuntime 35}]}]}]
+             (average-testcase-runtime [[(a-testsuite "suite" (a-testcase-with-runtime "a class" "a case" 12))
+                                         (a-testsuite "suite" (a-testcase-with-runtime "a class" "a case" 23))]]))))))
 
 (deftest test-average-testcase-runtime-as-list
   (testing "average-testcase-runtime-as-list"

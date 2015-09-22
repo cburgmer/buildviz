@@ -98,6 +98,18 @@
 (defn- avg [series]
   (Math/round (float (/ (reduce + series) (count series)))))
 
+(defn- accumulated-runtimes [entries]
+  {:runtime (->> entries
+                 (map last)
+                 (map :runtime)
+                 (reduce +))})
+
+(defn- treat-duplicate-entries-as-additions [unrolled-entries]
+  (->> unrolled-entries
+       (group-by first)
+       (map (fn [[entry-id duplicate-entry-list]]
+              [entry-id (accumulated-runtimes duplicate-entry-list)]))))
+
 
 (defn- average-runtime-for-testcase-runs [testcases]
   (if-let [runtimes (seq (keep second testcases))]
@@ -110,7 +122,9 @@
             (map average-runtime-for-testcase-runs (vals groups)))))
 
 (defn- average-runtimes-by-testcase [test-runs]
-  (->> (mapcat unroll-testsuites test-runs)
+  (->> test-runs
+       (map unroll-testsuites)
+       (mapcat treat-duplicate-entries-as-additions)
        extract-runtime
        average-runtimes))
 
@@ -132,18 +146,6 @@
            :children
            (concat (map accumulate-runtime-by-class nested-suites)
                    (accumulate-runtime-by-class-for-testcases testcases)))))
-
-(defn- accumulated-runtimes [entries]
-  {:runtime (->> entries
-                 (map last)
-                 (map :runtime)
-                 (reduce +))})
-
-(defn- treat-duplicate-entries-as-additions [unrolled-entries]
-  (->> unrolled-entries
-       (group-by first)
-       (map (fn [[entry-id duplicate-entry-list]]
-              [entry-id (accumulated-runtimes duplicate-entry-list)]))))
 
 (defn- average-runtimes-by-testclass [test-runs]
   (->> (map #(map accumulate-runtime-by-class %) test-runs)
