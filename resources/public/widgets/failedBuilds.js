@@ -38,7 +38,7 @@
         }
     };
 
-    var svg = widget.create("Failed Builds",
+    var svg = widget.create("Failed builds",
                             "Color: Failure Ratio, Diameter: Number of Failures",
                             "/jobs.csv")
             .svg(diameter);

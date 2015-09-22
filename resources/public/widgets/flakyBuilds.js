@@ -38,7 +38,7 @@
         }
     };
 
-    var svg = widget.create("Flaky Builds",
+    var svg = widget.create("Flaky builds",
                             "Color: Flaky Ratio, Diameter: Flaky Count",
                            "/jobs.csv")
             .svg(diameter);

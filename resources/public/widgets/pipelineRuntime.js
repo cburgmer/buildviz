@@ -29,7 +29,7 @@
             .x(function(d) { return x(d.date); })
             .y(function(d) { return y(d.runtime); });
 
-    var svg = widget.create("Pipeline runtime",
+    var svg = widget.create("Job runtime",
                             "Runtime of all jobs",
                             "/pipelineruntime.csv")
             .svg(diameter)
