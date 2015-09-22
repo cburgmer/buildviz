@@ -1,7 +1,7 @@
 (function (widget, zoomableSunburst, utils, dataSource) {
     var diameter = 600;
 
-    var svg = widget.create("Average test runtime by class",
+    var svg = widget.create("Average test runtime",
                             "Color: Job/Test Suite, Arc size: duration",
                             "/testclasses.csv")
             .svg(diameter);
