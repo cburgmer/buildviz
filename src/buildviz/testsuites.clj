@@ -133,9 +133,22 @@
            (concat (map accumulate-runtime-by-class nested-suites)
                    (accumulate-runtime-by-class-for-testcases testcases)))))
 
+(defn- accumulated-runtimes [entries]
+  {:runtime (->> entries
+                 (map last)
+                 (map :runtime)
+                 (reduce +))})
+
+(defn- treat-duplicate-entries-as-additions [unrolled-entries]
+  (->> unrolled-entries
+       (group-by first)
+       (map (fn [[entry-id duplicate-entry-list]]
+              [entry-id (accumulated-runtimes duplicate-entry-list)]))))
+
 (defn- average-runtimes-by-testclass [test-runs]
   (->> (map #(map accumulate-runtime-by-class %) test-runs)
-       (mapcat unroll-testsuites)
+       (map unroll-testsuites)
+       (mapcat treat-duplicate-entries-as-additions)
        extract-runtime
        average-runtimes))
 

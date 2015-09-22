@@ -252,6 +252,12 @@
            (average-testclass-runtime-as-list [[(a-testsuite "suite"
                                                              (a-testsuite "nested suite"
                                                                           (a-testcase-with-runtime "class" "a case" 10)))]]))))
+  (testing "should properly accumulate runtime with multiple same suite and class entries"
+    (is (= [{:name "suite"
+             :children [{:name "a class"
+                         :averageRuntime 60}]}]
+           (average-testclass-runtime [[(a-testsuite "suite" (a-testcase-with-runtime "a class" "a case" 20))
+                                        (a-testsuite "suite" (a-testcase-with-runtime "a class" "another case" 40))]]))))
 
   (testing "flaky-testcases-as-list"
     (is (= []
