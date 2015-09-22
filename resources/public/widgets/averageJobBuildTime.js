@@ -13,7 +13,7 @@
 
                 return {
                     name: jobName,
-                    title: jobName + ': ' + runtime,
+                    title: jobName + ' ' + runtime,
                     value: averageRuntime
                 };
             });

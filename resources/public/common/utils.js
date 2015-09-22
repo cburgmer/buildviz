@@ -31,7 +31,13 @@ var utils = (function () {
             hms.push(Math.floor(rawSeconds));
             return formatHMS(hms) + '.' + padZero(millis, 3);
         } else {
-            return formatHMS([hours, minutes, Math.round(rawSeconds)]);
+            if (hours > 0) {
+                hms.push(hours);
+            }
+
+            hms.push(minutes);
+            hms.push(Math.round(rawSeconds));
+            return formatHMS(hms);
         }
     };
 
