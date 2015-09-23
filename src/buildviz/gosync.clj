@@ -161,7 +161,7 @@
                pipeline-run :pipelineRun
                stage-name :stageName
                stage-run :stageRun} job-instance]
-          (log/warnf "Unable to accumulate all JUnit XML for jobs of %s %s (%s %s)"
+          (log/infof "Unable to accumulate all JUnit XML for jobs of %s %s (%s %s)"
                    pipeline-name stage-name pipeline-run stage-run)))
       (accumulate-junit-xml-results junit-xml-list))))
 
