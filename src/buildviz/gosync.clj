@@ -38,98 +38,13 @@
     :id :buildviz-url
     :default "http://localhost:3000"]
    ["-f" "--from DATE" "DATE from which on builds are loaded (by default tries to pick up where the last run finished)"
-    :id :load-builds-from
+    :id :sync-start-time
     :parse-fn #(tf/parse date-formatter %)]
    ["-s" "--aggregate PIPELINE" "PIPELINE for which a complete stage will be synced as a job"
     :id :aggregate-jobs-for-pipelines
     :default '()
     :assoc-fn (fn [previous key val] (assoc previous key (conj (get previous key) val)))]
    ["-h" "--help"]])
-
-;; util
-
-(defn accumulate-build-times [builds]
-  (let [start-times (map :start builds)
-        end-times (map :end builds)]
-    (if (empty? (filter nil? end-times))
-      {:start (apply min start-times)
-       :end (apply max end-times)}
-      {})))
-
-(defn accumulate-builds [builds]
-  (let [outcomes (map :outcome builds)
-        accumulated-outcome (if (every? #(= "pass" %) outcomes)
-                              "pass"
-                              "fail")]
-    (assoc (accumulate-build-times builds)
-           :outcome accumulated-outcome)))
-
-(defn ignore-old-runs-for-rerun-stages [{stage-run :stageRun} builds]
-  (filter #(= stage-run (:actual-stage-run %)) builds))
-
-(defn build-for-job [job-instance]
-  (if-let [jobs-for-accumulation (:jobs-for-accumulation job-instance)]
-    (->> jobs-for-accumulation
-         (map #(merge job-instance %))
-         (map (partial goapi/build-for go-url))
-         (ignore-old-runs-for-rerun-stages job-instance)
-         accumulate-builds)
-    (dissoc (goapi/build-for go-url job-instance)
-            :actual-stage-run)))
-
-(defn job-data-for-instance [jobInstance]
-  (assoc jobInstance :build (build-for-job jobInstance)))
-
-
-(defn job-instances-for-stage-instance [{pipeline-run :pipeline_counter
-                                         stage-run :counter
-                                         jobs :jobs}]
-  (map (fn [{id :id name :name scheduled-date :scheduled_date}]
-         {:jobId id
-          :jobName name
-          :stageRun stage-run
-          :pipelineRun pipeline-run
-          :scheduledDateTime (tc/from-long scheduled-date)})
-       jobs))
-
-(defn job-instance-for-accumulated-stage-instance [{pipeline-run :pipeline_counter
-                                                    stage-run :counter
-                                                    jobs :jobs}]
-  (let [job-instances (map (fn [{id :id name :name}]
-                             {:jobId id :jobName name})
-                           jobs)]
-    {:jobId 0
-     :jobName "accumulated"
-     :stageRun stage-run
-     :pipelineRun pipeline-run
-     :scheduledDateTime (tc/from-long (apply min (map :scheduled_date jobs)))
-     :jobs-for-accumulation job-instances}))
-
-(defn fetch-job-instances-for-stage-instance [accumulate-stages-for-pipelines stage-name stage-instance]
-  (if (contains? accumulate-stages-for-pipelines stage-name)
-    (list (job-instance-for-accumulated-stage-instance stage-instance))
-    (job-instances-for-stage-instance stage-instance)))
-
-(defn job-instances-for-stage [load-builds-from accumulate-stages-for-pipelines {stage-name :stage pipeline :pipeline}]
-  (let [safe-build-start-date (t/minus load-builds-from (t/millis 1))]
-    (->> stage-name
-         (goapi/get-stage-history go-url pipeline)
-         (mapcat (partial fetch-job-instances-for-stage-instance accumulate-stages-for-pipelines pipeline))
-         (take-while #(t/after? (:scheduledDateTime %) safe-build-start-date))
-         (map #(assoc % :stageName stage-name :pipelineName pipeline)))))
-
-
-(defn augment-job-with-inputs [job]
-  (let [pipeline-run (:pipelineRun job)
-        pipeline-name (:pipelineName job)
-        inputs (goapi/get-inputs-for-pipeline-run go-url pipeline-name pipeline-run)]
-    (assoc job :inputs inputs)))
-
-
-(defn select-stages [filter-groups stages]
-  (if (seq filter-groups)
-    (filter #(contains? filter-groups (:group %)) stages)
-    stages))
 
 
 (defn- testsuite? [elem]
@@ -141,51 +56,129 @@
       (list root)
       (:content root))))
 
-(defn accumulate-junit-xml-results [junit-xml-list]
+(defn aggregate-junit-xml-testsuites [junit-xml-list]
   (xml/emit-str (apply xml/element (cons :testsuites
                                          (cons {}
                                                (mapcat testsuite-list junit-xml-list))))))
 
-(defn get-all-junit-xml [job-instance]
-  (let [jobs (:jobs-for-accumulation job-instance)]
-    (->> jobs
-         (map #(merge job-instance %))
-         (map (partial goapi/get-junit-xml go-url)))))
-
-(defn get-accumulated-junit-xml [job-instance]
-  (let [all-junit-xml (get-all-junit-xml job-instance)
+(defn aggregate-junit-xml [{pipeline-name :pipelineName
+                            pipeline-run :pipelineRun
+                            stage-name :stageName
+                            stage-run :stageRun
+                            job-instances :job-instances}]
+  (let [all-junit-xml (map :junit-xml job-instances)
         junit-xml-list (remove nil? all-junit-xml)]
     (when-not (empty? junit-xml-list)
       (when-not (= (count junit-xml-list) (count all-junit-xml))
-        (let [{pipeline-name :pipelineName
-               pipeline-run :pipelineRun
-               stage-name :stageName
-               stage-run :stageRun} job-instance]
-          (log/infof "Unable to accumulate all JUnit XML for jobs of %s %s (%s %s)"
-                   pipeline-name stage-name pipeline-run stage-run)))
-      (accumulate-junit-xml-results junit-xml-list))))
+        (log/infof "Unable to accumulate all JUnit XML for jobs of %s %s (%s %s)"
+                   pipeline-name stage-name pipeline-run stage-run))
+      (aggregate-junit-xml-testsuites junit-xml-list))))
 
-(defn fetch-junit-xml [job-instance]
-  (if (contains? job-instance :jobs-for-accumulation)
-    (get-accumulated-junit-xml job-instance)
-    (goapi/get-junit-xml go-url job-instance)))
 
-(defn augment-job-instance-with-junit-xml [job-instance]
-  (if-let [junit-xml (fetch-junit-xml job-instance)]
-    (assoc job-instance
-           :junit-xml junit-xml)
-    job-instance))
+(defn aggregate-build-times [job-instances]
+  (let [start-times (map :start job-instances)
+        end-times (map :end job-instances)]
+    (if (empty? (filter nil? end-times))
+      {:start (apply min start-times)
+       :end (apply max end-times)}
+      {})))
+
+(defn aggregate-builds [job-instances]
+  (let [outcomes (map :outcome job-instances)
+        accumulated-outcome (if (every? #(= "pass" %) outcomes)
+                              "pass"
+                              "fail")]
+    (assoc (aggregate-build-times job-instances)
+           :outcome accumulated-outcome)))
+
+
+(defn ignore-old-runs-for-rerun-stages [job-instances stage-run]
+  (filter #(= stage-run (:actual-stage-run %)) job-instances))
+
+(defn- aggregate-build [{stage-run :stageRun
+                         stage-name :stageName
+                         job-instances :job-instances}]
+  (-> job-instances
+      (ignore-old-runs-for-rerun-stages stage-run)
+      aggregate-builds
+      (assoc :name stage-name)))
+
+(defn- aggregate-jobs-for-stage [stage-instance]
+  (let [aggregated-junit-xml (aggregate-junit-xml stage-instance)
+        aggregated-build (aggregate-build stage-instance)]
+    (assoc stage-instance
+           :job-instances (list (assoc aggregated-build
+                                       :junit-xml aggregated-junit-xml)))))
+
+(defn- aggregate-jobs-for-selected-stages [stage-instance aggregate-jobs-for-pipelines]
+  (let [{pipeline-name :pipelineName} stage-instance]
+    (if (contains? aggregate-jobs-for-pipelines pipeline-name)
+      (aggregate-jobs-for-stage stage-instance)
+      stage-instance)))
+
+
+(defn- build-for-job [stage-instance job-name]
+  (let [job-instance (assoc stage-instance :jobName job-name)]
+    (-> (goapi/build-for go-url job-instance)
+        (assoc :name job-name)
+        (assoc :junit-xml (goapi/get-junit-xml go-url job-instance)))))
+
+(defn- add-job-instances-for-stage-instances [stage-instance]
+  (let [job-names (:job-names stage-instance)]
+    (assoc stage-instance
+           :job-instances (map #(build-for-job stage-instance %) job-names))))
+
+
+(defn parse-stage-instance [{pipeline-run :pipeline_counter
+                             stage-run :counter
+                             jobs :jobs}]
+  {:stageRun stage-run
+   :pipelineRun pipeline-run
+   :scheduled-time (tc/from-long (apply min (map :scheduled_date jobs)))
+   :job-names (map :name jobs)})
+
+(defn stage-instances-from [sync-start-time {stage-name :stage pipeline-name :pipeline}]
+  (let [safe-build-start-date (t/minus sync-start-time (t/millis 1))]
+    (->> (goapi/get-stage-history go-url pipeline-name stage-name)
+         (map parse-stage-instance)
+         (map #(assoc % :stageName stage-name :pipelineName pipeline-name))
+         (take-while #(t/after? (:scheduled-time %) safe-build-start-date)))))
+
+
+(defn add-inputs-for-stage-instances [stage-instance]
+  (let [pipeline-run (:pipelineRun stage-instance)
+        pipeline-name (:pipelineName stage-instance)
+        inputs (goapi/get-inputs-for-pipeline-run go-url pipeline-name pipeline-run)]
+    (assoc stage-instance :inputs inputs)))
+
+
+(defn select-stages [filter-groups stages]
+  (if (seq filter-groups)
+    (filter #(contains? filter-groups (:group %)) stages)
+    stages))
+
 
 ;; upload
 
-(defn make-build-instance [{jobName :jobName stageName :stageName pipelineName :pipelineName
-                            stageRun :stageRun pipelineRun :pipelineRun
-                            junit-xml :junit-xml
-                            inputs :inputs build :build}]
-  {:jobName (format "%s %s %s" pipelineName stageName jobName)
-   :buildNo (format "%s %s" pipelineRun stageRun)
-   :junit-xml junit-xml
-   :build (assoc build :inputs inputs)})
+(defn- stage-instances->builds [{pipeline-name :pipelineName
+                                 pipeline-run :pipelineRun
+                                 stage-name :stageName
+                                 stage-run :stageRun
+                                 inputs :inputs
+                                 job-instances :job-instances}]
+  (map (fn [{outcome :outcome
+             start :start
+             end :end
+             name :name
+             junit-xml :junit-xml}]
+         {:job-name (format "%s %s %s" pipeline-name stage-name name)
+          :build-id (format "%s %s" pipeline-run stage-run)
+          :junit-xml junit-xml
+          :build {:start start
+                  :end end
+                  :outcome outcome
+                  :inputs inputs}})
+       job-instances))
 
 (defn buildviz-build-base-url [job-name build-no]
   (format "%s/builds/%s/%s" buildviz-url job-name build-no))
@@ -203,7 +196,7 @@
   (print ".")
   (flush))
 
-(defn put-to-buildviz [{job-name :jobName build-no :buildNo build :build junit-xml :junit-xml}]
+(defn put-to-buildviz [{job-name :job-name build-no :build-id build :build junit-xml :junit-xml}]
   (dot)
   (log/info (format "Syncing %s %s: build" job-name build-no build))
   (put-build job-name build-no  build)
@@ -236,23 +229,24 @@
 
 ;; run
 
-(defn- emit-start [load-builds-from accumulate-stages-for-pipelines pipeline-stages]
+(defn- emit-start [sync-start-time aggregate-jobs-for-pipelines pipeline-stages]
   (println "Looking at pipeline groups" (distinct (map :group pipeline-stages)))
-  (println "Syncing all builds starting from" (tf/unparse (:date-time tf/formatters) load-builds-from))
-  (when (some? accumulate-stages-for-pipelines)
-    (println "Aggregating jobs for stages of" accumulate-stages-for-pipelines))
+  (println "Syncing all stages starting from" (tf/unparse (:date-time tf/formatters) sync-start-time))
+  (when (some? aggregate-jobs-for-pipelines)
+    (println "Aggregating jobs for stages of" aggregate-jobs-for-pipelines))
 
-  (println "Finding all builds for syncing...")
+  (println "Finding all pipeline runs for syncing...")
 
   pipeline-stages)
 
 (defn- emit-count-items [builds]
-  (println (format "Found %s builds to be synced, starting" (count builds)))
+  (println (format "Found %s stage instances to be synced, starting" (count builds)))
   builds)
 
 (defn- emit-end [builds]
-  (println)
-  (println (format "Done, wrote %s build entries" (count builds))))
+  (let [build-count (count builds)]
+    (println)
+    (println (format "Done, wrote %s build entries" build-count))))
 
 (defn -main [& c-args]
   (def args (parse-opts c-args cli-options))
@@ -267,20 +261,19 @@
 
   (println "Go" go-url "-> buildviz" buildviz-url)
 
-  (let [load-builds-from (get-start-date (:load-builds-from (:options args)))
-        accumulate-stages-for-pipelines (set (:aggregate-jobs-for-pipelines (:options args)))
+  (let [sync-start-time (get-start-date (:sync-start-time (:options args)))
+        aggregate-jobs-for-pipelines (set (:aggregate-jobs-for-pipelines (:options args)))
         selected-pipeline-group-names (set (drop 1 (:arguments args)))]
 
     (->> (goapi/get-stages go-url)
          (select-stages selected-pipeline-group-names)
-         (emit-start load-builds-from accumulate-stages-for-pipelines)
-         (mapcat (partial job-instances-for-stage load-builds-from accumulate-stages-for-pipelines))
-         (sort-by :scheduledDateTime)
+         (emit-start sync-start-time aggregate-jobs-for-pipelines)
+         (mapcat #(stage-instances-from sync-start-time %))
+         (sort-by :scheduled-time)
          emit-count-items
-         (map augment-job-with-inputs)
-         (map job-data-for-instance)
-         (filter #(some? (:build %)))
-         (map augment-job-instance-with-junit-xml)
-         (map make-build-instance)
+         (map add-inputs-for-stage-instances)
+         (map add-job-instances-for-stage-instances)
+         (map #(aggregate-jobs-for-selected-stages % aggregate-jobs-for-pipelines))
+         (mapcat stage-instances->builds)
          (map put-to-buildviz)
          emit-end)))
