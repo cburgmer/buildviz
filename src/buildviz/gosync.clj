@@ -2,6 +2,7 @@
   (:require [buildviz.go-api :as goapi]
             [cheshire.core :as j]
             [clj-http.client :as client]
+            [clj-progress.core :as progress]
             [clj-time
              [coerce :as tc]
              [core :as t]
@@ -197,12 +198,7 @@
   (client/put (clojure.string/join [(buildviz-build-base-url job-name build-no) "/testresults"])
               {:body xml-content}))
 
-(defn dot []
-  (print ".")
-  (flush))
-
 (defn put-to-buildviz [{job-name :job-name build-no :build-id build :build junit-xml :junit-xml}]
-  (dot)
   (log/info (format "Syncing %s %s: build" job-name build-no build))
   (put-build job-name build-no  build)
   (when (some? junit-xml)
@@ -235,21 +231,15 @@
 ;; run
 
 (defn- emit-start [sync-start-time pipeline-stages]
-  (println "Looking at pipeline groups" (distinct (map :group pipeline-stages)))
-  (println "Syncing all stages starting from" (tf/unparse (:date-time tf/formatters) sync-start-time))
-
-  (println "Finding all pipeline runs for syncing...")
+  (println "Go" go-url (distinct (map :group pipeline-stages)) "-> buildviz" buildviz-url)
+  (print (format "Finding all pipeline runs for syncing (starting from %s)..."
+                 (tf/unparse (:date-time tf/formatters) sync-start-time)))
 
   pipeline-stages)
 
-(defn- emit-count-items [builds]
-  (println (format "Found %s stage instances to be synced, starting" (count builds)))
-  builds)
-
-(defn- emit-end [builds]
-  (let [build-count (count builds)]
-    (println)
-    (println (format "Done, wrote %s build entries" build-count))))
+(defn- emit-sync-start [pipeline-stages]
+  (println "done")
+  pipeline-stages)
 
 (defn -main [& c-args]
   (def args (parse-opts c-args cli-options))
@@ -262,8 +252,6 @@
   (def go-url (first (:arguments args)))
   (def buildviz-url (:buildviz-url (:options args)))
 
-  (println "Go" go-url "-> buildviz" buildviz-url)
-
   (let [sync-start-time (get-start-date (:sync-start-time (:options args)))
         sync-jobs-for-pipelines (set (:sync-jobs (:options args)))
         selected-pipeline-group-names (set (drop 1 (:arguments args)))]
@@ -273,10 +261,13 @@
          (emit-start sync-start-time)
          (mapcat #(stage-instances-from sync-start-time %))
          (sort-by :scheduled-time)
-         emit-count-items
+         (emit-sync-start)
+         (progress/init "Syncing")
          (map add-inputs-for-stage-instance)
          (map add-job-instances-for-stage-instance)
          (map #(aggregate-jobs-for-stage-instance % sync-jobs-for-pipelines))
          (mapcat stage-instances->builds)
          (map put-to-buildviz)
-         emit-end)))
+         (map progress/tick)
+         dorun
+         (progress/done))))
