@@ -40,8 +40,8 @@
    ["-f" "--from DATE" "DATE from which on builds are loaded (by default tries to pick up where the last run finished)"
     :id :sync-start-time
     :parse-fn #(tf/parse date-formatter %)]
-   ["-s" "--aggregate PIPELINE" "PIPELINE for which a complete stage will be synced as a job"
-    :id :aggregate-jobs-for-pipelines
+   ["-j" "--sync-jobs PIPELINE" "PIPELINE for which Go jobs will be synced individually (not aggregated inside stage)"
+    :id :sync-jobs
     :default '()
     :assoc-fn (fn [previous key val] (assoc previous key (conj (get previous key) val)))]
    ["-h" "--help"]])
@@ -110,11 +110,11 @@
            :job-instances (list (assoc aggregated-build
                                        :junit-xml aggregated-junit-xml)))))
 
-(defn- aggregate-jobs-for-selected-stages [stage-instance aggregate-jobs-for-pipelines]
+(defn- aggregate-jobs-for-stage-instance [stage-instance sync-jobs-for-pipelines]
   (let [{pipeline-name :pipelineName} stage-instance]
-    (if (contains? aggregate-jobs-for-pipelines pipeline-name)
-      (aggregate-jobs-for-stage stage-instance)
-      stage-instance)))
+    (if (contains? sync-jobs-for-pipelines pipeline-name)
+      stage-instance
+      (aggregate-jobs-for-stage stage-instance))))
 
 
 (defn- build-for-job [stage-instance job-name]
@@ -123,7 +123,7 @@
         (assoc :name job-name)
         (assoc :junit-xml (goapi/get-junit-xml go-url job-instance)))))
 
-(defn- add-job-instances-for-stage-instances [stage-instance]
+(defn- add-job-instances-for-stage-instance [stage-instance]
   (let [job-names (:job-names stage-instance)]
     (assoc stage-instance
            :job-instances (map #(build-for-job stage-instance %) job-names))))
@@ -145,7 +145,7 @@
          (take-while #(t/after? (:scheduled-time %) safe-build-start-date)))))
 
 
-(defn add-inputs-for-stage-instances [stage-instance]
+(defn add-inputs-for-stage-instance [stage-instance]
   (let [pipeline-run (:pipelineRun stage-instance)
         pipeline-name (:pipelineName stage-instance)
         inputs (goapi/get-inputs-for-pipeline-run go-url pipeline-name pipeline-run)]
@@ -234,11 +234,9 @@
 
 ;; run
 
-(defn- emit-start [sync-start-time aggregate-jobs-for-pipelines pipeline-stages]
+(defn- emit-start [sync-start-time pipeline-stages]
   (println "Looking at pipeline groups" (distinct (map :group pipeline-stages)))
   (println "Syncing all stages starting from" (tf/unparse (:date-time tf/formatters) sync-start-time))
-  (when (some? aggregate-jobs-for-pipelines)
-    (println "Aggregating jobs for stages of" aggregate-jobs-for-pipelines))
 
   (println "Finding all pipeline runs for syncing...")
 
@@ -267,18 +265,18 @@
   (println "Go" go-url "-> buildviz" buildviz-url)
 
   (let [sync-start-time (get-start-date (:sync-start-time (:options args)))
-        aggregate-jobs-for-pipelines (set (:aggregate-jobs-for-pipelines (:options args)))
+        sync-jobs-for-pipelines (set (:sync-jobs (:options args)))
         selected-pipeline-group-names (set (drop 1 (:arguments args)))]
 
     (->> (goapi/get-stages go-url)
          (select-stages selected-pipeline-group-names)
-         (emit-start sync-start-time aggregate-jobs-for-pipelines)
+         (emit-start sync-start-time)
          (mapcat #(stage-instances-from sync-start-time %))
          (sort-by :scheduled-time)
          emit-count-items
-         (map add-inputs-for-stage-instances)
-         (map add-job-instances-for-stage-instances)
-         (map #(aggregate-jobs-for-selected-stages % aggregate-jobs-for-pipelines))
+         (map add-inputs-for-stage-instance)
+         (map add-job-instances-for-stage-instance)
+         (map #(aggregate-jobs-for-stage-instance % sync-jobs-for-pipelines))
          (mapcat stage-instances->builds)
          (map put-to-buildviz)
          emit-end)))
