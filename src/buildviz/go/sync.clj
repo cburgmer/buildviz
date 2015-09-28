@@ -1,5 +1,5 @@
-(ns buildviz.gosync
-  (:require [buildviz.go-api :as goapi]
+(ns buildviz.go.sync
+  (:require [buildviz.go.api :as goapi]
             [cheshire.core :as j]
             [clj-http.client :as client]
             [clj-progress.core :as progress]

@@ -53,7 +53,7 @@ JUnit XML formatted test results can be `PUT` to `http://localhost:3000/builds/$
 
 Sync existing history (see `--help` for details):
 
-    $ java -cp buildviz-0.3.0-standalone.jar buildviz.gosync http://$USER:$PW@localhost:8153/go
+    $ java -cp buildviz-0.3.0-standalone.jar buildviz.go.sync http://$USER:$PW@localhost:8153/go
 
 ## More
 
