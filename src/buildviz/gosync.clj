@@ -160,6 +160,11 @@
 
 ;; upload
 
+(defn- job-name [pipeline-name stage-name job-name]
+  (if (= stage-name job-name)
+    (format "%s %s" pipeline-name stage-name)
+    (format "%s %s %s" pipeline-name stage-name job-name)))
+
 (defn- stage-instances->builds [{pipeline-name :pipelineName
                                  pipeline-run :pipelineRun
                                  stage-name :stageName
@@ -171,7 +176,7 @@
              end :end
              name :name
              junit-xml :junit-xml}]
-         {:job-name (format "%s %s %s" pipeline-name stage-name name)
+         {:job-name (job-name pipeline-name stage-name name)
           :build-id (format "%s %s" pipeline-run stage-run)
           :junit-xml junit-xml
           :build {:start start
