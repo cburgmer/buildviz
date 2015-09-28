@@ -30,7 +30,7 @@
   :ring {:handler buildviz.main/app
          :nrepl {:start? true
                  :port 9998}}
-  :aot [buildviz.gosync]
+  :aot [buildviz.go.sync]
   :profiles {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
                                   [cheshire "5.4.0"]
                                   [ring-mock "0.1.5"]]}})
