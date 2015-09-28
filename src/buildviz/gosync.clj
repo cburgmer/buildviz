@@ -26,10 +26,9 @@
                [""
                 "Syncs Go.cd build history with buildviz"
                 ""
-                "Usage: gosync.clj [OPTIONS] GO_URL [PIPELINE_GROUP] [ANOTHER PIPELINE GROUP] ..."
+                "Usage: gosync.clj [OPTIONS] GO_URL"
                 ""
                 "GO_URL            The URL of the Go.cd installation"
-                "PIPELINE_GROUP    Optional name of a pipeline group in Go"
                 ""
                 "Options"
                 options-summary]))
@@ -38,12 +37,16 @@
   [["-b" "--buildviz URL" "URL pointing to a running buildviz instance"
     :id :buildviz-url
     :default "http://localhost:3000"]
-   ["-f" "--from DATE" "DATE from which on builds are loaded (by default tries to pick up where the last run finished)"
+   ["-f" "--from DATE" "Date from which on builds are loaded, if not specified tries to pick up where the last run finished"
     :id :sync-start-time
     :parse-fn #(tf/parse date-formatter %)]
-   ["-j" "--sync-jobs PIPELINE" "PIPELINE for which Go jobs will be synced individually (not aggregated inside stage)"
+   ["-j" "--sync-jobs PIPELINE" "Pipeline for which Go jobs will be synced individually and not aggregated inside stage"
     :id :sync-jobs
-    :default '()
+    :default nil
+    :assoc-fn (fn [previous key val] (assoc previous key (conj (get previous key) val)))]
+   ["-g" "--pipeline-groups PIPELINE_GROUPS" "Go pipeline groups to be synced, all by default"
+    :id :pipeline-groups
+    :default nil
     :assoc-fn (fn [previous key val] (assoc previous key (conj (get previous key) val)))]
    ["-h" "--help"]])
 
@@ -254,7 +257,7 @@
 
   (let [sync-start-time (get-start-date (:sync-start-time (:options args)))
         sync-jobs-for-pipelines (set (:sync-jobs (:options args)))
-        selected-pipeline-group-names (set (drop 1 (:arguments args)))]
+        selected-pipeline-group-names (set (:pipeline-groups (:options args)))]
 
     (->> (goapi/get-stages go-url)
          (select-stages selected-pipeline-group-names)
