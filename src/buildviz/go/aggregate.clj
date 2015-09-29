@@ -27,7 +27,10 @@
       (when-not (= (count junit-xml-list) (count all-junit-xml))
         (log/infof "Unable to accumulate all JUnit XML for jobs of %s %s (%s %s)"
                    pipeline-name stage-name pipeline-run stage-run))
-      (aggregate-junit-xml-testsuites junit-xml-list))))
+      (try
+        (aggregate-junit-xml-testsuites junit-xml-list)
+        (catch Exception e
+          (log/errorf e "Unable to aggregate testresults for %s %s (%s %s)" pipeline-name stage-name pipeline-run stage-run))))))
 
 
 (defn- aggregate-build-times [job-instances]
