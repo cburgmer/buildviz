@@ -16,7 +16,27 @@
                     "scheduled_date": 1431560352151
                 }
             ],
-            "pipeline_counter": 41
+            "pipeline_counter": 41,
+            "result": "Passed"
+        },
+        {
+            "counter": "1",
+            "jobs": [
+                {
+                    "id": 10,
+                    "name": "A_Job",
+                    "result": "Unknown",
+                    "scheduled_date": 1431560352157
+                },
+                {
+                    "id": 11,
+                    "name": "A_Job_With_Broken_Files",
+                    "result": "Unkown",
+                    "scheduled_date": 1431560352157
+                }
+            ],
+            "pipeline_counter": 43,
+            "result": "Unknown"
         }
     ]
 }

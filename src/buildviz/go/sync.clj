@@ -73,9 +73,11 @@
 
 (defn parse-stage-instance [{pipeline-run :pipeline_counter
                              stage-run :counter
+                             result :result
                              jobs :jobs}]
   {:stageRun stage-run
    :pipelineRun pipeline-run
+   :finished (not= "Unknown" result)
    :scheduled-time (tc/from-long (apply min (map :scheduled_date jobs)))
    :job-names (map :name jobs)})
 
@@ -202,6 +204,7 @@
          (emit-start sync-start-time)
          (mapcat #(stage-instances-from sync-start-time %))
          (sort-by :scheduled-time)
+         (take-while :finished)
          (emit-sync-start)
          (progress/init "Syncing")
          (map add-inputs-for-stage-instance)
