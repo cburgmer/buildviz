@@ -1,8 +1,11 @@
 #!/bin/bash
 
-curl --output /dev/null --silent --head --fail http://localhost:3000
+PORT=3333
+BUILDVIZ_PATH="http://localhost:${PORT}"
+
+curl --output /dev/null --silent --head --fail "${BUILDVIZ_PATH}"
 if [ $? -eq 0 ]; then
-    echo "Please stop the application running on port 3000 before continuing"
+    echo "Please stop the application running on port $PORT before continuing"
     exit 1
 fi
 
@@ -33,25 +36,28 @@ vagrant up
 cd -
 
 # Start buildviz
-LOGGING_PATH="/tmp/buildviz.log"
+TMP_DIR="/tmp/buildviz.$$"
+LOGGING_PATH="${TMP_DIR}/buildviz.log"
 
-echo "Starting buildviz... (sending output to $LOGGING_PATH)"
-./lein do deps, ring server-headless > "$LOGGING_PATH" &
+mkdir -p "$TMP_DIR"
+
+echo "Starting buildviz... (sending stdout to $LOGGING_PATH)"
+BUILDVIZ_DATA_DIR=$TMP_DIR ./lein do deps, ring server-headless $PORT > "$LOGGING_PATH" &
 SERVER_PID=$!
 
 # Wait
 echo "Waiting for buildviz to come up"
-wait_for_server http://localhost:3000
+wait_for_server "${BUILDVIZ_PATH}"
 echo "Waiting for Go to come up"
 wait_for_server http://localhost:8153/go
 
 # Sync buildviz with the Go builds
 echo "Syncing job history..."
-./lein run -m buildviz.go.sync http://localhost:8153/go --from 2014-06-01
+./lein run -m buildviz.go.sync http://localhost:8153/go --buildviz="${BUILDVIZ_PATH}" --from 2014-06-01
 
 echo "Done..."
 echo
-echo "Point your browser to http://localhost:3000/"
+echo "Point your browser to ${BUILDVIZ_PATH}"
 echo
 echo "Later, press any key to stop the server and bring down the vagrant box"
 

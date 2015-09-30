@@ -1,5 +1,7 @@
 #!/bin/bash
 
+TARGET_PORT=${PORT:=3000}
+
 TODAY=$(date +%s000)
 A_WEEK_AGO=$(( TODAY - 7 * 24 * 60 * 60 * 1000 ))
 
@@ -34,7 +36,7 @@ function aBuild {
 function send {
     JOB=$1
     BUILD=$2
-    curl -H "Content-Type: application/json" --data @- -XPUT "http://localhost:3000/builds/${JOB}/${BUILD}"
+    curl -H "Content-Type: application/json" --data @- -XPUT "http://localhost:${TARGET_PORT}/builds/${JOB}/${BUILD}"
 }
 
 function passingTestCase {
@@ -94,7 +96,7 @@ EOF
 function sendTestResult {
     JOB=$1
     BUILD=$2
-    curl -X PUT -d@- "http://localhost:3000/builds/${JOB}/${BUILD}/testresults"
+    curl -X PUT -d@- "http://localhost:${TARGET_PORT}/builds/${JOB}/${BUILD}/testresults"
 }
 
 for i in $(seq 1 3); do

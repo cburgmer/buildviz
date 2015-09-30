@@ -1,8 +1,10 @@
 #!/bin/bash
 
-curl --output /dev/null --silent --head --fail http://localhost:3000
+PORT=3333
+
+curl --output /dev/null --silent --head --fail http://localhost:$PORT
 if [ $? -eq 0 ]; then
-    echo "Please stop the application running on port 3000 before continuing"
+    echo "Please stop the application running on port $PORT before continuing"
     exit 1
 fi
 
@@ -20,23 +22,26 @@ function wait_for_server() {
 
 
 # Start buildviz
-LOGGING_PATH="/tmp/buildviz.log"
+TMP_DIR="/tmp/buildviz.$$"
+LOGGING_PATH="${TMP_DIR}/buildviz.log"
 
-echo "Starting buildviz... (sending output to $LOGGING_PATH)"
-./lein do deps, ring server-headless > "$LOGGING_PATH" &
+mkdir -p "$TMP_DIR"
+
+echo "Starting buildviz... (sending stdout to $LOGGING_PATH)"
+BUILDVIZ_DATA_DIR=$TMP_DIR ./lein do deps, ring server-headless $PORT > "$LOGGING_PATH" &
 SERVER_PID=$!
 
 # Wait
 echo "Waiting for buildviz to come up"
-wait_for_server http://localhost:3000
+wait_for_server http://localhost:$PORT
 
 # Seed data
 echo "Seeding data..."
-"$SCRIPT_DIR"/data/seedDummyData.sh
+PORT="${PORT}" "$SCRIPT_DIR"/data/seedDummyData.sh
 
 echo "Done..."
 echo
-echo "Point your browser to http://localhost:3000/"
+echo "Point your browser to http://localhost:$PORT/"
 echo
 echo "Later, press any key to stop the server"
 

@@ -27,9 +27,7 @@
             [lein-npm "0.6.1"]]
   :npm {:dependencies [[d3 "3.5.5"]]
         :root "resources/public"}
-  :ring {:handler buildviz.main/app
-         :nrepl {:start? true
-                 :port 9998}}
+  :ring {:handler buildviz.main/app}
   :aot [buildviz.go.sync]
   :profiles {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
                                   [cheshire "5.4.0"]
