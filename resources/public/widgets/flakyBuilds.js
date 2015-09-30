@@ -1,6 +1,7 @@
 (function (widget, dataSource) {
     // Roughly following http://bl.ocks.org/mbostock/4063269
-    var diameter = 600;
+    var diameter = 600,
+        jobCount = 5;
 
     var flakyRatio = function (job) {
         var flakyCount = job.flakyCount || 0;
@@ -38,7 +39,20 @@
         }
     };
 
-    var svg = widget.create("Flaky builds",
+    var selectMostFlaky = function (pipeline, n) {
+        var jobNames = Object.keys(pipeline);
+        jobNames.sort(function (jobA, jobB) {
+            return pipeline[jobA].flakyCount - pipeline[jobB].flakyCount;
+        });
+
+        var selectedPipeline = {};
+        jobNames.slice(-n).forEach(function (job) {
+            selectedPipeline[job] = pipeline[job];
+        });
+        return selectedPipeline;
+    };
+
+    var svg = widget.create("Top " + jobCount + " flaky builds",
                             "Color: Flaky Ratio, Diameter: Flaky Count",
                            "/jobs.csv")
             .svg(diameter);
@@ -63,11 +77,13 @@
             return;
         }
 
-        var flakyRatio = maxFlakyRatio(root),
+        var selectedData = selectMostFlaky(root, jobCount);
+
+        var flakyRatio = maxFlakyRatio(selectedData),
             color = colorScale(flakyRatio);
 
         var node = svg.selectAll("g")
-                .data(noGrouping(bubble.nodes({children: flakyBuildsAsBubbles(root)})))
+                .data(noGrouping(bubble.nodes({children: flakyBuildsAsBubbles(selectedData)})))
                 .enter()
                 .append("g")
                 .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });;
