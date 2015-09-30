@@ -40,7 +40,7 @@
         });
     };
 
-    var buildPackageHiearchy = function (classEntries) {
+    var buildPackageHierarchy = function (classEntries) {
         var packageHierarchy = {};
 
         classEntries.forEach(function (entry) {
@@ -104,7 +104,7 @@
     };
 
     var transformClasses = function (classNodes) {
-        return buildPackageHiearchy(classNodes)
+        return buildPackageHierarchy(classNodes)
             .map(transformClassNode)
             .map(addAccumulatedApproximateRuntime)
             .map(addTitle);
