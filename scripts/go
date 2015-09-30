@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# Full test run
+
+SCRIPT_DIR=$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)
+
+$SCRIPT_DIR/../lein test
+
+yes | $SCRIPT_DIR/../examples/runSeedDataExample.sh
