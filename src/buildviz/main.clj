@@ -2,10 +2,17 @@
   (:require [buildviz.build-results :as results]
             [buildviz.handler :as handler]
             [buildviz.http :as http]
-            [buildviz.storage :as storage]))
+            [buildviz.storage :as storage]
+            [clojure.java.io :as io]
+            [clojure.string :as str]))
 
-(def jobs-filename "buildviz_jobs")
-(def tests-filename "buildviz_tests")
+(defn- path-for [file-name]
+  (if-let [data-dir (System/getenv "BUILDVIZ_DATA_DIR")]
+    (.getPath (io/file data-dir file-name))
+    file-name))
+
+(def jobs-filename (path-for "buildviz_jobs"))
+(def tests-filename (path-for "buildviz_tests"))
 
 
 (defn- persist-jobs! [build-data]
