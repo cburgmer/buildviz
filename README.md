@@ -2,6 +2,12 @@
 
 Transparency for your build pipeline's results and runtime.
 
+> The most important things cannot be measured.
+> - [W. Edwards Deming](https://en.wikipedia.org/wiki/W._Edwards_Deming)
+>
+> > Your build pipeline can.
+> > - Anonymous
+
 ![Screenshot](https://github.com/cburgmer/buildviz/raw/master/examples/data/screenshot.png)
 
 ## Concepts
