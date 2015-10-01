@@ -57,7 +57,8 @@
 (def date-only-formatter (tf/formatter "yyyy-MM-dd" (t/default-time-zone)))
 
 (defn- date-for [{end :end}]
-  (tf/unparse date-only-formatter (tc/from-long end)))
+  (when (some? end)
+    (tf/unparse date-only-formatter (tc/from-long (long end)))))
 
 (defn average-runtime-by-day [build-data-entries]
   (->> (group-by date-for build-data-entries)
