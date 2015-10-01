@@ -88,7 +88,7 @@
             .style("text-anchor", "end")
             .text("Runtime");
 
-         g.selectAll(".job")
+        g.selectAll(".job")
             .data(runtimes)
             .enter()
             .append("g")
@@ -100,6 +100,10 @@
             })
             .style('stroke', function (d) {
                 return color(d.jobName);
+            })
+            .append('title')
+            .text(function (d) {
+                return d.jobName;
             });
     });
 }(widget, utils));

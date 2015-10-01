@@ -11,5 +11,8 @@
 
 .pipelineRuntime .line {
   fill: none;
-  stroke-width: 1.5px;
+  stroke-width: 2px;
+}
+.pipelineRuntime .job:hover .line {
+  stroke-width: 4px;
 }
