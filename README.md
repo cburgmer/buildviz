@@ -8,8 +8,6 @@ Transparency for your build pipeline's results and runtime.
 > > Your build pipeline can.
 > > - Anonymous
 
-![Screenshot](https://github.com/cburgmer/buildviz/raw/master/examples/data/screenshot.png)
-
 ## Concepts
 
 buildviz provides various graphs detailing your build pipeline's behaviour. So far it cares about
@@ -19,6 +17,8 @@ buildviz provides various graphs detailing your build pipeline's behaviour. So f
 * **test results**, a list of tests with **runtime** and **outcome**.
 
 ## Example
+
+![Screenshot](https://github.com/cburgmer/buildviz/raw/master/examples/data/screenshot.png)
 
 Seed dummy data for a quick impression
 
