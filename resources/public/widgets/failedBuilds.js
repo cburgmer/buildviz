@@ -1,6 +1,8 @@
 (function (widget, dataSource) {
     // Roughly following http://bl.ocks.org/mbostock/4063269
-    var diameter = 600;
+    var diameter = 600,
+        jobCount = 5,
+        worstFailureRatio = 0.25;
 
     var failRatio = function (job) {
         var failCount = job.failedCount || 0;
@@ -24,21 +26,20 @@
             });
     };
 
-    var maxFailRatio = function (pipeline) {
-        var failRatios = Object.keys(pipeline)
-            .map(function (jobName) {
-                return failRatio(pipeline[jobName]);
-            });
+    var selectMostFailed = function (pipeline, n) {
+        var jobNames = Object.keys(pipeline);
+        jobNames.sort(function (jobA, jobB) {
+            return pipeline[jobA].failedCount - pipeline[jobB].failedCount;
+        });
 
-        if (failRatios.length > 0) {
-            return Math.max.apply(null, failRatios);
-        } else {
-            // Something valid
-            return 1;
-        }
+        var selectedPipeline = {};
+        jobNames.slice(-n).forEach(function (job) {
+            selectedPipeline[job] = pipeline[job];
+        });
+        return selectedPipeline;
     };
 
-    var svg = widget.create("Failed builds",
+    var svg = widget.create("Top 5 failed builds",
                             "Color: Failure Ratio, Diameter: Number of Failures",
                             "/jobs.csv")
             .svg(diameter);
@@ -58,16 +59,17 @@
             .interpolate(d3.interpolateLab);
     };
 
+    var color = colorScale(worstFailureRatio);
+
     dataSource.load('/jobs', function (root) {
         if (!Object.keys(root).length) {
             return;
         }
 
-        var failRatio = maxFailRatio(root),
-            color = colorScale(failRatio);
+        var selectedData = selectMostFailed(root, jobCount);
 
         var node = svg.selectAll("g")
-                .data(noGrouping(bubble.nodes({children: failedBuildsAsBubbles(root)})))
+                .data(noGrouping(bubble.nodes({children: failedBuildsAsBubbles(selectedData)})))
                 .enter()
                 .append("g")
                 .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });;
