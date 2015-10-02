@@ -1,4 +1,4 @@
-(function (widget, zoomableSunburst, utils, dataSource) {
+(function (widget, zoomableSunburst, utils, jobColors, dataSource) {
     var diameter = 600;
 
     var svg = widget.create("Average test runtime",
@@ -144,13 +144,17 @@
     };
 
     var transformTestsuites = function (jobMap) {
-        return Object.keys(jobMap)
+        var jobNames = Object.keys(jobMap),
+            color = jobColors.colors(jobNames);
+
+        return jobNames
             .map(function (jobName) {
                 var job = jobMap[jobName],
                     children = job.children;
 
                 return {
                     name: jobName,
+                    color: color(jobName),
                     children: skipParentNodesIfAllOnlyHaveOneChild(skipOnlyTestSuite(children.map(transformTestSuite)))
                 };
             });
@@ -164,4 +168,4 @@
 
         graph.render(data);
     });
-}(widget, zoomableSunburst, utils, dataSource));
+}(widget, zoomableSunburst, utils, jobColors, dataSource));

@@ -129,7 +129,7 @@ var zoomableSunburst = function (svg, diameter) {
                 .style("stroke", "#fff")
                 .style("fill", function (d) {
                     if (d.depth) {
-                        return inheritDirectParentColorForLeafs(d);
+                        return d.color || inheritDirectParentColorForLeafs(d);
                     } else {
                         return 'transparent';
                     }
