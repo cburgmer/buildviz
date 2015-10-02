@@ -1,4 +1,4 @@
-(function (widget, utils, dataSource) {
+(function (widget, utils, jobColors, dataSource) {
     // Roughly following http://bl.ocks.org/mbostock/4063269
     var diameter = 600;
 
@@ -32,12 +32,14 @@
             return bubbleNodes.filter(function(d) { return !d.children; });
         };
 
-    var color = d3.scale.category20c();
-
     dataSource.load('/jobs', function (root) {
-        if (!Object.keys(root).length) {
+        var jobNames = Object.keys(root);
+
+        if (!jobNames.length) {
             return;
         }
+
+        var color = jobColors.colors(jobNames);
 
         var node = svg.selectAll("g")
                 .data(noGrouping(bubble.nodes({children: buildRuntimeAsBubbles(root)})))
@@ -51,8 +53,7 @@
         node.append("circle")
             .attr("r", function (d) { return d.r; })
             .style("fill", function(d) {
-                var jobGroup = d.name.split(' ')[0];
-                return color(jobGroup);
+                return color(d.name);
             });
 
         node.append("text")
@@ -61,4 +62,4 @@
                 widget.textWithLineBreaks(this, d.name.split(' '));
             });
     });
-}(widget, utils, dataSource));
+}(widget, utils, jobColors, dataSource));

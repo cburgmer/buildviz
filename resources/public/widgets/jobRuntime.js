@@ -1,4 +1,4 @@
-(function (widget, utils) {
+(function (widget, utils, jobColors) {
     var diameter = 600;
 
     var margin = {top: 10, right: 0, bottom: 30, left: 60},
@@ -22,8 +22,6 @@
             })
             .orient("left");
 
-    var color = d3.scale.category10();
-
     var line = d3.svg.line()
             .interpolate("basis")
             .x(function(d) { return x(d.date); })
@@ -42,7 +40,7 @@
             return;
         }
 
-        color.domain(jobNames);
+        var color = jobColors.colors(jobNames);
 
         data.forEach(function (d) {
             d.date = new Date(d.date);
@@ -106,4 +104,4 @@
                 return d.jobName;
             });
     });
-}(widget, utils));
+}(widget, utils, jobColors));
