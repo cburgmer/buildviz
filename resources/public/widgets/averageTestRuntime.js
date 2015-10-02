@@ -4,7 +4,8 @@
     var svg = widget.create("Average test runtime",
                             "Color: Job/Test Suite, Arc size: duration",
                             "/testclasses.csv")
-            .svg(diameter);
+            .svg(diameter)
+            .attr('class', 'averageTestRuntime');
 
     var graph = zoomableSunburst(svg, diameter);
 
@@ -155,6 +156,7 @@
                 return {
                     name: jobName,
                     color: color(jobName),
+                    id: 'jobname-' + jobName,
                     children: skipParentNodesIfAllOnlyHaveOneChild(skipOnlyTestSuite(children.map(transformTestSuite)))
                 };
             });

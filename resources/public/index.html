@@ -9,7 +9,9 @@
         <link rel="stylesheet" href="status.css">
 
         <link rel="stylesheet" href="widgets/failPhases.css">
+        <link rel="stylesheet" href="widgets/averageJobRuntime.css">
         <link rel="stylesheet" href="widgets/jobRuntime.css">
+        <link rel="stylesheet" href="widgets/averageTestRuntime.css">
 
         <style>
             section {
@@ -36,5 +38,38 @@
         <script src="widgets/flakyBuilds.js"></script>
         <script src="widgets/failPhases.js"></script>
         <script src="widgets/testFailures.js"></script>
+
+        <script>
+            var findDataIdInAncestors = function (elem) {
+                if (elem.attributes['data-id']) {
+                    return elem.attributes['data-id'].value;
+                } else if (elem.parentElement) {
+                    return findDataIdInAncestors(elem.parentElement);
+                }
+            };
+
+            var arrayOf = function (arrayLike) {
+                return Array.prototype.slice.call(arrayLike);
+            };
+
+            var findDataIdTwins = function (dataId) {
+                return arrayOf(document.querySelectorAll('g[data-id="' + CSS.escape(dataId) + '"]'));
+            };
+
+            d3.select('body')
+              .on('mouseover', function (e) {
+                  var dataId = findDataIdInAncestors(d3.event.target);
+                  if (dataId) {
+                      findDataIdTwins(dataId).forEach(function (twin) {
+                          twin.classList.add('highlightedElement')
+                      });
+                  }
+              })
+              .on('mouseout', function () {
+                  arrayOf(document.querySelectorAll('g.highlightedElement')).forEach(function (elem) {
+                      elem.classList.remove('highlightedElement');
+                  })
+              });
+        </script>
     </body>
 </html>

@@ -13,6 +13,7 @@
   fill: none;
   stroke-width: 2px;
 }
+.pipelineRuntime .job.highlightedElement .line,
 .pipelineRuntime .job:hover .line {
-  stroke-width: 4px;
+  stroke-width: 5px;
 }

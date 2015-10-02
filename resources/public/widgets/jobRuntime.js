@@ -91,6 +91,9 @@
             .enter()
             .append("g")
             .attr("class", "job")
+            .attr('data-id', function (d) {
+                return 'jobname-' + d.jobName;
+            })
             .append("path")
             .attr("class", "line")
             .attr("d", function (d) {

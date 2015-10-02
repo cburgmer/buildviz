@@ -121,6 +121,9 @@ var zoomableSunburst = function (svg, diameter) {
                 .data(partition.nodes)
                 .enter()
                 .append("g")
+                .attr('data-id', function (d) {
+                    return d.id;
+                })
                 .style('cursor', 'pointer')
                 .on('click', click);
 

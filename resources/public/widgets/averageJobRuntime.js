@@ -36,7 +36,8 @@
     var svg = widget.create("Average job runtime",
                             "Color: jobGroup, Diameter: avg. Runtime",
                             "/jobs.csv")
-            .svg(diameter);
+            .svg(diameter)
+            .attr('class', 'averageJobRuntime');
 
     var treemap = d3.layout.treemap()
             .size([diameter, diameter])
@@ -59,7 +60,12 @@
                 .data(treemap.nodes)
                 .enter()
                 .append("g")
-                .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+                .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
+                .attr('data-id', function (d) {
+                    if (d.name) {
+                        return 'jobname-' + d.name;
+                    }
+                });
 
         node.append('rect')
             .attr('width', function (d) {
