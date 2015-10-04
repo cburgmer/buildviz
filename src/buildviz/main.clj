@@ -6,12 +6,9 @@
             [clojure.java.io :as io]
             [clojure.string :as str]))
 
-(defn- path-for [file-name]
-  (if-let [data-dir (System/getenv "BUILDVIZ_DATA_DIR")]
-    (.getPath (io/file data-dir file-name))
-    file-name))
-
-(def data-dir (path-for "data"))
+(def data-dir (if-let [data-dir (System/getenv "BUILDVIZ_DATA_DIR")]
+                data-dir
+                "data"))
 
 
 (defn- persist-build! [build-results job-name build-id]
