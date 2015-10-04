@@ -15,7 +15,6 @@
                  [ring-middleware-accept "2.0.3"]
                  [compojure "1.1.6"]
                  [bigml/closchema "0.6.1"]
-                 [com.taoensso/nippy "2.9.0"]
                  [clj-http "1.1.2"]
                  [clj-time "0.9.0"]
                  [cheshire "5.4.0"]

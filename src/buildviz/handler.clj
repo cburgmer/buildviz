@@ -23,7 +23,7 @@
     {:status 400
      :body errors}
     (do (results/set-build! build-results job-name build-id build-data)
-        (persist! @(:builds build-results) job-name build-id)
+        (persist! build-results job-name build-id)
         (http/respond-with-json build-data))))
 
 (defn- get-build [build-results job-name build-id]
@@ -39,7 +39,7 @@
     (try
       (force-evaluate-junit-xml content)
       (results/set-tests! build-results job-name build-id content)
-      (persist! @(:tests build-results) job-name build-id)
+      (persist! build-results job-name build-id)
       {:status 204}
       (catch Exception e
         {:status 400
@@ -279,13 +279,13 @@
 
 ;; app
 
-(defn- app-routes [build-results persist-jobs! persist-tests!]
+(defn- app-routes [build-results persist-build! persist-testresults!]
   (compojure.core/routes
    (GET "/" [] (redirect "/index.html"))
 
-   (PUT "/builds/:job/:build" [job build :as {body :body}] (store-build! build-results job build body persist-jobs!))
+   (PUT "/builds/:job/:build" [job build :as {body :body}] (store-build! build-results job build body persist-build!))
    (GET "/builds/:job/:build" [job build] (get-build build-results job build))
-   (PUT "/builds/:job/:build/testresults" [job build :as {body :body}] (store-test-results! build-results job build body persist-tests!))
+   (PUT "/builds/:job/:build/testresults" [job build :as {body :body}] (store-test-results! build-results job build body persist-testresults!))
    (GET "/builds/:job/:build/testresults" [job build :as {accept :accept}] (get-test-results build-results job build accept))
 
    (GET "/status" {} (get-status build-results))

@@ -1,11 +1,7 @@
 (ns buildviz.storage
   (:require [cheshire.core :as j]
             [clojure.java.io :as io]
-            [clojure.string :as str]
-            [taoensso.nippy :as nippy]
-            [clojure.tools.logging :as log]))
-
-(import '[java.io DataInputStream DataOutputStream])
+            [clojure.string :as str]))
 
 (defn store-build! [job-name build-id build-data base-dir]
   (let [job-dir (io/file base-dir job-name)]
@@ -61,16 +57,3 @@
                            [job-name build-id]
                            (slurp file)))
                {})))
-
-
-(defn store! [jobs filename]
-  (log/info (format "Persisting to %s" filename))
-  (with-open [w (io/output-stream filename)]
-    (nippy/freeze-to-out! (DataOutputStream. w) jobs)))
-
-(defn load-from-file [filename]
-  (if (.exists (io/file filename))
-    (with-open
-      [r (io/input-stream filename)]
-      (nippy/thaw-from-in! (DataInputStream. r)))
-    {}))
