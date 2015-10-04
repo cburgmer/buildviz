@@ -39,7 +39,7 @@
     (try
       (force-evaluate-junit-xml content)
       (results/set-tests! build-results job-name build-id content)
-      (persist! @(:tests build-results))
+      (persist! @(:tests build-results) job-name build-id)
       {:status 204}
       (catch Exception e
         {:status 400

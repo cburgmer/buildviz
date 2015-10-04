@@ -21,13 +21,14 @@
   (storage/store-build! job-name build-id (get (get build-data job-name) build-id) data-dir)
   (storage/store! build-data jobs-filename))
 
-(defn- persist-tests! [tests-data]
+(defn- persist-tests! [tests-data job-name build-id]
+  (storage/store-testresults! job-name build-id (get (get tests-data job-name) build-id) data-dir)
   (storage/store! tests-data tests-filename))
 
 
 (def app
   (let [builds (storage/load-builds data-dir)
-        tests (storage/load-from-file tests-filename)]
+        tests (storage/load-all-testresults data-dir)]
     (-> (handler/create-app (results/build-results builds tests)
                             persist-jobs!
                             persist-tests!)

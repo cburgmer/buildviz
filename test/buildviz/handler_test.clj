@@ -9,9 +9,7 @@
             [buildviz.handler :as handler]))
 
 
-(defn dummy-persist
-  ([_])
-  ([_ _ _]))
+(defn dummy-persist [_ _ _])
 
 (defn the-app
   ([]
