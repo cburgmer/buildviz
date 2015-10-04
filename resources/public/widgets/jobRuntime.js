@@ -31,7 +31,7 @@
                             "Runtime of all jobs",
                             "/pipelineruntime.csv")
             .svg(diameter)
-            .attr('class', 'pipelineRuntime');
+            .attr('class', 'jobRuntime');
 
     d3.csv('/pipelineruntime', function (_, data) {
         var jobNames = d3.keys(data[0]).filter(function(key) { return key !== "date"; });

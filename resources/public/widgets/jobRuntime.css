@@ -1,19 +1,19 @@
-.pipelineRuntime .axis path,
-.pipelineRuntime .axis line {
+.jobRuntime .axis path,
+.jobRuntime .axis line {
   fill: none;
   stroke: #000;
   shape-rendering: crispEdges;
 }
 
-.pipelineRuntime .x.axis path {
+.jobRuntime .x.axis path {
   display: none;
 }
 
-.pipelineRuntime .line {
+.jobRuntime .line {
   fill: none;
   stroke-width: 2px;
 }
-.pipelineRuntime .job.highlightedElement .line,
-.pipelineRuntime .job:hover .line {
+.jobRuntime .job.highlightedElement .line,
+.jobRuntime .job:hover .line {
   stroke-width: 5px;
 }
