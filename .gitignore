@@ -12,4 +12,5 @@ pom.xml.asc
 /examples/go/.vagrant/
 /buildviz_jobs
 /buildviz_tests
-/log
+/data/
+/log/

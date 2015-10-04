@@ -14,8 +14,11 @@
 (def jobs-filename (path-for "buildviz_jobs"))
 (def tests-filename (path-for "buildviz_tests"))
 
+(def data-dir (path-for "data"))
 
-(defn- persist-jobs! [build-data]
+
+(defn- persist-jobs! [build-data job-name build-id]
+  (storage/store-build! job-name build-id (get (get build-data job-name) build-id) data-dir)
   (storage/store! build-data jobs-filename))
 
 (defn- persist-tests! [tests-data]
@@ -23,7 +26,7 @@
 
 
 (def app
-  (let [builds (storage/load-from-file jobs-filename)
+  (let [builds (storage/load-builds data-dir)
         tests (storage/load-from-file tests-filename)]
     (-> (handler/create-app (results/build-results builds tests)
                             persist-jobs!

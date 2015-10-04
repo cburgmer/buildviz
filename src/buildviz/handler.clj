@@ -23,7 +23,7 @@
     {:status 400
      :body errors}
     (do (results/set-build! build-results job-name build-id build-data)
-        (persist! @(:builds build-results))
+        (persist! @(:builds build-results) job-name build-id)
         (http/respond-with-json build-data))))
 
 (defn- get-build [build-results job-name build-id]
