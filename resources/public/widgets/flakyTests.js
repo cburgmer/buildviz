@@ -8,6 +8,7 @@
                     testCase.classname,
                     '',
                     testCase.job + ' (' + testCase.testsuite + ')',
+                    'Latest flaky build: ' + testCase.latestBuildId,
                     '',
                     'Flaky count: ' + testCase.flakyCount,
                     'Last flaky failure: ' + testCase.latestFailure]
