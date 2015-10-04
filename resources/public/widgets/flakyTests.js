@@ -19,7 +19,7 @@
 
     var svg = widget.create("Flaky tests",
                             "Color: Age of last flakyness, Diameter: Flaky count",
-                           "/flakytestcases")
+                           "/flakytestcases.csv")
             .svg(diameter);
 
     var bubble = d3.layout.pack()

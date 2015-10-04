@@ -292,6 +292,7 @@
    (GET "/jobs" {accept :accept} (get-jobs build-results accept))
    (GET "/jobs.csv" {} (get-jobs build-results {:mime :csv}))
    (GET "/pipelineruntime" {} (get-pipeline-runtime build-results))
+   (GET "/pipelineruntime.csv" {} (get-pipeline-runtime build-results))
    (GET "/failphases" {accept :accept} (get-fail-phases build-results accept))
    (GET "/failphases.csv" {} (get-fail-phases build-results {:mime :csv}))
    (GET "/failures" {accept :accept} (get-failures build-results accept))
@@ -300,7 +301,8 @@
    (GET "/testcases.csv" {} (get-testcases build-results {:mime :csv}))
    (GET "/testclasses" {accept :accept} (get-testclasses build-results accept))
    (GET "/testclasses.csv" {} (get-testclasses build-results {:mime :csv}))
-   (GET "/flakytestcases" {} (get-flaky-testclasses build-results))))
+   (GET "/flakytestcases" {} (get-flaky-testclasses build-results))
+   (GET "/flakytestcases.csv" {} (get-flaky-testclasses build-results))))
 
 (defn create-app [build-results persist-jobs! persist-tests!]
   (-> (app-routes build-results persist-jobs! persist-tests!)
