@@ -171,17 +171,19 @@
 
 ;; failures
 
+(defn- test-runs [build-results job-name]
+  (map junit-xml/parse-testsuites
+       (results/chronological-tests build-results job-name)))
+
 (defn- failures-for [build-results job-name]
-  (when-some [test-results (results/chronological-tests build-results job-name)]
-    (when-some [failed-tests (seq (testsuites/accumulate-testsuite-failures
-                                   (map junit-xml/parse-testsuites test-results)))]
-      (let [build-data-entries (results/builds build-results job-name)]
-        {job-name (merge {:children failed-tests}
-                         (failed-count-for build-data-entries))}))))
+  (when-some [failed-tests (seq (testsuites/accumulate-testsuite-failures (test-runs build-results job-name)))]
+    (let [build-data-entries (results/builds build-results job-name)]
+      {job-name (merge {:children failed-tests}
+                       (failed-count-for build-data-entries))})))
 
 (defn- failures-as-list [build-results job-name]
-  (when-some [test-results (results/chronological-tests build-results job-name)]
-    (->> (map junit-xml/parse-testsuites test-results)
+  (when-some [test-results (seq (test-runs build-results job-name))]
+    (->> test-results
          (testsuites/accumulate-testsuite-failures-as-list)
          (map (fn [{testsuite :testsuite classname :classname name :name failed-count :failedCount}]
                 [failed-count
@@ -199,10 +201,6 @@
                                                (mapcat #(failures-as-list build-results %) job-names))))))
 
 ;; testsuites
-
-(defn- test-runs [build-results job-name]
-  (let [test-results (results/chronological-tests build-results job-name)]
-    (map junit-xml/parse-testsuites test-results)))
 
 (defn- names-of-jobs-with-tests [build-results]
   (filter #(results/has-tests? build-results %) (results/job-names build-results)))
