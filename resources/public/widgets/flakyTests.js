@@ -55,7 +55,13 @@
         return displayLines;
     };
 
-    d3.csv('/flakytestcases', function (data) {
+    var timestampTwoWeeksAgo = function () {
+        var today = new Date(),
+            twoWeeksAgo = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 14);
+        return +twoWeeksAgo;
+    };
+
+    d3.csv('/flakytestcases?from='+ timestampTwoWeeksAgo(), function (data) {
         var flakyTests = data.map(flakyTestsAsBubbles);
 
         if (!flakyTests.length) {

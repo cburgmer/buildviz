@@ -1,22 +1,24 @@
 (ns buildviz.handler
-  (:use
-   ring.middleware.json
-   ring.middleware.resource
-   ring.middleware.content-type
-   ring.middleware.not-modified
-   ring.middleware.accept
-   ring.util.response
-   [compojure.core :only (GET PUT)]
-   [clojure.string :only (join escape)]
-   [clojure.walk :only (postwalk)])
-  (:require [buildviz.build-results :as results]
-            [buildviz.http :as http]
-            [buildviz.junit-xml :as junit-xml]
-            [buildviz.csv :as csv]
-            [buildviz.jobinfo :as jobinfo]
-            [buildviz.pipelineinfo :as pipelineinfo]
-            [buildviz.testsuites :as testsuites]))
-
+  (:require [buildviz
+             [build-results :as results]
+             [csv :as csv]
+             [http :as http]
+             [jobinfo :as jobinfo]
+             [junit-xml :as junit-xml]
+             [pipelineinfo :as pipelineinfo]
+             [testsuites :as testsuites]]
+            [clojure
+             [string :as str]
+             [walk :as walk]]
+            [compojure.core :as compojure :refer :all]
+            [ring.util.response :as response]
+            [ring.middleware
+             [accept :as accept]
+             [content-type :as content-type]
+             [json :as json]
+             [not-modified :as not-modified]
+             [params :as params]
+             [resource :as resources]]))
 
 (defn- store-build! [build-results job-name build-id build-data persist!]
   (if-some [errors (seq (results/build-data-validation-errors build-data))]
@@ -32,7 +34,7 @@
     {:status 404}))
 
 (defn- force-evaluate-junit-xml [content]
-  (postwalk identity (junit-xml/parse-testsuites content)))
+  (walk/postwalk identity (junit-xml/parse-testsuites content)))
 
 (defn- store-test-results! [build-results job-name build-id body persist!]
   (let [content (slurp body)]
@@ -53,7 +55,7 @@
     {:status 404}))
 
 (defn- serialize-nested-testsuites [testsuite-id]
-  (join ": " testsuite-id))
+  (str/join ": " testsuite-id))
 
 ;; status
 
@@ -164,7 +166,7 @@
                          (map (fn [{start :start end :end culprits :culprits}]
                                 [(csv/format-timestamp start)
                                  (csv/format-timestamp end)
-                                 (join "|" culprits)])
+                                 (str/join "|" culprits)])
                               fail-phases))))))
 
 ;; failures
@@ -253,8 +255,17 @@
   (if-let [test-results (results/tests build-results job-name build-id)]
     (junit-xml/parse-testsuites test-results)))
 
-(defn- flat-flaky-testcases [build-results job-name]
-  (let [builds (get @(:builds build-results) job-name)
+(defn- builds-after-timestamp [build-results job-name from-timestamp]
+  (let [builds (get @(:builds build-results) job-name)]
+    (if-not (nil? from-timestamp)
+      (->> builds
+           (remove (fn [[build-id build]] (nil? (:start build))))
+           (filter (fn [[build-id build]] (>= (:start build) from-timestamp)))
+           (into {}))
+      builds)))
+
+(defn- flat-flaky-testcases [build-results job-name from-timestamp]
+  (let [builds (builds-after-timestamp build-results job-name from-timestamp)
         test-lookup (partial test-results-for-build build-results job-name)]
     (->> (testsuites/flaky-testcases-as-list builds test-lookup)
          (map (fn [{testsuite :testsuite
@@ -271,17 +282,18 @@
                  classname
                  name])))))
 
-(defn get-flaky-testclasses [build-results]
-  (http/respond-with-csv (csv/export-table
-                          ["latestFailure" "flakyCount" "job" "latestBuildId" "testsuite" "classname" "name"]
-                          (mapcat #(flat-flaky-testcases build-results %)
-                                  (results/job-names build-results)))))
+(defn get-flaky-testclasses [build-results from]
+  (let [from-timestamp (when from (Long. from))]
+    (http/respond-with-csv (csv/export-table
+                            ["latestFailure" "flakyCount" "job" "latestBuildId" "testsuite" "classname" "name"]
+                            (mapcat #(flat-flaky-testcases build-results % from-timestamp)
+                                    (results/job-names build-results))))))
 
 ;; app
 
 (defn- app-routes [build-results persist-build! persist-testresults!]
-  (compojure.core/routes
-   (GET "/" [] (redirect "/index.html"))
+  (compojure/routes
+   (GET "/" [] (response/redirect "/index.html"))
 
    (PUT "/builds/:job/:build" [job build :as {body :body}] (store-build! build-results job build body persist-build!))
    (GET "/builds/:job/:build" [job build] (get-build build-results job build))
@@ -301,16 +313,17 @@
    (GET "/testcases.csv" {} (get-testcases build-results {:mime :csv}))
    (GET "/testclasses" {accept :accept} (get-testclasses build-results accept))
    (GET "/testclasses.csv" {} (get-testclasses build-results {:mime :csv}))
-   (GET "/flakytestcases" {} (get-flaky-testclasses build-results))
+   (GET "/flakytestcases" {{from "from"} :query-params} (get-flaky-testclasses build-results from))
    (GET "/flakytestcases.csv" {} (get-flaky-testclasses build-results))))
 
 (defn create-app [build-results persist-jobs! persist-tests!]
   (-> (app-routes build-results persist-jobs! persist-tests!)
-      wrap-json-response
-      (wrap-json-body {:keywords? true})
-      (wrap-accept {:mime ["application/json" :as :json,
+      params/wrap-params
+      json/wrap-json-response
+      (json/wrap-json-body {:keywords? true})
+      (accept/wrap-accept {:mime ["application/json" :as :json,
                            "application/xml" "text/xml" :as :xml
                            "text/plain" :as :plain]})
-      (wrap-resource "public")
-      wrap-content-type
-      wrap-not-modified))
+      (resources/wrap-resource "public")
+      content-type/wrap-content-type
+      not-modified/wrap-not-modified))
