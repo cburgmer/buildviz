@@ -177,6 +177,7 @@
   (println "Go" go-url (distinct (map :group pipeline-stages)) "-> buildviz" buildviz-url)
   (print (format "Finding all pipeline runs for syncing (starting from %s)..."
                  (tf/unparse (:date-time tf/formatters) sync-start-time)))
+  (flush)
 
   pipeline-stages)
 
