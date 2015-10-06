@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 TARGET_PORT=${PORT:=3000}
 
 TODAY=$(date +%s000)
@@ -96,7 +98,7 @@ EOF
 function sendTestResult {
     JOB=$1
     BUILD=$2
-    curl -X PUT -d@- "http://localhost:${TARGET_PORT}/builds/${JOB}/${BUILD}/testresults"
+    curl -X PUT -H "Content-type: text/xml" -d@- "http://localhost:${TARGET_PORT}/builds/${JOB}/${BUILD}/testresults"
 }
 
 for i in $(seq 1 3); do
