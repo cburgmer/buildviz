@@ -33,11 +33,17 @@
       (is (= "<xml>"
              (slurp (io/file data-dir "anotherJob/anotherBuild.xml")))))))
 
-(deftest test-load-all-testresults
+(deftest test-load-testresults
   (testing "should return XML"
     (let [data-dir (create-tmp-dir "buildviz-data")
           testresults-file (io/file data-dir "yetAnotherJob/yetAnotherBuild.xml")]
       (.mkdirs (.getParentFile testresults-file))
       (spit testresults-file "<thexml>")
-      (is (= {"yetAnotherJob" {"yetAnotherBuild" "<thexml>"}}
-             (load-all-testresults data-dir))))))
+      (is (= "<thexml>"
+             (load-testresults "yetAnotherJob" "yetAnotherBuild" data-dir)))))
+
+  (testing "handle missing XML"
+    (let [data-dir (create-tmp-dir "buildviz-data")]
+      (.mkdirs (io/file data-dir))
+      (is (= nil
+             (load-testresults "yetAnotherJob" "yetAnotherBuild" data-dir))))))

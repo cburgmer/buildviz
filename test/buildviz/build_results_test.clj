@@ -13,3 +13,25 @@
   (testing "should fail on end time before start time"
     (is (not (empty? (results/build-data-validation-errors {:start 42
                                                             :end 41}))))))
+
+(deftest test-build-results
+  (testing "should return tests for a build"
+    (let [load-tests (fn [job-name build-id]
+                       (get-in {"aJob" {"1" "<thexml>"}}
+                               [job-name build-id]))
+          build-results (results/build-results {} load-tests)]
+      (is (= "<thexml>"
+             (results/tests build-results "aJob" "1")))))
+
+  (testing "should return all tests for existing builds"
+    (let [load-tests (fn [job-name build-id]
+                       (get-in {"aJob" {"1" "<thexml>"
+                                        "2" "<morexml>"}
+                                "anotherJob" {"3" "<somemorexml>"}}
+                               [job-name build-id]))
+          build-results (results/build-results {"aJob" {"1" {}
+                                                        "2" {}
+                                                        "4" {}}
+                                                "anotherJob" {"3" {}}} load-tests)]
+      (is (= '("<thexml>" "<morexml>")
+             (results/chronological-tests build-results "aJob"))))))

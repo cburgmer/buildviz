@@ -17,16 +17,18 @@
                         (results/build build-results job-name build-id)
                         data-dir))
 
-(defn- persist-testresults! [build-results job-name build-id]
+(defn- persist-testresults! [xml job-name build-id]
   (storage/store-testresults! job-name
                               build-id
-                              (results/tests build-results job-name build-id)
+                              xml
                               data-dir))
 
+(defn- load-testresults [job-name build-id]
+  (storage/load-testresults job-name build-id data-dir))
+
 (def app
-  (let [builds (storage/load-builds data-dir)
-        tests (storage/load-all-testresults data-dir)]
-    (-> (handler/create-app (results/build-results builds tests)
+  (let [builds (storage/load-builds data-dir)]
+    (-> (handler/create-app (results/build-results builds load-testresults)
                             persist-build!
                             persist-testresults!)
         http/wrap-log-request

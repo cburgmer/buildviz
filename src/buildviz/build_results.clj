@@ -34,7 +34,7 @@
   (tests      [this job-name build-id])
   (set-tests! [this job-name build-id xml]))
 
-(defrecord BuildResults [builds tests]
+(defrecord BuildResults [builds load-tests]
   BuildResultsProtocol
 
   (job-names [_]
@@ -50,19 +50,23 @@
   (set-build! [_ job-name build-id build-data]
     (swap! builds assoc-in [job-name build-id] build-data))
 
-  (has-tests? [_ job-name]
-    (some? (get @tests job-name)))
+  (has-tests? [this job-name]
+    (some? (chronological-tests this job-name)))
 
-  (chronological-tests [_ job-name]
-    (when-some [test-results (get @tests job-name)]
-      (vals test-results)))
+  ;; TODO find a solution for 'stale' tests with no matching builds
+  (chronological-tests [this job-name]
+    (->> job-name
+         (get @(:builds this))
+         keys
+         (map #(load-tests job-name %))
+         (remove nil?)
+         seq))
 
   (tests [_ job-name build-id]
-    (get-in @tests [job-name build-id]))
+    (load-tests job-name build-id))
 
   (set-tests! [_ job-name build-id xml]
-    (swap! tests assoc-in [job-name build-id] xml)))
+    nil))
 
-
-(defn build-results [builds tests]
-  (BuildResults. (atom builds) (atom tests)))
+(defn build-results [builds load-tests]
+  (BuildResults. (atom builds) load-tests))

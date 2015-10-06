@@ -42,18 +42,7 @@
     (let [testresults-file (io/file job-dir (str/join [build-id ".xml"]))]
       (spit testresults-file test-xml))))
 
-(defn- match-build-id-for-testresults [build-file]
-  (last (re-matches #"(.*)\.xml"
-                    (.getName build-file))))
-
-(defn load-all-testresults [base-dir]
-  (->> (io/file base-dir)
-       .listFiles
-       seq
-       (filter #(.isDirectory %))
-       (mapcat #(builds-for-job-dir % match-build-id-for-testresults))
-       (reduce (fn [jobs [job-name build-id file]]
-                 (assoc-in jobs
-                           [job-name build-id]
-                           (slurp file)))
-               {})))
+(defn load-testresults [job-name build-id base-dir]
+  (let [file (io/file base-dir (str/join [job-name "/" build-id ".xml"]))]
+    (when (.exists file)
+      (slurp file))))
