@@ -29,7 +29,6 @@
   (build      [this job-name build-id])
   (set-build! [this job-name build-id build])
 
-  (has-tests? [this job-name])
   (chronological-tests [this job-name from])
   (tests      [this job-name build-id])
   (set-tests! [this job-name build-id xml]))
@@ -56,9 +55,6 @@
 
   (set-build! [_ job-name build-id build-data]
     (swap! builds assoc-in [job-name build-id] build-data))
-
-  (has-tests? [this job-name]
-    (some? (chronological-tests this job-name nil)))
 
   ;; TODO find a solution for 'stale' tests with no matching builds
   (chronological-tests [this job-name from]

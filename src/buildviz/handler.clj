@@ -202,9 +202,6 @@
 
 ;; testsuites
 
-(defn- names-of-jobs-with-tests [build-results]
-  (filter #(results/has-tests? build-results %) (results/job-names build-results)))
-
 (defn- testcase-runtimes [build-results job-name from-timestamp]
   {:children (testsuites/average-testcase-runtime (test-runs build-results job-name from-timestamp))})
 
@@ -218,9 +215,13 @@
                name]))))
 
 (defn- get-testcases [build-results accept from-timestamp]
-  (let [job-names (names-of-jobs-with-tests build-results)]
+  (let [job-names (results/job-names build-results)]
     (if (= (:mime accept) :json)
-      (http/respond-with-json (zipmap job-names (map #(testcase-runtimes build-results % from-timestamp) job-names)))
+      (http/respond-with-json (->> job-names
+                                   (map #(testcase-runtimes build-results % from-timestamp))
+                                   (zipmap job-names)
+                                   (remove (fn [[job-name testcases]] (empty? (:children testcases))))
+                                   (into {})))
       (http/respond-with-csv (csv/export-table
                               ["averageRuntime" "job" "testsuite" "classname" "name"]
                               (mapcat #(flat-testcase-runtimes build-results % from-timestamp) job-names))))))
@@ -239,10 +240,13 @@
                classname]))))
 
 (defn- get-testclasses [build-results accept from-timestamp]
-  (let [job-names (names-of-jobs-with-tests build-results)]
+  (let [job-names (results/job-names build-results)]
     (if (= (:mime accept) :json)
-      (http/respond-with-json (zipmap job-names
-                                      (map #(testclass-runtimes build-results % from-timestamp) job-names)))
+      (http/respond-with-json (->> job-names
+                                   (map #(testclass-runtimes build-results % from-timestamp))
+                                   (zipmap job-names)
+                                   (remove (fn [[job-name testcases]] (empty? (:children testcases))))
+                                   (into {})))
       (http/respond-with-csv (csv/export-table
                               ["averageRuntime" "job" "testsuite" "classname"]
                               (mapcat #(flat-testclass-runtimes build-results % from-timestamp) job-names))))))
