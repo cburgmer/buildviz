@@ -30,9 +30,16 @@
   (set-build! [this job-name build-id build])
 
   (has-tests? [this job-name])
-  (chronological-tests [this job-name])
+  (chronological-tests [this job-name from])
   (tests      [this job-name build-id])
   (set-tests! [this job-name build-id xml]))
+
+(defn- builds-starting-from [from builds]
+  (if (some? from)
+    (->> builds
+         (remove (fn [[build-id build]] (nil? (:start build))))
+         (filter (fn [[build-id build]] (<= from (:start build)))))
+    builds))
 
 (defrecord BuildResults [builds load-tests]
   BuildResultsProtocol
@@ -51,12 +58,13 @@
     (swap! builds assoc-in [job-name build-id] build-data))
 
   (has-tests? [this job-name]
-    (some? (chronological-tests this job-name)))
+    (some? (chronological-tests this job-name nil)))
 
   ;; TODO find a solution for 'stale' tests with no matching builds
-  (chronological-tests [this job-name]
+  (chronological-tests [this job-name from]
     (->> job-name
          (get @(:builds this))
+         (builds-starting-from from)
          keys
          (map #(load-tests job-name %))
          (remove nil?)

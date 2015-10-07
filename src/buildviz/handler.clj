@@ -171,18 +171,18 @@
 
 ;; failures
 
-(defn- test-runs [build-results job-name]
+(defn- test-runs [build-results job-name from-timestamp]
   (map junit-xml/parse-testsuites
-       (results/chronological-tests build-results job-name)))
+       (results/chronological-tests build-results job-name from-timestamp)))
 
-(defn- failures-for [build-results job-name]
-  (when-some [failed-tests (seq (testsuites/accumulate-testsuite-failures (test-runs build-results job-name)))]
+(defn- failures-for [build-results job-name from-timestamp]
+  (when-some [failed-tests (seq (testsuites/accumulate-testsuite-failures (test-runs build-results job-name from-timestamp)))]
     (let [build-data-entries (results/builds build-results job-name)]
       {job-name (merge {:children failed-tests}
                        (failed-count-for build-data-entries))})))
 
-(defn- failures-as-list [build-results job-name]
-  (when-some [test-results (seq (test-runs build-results job-name))]
+(defn- failures-as-list [build-results job-name from-timestamp]
+  (when-some [test-results (seq (test-runs build-results job-name from-timestamp))]
     (->> test-results
          (testsuites/accumulate-testsuite-failures-as-list)
          (map (fn [{testsuite :testsuite classname :classname name :name failed-count :failedCount}]
@@ -192,24 +192,24 @@
                  classname
                  name])))))
 
-(defn- get-failures [build-results accept]
+(defn- get-failures [build-results accept from-timestamp]
   (let [job-names (results/job-names build-results)]
     (if (= (:mime accept) :json)
-      (let [failures (map #(failures-for build-results %) job-names)]
+      (let [failures (map #(failures-for build-results % from-timestamp) job-names)]
         (http/respond-with-json (into {} (apply merge failures))))
       (http/respond-with-csv (csv/export-table ["failedCount" "job" "testsuite" "classname" "name"]
-                                               (mapcat #(failures-as-list build-results %) job-names))))))
+                                               (mapcat #(failures-as-list build-results % from-timestamp) job-names))))))
 
 ;; testsuites
 
 (defn- names-of-jobs-with-tests [build-results]
   (filter #(results/has-tests? build-results %) (results/job-names build-results)))
 
-(defn- testcase-runtimes [build-results job-name]
-  {:children (testsuites/average-testcase-runtime (test-runs build-results job-name))})
+(defn- testcase-runtimes [build-results job-name from-timestamp]
+  {:children (testsuites/average-testcase-runtime (test-runs build-results job-name from-timestamp))})
 
-(defn- flat-testcase-runtimes [build-results job-name]
-  (->> (testsuites/average-testcase-runtime-as-list (test-runs build-results job-name))
+(defn- flat-testcase-runtimes [build-results job-name from-timestamp]
+  (->> (testsuites/average-testcase-runtime-as-list (test-runs build-results job-name from-timestamp))
        (map (fn [{testsuite :testsuite classname :classname name :name average-runtime :averageRuntime}]
               [(csv/format-duration average-runtime)
                job-name
@@ -217,35 +217,35 @@
                classname
                name]))))
 
-(defn- get-testcases [build-results accept]
+(defn- get-testcases [build-results accept from-timestamp]
   (let [job-names (names-of-jobs-with-tests build-results)]
     (if (= (:mime accept) :json)
-      (http/respond-with-json (zipmap job-names (map #(testcase-runtimes build-results %) job-names)))
+      (http/respond-with-json (zipmap job-names (map #(testcase-runtimes build-results % from-timestamp) job-names)))
       (http/respond-with-csv (csv/export-table
                               ["averageRuntime" "job" "testsuite" "classname" "name"]
-                              (mapcat #(flat-testcase-runtimes build-results %) job-names))))))
+                              (mapcat #(flat-testcase-runtimes build-results % from-timestamp) job-names))))))
 
 ;; testclasses
 
-(defn- testclass-runtimes [build-results job-name]
-  {:children (testsuites/average-testclass-runtime (test-runs build-results job-name))})
+(defn- testclass-runtimes [build-results job-name from-timestamp]
+  {:children (testsuites/average-testclass-runtime (test-runs build-results job-name from-timestamp))})
 
-(defn- flat-testclass-runtimes [build-results job-name]
-  (->> (testsuites/average-testclass-runtime-as-list (test-runs build-results job-name))
+(defn- flat-testclass-runtimes [build-results job-name from-timestamp]
+  (->> (testsuites/average-testclass-runtime-as-list (test-runs build-results job-name from-timestamp))
        (map (fn [{testsuite :testsuite classname :classname average-runtime :averageRuntime}]
               [(csv/format-duration average-runtime)
                job-name
                (serialize-nested-testsuites testsuite)
                classname]))))
 
-(defn- get-testclasses [build-results accept]
+(defn- get-testclasses [build-results accept from-timestamp]
   (let [job-names (names-of-jobs-with-tests build-results)]
     (if (= (:mime accept) :json)
       (http/respond-with-json (zipmap job-names
-                                      (map #(testclass-runtimes build-results %) job-names)))
+                                      (map #(testclass-runtimes build-results % from-timestamp) job-names)))
       (http/respond-with-csv (csv/export-table
                               ["averageRuntime" "job" "testsuite" "classname"]
-                              (mapcat #(flat-testclass-runtimes build-results %) job-names))))))
+                              (mapcat #(flat-testclass-runtimes build-results % from-timestamp) job-names))))))
 
 ;; flaky testcases
 
@@ -280,14 +280,17 @@
                  classname
                  name])))))
 
-(defn get-flaky-testclasses [build-results from]
-  (let [from-timestamp (when from (Long. from))]
-    (http/respond-with-csv (csv/export-table
-                            ["latestFailure" "flakyCount" "job" "latestBuildId" "testsuite" "classname" "name"]
-                            (mapcat #(flat-flaky-testcases build-results % from-timestamp)
-                                    (results/job-names build-results))))))
+(defn- get-flaky-testclasses [build-results from-timestamp]
+  (http/respond-with-csv (csv/export-table
+                          ["latestFailure" "flakyCount" "job" "latestBuildId" "testsuite" "classname" "name"]
+                          (mapcat #(flat-flaky-testcases build-results % from-timestamp)
+                                  (results/job-names build-results)))))
 
 ;; app
+
+(defn- from-timestamp [{from "from"}]
+  (when from
+    (Long. from)))
 
 (defn- app-routes [build-results persist-build! persist-testresults!]
   (compojure/routes
@@ -305,14 +308,14 @@
    (GET "/pipelineruntime.csv" {} (get-pipeline-runtime build-results))
    (GET "/failphases" {accept :accept} (get-fail-phases build-results accept))
    (GET "/failphases.csv" {} (get-fail-phases build-results {:mime :csv}))
-   (GET "/failures" {accept :accept} (get-failures build-results accept))
-   (GET "/failures.csv" {} (get-failures build-results {:mime :csv}))
-   (GET "/testcases" {accept :accept} (get-testcases build-results accept))
-   (GET "/testcases.csv" {} (get-testcases build-results {:mime :csv}))
-   (GET "/testclasses" {accept :accept} (get-testclasses build-results accept))
-   (GET "/testclasses.csv" {} (get-testclasses build-results {:mime :csv}))
-   (GET "/flakytestcases" {{from "from"} :query-params} (get-flaky-testclasses build-results from))
-   (GET "/flakytestcases.csv" {{from "from"} :query-params} (get-flaky-testclasses build-results from))))
+   (GET "/failures" {accept :accept query :query-params} (get-failures build-results accept (from-timestamp query)))
+   (GET "/failures.csv" {query :query-params} (get-failures build-results {:mime :csv} (from-timestamp query)))
+   (GET "/testcases" {accept :accept query :query-params} (get-testcases build-results accept (from-timestamp query)))
+   (GET "/testcases.csv" {query :query-params} (get-testcases build-results {:mime :csv} (from-timestamp query)))
+   (GET "/testclasses" {accept :accept query :query-params} (get-testclasses build-results accept (from-timestamp query)))
+   (GET "/testclasses.csv" {query :query-params} (get-testclasses build-results {:mime :csv} (from-timestamp query)))
+   (GET "/flakytestcases" {query :query-params} (get-flaky-testclasses build-results (from-timestamp query)))
+   (GET "/flakytestcases.csv" {query :query-params} (get-flaky-testclasses build-results (from-timestamp query)))))
 
 (defn create-app [build-results persist-jobs! persist-tests!]
   (-> (app-routes build-results persist-jobs! persist-tests!)

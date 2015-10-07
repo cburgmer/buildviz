@@ -149,6 +149,9 @@
             color = jobColors.colors(jobNames);
 
         return jobNames
+            .filter(function (jobName) {
+                return jobMap[jobName].children.length > 0;
+            })
             .map(function (jobName) {
                 var job = jobMap[jobName],
                     children = job.children;
@@ -162,7 +165,13 @@
             });
     };
 
-    dataSource.load('/testclasses', function (testsuites) {
+    var timestampOneWeekAgo = function () {
+        var today = new Date(),
+            oneWeekAgo = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);
+        return +oneWeekAgo;
+    };
+
+    dataSource.load('/testclasses?from='+ timestampOneWeekAgo(), function (testsuites) {
         var data = {
             name: "Testsuites",
             children: transformTestsuites(testsuites)

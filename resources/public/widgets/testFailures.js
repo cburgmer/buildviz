@@ -91,7 +91,13 @@
             });
     };
 
-    dataSource.load('/failures', function (failures) {
+    var timestampOneWeekAgo = function () {
+        var today = new Date(),
+            oneWeekAgo = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);
+        return +oneWeekAgo;
+    };
+
+    dataSource.load('/failures?from='+ timestampOneWeekAgo(), function (failures) {
         var data = {
             name: "Failures",
             children: transformFailures(failures)
