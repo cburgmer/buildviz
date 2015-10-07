@@ -312,7 +312,7 @@
    (GET "/testclasses" {accept :accept} (get-testclasses build-results accept))
    (GET "/testclasses.csv" {} (get-testclasses build-results {:mime :csv}))
    (GET "/flakytestcases" {{from "from"} :query-params} (get-flaky-testclasses build-results from))
-   (GET "/flakytestcases.csv" {} (get-flaky-testclasses build-results))))
+   (GET "/flakytestcases.csv" {{from "from"} :query-params} (get-flaky-testclasses build-results from))))
 
 (defn create-app [build-results persist-jobs! persist-tests!]
   (-> (app-routes build-results persist-jobs! persist-tests!)
