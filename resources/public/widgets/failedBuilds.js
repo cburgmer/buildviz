@@ -19,7 +19,7 @@
                     ratio = failRatio(pipeline[jobName]);
                 return {
                     name: jobName,
-                    title: jobName + ': ' + failedCount + ' (' + (ratio * 100).toFixed(2) + '%)',
+                    title: jobName + '\n\n' + failedCount + ' failures\n' + (ratio * 100).toFixed(0) + '% of the time',
                     failRatio: ratio,
                     value: failedCount
                 };

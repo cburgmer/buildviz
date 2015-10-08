@@ -19,7 +19,7 @@
                     ratio = flakyRatio(pipeline[jobName]);
                 return {
                     name: jobName,
-                    title: jobName + ': ' + flakyCount + ' (' + (ratio * 100).toFixed(2) + '%)',
+                    title: jobName + '\n\n' + flakyCount + ' flaky failures\n' + (ratio * 100).toFixed(0) + '% of the time',
                     flakyRatio: ratio,
                     value: flakyCount
                 };
