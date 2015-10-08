@@ -11,14 +11,14 @@
              [string :as str]
              [walk :as walk]]
             [compojure.core :as compojure :refer :all]
-            [ring.util.response :as response]
             [ring.middleware
              [accept :as accept]
              [content-type :as content-type]
              [json :as json]
              [not-modified :as not-modified]
              [params :as params]
-             [resource :as resources]]))
+             [resource :as resources]]
+            [ring.util.response :as response]))
 
 (defn- store-build! [build-results job-name build-id build-data]
   (if-some [errors (seq (results/build-data-validation-errors build-data))]
