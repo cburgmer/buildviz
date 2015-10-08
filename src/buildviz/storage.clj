@@ -3,7 +3,7 @@
             [clojure.java.io :as io]
             [clojure.string :as str]))
 
-(defn store-build! [job-name build-id build-data base-dir]
+(defn store-build! [base-dir job-name build-id build-data]
   (let [job-dir (io/file base-dir job-name)]
     (.mkdirs job-dir)
     (let [build-file (io/file job-dir (str/join [build-id ".json"]))]
@@ -36,13 +36,13 @@
                {})))
 
 
-(defn store-testresults! [job-name build-id test-xml base-dir]
+(defn store-testresults! [base-dir job-name build-id test-xml]
   (let [job-dir (io/file base-dir job-name)]
     (.mkdirs job-dir)
     (let [testresults-file (io/file job-dir (str/join [build-id ".xml"]))]
       (spit testresults-file test-xml))))
 
-(defn load-testresults [job-name build-id base-dir]
+(defn load-testresults [base-dir job-name build-id]
   (let [file (io/file base-dir (str/join [job-name "/" build-id ".xml"]))]
     (when (.exists file)
       (slurp file))))

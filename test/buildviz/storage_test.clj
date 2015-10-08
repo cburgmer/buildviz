@@ -13,7 +13,7 @@
 (deftest test-store-build!
   (testing "should persist json"
     (let [data-dir (create-tmp-dir "buildviz-data")]
-      (store-build! "aJob", "aBuild" {:start 42} data-dir)
+      (store-build! data-dir "aJob" "aBuild" {:start 42})
       (is (= "{\"start\":42}"
              (slurp (io/file data-dir "aJob/aBuild.json")))))))
 
@@ -29,7 +29,7 @@
 (deftest test-store-testresults!
   (testing "should persist XML"
     (let [data-dir (create-tmp-dir "buildviz-data")]
-      (store-testresults! "anotherJob" "anotherBuild" "<xml>" data-dir)
+      (store-testresults! data-dir "anotherJob" "anotherBuild" "<xml>")
       (is (= "<xml>"
              (slurp (io/file data-dir "anotherJob/anotherBuild.xml")))))))
 
@@ -40,10 +40,10 @@
       (.mkdirs (.getParentFile testresults-file))
       (spit testresults-file "<thexml>")
       (is (= "<thexml>"
-             (load-testresults "yetAnotherJob" "yetAnotherBuild" data-dir)))))
+             (load-testresults data-dir "yetAnotherJob" "yetAnotherBuild")))))
 
   (testing "handle missing XML"
     (let [data-dir (create-tmp-dir "buildviz-data")]
       (.mkdirs (io/file data-dir))
       (is (= nil
-             (load-testresults "yetAnotherJob" "yetAnotherBuild" data-dir))))))
+             (load-testresults data-dir "yetAnotherJob" "yetAnotherBuild"))))))
