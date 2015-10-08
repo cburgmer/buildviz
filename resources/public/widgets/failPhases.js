@@ -1,7 +1,7 @@
 (function (widget, utils, dataSource) {
     var diameter = 600;
 
-    var margin = {top: 10, right: 0, bottom: 30, left: 30},
+    var margin = {top: 10, right: 0, bottom: 30, left: 35},
         width = diameter - margin.left - margin.right,
         height = diameter - margin.top - margin.bottom;
 
@@ -18,7 +18,20 @@
 
     var yAxis = d3.svg.axis()
             .scale(y)
-            .orient("left");
+            .orient("left")
+            .outerTickSize(0)
+            .tickValues([0, 6, 9, 12, 15, 18])
+            .tickFormat(function (d) {
+                if (d < 12) {
+                    return d + 'am';
+                } else if (d === 12) {
+                    return d + 'pm';
+                } else if (d === 24) {
+                    return '0am';
+                } else {
+                    return (d - 12) + 'pm';
+                }
+            });
 
     var svg = widget.create("Fail phases",
                             "Pipeline failure vs. green phases",
@@ -146,7 +159,8 @@
             .append("text")
             .attr("transform", "rotate(-90)")
             .attr("y", 6)
-            .attr("dy", ".71em")
+            .attr("dy", "-1.5em")
+            .attr("dx", "-1.5em")
             .style("text-anchor", "end")
             .text("Time of the day");
 

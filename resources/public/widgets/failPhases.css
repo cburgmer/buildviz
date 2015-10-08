@@ -5,7 +5,7 @@
     shape-rendering: crispEdges;
 }
 
-.failPhases .x.axis text {
+.failPhases .axis text {
     font-size: 0.6rem;
 }
 .failPhases .x.axis path {

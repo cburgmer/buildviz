@@ -9,7 +9,8 @@
             .range([0, width]);
 
     var y = d3.scale.linear()
-            .range([height, 0]);
+            .range([height, 0])
+            .nice();
 
     var xAxis = d3.svg.axis()
             .scale(x)
@@ -17,8 +18,9 @@
 
     var yAxis = d3.svg.axis()
             .scale(y)
+            .outerTickSize(0)
             .tickFormat(function (d) {
-                return utils.formatTimeInMs(d * 24 * 60 * 60 * 1000);
+                return utils.formatTimeInMs(d * 1000);
             })
             .orient("left");
 
@@ -53,7 +55,7 @@
                     .map(function (d) {
                         return {
                             date: d.date,
-                            runtime: d[jobName] ? new Number(d[jobName]) : undefined
+                            runtime: d[jobName] ? (new Number(d[jobName]) * 24 * 60 * 60) : undefined
                         };
                     }).filter(function (d) {
                         return d.runtime !== undefined;
