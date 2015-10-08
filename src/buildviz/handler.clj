@@ -20,12 +20,11 @@
              [params :as params]
              [resource :as resources]]))
 
-(defn- store-build! [build-results job-name build-id build-data persist!]
+(defn- store-build! [build-results job-name build-id build-data]
   (if-some [errors (seq (results/build-data-validation-errors build-data))]
     {:status 400
      :body errors}
     (do (results/set-build! build-results job-name build-id build-data)
-        (persist! build-results job-name build-id)
         (http/respond-with-json build-data))))
 
 (defn- get-build [build-results job-name build-id]
@@ -36,12 +35,11 @@
 (defn- force-evaluate-junit-xml [content]
   (walk/postwalk identity (junit-xml/parse-testsuites content)))
 
-(defn- store-test-results! [build-results job-name build-id body persist!]
+(defn- store-test-results! [build-results job-name build-id body]
   (let [content (slurp body)]
     (try
       (force-evaluate-junit-xml content)
       (results/set-tests! build-results job-name build-id content)
-      (persist! content job-name build-id)
       {:status 204}
       (catch Exception e
         {:status 400
@@ -296,13 +294,13 @@
   (when from
     (Long. from)))
 
-(defn- app-routes [build-results persist-build! persist-testresults!]
+(defn- app-routes [build-results]
   (compojure/routes
    (GET "/" [] (response/redirect "/index.html"))
 
-   (PUT "/builds/:job/:build" [job build :as {body :body}] (store-build! build-results job build body persist-build!))
+   (PUT "/builds/:job/:build" [job build :as {body :body}] (store-build! build-results job build body))
    (GET "/builds/:job/:build" [job build] (get-build build-results job build))
-   (PUT "/builds/:job/:build/testresults" [job build :as {body :body}] (store-test-results! build-results job build body persist-testresults!))
+   (PUT "/builds/:job/:build/testresults" [job build :as {body :body}] (store-test-results! build-results job build body))
    (GET "/builds/:job/:build/testresults" [job build :as {accept :accept}] (get-test-results build-results job build accept))
 
    (GET "/status" {} (get-status build-results))
@@ -321,8 +319,8 @@
    (GET "/flakytestcases" {query :query-params} (get-flaky-testclasses build-results (from-timestamp query)))
    (GET "/flakytestcases.csv" {query :query-params} (get-flaky-testclasses build-results (from-timestamp query)))))
 
-(defn create-app [build-results persist-jobs! persist-tests!]
-  (-> (app-routes build-results persist-jobs! persist-tests!)
+(defn create-app [build-results]
+  (-> (app-routes build-results)
       params/wrap-params
       json/wrap-json-response
       (json/wrap-json-body {:keywords? true})

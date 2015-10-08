@@ -40,7 +40,7 @@
          (filter (fn [[build-id build]] (<= from (:start build)))))
     builds))
 
-(defrecord BuildResults [builds load-tests]
+(defrecord BuildResults [builds load-tests store-build! store-tests!]
   BuildResultsProtocol
 
   (job-names [_]
@@ -54,6 +54,7 @@
     (get-in @builds [job-name build-id]))
 
   (set-build! [_ job-name build-id build-data]
+    (store-build! job-name build-id build-data)
     (swap! builds assoc-in [job-name build-id] build-data))
 
   ;; TODO find a solution for 'stale' tests with no matching builds
@@ -70,7 +71,7 @@
     (load-tests job-name build-id))
 
   (set-tests! [_ job-name build-id xml]
-    nil))
+    (store-tests! job-name build-id xml)))
 
-(defn build-results [builds load-tests]
-  (BuildResults. (atom builds) load-tests))
+(defn build-results [builds load-tests store-build! store-tests!]
+  (BuildResults. (atom builds) load-tests store-build! store-tests!))

@@ -20,11 +20,12 @@
    (the-app {} {}))
   ([jobs testresults]
    (let [stored-testresults (atom testresults)
-         persist-testresults (fn [xml job-name build-id]
+         persist-testresults (fn [job-name build-id xml]
                                (swap! stored-testresults assoc-in [job-name build-id] xml))]
-     (handler/create-app (build-results jobs (load-tests-from stored-testresults))
-                       dummy-persist
-                       persist-testresults))))
+     (handler/create-app (build-results jobs
+                                        (load-tests-from stored-testresults)
+                                        dummy-persist
+                                        persist-testresults)))))
 
 (def a-timestamp (tc/to-long (t/from-time-zone (t/date-time 1986 10 14 4 3 27 456) (t/default-time-zone))))
 (def a-day (* 24 60 60 1000))
