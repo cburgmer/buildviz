@@ -15,14 +15,14 @@
     opacity: 0.8;
 }
 .failPhases rect.red {
-    fill: red;
+    fill: #B42B2B;
 }
 .failPhases rect.green {
-    fill: green;
+    fill: #2AB228;
 }
 .failPhases rect.weekend.red {
-    fill: darkred;
+    fill: #C95E5E;
 }
 .failPhases rect.weekend.green {
-    fill: darkgreen;
+    fill: #519E55;
 }
