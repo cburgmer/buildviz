@@ -54,7 +54,7 @@
             };
 
             var findDataIdTwins = function (dataId) {
-                return arrayOf(document.querySelectorAll('g[data-id="' + CSS.escape(dataId) + '"]'));
+                return arrayOf(document.querySelectorAll('g[data-id="' + dataId + '"]'));
             };
 
             d3.select('body')
