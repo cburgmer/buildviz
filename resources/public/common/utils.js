@@ -29,7 +29,7 @@ var utils = (function () {
 
             hms.push(minutes);
             hms.push(Math.floor(rawSeconds));
-            return formatHMS(hms) + '.' + padZero(millis, 3);
+            return formatHMS(hms) + '.' + padZero(Math.floor(millis), 3);
         } else {
             if (hours > 0) {
                 hms.push(hours);
