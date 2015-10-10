@@ -65,6 +65,6 @@ Sync existing history (see `--help` for details):
 
 [FAQ](https://github.com/cburgmer/buildviz/wiki)
 
-You might also like [Kuona - Delivery Dashboard Generator](https://github.com/kuona/kuona).
+You might also like [Kuona - Delivery Dashboard Generator](https://github.com/kuona/kuona) or [Test Trend Analyzer](https://github.com/anandbagmar/tta).
 
 Reach out to [@cburgmer](https://twitter.com/cburgmer) for feedback and ideas.
