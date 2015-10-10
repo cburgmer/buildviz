@@ -115,7 +115,7 @@ var zoomableSunburst = function (svg, diameter) {
         };
 
         var parent = svg.append("g")
-                .attr("transform", "translate(" + diameter / 2 + "," + diameter * .52 + ")");
+                .attr("transform", "translate(" + (diameter / 2) + "," + (diameter / 2) + ")");
 
         var g = parent.datum(data).selectAll("g")
                 .data(partition.nodes)
