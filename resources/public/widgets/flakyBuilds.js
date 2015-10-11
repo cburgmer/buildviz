@@ -61,7 +61,13 @@
 
     var color = colorScale(worstFlakyRatio);
 
-    dataSource.load('/jobs', function (root) {
+    var timestampTwoWeeksAgo = function () {
+        var today = new Date(),
+            twoWeeksAgo = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 14);
+        return +twoWeeksAgo;
+    };
+
+    dataSource.load('/jobs?from=' + timestampTwoWeeksAgo(), function (root) {
         if (!Object.keys(root).length) {
             return;
         }
