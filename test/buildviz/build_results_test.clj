@@ -1,7 +1,7 @@
 (ns buildviz.build-results-test
-  (:use clojure.test)
-  (:require [buildviz.build-results :as results]))
-
+  (:require [buildviz.build-results :as results]
+            [clj-time.core :as t]
+            [clojure.test :refer :all]))
 
 (deftest test-build-data-validation-errors
   (testing "should pass on 0 end time"
@@ -17,7 +17,28 @@
 (defn- dummy-store [_ _ _])
 (defn- dummy-load-tests [_ _])
 
+(def a-date-time (t/date-time 1986 10 14 4 3 27 456))
+
 (deftest test-build-results
+  (testing "should return last modified datetime"
+    (let [build-results (results/build-results {} dummy-load-tests dummy-store dummy-store)]
+      (is (t/before? a-date-time
+                     (results/last-modified build-results)))))
+
+  (testing "should update last modified datetime on change"
+    (testing "of builds"
+      (let [build-results (results/build-results a-date-time {} dummy-load-tests dummy-store dummy-store)
+            last-modified (results/last-modified build-results)]
+        (results/set-build! build-results "aJob" "aBuild" {})
+        (is (t/before? last-modified
+                       (results/last-modified build-results)))))
+    (testing "of tests"
+      (let [build-results (results/build-results a-date-time {} dummy-load-tests dummy-store dummy-store)
+            last-modified (results/last-modified build-results)]
+        (results/set-tests! build-results "aJob" "aBuild" "<xml>")
+        (is (t/before? last-modified
+                       (results/last-modified build-results))))))
+
   (testing "should return tests for a build"
     (let [load-tests (fn [job-name build-id]
                        (get-in {"aJob" {"1" "<thexml>"}}

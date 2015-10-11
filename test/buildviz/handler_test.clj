@@ -140,8 +140,9 @@
 
     (let [app (the-app)]
       (some-test-results app "anotherBuild" "2" "<testsuites></testsuites>")
-      (is (= {"Content-Type" "application/xml;charset=UTF-8"}
-             (:headers (get-request app "/builds/anotherBuild/2/testresults")))))
+      (is (= "application/xml;charset=UTF-8"
+             (get (:headers (get-request app "/builds/anotherBuild/2/testresults"))
+                  "Content-Type"))))
 
     (is (= 404
            (:status (get-request (the-app) "/builds/missingJob/1/testresults"))))

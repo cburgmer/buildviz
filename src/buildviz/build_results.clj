@@ -1,5 +1,6 @@
 (ns buildviz.build-results
-  (:require [closchema.core :as schema]))
+  (:require [clj-time.core :as t]
+            [closchema.core :as schema]))
 
 (defn- build-schema [start-value]
   (let [minimum-end (if (some? start-value)
@@ -24,14 +25,16 @@
 
 
 (defprotocol BuildResultsProtocol
-  (job-names  [this])
-  (builds     [this job-name])
-  (build      [this job-name build-id])
-  (set-build! [this job-name build-id build])
+  (last-modified [this])
+
+  (job-names     [this])
+  (builds        [this job-name])
+  (build         [this job-name build-id])
+  (set-build!    [this job-name build-id build])
 
   (chronological-tests [this job-name from])
-  (tests      [this job-name build-id])
-  (set-tests! [this job-name build-id xml]))
+  (tests         [this job-name build-id])
+  (set-tests!    [this job-name build-id xml]))
 
 (defn- builds-starting-from [from builds]
   (if (some? from)
@@ -40,8 +43,14 @@
          (filter (fn [[build-id build]] (<= from (:start build)))))
     builds))
 
-(defrecord BuildResults [builds load-tests store-build! store-tests!]
+(defn update-last-modified [build-results]
+  (swap! (:last-modified-date build-results) (fn [_] (t/now))))
+
+(defrecord BuildResults [last-modified-date builds load-tests store-build! store-tests!]
   BuildResultsProtocol
+
+  (last-modified [_]
+    @last-modified-date)
 
   (job-names [_]
     (keys @builds))
@@ -53,9 +62,10 @@
   (build [_ job-name build-id]
     (get-in @builds [job-name build-id]))
 
-  (set-build! [_ job-name build-id build-data]
+  (set-build! [this job-name build-id build-data]
     (store-build! job-name build-id build-data)
-    (swap! builds assoc-in [job-name build-id] build-data))
+    (swap! builds assoc-in [job-name build-id] build-data)
+    (update-last-modified this))
 
   ;; TODO find a solution for 'stale' tests with no matching builds
   (chronological-tests [this job-name from]
@@ -70,8 +80,17 @@
   (tests [_ job-name build-id]
     (load-tests job-name build-id))
 
-  (set-tests! [_ job-name build-id xml]
-    (store-tests! job-name build-id xml)))
+  (set-tests! [this job-name build-id xml]
+    (store-tests! job-name build-id xml)
+    (update-last-modified this)))
 
-(defn build-results [builds load-tests store-build! store-tests!]
-  (BuildResults. (atom builds) load-tests store-build! store-tests!))
+(defn build-results
+  ([builds load-tests store-build! store-tests!]
+   (build-results (t/now) builds load-tests store-build! store-tests!))
+
+  ([last-modified builds load-tests store-build! store-tests!]
+   (BuildResults. (atom last-modified)
+                  (atom builds)
+                  load-tests
+                  store-build!
+                  store-tests!)))

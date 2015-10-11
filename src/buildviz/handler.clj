@@ -319,14 +319,19 @@
    (GET "/flakytestcases" {query :query-params} (get-flaky-testclasses build-results (from-timestamp query)))
    (GET "/flakytestcases.csv" {query :query-params} (get-flaky-testclasses build-results (from-timestamp query)))))
 
+(defn wrap-build-results-not-modified [handler build-results]
+  (fn [request]
+    (http/not-modified-request handler (results/last-modified build-results) request)))
+
 (defn create-app [build-results]
   (-> (app-routes build-results)
+      (wrap-build-results-not-modified build-results)
       params/wrap-params
       json/wrap-json-response
       (json/wrap-json-body {:keywords? true})
       (accept/wrap-accept {:mime ["application/json" :as :json,
-                           "application/xml" "text/xml" :as :xml
-                           "text/plain" :as :plain]})
+                                  "application/xml" "text/xml" :as :xml
+                                  "text/plain" :as :plain]})
       (resources/wrap-resource "public")
       content-type/wrap-content-type
       not-modified/wrap-not-modified))
