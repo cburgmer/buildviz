@@ -1,10 +1,10 @@
-(function (widget, zoomableSunburst, dataSource, utils) {
+(function (widget, zoomableSunburst, dataSource, jobColors, utils) {
     var diameter = 600,
         testCountPerJob = 5;
 
     var svg = widget.create("Slowest tests",
                             "Color: job/test suite, arc size: test runtime",
-                           "/testcases.csv")
+                            "/testcases.csv")
             .svg(diameter);
 
     var graph = zoomableSunburst(svg, diameter);
@@ -120,6 +120,9 @@
     };
 
     var transformTestCases = function (jobMap) {
+        var jobNames = Object.keys(jobMap),
+            color = jobColors.colors(jobNames);
+
         return Object.keys(jobMap)
             .map(function (jobName) {
                 var job = jobMap[jobName],
@@ -127,7 +130,8 @@
 
                 return {
                     name: jobName,
-                    title: jobName,
+                    color: color(jobName),
+                    id: 'jobname-' + jobName,
                     children: children.map(transformNode)
                 };
             });
@@ -147,4 +151,4 @@
 
         graph.render(data);
     });
-}(widget, zoomableSunburst, dataSource, utils));
+}(widget, zoomableSunburst, dataSource, jobColors, utils));

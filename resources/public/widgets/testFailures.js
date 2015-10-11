@@ -1,4 +1,4 @@
-(function (widget, zoomableSunburst, dataSource) {
+(function (widget, zoomableSunburst, dataSource, jobColors) {
     // Following http://bl.ocks.org/metmajer/5480307
     var diameter = 600,
         testCountPerJob = 5;
@@ -122,6 +122,9 @@
     };
 
     var transformFailures = function (failureMap) {
+        var jobNames = Object.keys(failureMap),
+            color = jobColors.colors(jobNames);
+
         return Object.keys(failureMap)
             .filter(function (jobName) {
                 var job = failureMap[jobName];
@@ -133,8 +136,8 @@
 
                 return {
                     name: jobName,
-                    size: job.failedCount,
-                    title: jobName + ' (' + job.failedCount + ')',
+                    color: color(jobName),
+                    id: 'jobname-' + jobName,
                     children: children.map(transformNode)
                 };
             });
@@ -154,4 +157,4 @@
 
         graph.render(data);
     });
-}(widget, zoomableSunburst, dataSource));
+}(widget, zoomableSunburst, dataSource, jobColors));

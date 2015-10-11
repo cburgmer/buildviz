@@ -1,5 +1,8 @@
 var zoomableSunburst = function (svg, diameter) {
     // Following http://bl.ocks.org/metmajer/5480307
+
+    svg.attr('class', 'zoomableSunburst');
+
     var radius = diameter / 2,
         color = d3.scale.category20c();
 
