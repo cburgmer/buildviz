@@ -86,16 +86,16 @@
   (if-some [builds (seq (jobinfo/builds-with-outcome build-data-entries))]
     {:flakyCount (jobinfo/flaky-build-count builds)}))
 
-(defn- summary-for [build-results job-name]
-  (let [build-data-entries (results/builds build-results job-name)]
+(defn- summary-for [build-results job-name from-timestamp]
+  (let [build-data-entries (results/builds build-results job-name from-timestamp)]
     (merge (average-runtime-for build-data-entries)
            (total-count-for build-data-entries)
            (failed-count-for build-data-entries)
            (flaky-count-for build-data-entries))))
 
-(defn- get-jobs [build-results accept]
+(defn- get-jobs [build-results accept from-timestamp]
   (let [job-names (results/job-names build-results)
-        build-summaries (map #(summary-for build-results %) job-names)
+        build-summaries (map #(summary-for build-results % from-timestamp) job-names)
         build-summary (zipmap job-names build-summaries)]
     (if (= (:mime accept) :json)
       (http/respond-with-json build-summary)
@@ -304,8 +304,8 @@
    (GET "/builds/:job/:build/testresults" [job build :as {accept :accept}] (get-test-results build-results job build accept))
 
    (GET "/status" {} (get-status build-results))
-   (GET "/jobs" {accept :accept} (get-jobs build-results accept))
-   (GET "/jobs.csv" {} (get-jobs build-results {:mime :csv}))
+   (GET "/jobs" {accept :accept query :query-params} (get-jobs build-results accept (from-timestamp query)))
+   (GET "/jobs.csv" {query :query-params} (get-jobs build-results {:mime :csv} (from-timestamp query)))
    (GET "/pipelineruntime" {} (get-pipeline-runtime build-results))
    (GET "/pipelineruntime.csv" {} (get-pipeline-runtime build-results))
    (GET "/failphases" {accept :accept} (get-fail-phases build-results accept))

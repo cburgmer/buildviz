@@ -28,7 +28,8 @@
   (last-modified [this])
 
   (job-names     [this])
-  (builds        [this job-name])
+  (builds        [this job-name]
+                 [this job-name from])
   (build         [this job-name build-id])
   (set-build!    [this job-name build-id build])
 
@@ -55,9 +56,15 @@
   (job-names [_]
     (keys @builds))
 
-  (builds [_ job-name]
+  (builds [this job-name]
     (when-some [builds (get @builds job-name)]
       (vals builds)))
+
+  (builds [this job-name from]
+    (->> job-name
+         (get @(:builds this))
+         (builds-starting-from from)
+         vals))
 
   (build [_ job-name build-id]
     (get-in @builds [job-name build-id]))

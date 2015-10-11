@@ -39,9 +39,13 @@
   (app (-> (request :get url)
            (header :accept "text/plain"))))
 
-(defn json-get-request [app url]
-  (app (-> (request :get url)
-           (header :accept "application/json"))))
+(defn json-get-request
+  ([app url]
+   (json-get-request app url {}))
+  ([app url query-params]
+   (app (-> (request :get url)
+            (query-string query-params)
+            (header :accept "application/json")))))
 
 (defn json-put-request [app url json]
   (app (-> (request :put url)
@@ -245,7 +249,15 @@
       (a-build app "flakyBuild" 2, {:outcome "fail" :inputs [{:source_id 42 :revision "dat_revision"}]})
       (is (= (json-body (json-get-request app "/jobs"))
              {"flakyBuild" {"failedCount" 1 "totalCount" 2 "flakyCount" 1}})))
-    ))
+    )
+
+  (testing "should respect 'from' filter"
+    (let [app (the-app
+               {"aBuild" {"1" {:start 42}
+                          "2" {:start 43}}}
+               {})]
+      (is (= {"aBuild" {"totalCount" 1}}
+             (json-body (json-get-request app "/jobs" {"from" 43})))))))
 
 (deftest PipelineRuntimeSummary
   (testing "GET to /pipelineruntime"
