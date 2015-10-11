@@ -151,7 +151,7 @@
 
     dataSource.load('/failures?from='+ timestampOneWeekAgo(), function (failures) {
         var data = {
-            name: "Failures",
+            name: "Most frequently failing tests",
             children: transformFailures(failures)
         };
 
