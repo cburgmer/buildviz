@@ -13,7 +13,15 @@ var zoomableSunburst = function (svg, diameter) {
             .range([0, radius]);
 
     var partition = d3.layout.partition()
-            .sort(null)
+            .sort(function (a, b) {
+                if (a.name === b.name) {
+                    return 0;
+                } else if (a.name > b.name) {
+                    return 1;
+                } else {
+                    return -1;
+                }
+            })
             .value(function(d) { return d.size; });
 
     var arc = d3.svg.arc()
