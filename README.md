@@ -30,8 +30,8 @@ or run Go.cd in a Vagrant box and sync its job history with buildviz
 
 ## Usage
 
-    $ curl -OL https://github.com/cburgmer/buildviz/releases/download/0.4.0/buildviz-0.4.0-standalone.jar
-    $ java -jar buildviz-0.4.0-standalone.jar
+    $ curl -OL https://github.com/cburgmer/buildviz/releases/download/0.5.0/buildviz-0.5.0-standalone.jar
+    $ java -jar buildviz-0.5.0-standalone.jar
 
 Now, buildviz takes in new build results via `PUT` to `/builds`. Some suggestions how to do the setup:
 
@@ -59,7 +59,7 @@ JUnit XML formatted test results can be `PUT` to `http://localhost:3000/builds/$
 
 Sync existing history (see `--help` for details):
 
-    $ java -cp buildviz-0.4.0-standalone.jar buildviz.go.sync http://$USER:$PW@localhost:8153/go
+    $ java -cp buildviz-0.5.0-standalone.jar buildviz.go.sync http://$USER:$PW@localhost:8153/go
 
 ## More
 
