@@ -42,7 +42,7 @@ LOGGING_PATH="${TMP_DIR}/buildviz.log"
 mkdir -p "$TMP_DIR"
 
 echo "Starting buildviz... (sending stdout to $LOGGING_PATH)"
-BUILDVIZ_DATA_DIR=$TMP_DIR ./lein do deps, ring server-headless $PORT > "$LOGGING_PATH" &
+BUILDVIZ_DATA_DIR=$TMP_DIR BUILDVIZ_PIPELINE_NAME="Go.cd example" ./lein do deps, ring server-headless $PORT > "$LOGGING_PATH" &
 SERVER_PID=$!
 
 # Wait

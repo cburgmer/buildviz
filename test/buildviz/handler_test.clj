@@ -15,6 +15,8 @@
   (fn [job-name build-id]
     (get-in @mock-testresults [job-name build-id])))
 
+(def pipeline-name "Test Pipeline")
+
 (defn the-app
   ([]
    (the-app {} {}))
@@ -25,7 +27,8 @@
      (handler/create-app (build-results jobs
                                         (load-tests-from stored-testresults)
                                         dummy-persist
-                                        persist-testresults)))))
+                                        persist-testresults)
+                         pipeline-name))))
 
 (def a-timestamp (tc/to-long (t/from-time-zone (t/date-time 1986 10 14 4 3 27 456) (t/default-time-zone))))
 (def a-day (* 24 60 60 1000))
@@ -170,21 +173,30 @@
                {"aBuild" {"1" {:start a-timestamp}
                           "2" {:start (+ a-timestamp (* 2 a-day))}}
                 "anotherBuild" {"3" {:start (+ a-timestamp a-day)}}}
-               {})]
-      (is (= (json-body (json-get-request app "/status"))
-             {"totalBuildCount" 3
-              "latestBuildStart" (+ a-timestamp (* 2 a-day))}))))
+               {})
+          body (json-body (json-get-request app "/status"))]
+      (is (= 3
+             (get body "totalBuildCount")))
+      (is (= (+ a-timestamp (* 2 a-day))
+             (get body "latestBuildStart")))))
 
   (testing "should handle a build without a start"
     (let [app (the-app
                {"aBuild" {"1" {}}}
-               {})]
-      (is (= (json-body (json-get-request app "/status"))
-             {"totalBuildCount" 1}))))
+               {})
+          body (json-body (json-get-request app "/status"))]
+      (is (= 1
+             (get body "totalBuildCount")))))
 
   (testing "should handle no builds"
-    (is (= (json-body (json-get-request (the-app) "/status"))
-           {"totalBuildCount" 0}))))
+    (let [body (json-body (json-get-request (the-app) "/status"))]
+      (is (= (get body "totalBuildCount")
+             0))))
+
+  (testing "should expose pipeline name"
+    (let [body (json-body (json-get-request (the-app) "/status"))]
+      (is (= pipeline-name
+             (get body "pipelineName"))))))
 
 (deftest JobsSummary
 

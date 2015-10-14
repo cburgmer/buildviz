@@ -62,12 +62,13 @@
     (assoc response :latestBuildStart (apply max build-starts))
     response))
 
-(defn- get-status [build-results]
+(defn- get-status [build-results pipeline-name]
   (let [all-builds (seq (mapcat #(results/builds build-results %)
                                 (results/job-names build-results)))
         total-build-count (count all-builds)]
     (http/respond-with-json (with-latest-build-start all-builds
-                              {:totalBuildCount total-build-count}))))
+                              {:totalBuildCount total-build-count
+                               :pipelineName pipeline-name}))))
 
 ;; jobs
 
@@ -294,7 +295,7 @@
   (when from
     (Long. from)))
 
-(defn- app-routes [build-results]
+(defn- app-routes [build-results pipeline-name]
   (compojure/routes
    (GET "/" [] (response/redirect "/index.html"))
 
@@ -303,7 +304,7 @@
    (PUT "/builds/:job/:build/testresults" [job build :as {body :body}] (store-test-results! build-results job build body))
    (GET "/builds/:job/:build/testresults" [job build :as {accept :accept}] (get-test-results build-results job build accept))
 
-   (GET "/status" {} (get-status build-results))
+   (GET "/status" {} (get-status build-results pipeline-name))
    (GET "/jobs" {accept :accept query :query-params} (get-jobs build-results accept (from-timestamp query)))
    (GET "/jobs.csv" {query :query-params} (get-jobs build-results {:mime :csv} (from-timestamp query)))
    (GET "/pipelineruntime" {} (get-pipeline-runtime build-results))
@@ -323,8 +324,8 @@
   (fn [request]
     (http/not-modified-request handler (results/last-modified build-results) request)))
 
-(defn create-app [build-results]
-  (-> (app-routes build-results)
+(defn create-app [build-results pipeline-name]
+  (-> (app-routes build-results pipeline-name)
       (wrap-build-results-not-modified build-results)
       params/wrap-params
       json/wrap-json-response
