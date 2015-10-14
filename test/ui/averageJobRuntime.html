@@ -1,0 +1,29 @@
+<!doctype html>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../resources/public/common/base.css">
+<link rel="stylesheet" href="../../resources/public/common/widget.css">
+<link rel="stylesheet" href="../../resources/public/widgets/failPhases.css">
+<script>
+    var dataSource = {
+        load: function (_, callback) {
+            callback({
+                aBuild: {
+                    averageRuntime: 42
+                },
+                "aGroup anotherBuild": {
+                    averageRuntime: 20
+                },
+                "aGroup yetAnotherBuild": {
+                    averageRuntime: 10
+                }
+            });
+        }
+    };
+</script>
+<script src="../../resources/public/node_modules/d3/d3.min.js"></script>
+<script src="../../resources/public/common/widget.js"></script>
+<script src="../../resources/public/common/utils.js"></script>
+<script src="../../resources/public/common/jobColors.js"></script>
+<body>
+    <script src="../../resources/public/widgets/averageJobRuntime.js"></script>
+</body>

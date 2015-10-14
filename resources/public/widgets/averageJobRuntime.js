@@ -52,16 +52,16 @@
     };
 
     dataSource.load('/jobs?from=' + timestampTwoWeeksAgo(), function (root) {
-        var jobNames = Object.keys(root);
+        var jobNames = Object.keys(root),
+            color = jobColors.colors(jobNames),
+            builds = buildHierarchy(buildEntries(root));
 
-        if (!jobNames.length) {
+        if (!builds.length) {
             return;
         }
 
-        var color = jobColors.colors(jobNames);
-
         var node = svg
-                .datum({children: buildHierarchy(buildEntries(root))})
+                .datum({children: builds})
                 .selectAll("g")
                 .data(treemap.nodes)
                 .enter()

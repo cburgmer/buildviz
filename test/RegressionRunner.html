@@ -10,16 +10,33 @@
         window.onload = function() {
             csscritic
                 .addReporter(csscritic.NiceReporter())
-                .component('Runtime by class')
+                .component('Average job runtime')
                 .add({
-                    description: "should render classes correctly",
-                    url: 'ui/runtimeByClass.html',
+                    description: "should render jobs correctly",
+                    url: 'ui/averageJobRuntime.html',
                     width: 400
                 })
                 .add({
                     description: "should show 'no data'",
-                    url: 'ui/runtimeByClassEmpty.html',
+                    url: 'ui/averageJobRuntimeEmpty.html',
+                    width: 300
+                })
+                .add({
+                    description: "should show description",
+                    url: 'ui/averageJobRuntimeEmpty.html',
+                    hover: '.description',
                     width: 400
+                })
+                .component('Average test runtime')
+                .add({
+                    description: "should render classes correctly",
+                    url: 'ui/averageTestRuntime.html',
+                    width: 300
+                })
+                .add({
+                    description: "should show 'no data'",
+                    url: 'ui/averageTestRuntimeEmpty.html',
+                    width: 300
                 })
                 .execute();
         };
