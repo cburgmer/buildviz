@@ -40,7 +40,7 @@
     };
 
     var svg = widget.create("Top " + jobCount + " flaky builds",
-                            "Color: Flaky Ratio, Diameter: Flaky Count",
+                            "<h3>Where are implicit dependencies not made obvious? Which jobs will probably be trusted the least?</h3><i>Color: flaky ratio, diameter: flaky count</i>",
                            "/jobs.csv")
             .svg(diameter);
 

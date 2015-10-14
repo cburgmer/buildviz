@@ -34,7 +34,7 @@
             });
 
     var svg = widget.create("Fail phases",
-                            "Pipeline failure vs. green phases",
+                            "<h3>What is the general health of the build system? How much are we stopping the pipeline? How quickly can we resume the pipeline after failure?</h3><i>Color: healthy/broken state, length: duration of phase<i>",
                            "/failphases.csv")
             .svg(diameter)
             .attr('class', 'failPhases');

@@ -34,7 +34,7 @@
     };
 
     var svg = widget.create("Average job runtime",
-                            "Color: jobGroup, Diameter: avg. Runtime",
+                            "<h3>Where is most of the time spent?</h3><i>Size: average runtime, color: job (similar colors for job group)</i>",
                             "/jobs.csv")
             .svg(diameter)
             .attr('class', 'averageJobRuntime');

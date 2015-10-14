@@ -1,5 +1,8 @@
+.widget header {
+    margin-top: 5px;
+}
 .widget h1 {
-    margin: 5px 0 0;
+    margin: 0;
     font-weight: normal;
     font-size: 100%;
     letter-spacing: 0.08em;
@@ -37,7 +40,7 @@
 }
 .widget:target {
     position: fixed;
-    width: 100vmin;
+    width: calc(100vmin - 1em - 5px); /* Substract header size to receive perfectly square box */
     height: 100vmin;
     top: 0;
     left: 0;
@@ -57,6 +60,37 @@
     background-color: white;
     z-index: -1;
 }
+
+.widget .description {
+    float: right;
+    position: relative;
+    padding: 2px 2px 0;
+}
+.widget .description section {
+    display: none;
+    position: absolute;
+    top: 15px;
+    right: 0;
+
+    text-align: right;
+    background: #eee;
+    padding: 5px 10px 15px;
+    font-size: 80%;
+    width: 30%;
+    min-width: 300px;
+    word-wrap: break-word;
+    border-radius: 2px 0px 2px 2px;
+}
+
+.widget .description:hover {
+    background: #eee;
+    border-radius: 2px 2px 0px 0px;
+}
+.widget .description:hover section,
+.widget .description section:hover {
+    display: block;
+}
+
 .widget .nodata {
     display: none;
 }

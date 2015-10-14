@@ -19,7 +19,7 @@
     };
 
     var svg = widget.create("Flaky tests",
-                            "Color: Age of last flakyness, Diameter: Flaky count",
+                            "<h3>Which tests provide questionable value and will probably be trusted the least?</h3><i>Color: flaky ratio, diameter: flaky count</i>",
                            "/flakytestcases.csv")
             .svg(diameter);
 

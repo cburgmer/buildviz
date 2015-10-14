@@ -2,7 +2,7 @@
     var diameter = 600;
 
     var svg = widget.create("Average test runtime",
-                            "Color: Job/Test Suite, Arc size: duration",
+                            "<h3>Where is the time spent in testing?</h3><i>Color: job/test suite, arc size: duration</i>",
                             "/testclasses.csv")
             .svg(diameter);
 

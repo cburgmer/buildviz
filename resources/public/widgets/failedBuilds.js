@@ -40,7 +40,7 @@
     };
 
     var svg = widget.create("Top 5 failed builds",
-                            "Color: Failure Ratio, Diameter: Number of Failures",
+                            "<h3>What needs most manual intervention? Where are the biggest quality issues? Where do we receive either not so valuable or actually very valuable feedback?</h3><i>Color: failure ratio, diameter: number of failures</i>",
                             "/jobs.csv")
             .svg(diameter);
 

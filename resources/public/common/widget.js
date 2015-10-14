@@ -43,8 +43,7 @@ var widget = function () {
                 .attr('id', id)
                 .append("a")
                 .attr('class', 'enlarge')
-                .attr("href", '#' + id)
-                .attr('title', description);
+                .attr("href", '#' + id);
 
         var header = widget.append('header');
         header.append("h1")
@@ -54,6 +53,13 @@ var widget = function () {
             .attr("href", csvUrl)
             .attr('class', 'csv')
             .text("CSV");
+
+        header
+            .append('div')
+            .attr('class', 'description')
+            .text('?')
+            .append('section')
+            .html(description);
 
         return {
             svg: function (size) {

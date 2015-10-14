@@ -30,7 +30,7 @@
             .y(function(d) { return y(d.runtime); });
 
     var svg = widget.create("Job runtime",
-                            "Runtime of all jobs",
+                            "<h3>Is the pipeline getting faster? Has a job gotten distinctly slower?</h3><i>Color: job</i>",
                             "/pipelineruntime.csv")
             .svg(diameter)
             .attr('class', 'jobRuntime');
