@@ -1,0 +1,42 @@
+<!doctype html>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../resources/public/common/base.css">
+<link rel="stylesheet" href="../../resources/public/common/widget.css">
+<link rel="stylesheet" href="../../resources/public/widgets/failPhases.css">
+<script>
+    var dataSource = {
+        load: function (_, callback) {
+            callback({
+                aBuild: {
+                    flakyCount: 42,
+                    totalCount: 100
+                },
+                anotherBuild: {
+                    flakyCount: 20,
+                    totalCount: 100
+                },
+                yetAnotherBuild: {
+                    flakyCount: 10,
+                    totalCount: 200
+                },
+                someBuild: {
+                    flakyCount: 3,
+                    totalCount: 20
+                },
+                someOtherBuild: {
+                    flakyCount: 1,
+                    totalCount: 200
+                },
+                yetSomeOtherBuild: {
+                    flakyCount: 3,
+                    totalCount: 30
+                }
+            });
+        }
+    };
+</script>
+<script src="../../resources/public/node_modules/d3/d3.min.js"></script>
+<script src="../../resources/public/common/widget.js"></script>
+<body>
+    <script src="../../resources/public/widgets/flakyBuilds.js"></script>
+</body>

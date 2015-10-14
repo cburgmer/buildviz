@@ -68,14 +68,14 @@
     };
 
     dataSource.load('/jobs?from=' + timestampTwoWeeksAgo(), function (root) {
-        if (!Object.keys(root).length) {
+        var flakyBuilds = flakyBuildsAsBubbles(selectMostFlaky(root, jobCount));
+
+        if (!flakyBuilds.length) {
             return;
         }
 
-        var selectedData = selectMostFlaky(root, jobCount);
-
         var node = svg.selectAll("g")
-                .data(noGrouping(bubble.nodes({children: flakyBuildsAsBubbles(selectedData)})))
+                .data(noGrouping(bubble.nodes({children: flakyBuilds})))
                 .enter()
                 .append("g")
                 .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });;

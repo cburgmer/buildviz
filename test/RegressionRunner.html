@@ -12,31 +12,71 @@
                 .addReporter(csscritic.NiceReporter())
                 .component('Average job runtime')
                 .add({
-                    description: "should render jobs correctly",
+                    desc: "should render jobs correctly",
                     url: 'ui/averageJobRuntime.html',
                     width: 400
                 })
                 .add({
-                    description: "should show 'no data'",
+                    desc: "should show 'no data'",
                     url: 'ui/averageJobRuntimeEmpty.html',
                     width: 300
                 })
                 .add({
-                    description: "should show description",
+                    desc: "should show desc",
                     url: 'ui/averageJobRuntimeEmpty.html',
                     hover: '.description',
                     width: 400
                 })
                 .component('Average test runtime')
                 .add({
-                    description: "should render classes correctly",
+                    desc: "should render classes correctly",
                     url: 'ui/averageTestRuntime.html',
                     width: 300
                 })
                 .add({
-                    description: "should show 'no data'",
+                    desc: "should show 'no data'",
                     url: 'ui/averageTestRuntimeEmpty.html',
                     width: 300
+                })
+                .add({
+                    desc: "should show desc",
+                    url: 'ui/averageTestRuntimeEmpty.html',
+                    hover: '.description',
+                    width: 400
+                })
+                .component('Top 5 failed builds')
+                .add({
+                    desc: "should render builds correctly",
+                    url: 'ui/failedBuilds.html',
+                    width: 400
+                })
+                .add({
+                    desc: "should show 'no data'",
+                    url: 'ui/failedBuildsEmpty.html',
+                    width: 300
+                })
+                .add({
+                    desc: "should show desc",
+                    url: 'ui/failedBuildsEmpty.html',
+                    hover: '.description',
+                    width: 400
+                })
+                .component('Top 5 flaky builds')
+                .add({
+                    desc: "should render builds correctly",
+                    url: 'ui/flakyBuilds.html',
+                    width: 400
+                })
+                .add({
+                    desc: "should show 'no data'",
+                    url: 'ui/flakyBuildsEmpty.html',
+                    width: 300
+                })
+                .add({
+                    desc: "should show desc",
+                    url: 'ui/flakyBuildsEmpty.html',
+                    hover: '.description',
+                    width: 400
                 })
                 .execute();
         };

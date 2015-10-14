@@ -68,14 +68,14 @@
     };
 
     dataSource.load('/jobs?from=' + timestampTwoWeeksAgo(), function (root) {
-        if (!Object.keys(root).length) {
+        var failedBuilds = failedBuildsAsBubbles(selectMostFailed(root, jobCount));
+
+        if (!failedBuilds.length) {
             return;
         }
 
-        var selectedData = selectMostFailed(root, jobCount);
-
         var node = svg.selectAll("g")
-                .data(noGrouping(bubble.nodes({children: failedBuildsAsBubbles(selectedData)})))
+                .data(noGrouping(bubble.nodes({children: failedBuilds})))
                 .enter()
                 .append("g")
                 .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });;

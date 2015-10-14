@@ -1,0 +1,27 @@
+<!doctype html>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../resources/public/common/base.css">
+<link rel="stylesheet" href="../../resources/public/common/widget.css">
+<link rel="stylesheet" href="../../resources/public/widgets/failPhases.css">
+<script>
+    var dataSource = {
+        load: function (_, callback) {
+            callback({
+                aBuild: {
+                    totalCount: 0
+                },
+                "aGroup anotherBuild": {
+                    totalCount: 0
+                },
+                "aGroup yetAnotherBuild": {
+                    totalCount: 0
+                }
+            });
+        }
+    };
+</script>
+<script src="../../resources/public/node_modules/d3/d3.min.js"></script>
+<script src="../../resources/public/common/widget.js"></script>
+<body>
+    <script src="../../resources/public/widgets/failedBuilds.js"></script>
+</body>
