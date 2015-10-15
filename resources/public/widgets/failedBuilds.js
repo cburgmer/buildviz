@@ -1,7 +1,8 @@
-(function (widget, dataSource) {
+(function (widget, dataSource, jobColors) {
     // Roughly following http://bl.ocks.org/mbostock/4063269
     var diameter = 600,
         jobCount = 5,
+        borderWidthInPx = 30,
         worstFailureRatio = 0.25;
 
     var failRatio = function (job) {
@@ -40,7 +41,7 @@
     };
 
     var svg = widget.create("Top 5 failed builds",
-                            "<h3>What needs most manual intervention? Where are the biggest quality issues? Where do we receive either not so valuable or actually very valuable feedback?</h3><i>Color: failure ratio, diameter: number of failures</i>",
+                            "<h3>What needs most manual intervention? Where are the biggest quality issues? Where do we receive either not so valuable or actually very valuable feedback?</h3><i>Border color: failure ratio, inner color: job, diameter: number of failures</i>",
                             "/jobs.csv")
             .svg(diameter);
 
@@ -68,7 +69,9 @@
     };
 
     dataSource.load('/jobs?from=' + timestampTwoWeeksAgo(), function (root) {
-        var failedBuilds = failedBuildsAsBubbles(selectMostFailed(root, jobCount));
+        var jobNames = Object.keys(root),
+            jobColor = jobColors.colors(jobNames),
+            failedBuilds = failedBuildsAsBubbles(selectMostFailed(root, jobCount));
 
         if (!failedBuilds.length) {
             return;
@@ -84,8 +87,12 @@
             .text(function(d) { return d.title; });
 
         node.append("circle")
-            .attr("r", function (d) { return d.r; })
-            .style("fill", function(d) { return color(d.failRatio); });
+            .attr("r", function (d) { return (d.r - borderWidthInPx / 2); })
+            .attr("stroke-width", borderWidthInPx)
+            .style("fill", function (d) {
+                return jobColor(d.name);
+            })
+            .style("stroke", function(d) { return color(d.failRatio); });
 
         node.append("text")
             .style("text-anchor", "middle")
@@ -93,4 +100,4 @@
                 widget.textWithLineBreaks(this, d.name.split(' '));
             });
     });
-}(widget, dataSource));
+}(widget, dataSource, jobColors));

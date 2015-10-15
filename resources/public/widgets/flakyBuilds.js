@@ -1,7 +1,8 @@
-(function (widget, dataSource) {
+(function (widget, dataSource, jobColors) {
     // Roughly following http://bl.ocks.org/mbostock/4063269
     var diameter = 600,
         jobCount = 5,
+        borderWidthInPx = 30,
         worstFlakyRatio = 0.10;
 
     var flakyRatio = function (job) {
@@ -40,7 +41,7 @@
     };
 
     var svg = widget.create("Top " + jobCount + " flaky builds",
-                            "<h3>Where are implicit dependencies not made obvious? Which jobs will probably be trusted the least?</h3><i>Color: flaky ratio, diameter: flaky count</i>",
+                            "<h3>Where are implicit dependencies not made obvious? Which jobs will probably be trusted the least?</h3><i>Border color: flaky ratio, inner color: job, diameter: flaky count</i>",
                            "/jobs.csv")
             .svg(diameter);
 
@@ -68,7 +69,9 @@
     };
 
     dataSource.load('/jobs?from=' + timestampTwoWeeksAgo(), function (root) {
-        var flakyBuilds = flakyBuildsAsBubbles(selectMostFlaky(root, jobCount));
+        var jobNames = Object.keys(root),
+            jobColor = jobColors.colors(jobNames),
+            flakyBuilds = flakyBuildsAsBubbles(selectMostFlaky(root, jobCount));
 
         if (!flakyBuilds.length) {
             return;
@@ -84,8 +87,12 @@
             .text(function(d) { return d.title; });
 
         node.append("circle")
-            .attr("r", function (d) { return d.r; })
-            .style("fill", function(d) { return color(d.flakyRatio); });
+            .attr("r", function (d) { return (d.r - borderWidthInPx / 2); })
+            .attr("stroke-width", borderWidthInPx)
+            .style("fill", function (d) {
+                return jobColor(d.name);
+            })
+            .style("stroke", function(d) { return color(d.flakyRatio); });
 
         node.append("text")
             .style("text-anchor", "middle")
@@ -93,4 +100,4 @@
                 widget.textWithLineBreaks(this, d.name.split(' '));
             });
     });
-}(widget, dataSource));
+}(widget, dataSource, jobColors));
