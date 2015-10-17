@@ -94,6 +94,23 @@
                     hover: '.description',
                     width: 400
                 })
+                .component('Fail phases')
+                .add({
+                    desc: 'should show phases',
+                    url: 'ui/failPhases.html',
+                    width: 400
+                })
+                .add({
+                    desc: "should remain empty on only one starting phase",
+                    url: 'ui/failPhasesOneStarting.html',
+                    width: 400
+                })
+                .add({
+                    desc: "should remain empty on only one starting phase",
+                    hover: '.description',
+                    url: 'ui/failPhasesOneStarting.html',
+                    width: 400
+                })
                 .component('Top 5 flaky builds')
                 .add({
                     desc: "should render builds correctly",

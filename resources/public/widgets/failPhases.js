@@ -58,17 +58,19 @@
     var phasesByDay = function (start, end) {
         var phases = [],
             startDate = new Date(start),
-            endDate = new Date(end),
+            endDate = end ? new Date(end) : undefined,
             endOfCurrentDay = endOfDay(startDate);
 
-        while (endOfCurrentDay < endDate) {
-            phases.push({
-                start: startDate,
-                end: endOfCurrentDay
-            });
+        if (endDate) {
+            while (endOfCurrentDay < endDate) {
+                phases.push({
+                    start: startDate,
+                    end: endOfCurrentDay
+                });
 
-            startDate = new Date(endOfCurrentDay.getTime() + 1);
-            endOfCurrentDay = endOfDay(startDate);
+                startDate = new Date(endOfCurrentDay.getTime() + 1);
+                endOfCurrentDay = endOfDay(startDate);
+            }
         }
 
         phases.push({
@@ -102,14 +104,18 @@
 
             lastEntry = entry;
 
-            return greenPhases.concat(phasesByDay(entry.start, entry.end).map(function (phase) {
+            var redPhases = phasesByDay(entry.start, entry.end).filter(function (phase) {
+                return phase.end !== undefined;
+            }).map(function (phase) {
                 phase.color = 'red';
                 phase.culprits = entry.culprits;
                 phase.duration = entry.end - entry.start;
                 phase.phaseStart = new Date(entry.start);
                 phase.phaseEnd = new Date(entry.end);
                 return phase;
-            }));
+            });
+
+            return greenPhases.concat(redPhases);
         }));
     };
 
@@ -139,11 +145,11 @@
     dataSource.load('/failphases', function (data) {
         widgetInstance.loaded();
 
-        if (!Object.keys(data).length) {
+        var phasesByDay = annotateDateAndTime(calculatePhasesByDay(data));
+
+        if (!phasesByDay.length) {
             return;
         }
-
-        var phasesByDay = annotateDateAndTime(calculatePhasesByDay(data));
 
         x.domain([d3.min(phasesByDay, function(d) { return d.startOfDay; }),
                   d3.max(phasesByDay, function(d) { return d.endOfDay; })]);
