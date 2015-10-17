@@ -24,10 +24,6 @@ Seed dummy data for a quick impression
 
     $ ./examples/runSeedDataExample.sh
 
-or run Go.cd in a Vagrant box and sync its job history with buildviz
-
-    $ ./examples/runGoCdExample.sh
-
 ## Usage
 
     $ curl -OL https://github.com/cburgmer/buildviz/releases/download/0.5.0/buildviz-0.5.0-standalone.jar
