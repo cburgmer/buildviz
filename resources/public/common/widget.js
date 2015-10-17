@@ -1,4 +1,5 @@
 var widget = function () {
+    "use strict";
     var module = {};
 
     module.textWithLineBreaks = function (elem, lines) {
@@ -60,6 +61,9 @@ var widget = function () {
             .text('?')
             .append('section')
             .html(description);
+
+        widget.append('div')
+            .attr('class', 'loader');
 
         widget.classed('loading', true);
 

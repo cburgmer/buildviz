@@ -109,17 +109,18 @@
 }
 
 .widget.loading svg:empty + .nodata {
-    visibility: hidden;
+    display: none;
 }
-.widget.loading .nodata:after {
-    visibility: visible;
+.widget.loading .loader {
+    display: block;
+    position: absolute;
+    top: calc(50% - 20px);
+    left: calc(50% - 20px);
+
     width: 40px;
     height: 40px;
     border-radius: 50%;
     background-color: lightgray;
-
-    content: '';
-    display: block;
 
     -webkit-animation: loading 2.0s infinite ease-in-out;
     animation: loading 2.0s infinite ease-in-out;
