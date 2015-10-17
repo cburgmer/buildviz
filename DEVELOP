@@ -10,7 +10,7 @@ Just a few pointers if you want to make changes to buildviz:
 
 ## UI regression tests
 
-    $ python -m SimpleHTTPServer
+    $ ./test/serve_ui_test.sh
     $ open http://localhost:8000/test/RegressionRunner.html
 
 ## Run gosync locally
