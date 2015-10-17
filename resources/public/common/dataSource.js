@@ -7,5 +7,11 @@ var dataSource = function () {
         });
     };
 
+    module.loadCSV = function (url, callback) {
+        d3.csv(url, function (_, data) {
+            callback(data);
+        });
+    };
+
     return module;
 }();

@@ -1,4 +1,4 @@
-(function (widget, utils, jobColors) {
+(function (widget, utils, jobColors, dataSource) {
     var diameter = 600;
 
     var margin = {top: 10, right: 0, bottom: 30, left: 60},
@@ -37,7 +37,7 @@
             .svg(diameter)
             .attr('class', 'jobRuntime');
 
-    d3.csv('/pipelineruntime', function (_, data) {
+    dataSource.loadCSV('/pipelineruntime', function (data) {
         widgetInstance.loaded();
 
         var jobNames = d3.keys(data[0]).filter(function(key) { return key !== "date"; });
@@ -113,4 +113,4 @@
                 return d.jobName;
             });
     });
-}(widget, utils, jobColors));
+}(widget, utils, jobColors, dataSource));
