@@ -22,9 +22,13 @@
   (let [start (get build-data :start)]
     (schema/report-errors (schema/validate (build-schema start) build-data))))
 
+
+(defn build-with-outcome? [build]
+  (contains? build :outcome))
+
 (defn passed-build? [build]
   (= "pass" (:outcome build)))
 
 (defn failed-build? [build]
-  (and (:outcome build)
+  (and (build-with-outcome? build)
        (not (passed-build? build))))

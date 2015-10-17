@@ -6,7 +6,7 @@
              [format :as tf]]))
 
 (defn builds-with-outcome [build-data-entries]
-  (filter #(contains? % :outcome) build-data-entries))
+  (filter schema/build-with-outcome? build-data-entries))
 
 
 (defn- build-inputs-as-map [build]
