@@ -32,7 +32,7 @@
     var widgetInstance = widget.create("Job runtime",
                                        "<h3>Is the pipeline getting faster? Has a job gotten considerably slower?</h3><i>Color: job</i>",
                                        "/pipelineruntime.csv",
-                                       "provided <code>start</code> and <code>end</code> times for your builds over minimum two consecutive days");
+                                       "provided <code>start</code> and <code>end</code> times for your builds over at least two consecutive days");
     var svg = widgetInstance
             .svg(diameter)
             .attr('class', 'jobRuntime');
@@ -40,13 +40,12 @@
     dataSource.loadCSV('/pipelineruntime', function (data) {
         widgetInstance.loaded();
 
-        var jobNames = d3.keys(data[0]).filter(function(key) { return key !== "date"; });
-
-        if (!jobNames.length) {
+        if (data.length < 2) {
             return;
         }
 
-        var color = jobColors.colors(jobNames);
+        var jobNames = d3.keys(data[0]).filter(function(key) { return key !== "date"; }),
+            color = jobColors.colors(jobNames);
 
         data.forEach(function (d) {
             d.date = new Date(d.date);
