@@ -35,7 +35,8 @@
 
     var widgetInstance = widget.create("Average job runtime",
                                        "<h3>Where is most of the time spent?</h3><i>Size: average runtime, color: job (similar colors for job group)</i>",
-                                       "/jobs.csv");
+                                       "/jobs.csv",
+                                       "provided <code>start</code> and <code>end</code> times for your builds");
 
     var svg = widgetInstance
             .svg(diameter)

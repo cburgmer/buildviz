@@ -15,15 +15,16 @@ var widget = function () {
         });
     };
 
-    var responsiveSvg = function (d3Node, size) {
+    var responsiveSvg = function (d3Node, size, noDataReason) {
         var svg = d3Node
                 .append("svg")
                 .attr("preserveAspectRatio", "xMinYMin meet")
-                .attr("viewBox", "0 0 " + size + " " + size);
+                .attr("viewBox", "0 0 " + size + " " + size),
+            noDataExplanation = noDataReason ? "<p>Recent entries will appear once you've " + noDataReason + "</p>": '';
 
         d3Node.append("p")
             .attr('class', 'nodata')
-            .text("No data");
+            .html("No data" + noDataExplanation);
 
         return svg;
     };
@@ -36,7 +37,7 @@ var widget = function () {
         return id;
     };
 
-    module.create = function (headline, description, csvUrl) {
+    module.create = function (headline, description, csvUrl, noDataExplanation) {
         var id = 'widget_' + uniqueId(),
             widget = d3.select("body")
                 .append("section")
@@ -69,7 +70,7 @@ var widget = function () {
 
         return {
             svg: function (size) {
-                return responsiveSvg(enlargeLink, size);
+                return responsiveSvg(enlargeLink, size, noDataExplanation);
             },
             loaded: function () {
                 widget.classed('loading', false);
