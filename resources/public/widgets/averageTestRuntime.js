@@ -2,8 +2,9 @@
     var diameter = 600;
 
     var widgetInstance = widget.create("Average test runtime",
-                             "<h3>Where is the time spent in testing?</h3><i>Color: job/test suite, arc size: duration</i>",
-                             "/testclasses.csv");
+                                       "<h3>Where is the time spent in testing?</h3><i>Color: job/test suite, arc size: duration</i>",
+                                       "/testclasses.csv",
+                                      "uploaded test results");
     var svg = widgetInstance
             .svg(diameter);
 

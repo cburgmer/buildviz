@@ -3,8 +3,9 @@
         testCountPerJob = 5;
 
     var widgetInstance = widget.create("Slowest tests",
-                             "<h3>What could be the first place to look at to improve test runtime?</h3><i>Color: job/test suite, arc size: test runtime</i>",
-                             "/testcases.csv");
+                                       "<h3>What could be the first place to look at to improve test runtime?</h3><i>Color: job/test suite, arc size: test runtime</i>",
+                                       "/testcases.csv",
+                                       "uploaded test results");
     var svg = widgetInstance
             .svg(diameter);
 

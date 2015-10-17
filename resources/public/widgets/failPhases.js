@@ -34,8 +34,9 @@
             });
 
     var widgetInstance = widget.create("Fail phases",
-                             "<h3>What is the general health of the build system? How much are we stopping the pipeline? How quickly can we resume the pipeline after failure?</h3><i>Color: healthy/broken state, length: duration of phase<i>",
-                             "/failphases.csv");
+                                       "<h3>What is the general health of the build system? How much are we stopping the pipeline? How quickly can we resume the pipeline after failure?</h3><i>Color: healthy/broken state, length: duration of phase<i>",
+                                       "/failphases.csv",
+                                       "provided <code>start</code>, <code>end</code> times and the <code>outcome</code> of your builds");
     var svg = widgetInstance
             .svg(diameter)
             .attr('class', 'failPhases');

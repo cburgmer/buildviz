@@ -4,8 +4,9 @@
         testCountPerJob = 5;
 
     var widgetInstance = widget.create("Most frequently failing tests",
-                             "<h3>What are the tests that provide either the most or the least feedback?</h3><i>Color: job/test suite, arc size: number of test failures</i>",
-                             "/failures.csv");
+                                       "<h3>What are the tests that provide either the most or the least feedback?</h3><i>Color: job/test suite, arc size: number of test failures</i>",
+                                       "/failures.csv",
+                                       "uploaded test results");
     var svg = widgetInstance
             .svg(diameter);
 

@@ -41,8 +41,9 @@
     };
 
     var widgetInstance = widget.create("Top 5 failed builds",
-                             "<h3>What needs most manual intervention? Where are the biggest quality issues? Where do we receive either not so valuable or actually very valuable feedback?</h3><i>Border color: failure ratio, inner color: job, diameter: number of failures</i>",
-                             "/jobs.csv");
+                                       "<h3>What needs most manual intervention? Where are the biggest quality issues? Where do we receive either not so valuable or actually very valuable feedback?</h3><i>Border color: failure ratio, inner color: job, diameter: number of failures</i>",
+                                       "/jobs.csv",
+                                      "provided the <code>outcome</code> of your builds");
     var svg = widgetInstance
             .svg(diameter);
 

@@ -19,8 +19,9 @@
     };
 
     var widgetInstance = widget.create("Flaky tests",
-                             "<h3>Which tests provide questionable value and will probably be trusted the least?</h3><i>Color: flaky ratio, diameter: flaky count</i>",
-                             "/flakytestcases.csv");
+                                       "<h3>Which tests provide questionable value and will probably be trusted the least?</h3><i>Color: flaky ratio, diameter: flaky count</i>",
+                                       "/flakytestcases.csv",
+                                       "provided the <code>outcome</code> and <code>inputs</code> for relevant builds and uploaded test results");
     var svg = widgetInstance
             .svg(diameter);
 

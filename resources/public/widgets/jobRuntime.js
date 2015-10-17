@@ -31,7 +31,8 @@
 
     var widgetInstance = widget.create("Job runtime",
                                        "<h3>Is the pipeline getting faster? Has a job gotten considerably slower?</h3><i>Color: job</i>",
-                                       "/pipelineruntime.csv");
+                                       "/pipelineruntime.csv",
+                                       "provided <code>start</code> and <code>end</code> times for your builds over minimum two consecutive days");
     var svg = widgetInstance
             .svg(diameter)
             .attr('class', 'jobRuntime');
