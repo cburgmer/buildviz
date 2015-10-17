@@ -12,10 +12,14 @@
         .attr('href', 'https://github.com/cburgmer/buildviz')
         .text('buildviz');
 
+    var baseUrl = function () {
+        return window.location.href.replace(new RegExp('/[^/]*([\\?#].*)$'), '');
+    };
+
     var showInitialHelp = function (header) {
         var now = +new Date(),
             aMinuteAgo = now - 61234,
-            serverUrl = window.location.href.replace(new RegExp('/[^/]*$'), ''),
+            serverUrl = baseUrl(),
             commands = ['echo \'{"start":' + aMinuteAgo + ',"end":' + now + ',"outcome":"fail"}\' \\\n  | curl -X PUT -H "Content-type: application/json" -d@- ' + serverUrl + '/builds/my_job/42',
                         'echo \'<testsuite name="my_suite"><testcase classname="my_class" name="my_test" time="0.42"><failure/></testcase></testsuite>\' \\\n  | curl -X PUT -H "Content-type: text/xml" -d@- ' + serverUrl + '/builds/my_job/42/testresults'];
 
