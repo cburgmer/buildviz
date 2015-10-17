@@ -37,6 +37,14 @@
             .svg(diameter)
             .attr('class', 'jobRuntime');
 
+    var saneDayTicks = function (axis, scale) {
+        var dayCount = (x.domain()[1] - x.domain()[0]) / (24 * 60 * 60 * 1000);
+        if (dayCount < 10) {
+            axis.ticks(d3.time.days, 1);
+        }
+        return axis;
+    };
+
     dataSource.loadCSV('/pipelineruntime', function (data) {
         widgetInstance.loaded();
 
@@ -79,7 +87,7 @@
         g.append("g")
             .attr("class", "x axis")
             .attr("transform", "translate(0," + height + ")")
-            .call(xAxis);
+            .call(saneDayTicks(xAxis, x));
 
         g.append("g")
             .attr("class", "y axis")
