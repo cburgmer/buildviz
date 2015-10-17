@@ -10,6 +10,22 @@
         window.onload = function() {
             csscritic
                 .addReporter(csscritic.NiceReporter())
+                .component('Status')
+                .add({
+                    desc: 'should show the header',
+                    url: 'ui/status.html',
+                    width: 600
+                })
+                .add({
+                    desc: 'should show help',
+                    url: 'ui/statusWithHelp.html',
+                    width: 1300
+                })
+                .add({
+                    desc: 'should show pipeline name',
+                    url: 'ui/statusWithPipelineName.html',
+                    width: 600
+                })
                 .component('Widget')
                 .add({
                     desc: 'should show a loading animation',

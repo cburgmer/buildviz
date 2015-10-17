@@ -1,4 +1,4 @@
-(function () {
+(function (dataSource) {
     "use strict";
 
     var statusHeader = d3.select("body")
@@ -26,7 +26,7 @@
             .text(commands.join('\n'));
     };
 
-    d3.json("/status", function (_, status) {
+    dataSource.load("/status", function (status) {
         if (status.pipelineName) {
             pipelineNameSpan.text(status.pipelineName + ' - ');
 
@@ -46,4 +46,4 @@
             showInitialHelp(statusHeader);
         }
     });
-})();
+})(dataSource);
