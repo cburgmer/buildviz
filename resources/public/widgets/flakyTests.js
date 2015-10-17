@@ -18,9 +18,10 @@
         };
     };
 
-    var svg = widget.create("Flaky tests",
-                            "<h3>Which tests provide questionable value and will probably be trusted the least?</h3><i>Color: flaky ratio, diameter: flaky count</i>",
-                           "/flakytestcases.csv")
+    var widgetInstance = widget.create("Flaky tests",
+                             "<h3>Which tests provide questionable value and will probably be trusted the least?</h3><i>Color: flaky ratio, diameter: flaky count</i>",
+                             "/flakytestcases.csv");
+    var svg = widgetInstance
             .svg(diameter);
 
     var bubble = d3.layout.pack()
@@ -62,6 +63,8 @@
     };
 
     d3.csv('/flakytestcases?from='+ timestampTwoWeeksAgo(), function (data) {
+        widgetInstance.loaded();
+
         var flakyTests = data.map(flakyTestsAsBubbles);
 
         if (!flakyTests.length) {

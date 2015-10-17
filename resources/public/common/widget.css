@@ -107,3 +107,36 @@
 .widget svg text {
     font-size: 0.8rem;
 }
+
+.widget.loading svg:empty + .nodata {
+    visibility: hidden;
+}
+.widget.loading .nodata:after {
+    visibility: visible;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: lightgray;
+
+    content: '';
+    display: block;
+
+    -webkit-animation: loading 2.0s infinite ease-in-out;
+    animation: loading 2.0s infinite ease-in-out;
+}
+
+@-webkit-keyframes loading {
+    50% { -webkit-transform: scale(0.2) }
+    0%, 100% { -webkit-transform: scale(1.0) }
+}
+
+@keyframes loading {
+    50% {
+        transform: scale(0.2);
+        -webkit-transform: scale(0.2);
+    }
+    0%, 100% {
+        transform: scale(1.0);
+        -webkit-transform: scale(1.0);
+    }
+}

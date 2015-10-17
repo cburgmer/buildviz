@@ -40,9 +40,10 @@
         return selectedPipeline;
     };
 
-    var svg = widget.create("Top " + jobCount + " flaky builds",
-                            "<h3>Where are implicit dependencies not made obvious? Which jobs will probably be trusted the least?</h3><i>Border color: flaky ratio, inner color: job, diameter: flaky count</i>",
-                           "/jobs.csv")
+    var widgetInstance = widget.create("Top " + jobCount + " flaky builds",
+                             "<h3>Where are implicit dependencies not made obvious? Which jobs will probably be trusted the least?</h3><i>Border color: flaky ratio, inner color: job, diameter: flaky count</i>",
+                             "/jobs.csv");
+    var svg = widgetInstance
             .svg(diameter);
 
     var bubble = d3.layout.pack()
@@ -69,6 +70,8 @@
     };
 
     dataSource.load('/jobs?from=' + timestampTwoWeeksAgo(), function (root) {
+        widgetInstance.loaded();
+
         var jobNames = Object.keys(root),
             jobColor = jobColors.colors(jobNames),
             flakyBuilds = flakyBuildsAsBubbles(selectMostFlaky(root, jobCount));

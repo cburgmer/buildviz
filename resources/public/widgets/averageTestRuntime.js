@@ -1,9 +1,10 @@
 (function (widget, zoomableSunburst, utils, jobColors, dataSource) {
     var diameter = 600;
 
-    var svg = widget.create("Average test runtime",
-                            "<h3>Where is the time spent in testing?</h3><i>Color: job/test suite, arc size: duration</i>",
-                            "/testclasses.csv")
+    var widgetInstance = widget.create("Average test runtime",
+                             "<h3>Where is the time spent in testing?</h3><i>Color: job/test suite, arc size: duration</i>",
+                             "/testclasses.csv");
+    var svg = widgetInstance
             .svg(diameter);
 
     var graph = zoomableSunburst(svg, diameter);
@@ -171,6 +172,8 @@
     };
 
     dataSource.load('/testclasses?from='+ timestampOneWeekAgo(), function (testsuites) {
+        widgetInstance.loaded();
+
         var data = {
             name: "Testsuites",
             children: transformTestsuites(testsuites)

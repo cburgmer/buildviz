@@ -33,9 +33,11 @@
         });
     };
 
-    var svg = widget.create("Average job runtime",
-                            "<h3>Where is most of the time spent?</h3><i>Size: average runtime, color: job (similar colors for job group)</i>",
-                            "/jobs.csv")
+    var widgetInstance = widget.create("Average job runtime",
+                                       "<h3>Where is most of the time spent?</h3><i>Size: average runtime, color: job (similar colors for job group)</i>",
+                                       "/jobs.csv");
+
+    var svg = widgetInstance
             .svg(diameter)
             .attr('class', 'averageJobRuntime');
 
@@ -52,6 +54,8 @@
     };
 
     dataSource.load('/jobs?from=' + timestampTwoWeeksAgo(), function (root) {
+        widgetInstance.loaded();
+
         var jobNames = Object.keys(root),
             color = jobColors.colors(jobNames),
             builds = buildHierarchy(buildEntries(root));

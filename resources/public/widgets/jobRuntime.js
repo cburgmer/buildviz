@@ -29,13 +29,16 @@
             .x(function(d) { return x(d.date); })
             .y(function(d) { return y(d.runtime); });
 
-    var svg = widget.create("Job runtime",
-                            "<h3>Is the pipeline getting faster? Has a job gotten considerably slower?</h3><i>Color: job</i>",
-                            "/pipelineruntime.csv")
+    var widgetInstance = widget.create("Job runtime",
+                                       "<h3>Is the pipeline getting faster? Has a job gotten considerably slower?</h3><i>Color: job</i>",
+                                       "/pipelineruntime.csv");
+    var svg = widgetInstance
             .svg(diameter)
             .attr('class', 'jobRuntime');
 
     d3.csv('/pipelineruntime', function (_, data) {
+        widgetInstance.loaded();
+
         var jobNames = d3.keys(data[0]).filter(function(key) { return key !== "date"; });
 
         if (!jobNames.length) {

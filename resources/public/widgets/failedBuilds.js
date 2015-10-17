@@ -40,9 +40,10 @@
         return selectedPipeline;
     };
 
-    var svg = widget.create("Top 5 failed builds",
-                            "<h3>What needs most manual intervention? Where are the biggest quality issues? Where do we receive either not so valuable or actually very valuable feedback?</h3><i>Border color: failure ratio, inner color: job, diameter: number of failures</i>",
-                            "/jobs.csv")
+    var widgetInstance = widget.create("Top 5 failed builds",
+                             "<h3>What needs most manual intervention? Where are the biggest quality issues? Where do we receive either not so valuable or actually very valuable feedback?</h3><i>Border color: failure ratio, inner color: job, diameter: number of failures</i>",
+                             "/jobs.csv");
+    var svg = widgetInstance
             .svg(diameter);
 
     var bubble = d3.layout.pack()
@@ -69,6 +70,8 @@
     };
 
     dataSource.load('/jobs?from=' + timestampTwoWeeksAgo(), function (root) {
+        widgetInstance.loaded();
+
         var jobNames = Object.keys(root),
             jobColor = jobColors.colors(jobNames),
             failedBuilds = failedBuildsAsBubbles(selectMostFailed(root, jobCount));

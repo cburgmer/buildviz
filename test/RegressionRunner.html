@@ -10,6 +10,12 @@
         window.onload = function() {
             csscritic
                 .addReporter(csscritic.NiceReporter())
+                .component('Widget')
+                .add({
+                    desc: 'should show a loading animation',
+                    url: 'ui/widgetLoading.html',
+                    width: 300
+                })
                 .component('Average job runtime')
                 .add({
                     desc: "should render jobs correctly",

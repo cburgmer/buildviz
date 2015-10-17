@@ -2,9 +2,10 @@
     var diameter = 600,
         testCountPerJob = 5;
 
-    var svg = widget.create("Slowest tests",
-                            "<h3>What could be the first place to look at to improve test runtime?</h3><i>Color: job/test suite, arc size: test runtime</i>",
-                            "/testcases.csv")
+    var widgetInstance = widget.create("Slowest tests",
+                             "<h3>What could be the first place to look at to improve test runtime?</h3><i>Color: job/test suite, arc size: test runtime</i>",
+                             "/testcases.csv");
+    var svg = widgetInstance
             .svg(diameter);
 
     var graph = zoomableSunburst(svg, diameter);
@@ -144,6 +145,8 @@
     };
 
     dataSource.load('/testcases?from='+ timestampOneWeekAgo(), function (testCases) {
+        widgetInstance.loaded();
+
         var data = {
             name: "Tests",
             children: transformTestCases(testCases)

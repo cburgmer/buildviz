@@ -40,12 +40,12 @@ var widget = function () {
             widget = d3.select("body")
                 .append("section")
                 .attr("class", "widget")
-                .attr('id', id)
-                .append("a")
+                .attr('id', id),
+            enlargeLink = widget.append("a")
                 .attr('class', 'enlarge')
                 .attr("href", '#' + id);
 
-        var header = widget.append('header');
+        var header = enlargeLink.append('header');
         header.append("h1")
             .text(headline);
 
@@ -61,9 +61,14 @@ var widget = function () {
             .append('section')
             .html(description);
 
+        widget.classed('loading', true);
+
         return {
             svg: function (size) {
-                return responsiveSvg(widget, size);
+                return responsiveSvg(enlargeLink, size);
+            },
+            loaded: function () {
+                widget.classed('loading', false);
             }
         };
     };
