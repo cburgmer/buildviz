@@ -1,12 +1,14 @@
 (ns buildviz.handler
   (:require [buildviz
-             [build-results :as results]
              [csv :as csv]
              [http :as http]
              [jobinfo :as jobinfo]
              [junit-xml :as junit-xml]
              [pipelineinfo :as pipelineinfo]
              [testsuites :as testsuites]]
+            [buildviz.data
+             [results :as results]
+             [schema :as schema]]
             [clojure
              [string :as str]
              [walk :as walk]]
@@ -21,7 +23,7 @@
             [ring.util.response :as response]))
 
 (defn- store-build! [build-results job-name build-id build-data]
-  (if-some [errors (seq (results/build-data-validation-errors build-data))]
+  (if-some [errors (seq (schema/build-data-validation-errors build-data))]
     {:status 400
      :body errors}
     (do (results/set-build! build-results job-name build-id build-data)

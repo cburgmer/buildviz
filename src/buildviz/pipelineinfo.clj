@@ -1,4 +1,5 @@
-(ns buildviz.pipelineinfo)
+(ns buildviz.pipelineinfo
+  (:require [buildviz.data.schema :as schema]))
 
 (defn- update-ongoing-fail-phase [fail-phases ongoing-fail-phase]
   (conj (pop fail-phases) ongoing-fail-phase))
@@ -27,21 +28,20 @@
                                       :end end))))
 
 (defn- accumulate-fail-phases [fail-phases build]
-  (let [outcome (:outcome build)
-        job (:job build)]
+  (let [job (:job build)]
     (if (or (empty? fail-phases)
             (empty? (:ongoing-culprits (last fail-phases))))
 
-      (if (= outcome "fail")
+      (if (schema/failed-build? build)
         (open-new-fail-phase fail-phases build)
         fail-phases)
 
       (let [ongoing-fail-phase (last fail-phases)]
-        (if (and (= outcome "pass")
+        (if (and (schema/passed-build? build)
                  (contains? (:ongoing-culprits ongoing-fail-phase) job))
           (pop-passing-build-from-fail-phase fail-phases ongoing-fail-phase build)
 
-          (if (= outcome "fail")
+          (if (schema/failed-build? build)
             (add-failing-build-to-fail-phase fail-phases ongoing-fail-phase build)
             fail-phases))))))
 

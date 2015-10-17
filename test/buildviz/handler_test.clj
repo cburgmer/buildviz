@@ -1,13 +1,14 @@
 (ns buildviz.handler-test
-  (:use clojure.test
-        ring.mock.request
-        [buildviz.build-results :only (build-results)]
-        [clojure.string :only (join)])
-  (:require [cheshire.core :as json]
-            [clj-time.core :as t]
-            [clj-time.coerce :as tc]
-            [buildviz.handler :as handler]))
-
+  (:require [buildviz.data.results :refer :all]
+            [buildviz.handler :as handler]
+            [cheshire.core :as json]
+            [clj-time
+             [coerce :as tc]
+             [core :as t]]
+            [clojure
+             [string :refer :all]
+             [test :refer :all]]
+            [ring.mock.request :refer :all]))
 
 (defn dummy-persist [_ _ _])
 

@@ -1,7 +1,9 @@
 (ns buildviz.jobinfo
-  (:require [clj-time.core :as t]
-            [clj-time.format :as tf]
-            [clj-time.coerce :as tc]))
+  (:require [buildviz.data.schema :as schema]
+            [clj-time
+             [coerce :as tc]
+             [core :as t]
+             [format :as tf]]))
 
 (defn builds-with-outcome [build-data-entries]
   (filter #(contains? % :outcome) build-data-entries))
@@ -68,8 +70,5 @@
 
 ;; error count
 
-(defn- failed-build? [build]
-  (= "fail" (:outcome build)))
-
 (defn fail-count [build-data-entries]
-  (count (filter failed-build? build-data-entries)))
+  (count (filter schema/failed-build? build-data-entries)))
