@@ -13,7 +13,7 @@
         .text('buildviz');
 
     var baseUrl = function () {
-        return window.location.href.replace(new RegExp('/[^/]*([\\?#].*)$'), '');
+        return window.location.href.replace(new RegExp('/[^/]*([\\?#].*)?$'), '');
     };
 
     var showInitialHelp = function (header) {
