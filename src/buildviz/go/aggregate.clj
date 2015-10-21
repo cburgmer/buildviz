@@ -36,7 +36,8 @@
 (defn- aggregate-build-times [job-instances]
   (let [start-times (map :start job-instances)
         end-times (map :end job-instances)]
-    (if (empty? (filter nil? end-times))
+    (if (and (empty? (filter nil? end-times))
+             (seq end-times))
       {:start (apply min start-times)
        :end (apply max end-times)}
       {})))

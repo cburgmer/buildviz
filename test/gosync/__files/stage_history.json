@@ -8,6 +8,19 @@
                     "name": "A_Missing_Job",
                     "result": "Passed",
                     "scheduled_date": 1431560352100
+                }
+            ],
+            "pipeline_counter": 39,
+            "result": "Passed"
+        },
+        {
+            "counter": "1",
+            "jobs": [
+                {
+                    "id": 39,
+                    "name": "A_Missing_Job",
+                    "result": "Passed",
+                    "scheduled_date": 1431560352100
                 },
                 {
                     "id": 38,
