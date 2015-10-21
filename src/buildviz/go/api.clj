@@ -61,10 +61,19 @@
                   stage-name :stageName
                   stage-run :stageRun
                   job-name :jobName}]
-  (let [build-properties (get-plain go-url
-                                    "/properties/%s/%s/%s/%s/%s"
-                                    pipeline-name pipeline-run stage-name stage-run job-name)]
-    (parse-build-properties build-properties)))
+  (try
+    (let [build-properties (get-plain go-url
+                                      "/properties/%s/%s/%s/%s/%s"
+                                      pipeline-name pipeline-run stage-name stage-run job-name)]
+      (parse-build-properties build-properties))
+    (catch Exception e
+      ;; Deal with https://github.com/gocd/gocd/issues/1575
+      (if-let [data (ex-data e)]
+        (log/errorf "Unable to read build information for job %s (%s %s %s %s) (status %s): %s"
+                    job-name pipeline-name pipeline-run stage-name stage-run (:status data) (:body data))
+        (log/errorf e
+                    "Unable to read build information for job %s (%s %s %s %s)"
+                    job-name pipeline-name pipeline-run stage-name stage-run)))))
 
 
 ;; /api/stages/%pipeline/%stage/history
