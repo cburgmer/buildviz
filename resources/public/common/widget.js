@@ -37,7 +37,7 @@ var widget = function () {
         return id;
     };
 
-    module.create = function (headline, description, csvUrl, noDataExplanation) {
+    module.create = function (headline, description, csvUrl, noDataExplanation, defaultTimespan, onTimespanSelected) {
         var id = 'widget_' + uniqueId(),
             widget = d3.select("body")
                 .append("section")
@@ -55,6 +55,21 @@ var widget = function () {
             .attr("href", csvUrl)
             .attr('class', 'csv')
             .text("CSV");
+
+        if (defaultTimespan) {
+            header.append("button")
+                .text('all')
+                .on('click', function () {
+                    onTimespanSelected('all');
+                    d3.event.preventDefault();
+                });
+            header.append("button")
+                .text(defaultTimespan)
+                .on('click', function () {
+                    onTimespanSelected(defaultTimespan);
+                    d3.event.preventDefault();
+                });
+        }
 
         header
             .append('div')

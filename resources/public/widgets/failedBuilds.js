@@ -40,13 +40,6 @@
         return selectedPipeline;
     };
 
-    var widgetInstance = widget.create("Top 5 failed builds",
-                                       "<h3>What needs most manual intervention? Where are the biggest quality issues? Where do we receive either not so valuable or actually very valuable feedback?</h3><i>Border color: failure ratio, inner color: job, diameter: number of failures</i>",
-                                       "/jobs.csv",
-                                      "provided the <code>outcome</code> of your builds");
-    var svg = widgetInstance
-            .svg(diameter);
-
     var bubble = d3.layout.pack()
             .sort(null)
             .size([diameter, diameter])
@@ -70,9 +63,7 @@
         return +twoWeeksAgo;
     };
 
-    dataSource.load('/jobs?from=' + timestampTwoWeeksAgo(), function (root) {
-        widgetInstance.loaded();
-
+    var renderData = function (root, svg) {
         var jobNames = Object.keys(root),
             jobColor = jobColors.colors(jobNames),
             failedBuilds = failedBuildsAsBubbles(selectMostFailed(root, jobCount));
@@ -81,27 +72,71 @@
             return;
         }
 
-        var node = svg.selectAll("g")
-                .data(noGrouping(bubble.nodes({children: failedBuilds})))
+        var selection = svg.selectAll("g")
+                .data(noGrouping(bubble.nodes({id: 'pups', children: failedBuilds})),
+                      function(d) { return d.name; });
+
+        selection
+            .exit()
+            .remove();
+
+        var node = selection
                 .enter()
-                .append("g")
-                .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });;
+                .append('g')
+                .attr('id', function (d) {
+                    return d.id;
+                });
 
-        node.append("title")
+        node.append('title')
             .text(function(d) { return d.title; });
-
-        node.append("circle")
-            .attr("r", function (d) { return (d.r - borderWidthInPx / 2); })
+        node.append('circle')
             .attr("stroke-width", borderWidthInPx)
             .style("fill", function (d) {
                 return jobColor(d.name);
-            })
-            .style("stroke", function(d) { return color(d.failRatio); });
-
-        node.append("text")
+            });
+        node.append('text')
             .style("text-anchor", "middle")
             .each(function (d) {
                 widget.textWithLineBreaks(this, d.name.split(' '));
             });
-    });
+
+        selection
+            .transition()
+            .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+
+        selection.select('circle')
+            .transition()
+            .attr("r", function (d) { return (d.r - borderWidthInPx / 2); })
+            .style("stroke", function(d) { return color(d.failRatio); });
+    };
+
+    var load = function (timespan, svg) {
+        var query = '/jobs';
+
+        if (timespan === '2w') {
+            query += '?from=' + timestampTwoWeeksAgo();
+        }
+
+        dataSource.load(query, function (data) {
+            widgetInstance.loaded();
+
+            renderData(data, svg);
+        });
+    };
+
+    var timespanSelected = function (timespan) {
+        load(timespan, svg);
+    };
+
+    var widgetInstance = widget.create("Top 5 failed builds",
+                                       "<h3>What needs most manual intervention? Where are the biggest quality issues? Where do we receive either not so valuable or actually very valuable feedback?</h3><i>Border color: failure ratio, inner color: job, diameter: number of failures</i>",
+                                       "/jobs.csv",
+                                       "provided the <code>outcome</code> of your builds",
+                                       '2w',
+                                       timespanSelected);
+    var svg = widgetInstance
+            .svg(diameter);
+
+    load('2w', svg);
+
 }(widget, dataSource, jobColors));

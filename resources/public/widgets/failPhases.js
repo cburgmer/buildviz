@@ -82,7 +82,7 @@
     };
 
     var flatten = function (listOfLists) {
-        return listOfLists.reduce(function (a, b) { return a.concat(b); });
+        return listOfLists.reduce(function (a, b) { return a.concat(b); }, []);
     };
 
     var calculatePhasesByDay = function (data) {
