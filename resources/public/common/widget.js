@@ -1,4 +1,4 @@
-var widget = function () {
+var widget = function (d3, timespan) {
     "use strict";
     var module = {};
 
@@ -57,18 +57,7 @@ var widget = function () {
             .text("CSV");
 
         if (defaultTimespan) {
-            header.append("button")
-                .text('all')
-                .on('click', function () {
-                    onTimespanSelected('all');
-                    d3.event.preventDefault();
-                });
-            header.append("button")
-                .text(defaultTimespan)
-                .on('click', function () {
-                    onTimespanSelected(defaultTimespan);
-                    d3.event.preventDefault();
-                });
+            header.node().appendChild(timespan.createSelector(defaultTimespan, onTimespanSelected));
         }
 
         header
@@ -94,4 +83,4 @@ var widget = function () {
     };
 
     return module;
-}();
+}(d3, timespan);
