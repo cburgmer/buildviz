@@ -1,7 +1,4 @@
-(function (widget, utils, jobColors, dataSource) {
-    // Roughly following http://bl.ocks.org/mbostock/4063269
-    var diameter = 600;
-
+(function (graphFactory, utils, jobColors, dataSource) {
     var buildEntries = function (pipeline) {
         return Object.keys(pipeline)
             .filter(function (jobName) {
@@ -33,17 +30,8 @@
         });
     };
 
-    var widgetInstance = widget.create("Average job runtime",
-                                       "<h3>Where is most of the time spent?</h3><i>Size: average runtime, color: job (similar colors for job group)</i>",
-                                       "/jobs.csv",
-                                       "provided <code>start</code> and <code>end</code> times for your builds");
-
-    var svg = widgetInstance
-            .svg(diameter)
-            .attr('class', 'averageJobRuntime');
-
     var treemap = d3.layout.treemap()
-            .size([diameter, diameter])
+            .size([graphFactory.size, graphFactory.size])
             .sort(function (a, b) {
                 return a.value - b.value;
             });
@@ -54,9 +42,7 @@
         return +twoWeeksAgo;
     };
 
-    dataSource.load('/jobs?from=' + timestampTwoWeeksAgo(), function (root) {
-        widgetInstance.loaded();
-
+    var renderGraph = function (root, svg) {
         var jobNames = Object.keys(root),
             color = jobColors.colors(jobNames),
             builds = buildHierarchy(buildEntries(root));
@@ -100,8 +86,25 @@
             .style("text-anchor", "middle")
             .each(function (d) {
                 if (!d.children && d.name && d.dx > 90 && d.dy > 50) {
-                    widget.textWithLineBreaks(this, d.name.split(' '));
+                    graphFactory.textWithLineBreaks(this, d.name.split(' '));
                 }
             });
+    };
+
+    var graph = graphFactory.create({
+        id: 'averageJobRuntime',
+        headline: "Average job runtime",
+        description: "<h3>Where is most of the time spent?</h3><i>Size: average runtime, color: job (similar colors for job group)</i>",
+        csvUrl: "/jobs.csv",
+        noDataReason: "provided <code>start</code> and <code>end</code> times for your builds"
     });
-}(widget, utils, jobColors, dataSource));
+
+    graph.loading();
+
+    dataSource.load('/jobs?from=' + timestampTwoWeeksAgo(), function (data) {
+        graph.loaded();
+
+        renderGraph(data, graph.svg);
+    });
+
+}(graphFactory, utils, jobColors, dataSource));

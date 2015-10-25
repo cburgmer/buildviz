@@ -1,9 +1,7 @@
-(function (widget, utils, dataSource) {
-    var diameter = 600;
-
+(function (graphFactory, utils, dataSource) {
     var margin = {top: 10, right: 0, bottom: 30, left: 35},
-        width = diameter - margin.left - margin.right,
-        height = diameter - margin.top - margin.bottom;
+        width = graphFactory.size - margin.left - margin.right,
+        height = graphFactory.size - margin.top - margin.bottom;
 
     var x = d3.time.scale()
             .range([0, width]);
@@ -32,14 +30,6 @@
                     return (d - 12) + 'pm';
                 }
             });
-
-    var widgetInstance = widget.create("Fail phases",
-                                       "<h3>What is the general health of the build system? How much are we stopping the pipeline? How quickly can we resume the pipeline after failure?</h3><i>Color: healthy/broken state, length: duration of phase<i>",
-                                       "/failphases.csv",
-                                       "provided <code>start</code>, <code>end</code> times and the <code>outcome</code> of your builds");
-    var svg = widgetInstance
-            .svg(diameter)
-            .attr('class', 'failPhases');
 
     var timeOfDay = function (date) {
         return (date.getTime() - (date.getTimezoneOffset() * 60 * 1000)) % (24 * 60 * 60 * 1000) / (60 * 60 * 1000);
@@ -150,9 +140,7 @@
         return axis;
     };
 
-    dataSource.load('/failphases', function (data) {
-        widgetInstance.loaded();
-
+    var renderData = function (data, svg) {
         var phasesByDay = annotateDateAndTime(calculatePhasesByDay(data));
 
         if (!phasesByDay.length) {
@@ -190,7 +178,7 @@
                 return x(startOfDay(d.start));
             })
             .attr('width', function (d) {
-              return x(d.endOfDay) - x(d.startOfDay);
+                return x(d.endOfDay) - x(d.startOfDay);
             })
             .attr('y', function (d) {
                 return y(d.endTime);
@@ -223,5 +211,21 @@
                 }
                 return lines.join('\n');
             });
+    };
+
+    var graph = graphFactory.create({
+        id: 'failPhases',
+        headline: "Fail phases",
+        description: "<h3>What is the general health of the build system? How much are we stopping the pipeline? How quickly can we resume the pipeline after failure?</h3><i>Color: healthy/broken state, length: duration of phase<i>",
+        csvUrl: "/failphases.csv",
+        noDataReason: "provided <code>start</code>, <code>end</code> times and the <code>outcome</code> of your builds"
     });
-}(widget, utils, dataSource));
+
+    graph.loading();
+
+    dataSource.load('/failphases', function (data) {
+        graph.loaded();
+
+        renderData(data, graph.svg);
+    });
+}(graphFactory, utils, dataSource));

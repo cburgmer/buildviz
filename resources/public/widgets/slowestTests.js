@@ -1,15 +1,5 @@
-(function (widget, zoomableSunburst, dataSource, jobColors, utils) {
-    var diameter = 600,
-        testCountPerJob = 5;
-
-    var widgetInstance = widget.create("Slowest tests",
-                                       "<h3>What could be the first place to look at to improve test runtime?</h3><i>Color: job/test suite, arc size: test runtime</i>",
-                                       "/testcases.csv",
-                                       "uploaded test results");
-    var svg = widgetInstance
-            .svg(diameter);
-
-    var graph = zoomableSunburst(svg, diameter);
+(function (graphFactory, zoomableSunburst, dataSource, jobColors, utils) {
+    var testCountPerJob = 5;
 
     var title = function (entry) {
         return entry.name + ' (' + utils.formatTimeInMs(entry.averageRuntime, {showMillis: true}) + ')';
@@ -145,14 +135,25 @@
         return +oneWeekAgo;
     };
 
+    var graph = graphFactory.create({
+        id: 'slowestTests',
+        headline: "Slowest tests",
+        description: "<h3>What could be the first place to look at to improve test runtime?</h3><i>Color: job/test suite, arc size: test runtime</i>",
+        csvUrl: "/testcases.csv",
+        noDataReason: "uploaded test results"
+    });
+    var sunburst = zoomableSunburst(graph.svg, graphFactory.size);
+
+    graph.loading();
+
     dataSource.load('/testcases?from='+ timestampOneWeekAgo(), function (testCases) {
-        widgetInstance.loaded();
+        graph.loaded();
 
         var data = {
             name: "Tests",
             children: transformTestCases(testCases)
         };
 
-        graph.render(data);
+        sunburst.render(data);
     });
-}(widget, zoomableSunburst, dataSource, jobColors, utils));
+}(graphFactory, zoomableSunburst, dataSource, jobColors, utils));

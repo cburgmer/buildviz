@@ -1,9 +1,7 @@
-(function (widget, utils, jobColors, dataSource) {
-    var diameter = 600;
-
+(function (graphFactory, utils, jobColors, dataSource) {
     var margin = {top: 10, right: 0, bottom: 30, left: 60},
-        width = diameter - margin.left - margin.right,
-        height = diameter - margin.top - margin.bottom;
+        width = graphFactory.size - margin.left - margin.right,
+        height = graphFactory.size - margin.top - margin.bottom;
 
     var x = d3.time.scale()
             .range([0, width]);
@@ -29,14 +27,6 @@
             .x(function(d) { return x(d.date); })
             .y(function(d) { return y(d.runtime); });
 
-    var widgetInstance = widget.create("Job runtime",
-                                       "<h3>Is the pipeline getting faster? Has a job gotten considerably slower?</h3><i>Color: job</i>",
-                                       "/pipelineruntime.csv",
-                                       "provided <code>start</code> and <code>end</code> times for your builds over at least two consecutive days");
-    var svg = widgetInstance
-            .svg(diameter)
-            .attr('class', 'jobRuntime');
-
     var saneDayTicks = function (axis, scale) {
         var dayCount = (x.domain()[1] - x.domain()[0]) / (24 * 60 * 60 * 1000);
         if (dayCount < 10) {
@@ -45,9 +35,7 @@
         return axis;
     };
 
-    dataSource.loadCSV('/pipelineruntime', function (data) {
-        widgetInstance.loaded();
-
+    var renderData = function (data, svg) {
         if (data.length < 2) {
             return;
         }
@@ -119,5 +107,21 @@
             .text(function (d) {
                 return d.jobName;
             });
+    };
+
+    var graph = graphFactory.create({
+        id: 'jobRuntime',
+        headline: "Job runtime",
+        description: "<h3>Is the pipeline getting faster? Has a job gotten considerably slower?</h3><i>Color: job</i>",
+        csvUrl: "/pipelineruntime.csv",
+        noDataReason: "provided <code>start</code> and <code>end</code> times for your builds over at least two consecutive days"
     });
-}(widget, utils, jobColors, dataSource));
+
+    graph.loading();
+
+    dataSource.loadCSV('/pipelineruntime', function (data) {
+        graph.loaded();
+
+        renderData(data, graph.svg);
+    });
+}(graphFactory, utils, jobColors, dataSource));

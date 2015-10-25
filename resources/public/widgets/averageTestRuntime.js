@@ -1,15 +1,4 @@
-(function (widget, zoomableSunburst, utils, jobColors, dataSource) {
-    var diameter = 600;
-
-    var widgetInstance = widget.create("Average test runtime",
-                                       "<h3>Where is the time spent in testing?</h3><i>Color: job/test suite, arc size: duration</i>",
-                                       "/testclasses.csv",
-                                      "uploaded test results");
-    var svg = widgetInstance
-            .svg(diameter);
-
-    var graph = zoomableSunburst(svg, diameter);
-
+(function (graphFactory, zoomableSunburst, utils, jobColors, dataSource) {
     var title = function (entry) {
         return entry.name + ' (' + utils.formatTimeInMs(entry.size, {showMillis: true}) + ')';
     };
@@ -172,14 +161,25 @@
         return +oneWeekAgo;
     };
 
+    var graph = graphFactory.create({
+        id: 'averageTestRuntime',
+        headline: "Average test runtime",
+        description: "<h3>Where is the time spent in testing?</h3><i>Color: job/test suite, arc size: duration</i>",
+        csvUrl: "/testclasses.csv",
+        noDataReason: "uploaded test results"
+    });
+    var sunburst = zoomableSunburst(graph.svg, graphFactory.size);
+
+    graph.loading();
+
     dataSource.load('/testclasses?from='+ timestampOneWeekAgo(), function (testsuites) {
-        widgetInstance.loaded();
+        graph.loaded();
 
         var data = {
             name: "Testsuites",
             children: transformTestsuites(testsuites)
         };
 
-        graph.render(data);
+        sunburst.render(data);
     });
-}(widget, zoomableSunburst, utils, jobColors, dataSource));
+}(graphFactory, zoomableSunburst, utils, jobColors, dataSource));
