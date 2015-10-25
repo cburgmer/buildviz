@@ -1,16 +1,5 @@
-(function (widget, zoomableSunburst, dataSource, jobColors) {
-    // Following http://bl.ocks.org/metmajer/5480307
-    var diameter = 600,
-        testCountPerJob = 5;
-
-    var widgetInstance = widget.create("Most frequently failing tests",
-                                       "<h3>What are the tests that provide either the most or the least feedback?</h3><i>Color: job/test suite, arc size: number of test failures</i>",
-                                       "/failures.csv",
-                                       "uploaded test results");
-    var svg = widgetInstance
-            .svg(diameter);
-
-    var graph = zoomableSunburst(svg, diameter);
+(function (graphFactory, zoomableSunburst, dataSource, jobColors) {
+    var testCountPerJob = 5;
 
     var title = function (entry) {
         var failures = entry.failedCount ? ' (' + entry.failedCount + ')' : '';
@@ -151,14 +140,25 @@
         return +oneWeekAgo;
     };
 
+    var graph = graphFactory.create({
+        id: 'mostFrequentlyFailingTests',
+        headline: "Most frequently failing tests",
+        description: "<h3>What are the tests that provide either the most or the least feedback?</h3><i>Color: job/test suite, arc size: number of test failures</i>",
+        csvUrl: "/failures.csv",
+        noDataReason: "uploaded test results"
+    });
+    var sunburst = zoomableSunburst(graph.svg, graphFactory.size);
+
+    graph.loading();
+
     dataSource.load('/failures?from='+ timestampOneWeekAgo(), function (failures) {
-        widgetInstance.loaded();
+        graph.loaded();
 
         var data = {
             name: "Most frequently failing tests",
             children: transformFailures(failures)
         };
 
-        graph.render(data);
+        sunburst.render(data);
     });
-}(widget, zoomableSunburst, dataSource, jobColors));
+}(graphFactory, zoomableSunburst, dataSource, jobColors));

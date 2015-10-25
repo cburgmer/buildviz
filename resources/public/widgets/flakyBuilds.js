@@ -1,7 +1,5 @@
-(function (widget, dataSource, jobColors) {
-    // Roughly following http://bl.ocks.org/mbostock/4063269
-    var diameter = 600,
-        jobCount = 5,
+(function (graphFactory, dataSource, jobColors) {
+    var jobCount = 5,
         borderWidthInPx = 30,
         worstFlakyRatio = 0.10;
 
@@ -40,16 +38,9 @@
         return selectedPipeline;
     };
 
-    var widgetInstance = widget.create("Top " + jobCount + " flaky builds",
-                                       "<h3>Where are implicit dependencies not made obvious? Which jobs will probably be trusted the least?</h3><i>Border color: flaky ratio, inner color: job, diameter: flaky count</i>",
-                                       "/jobs.csv",
-                                       "provided the <code>outcome</code> and <code>inputs</code> for relevant builds");
-    var svg = widgetInstance
-            .svg(diameter);
-
     var bubble = d3.layout.pack()
             .sort(null)
-            .size([diameter, diameter])
+            .size([graphFactory.size, graphFactory.size])
             .padding(1.5),
         noGrouping = function (bubbleNodes) {
             return bubbleNodes.filter(function(d) { return !d.children; });
@@ -70,9 +61,7 @@
         return +twoWeeksAgo;
     };
 
-    dataSource.load('/jobs?from=' + timestampTwoWeeksAgo(), function (root) {
-        widgetInstance.loaded();
-
+    var renderData = function (root, svg) {
         var jobNames = Object.keys(root),
             jobColor = jobColors.colors(jobNames),
             flakyBuilds = flakyBuildsAsBubbles(selectMostFlaky(root, jobCount));
@@ -101,7 +90,23 @@
         node.append("text")
             .style("text-anchor", "middle")
             .each(function (d) {
-                widget.textWithLineBreaks(this, d.name.split(' '));
+                graphFactory.textWithLineBreaks(this, d.name.split(' '));
             });
+    };
+
+    var graph = graphFactory.create({
+        id: 'flakyBuilds',
+        headline: "Top " + jobCount + " flaky builds",
+        description: "<h3>Where are implicit dependencies not made obvious? Which jobs will probably be trusted the least?</h3><i>Border color: flaky ratio, inner color: job, diameter: flaky count</i>",
+        csvUrl: "/jobs.csv",
+        noDataReason: "provided the <code>outcome</code> and <code>inputs</code> for relevant builds"
     });
-}(widget, dataSource, jobColors));
+
+    graph.loading();
+
+    dataSource.load('/jobs?from=' + timestampTwoWeeksAgo(), function (data) {
+        graph.loaded();
+
+        renderData(data, graph.svg);
+    });
+}(graphFactory, dataSource, jobColors));
