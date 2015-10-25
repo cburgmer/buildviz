@@ -73,8 +73,7 @@
                 .enter()
                 .append('g');
 
-        node.append('title')
-            .text(function(d) { return d.title; });
+        node.append('title');
         node.append('circle')
             .attr("stroke-width", borderWidthInPx)
             .style("fill", function (d) {
@@ -89,6 +88,9 @@
         selection
             .transition()
             .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+
+        selection.select('title')
+            .text(function(d) { return d.title; });
 
         selection.select('circle')
             .transition()
