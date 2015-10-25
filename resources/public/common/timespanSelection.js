@@ -1,21 +1,12 @@
 var timespanSelection = function (d3) {
     var module = {};
 
-    var startOfToday = function () {
-        var today = new Date(),
-            twoWeeksAgo = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
-        return +twoWeeksAgo;
-    };
-
-    var from7DaysAgo = function () {
-        var today = new Date(),
-            twoWeeksAgo = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);
-        return +twoWeeksAgo;
-    };
-    var from2WeeksAgo = function () {
-        var today = new Date(),
-            twoWeeksAgo = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 14);
-        return +twoWeeksAgo;
+    var fromDaysAgo = function (days) {
+        return function () {
+            var today = new Date(),
+                twoWeeksAgo = new Date(today.getFullYear(), today.getMonth(), today.getDate() - days);
+            return +twoWeeksAgo;
+        };
     };
 
     module.timespans = {
@@ -25,15 +16,19 @@ var timespanSelection = function (d3) {
         },
         twoWeeks: {
             label: 'last two weeks',
-            timestamp: from2WeeksAgo
+            timestamp: fromDaysAgo(14)
         },
         sevenDays: {
             label: 'last 7 days',
-            timestamp: from7DaysAgo
+            timestamp: fromDaysAgo(7)
+        },
+        twoDays: {
+            label: 'last 2 days',
+            timestamp: fromDaysAgo(2)
         },
         today: {
             label: 'today',
-            timestamp: startOfToday
+            timestamp: fromDaysAgo(1)
         }
     };
 
