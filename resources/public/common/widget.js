@@ -56,16 +56,16 @@ var widget = function (d3, timespan) {
             .attr('class', 'csv')
             .text("CSV");
 
-        if (defaultTimespan) {
-            header.node().appendChild(timespan.createSelector(defaultTimespan, onTimespanSelected));
-        }
-
         header
             .append('div')
             .attr('class', 'description')
             .text('?')
             .append('section')
             .html(description);
+
+        if (defaultTimespan) {
+            header.node().appendChild(timespan.createSelector(defaultTimespan, onTimespanSelected));
+        }
 
         widget.append('div')
             .attr('class', 'loader');

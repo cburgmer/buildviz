@@ -1,0 +1,51 @@
+.timespan {
+    position: relative;
+}
+
+.timespan .timespanSelection {
+    display: none;
+    position: absolute;
+    top: 15px;
+    right: 0;
+    min-width: 200px;
+
+    background: #eee;
+    color: black;
+    padding: 15px 10px 15px;
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+.timespan:hover {
+    background: #eee;
+}
+
+.timespan:hover .timespanSelection {
+    display: block;
+}
+
+.timespan .timespanList {
+    font-style: normal;
+
+    list-style: none;
+    padding: 0;
+    margin: 5px 0 0;
+}
+
+.timespan .timespanList .item {
+    display: block;
+    padding: 5px 0;
+}
+
+.timespan button {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: block;
+}
+
+.timespan button:hover {
+    text-decoration: underline;
+}

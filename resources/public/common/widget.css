@@ -7,7 +7,7 @@
     font-size: 100%;
     letter-spacing: 0.08em;
 }
-.widget h1, .widget .csv {
+.widget header > * {
     display: inline-block;
 }
 .widget .csv {
@@ -61,6 +61,11 @@
     z-index: -1;
 }
 
+.widget .timespan {
+    margin-right: 10px;
+}
+
+.widget .timespan,
 .widget .description {
     float: right;
     position: relative;

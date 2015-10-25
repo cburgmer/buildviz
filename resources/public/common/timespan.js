@@ -20,19 +20,19 @@ var timespan = function (d3) {
 
     module.timespans = {
         all: {
-            label: 'All',
+            label: 'all',
             timestamp: function () { return 0; }
         },
         twoWeeks: {
-            label: 'Last two weeks',
+            label: 'last two weeks',
             timestamp: from2WeeksAgo
         },
         sevenDays: {
-            label: 'Last 7 days',
+            label: 'last 7 days',
             timestamp: from7DaysAgo
         },
         today: {
-            label: 'Today',
+            label: 'today',
             timestamp: startOfToday
         }
     };
@@ -42,12 +42,24 @@ var timespan = function (d3) {
     };
 
     module.createSelector = function (selectedSpan, onTimespanSelected) {
-        var container = d3.select(document.createElement('div'));
+        var container = d3.select(document.createElement('div'))
+                .attr('class', 'timespan');
+
+        container.append('span')
+            .text(selectedSpan.label);
+
+        var timespanList = container.append('div')
+                .attr('class', 'timespanSelection')
+                .text('Aggregate over data from:')
+                .append('ol')
+                .attr('class', 'timespanList');
 
         Object.keys(module.timespans).forEach(function (spanName) {
             var span = module.timespans[spanName];
 
-            container.append("button")
+            timespanList.append('li')
+                .attr('class', 'item')
+                .append("button")
                 .text(span.label)
                 .on('click', function () {
                     onTimespanSelected(span);
