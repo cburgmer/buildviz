@@ -1,7 +1,18 @@
 var timespan = function (d3) {
     var module = {};
 
-    var timestampTwoWeeksAgo = function () {
+    var startOfToday = function () {
+        var today = new Date(),
+            twoWeeksAgo = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
+        return +twoWeeksAgo;
+    };
+
+    var from7DaysAgo = function () {
+        var today = new Date(),
+            twoWeeksAgo = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);
+        return +twoWeeksAgo;
+    };
+    var from2WeeksAgo = function () {
         var today = new Date(),
             twoWeeksAgo = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 14);
         return +twoWeeksAgo;
@@ -14,7 +25,15 @@ var timespan = function (d3) {
         },
         twoWeeks: {
             label: 'Last two weeks',
-            timestamp: timestampTwoWeeksAgo
+            timestamp: from2WeeksAgo
+        },
+        sevenDays: {
+            label: 'Last 7 days',
+            timestamp: from7DaysAgo
+        },
+        today: {
+            label: 'Today',
+            timestamp: startOfToday
         }
     };
 
