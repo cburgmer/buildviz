@@ -45,7 +45,7 @@ var timespan = function (d3) {
         var container = d3.select(document.createElement('div'))
                 .attr('class', 'timespan');
 
-        container.append('span')
+        var currentlySelected = container.append('span')
             .text(selectedSpan.label);
 
         var timespanList = container.append('div')
@@ -62,6 +62,7 @@ var timespan = function (d3) {
                 .append("button")
                 .text(span.label)
                 .on('click', function () {
+                    currentlySelected.text(span.label);
                     onTimespanSelected(span);
                     d3.event.preventDefault();
                 });
