@@ -1,4 +1,4 @@
-(function (graphFactory, utils, jobColors, dataSource) {
+(function (timespanSelection, graphFactory, utils, jobColors, dataSource) {
     var buildEntries = function (pipeline) {
         return Object.keys(pipeline)
             .filter(function (jobName) {
@@ -36,10 +36,8 @@
                 return a.value - b.value;
             });
 
-    var timestampTwoWeeksAgo = function () {
-        var today = new Date(),
-            twoWeeksAgo = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 14);
-        return +twoWeeksAgo;
+    var skipParentNodes = function (nodes) {
+        return nodes.filter(function(d) { return d.depth > 0 && !d.children; });
     };
 
     var renderGraph = function (root, svg) {
@@ -47,64 +45,82 @@
             color = jobColors.colors(jobNames),
             builds = buildHierarchy(buildEntries(root));
 
-        if (!builds.length) {
-            return;
-        }
-
-        var node = svg
-                .datum({children: builds})
+        var selection = svg
                 .selectAll("g")
-                .data(treemap.nodes)
+                .data(skipParentNodes(treemap.nodes({children: builds})),
+                      function (d) {
+                          return d.name;
+                      });
+
+        selection.exit()
+            .remove();
+
+        var node = selection
                 .enter()
                 .append("g")
-                .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
                 .attr('data-id', function (d) {
-                    if (d.name) {
-                        return 'jobname-' + d.name;
-                    }
+                    return 'jobname-' + d.name;
                 });
 
         node.append('rect')
+            .style('fill', function (d) {
+                return color(d.name);
+            });
+
+        node.append("title");
+
+        node.append("text")
+            .style("text-anchor", "middle");
+
+        selection
+            .transition()
+            .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+
+        selection.select('rect')
+            .transition()
             .attr('width', function (d) {
                 return d.dx;
             })
             .attr('height', function (d) {
                 return d.dy;
-            })
-            .style('fill', function (d) {
-                if (d.name) {
-                    return color(d.name);
-                }
-                return 'transparent';
             });
 
-        node.append("title")
+        selection.select('title')
             .text(function(d) { return d.title; });
 
-        node.append("text")
+        selection.select('text')
+            .selectAll('*')
+            .remove();
+        selection.select('text')
+            .transition()
             .attr("transform", function(d) { return "translate(" + (d.dx / 2) + "," + (d.dy / 2) + ")"; })
-            .style("text-anchor", "middle")
             .each(function (d) {
-                if (!d.children && d.name && d.dx > 90 && d.dy > 50) {
+                if (d.dx > 90 && d.dy > 50) {
                     graphFactory.textWithLineBreaks(this, d.name.split(' '));
                 }
             });
     };
 
-    var graph = graphFactory.create({
-        id: 'averageJobRuntime',
-        headline: "Average job runtime",
-        description: "<h3>Where is most of the time spent?</h3><i>Size: average runtime, color: job (similar colors for job group)</i>",
-        csvUrl: "/jobs.csv",
-        noDataReason: "provided <code>start</code> and <code>end</code> times for your builds"
+    var timespanSelector = timespanSelection.create(timespanSelection.timespans.twoWeeks),
+        graph = graphFactory.create({
+            id: 'averageJobRuntime',
+            headline: "Average job runtime",
+            description: "<h3>Where is most of the time spent?</h3><i>Size: average runtime, color: job (similar colors for job group)</i>",
+            csvUrl: "/jobs.csv",
+            noDataReason: "provided <code>start</code> and <code>end</code> times for your builds",
+            widgets: [timespanSelector.widget]
+        });
+
+    timespanSelector.load(function (selectedTimespan) {
+        var fromTimestamp = timespanSelection.startingFromTimestamp(selectedTimespan);
+
+        graph.loading();
+
+        dataSource.load('/jobs?from=' + fromTimestamp, function (data) {
+            graph.loaded();
+
+            renderGraph(data, graph.svg);
+        });
     });
 
-    graph.loading();
-
-    dataSource.load('/jobs?from=' + timestampTwoWeeksAgo(), function (data) {
-        graph.loaded();
-
-        renderGraph(data, graph.svg);
-    });
-
-}(graphFactory, utils, jobColors, dataSource));
+}(timespanSelection, graphFactory, utils, jobColors, dataSource));
