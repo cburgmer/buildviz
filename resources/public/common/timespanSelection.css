@@ -34,7 +34,7 @@
 
 .timespan .timespanList .item {
     display: block;
-    padding: 5px 0;
+    padding: 5px 0 5px 5px;
 }
 
 .timespan button {
@@ -44,6 +44,8 @@
     font-size: 0.9rem;
     cursor: pointer;
     display: block;
+    text-align: left;
+    width: 100%;
 }
 
 .timespan button:hover {

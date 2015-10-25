@@ -20,7 +20,7 @@ var timespanSelection = function (d3) {
 
     module.timespans = {
         all: {
-            label: 'all',
+            label: 'all time',
             timestamp: function () { return 0; }
         },
         twoWeeks: {
@@ -52,7 +52,7 @@ var timespanSelection = function (d3) {
 
         var timespanList = container.append('div')
                 .attr('class', 'timespanSelection')
-                .text('Aggregate over data from:')
+                .text('Aggregate over data from')
                 .append('ol')
                 .attr('class', 'timespanList');
 
