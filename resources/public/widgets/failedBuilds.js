@@ -45,7 +45,7 @@
             .size([diameter, diameter])
             .padding(1.5),
         noGrouping = function (bubbleNodes) {
-            return bubbleNodes.filter(function(d) { return !d.children; });
+            return bubbleNodes.filter(function(d) { return d.depth > 0; });
         };
 
     var colorScale = function (maxDomain) {
@@ -62,12 +62,8 @@
             jobColor = jobColors.colors(jobNames),
             failedBuilds = failedBuildsAsBubbles(selectMostFailed(root, jobCount));
 
-        if (!failedBuilds.length) {
-            return;
-        }
-
         var selection = svg.selectAll("g")
-                .data(noGrouping(bubble.nodes({id: 'pups', children: failedBuilds})),
+                .data(noGrouping(bubble.nodes({children: failedBuilds})),
                       function(d) { return d.name; });
 
         selection
