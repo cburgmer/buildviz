@@ -1,44 +1,44 @@
-.widget header {
+.graph header {
     margin-top: 5px;
 }
-.widget h1 {
+.graph h1 {
     margin: 0;
     font-weight: normal;
     font-size: 100%;
     letter-spacing: 0.08em;
 }
-.widget header > * {
+.graph header > * {
     display: inline-block;
 }
-.widget .csv {
+.graph .csv {
     margin-left: 1em;
     font-size: 70%;
     text-decoration: underline;
 }
-.widget a {
+.graph a {
     text-decoration: none;
     color: inherit;
 }
-.widget {
+.graph {
     font-size: 1rem;
     box-sizing: border-box;
     padding: 10px;
     position: relative;
     z-index: 0;
 }
-.widget:hover:not(:target) {
+.graph:hover:not(:target) {
     background-color: #f7f7f7;
 }
-.widget .enlarge {
+.graph .enlarge {
     height: 100%;
     display: flex;
     flex-flow: column;
 }
-.widget svg {
+.graph svg {
     flex: 2;
     overflow: auto;
 }
-.widget:target {
+.graph:target {
     position: fixed;
     width: calc(100vmin - 1em - 5px); /* Substract header size to receive perfectly square box */
     height: 100vmin;
@@ -49,7 +49,7 @@
     margin: auto;
     z-index: 1;
 }
-.widget:target::before {
+.graph:target::before {
     content: '';
     position: fixed;
     top: 0;
@@ -61,18 +61,18 @@
     z-index: -1;
 }
 
-.widget .timespan {
+.graph .timespan {
     margin-right: 10px;
 }
 
-.widget .timespan,
-.widget .description {
+.graph .timespan,
+.graph .description {
     float: right;
     position: relative;
     padding: 2px 2px 0;
     color: gray;
 }
-.widget .description section {
+.graph .description section {
     display: none;
     position: absolute;
     top: 18px;
@@ -89,16 +89,16 @@
     border-radius: 2px 0px 2px 2px;
 }
 
-.widget .description:hover {
+.graph .description:hover {
     background: #eee;
     border-radius: 2px 2px 0px 0px;
 }
-.widget .description:hover section,
-.widget .description section:hover {
+.graph .description:hover section,
+.graph .description section:hover {
     display: block;
 }
 
-.widget .nodata {
+.graph .nodata {
     display: none;
     text-align: center;
     position: absolute;
@@ -107,21 +107,21 @@
     transform: translateY(-50%) translateX(-50%);
     color: grey;
 }
-.widget .nodata p {
+.graph .nodata p {
     font-size: 75%;
 }
-.widget svg:empty + .nodata {
+.graph svg:empty + .nodata {
     display: block;
 }
-.widget svg text {
+.graph svg text {
     font-size: 0.8rem;
 }
 
-.widget.loading svg:empty + .nodata {
+.graph.loading svg:empty + .nodata {
     display: none;
 }
 
-.widget.loading .loader {
+.graph.loading .loader {
     display: block;
     position: absolute;
     top: calc(50% - 20px);

@@ -21,7 +21,7 @@ var graphFactory = function (d3) {
         var id = 'graph_' + params.id,
             widget = d3.select("body")
                 .append("section")
-                .attr("class", "widget " + params.id)
+                .attr("class", "graph " + params.id)
                 .attr('id', id),
             enlargeLink = widget.append("a")
                 .attr('class', 'enlarge')
