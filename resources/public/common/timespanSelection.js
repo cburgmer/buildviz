@@ -1,4 +1,4 @@
-var timespan = function (d3) {
+var timespanSelection = function (d3) {
     var module = {};
 
     var startOfToday = function () {
@@ -41,7 +41,9 @@ var timespan = function (d3) {
         return span.timestamp.call();
     };
 
-    module.createSelector = function (selectedSpan, onTimespanSelected) {
+    module.create = function (selectedSpan) {
+        var onTimespanSelected;
+
         var container = d3.select(document.createElement('div'))
                 .attr('class', 'timespan');
 
@@ -68,7 +70,14 @@ var timespan = function (d3) {
                 });
         });
 
-        return container.node();
+        return {
+            widget: container.node(),
+            load: function (onTimespanSelectedFunction) {
+                onTimespanSelected = onTimespanSelectedFunction;
+
+                onTimespanSelected(selectedSpan);
+            }
+        };
     };
 
     return module;

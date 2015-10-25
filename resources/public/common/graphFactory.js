@@ -1,6 +1,8 @@
-var widget = function (d3) {
+var graphFactory = function (d3) {
     "use strict";
     var module = {};
+
+    module.size = 600;
 
     module.textWithLineBreaks = function (elem, lines) {
         var textElem = d3.select(elem),
@@ -15,30 +17,8 @@ var widget = function (d3) {
         });
     };
 
-    var responsiveSvg = function (d3Node, size, noDataReason) {
-        var svg = d3Node
-                .append("svg")
-                .attr("preserveAspectRatio", "xMinYMin meet")
-                .attr("viewBox", "0 0 " + size + " " + size),
-            noDataExplanation = noDataReason ? "<p>Recent entries will appear once you've " + noDataReason + "</p>": '';
-
-        d3Node.append("p")
-            .attr('class', 'nodata')
-            .html("No data" + noDataExplanation);
-
-        return svg;
-    };
-
-    var nextId = 0;
-
-    var uniqueId = function () {
-        var id = nextId;
-        nextId += 1;
-        return id;
-    };
-
-    module.create = function (headline, description, csvUrl, noDataExplanation) {
-        var id = 'widget_' + uniqueId(),
+    module.create = function (params) {
+        var id = 'graph_' + params.id,
             widget = d3.select("body")
                 .append("section")
                 .attr("class", "widget")
@@ -49,10 +29,10 @@ var widget = function (d3) {
 
         var header = enlargeLink.append('header');
         header.append("h1")
-            .text(headline);
+            .text(params.headline);
 
         header.append("a")
-            .attr("href", csvUrl)
+            .attr("href", params.csvUrl)
             .attr('class', 'csv')
             .text("CSV");
 
@@ -61,17 +41,29 @@ var widget = function (d3) {
             .attr('class', 'description')
             .text('?')
             .append('section')
-            .html(description);
+            .html(params.description);
+
+        if (params.widgets) {
+            params.widgets.forEach(function (widget) {
+                header.node().appendChild(widget);
+            }) ;
+        }
 
         widget.append('div')
             .attr('class', 'loader');
 
-        widget.classed('loading', true);
+        var svg = enlargeLink
+                .append("svg")
+                .attr("preserveAspectRatio", "xMinYMin meet")
+                .attr("viewBox", "0 0 " + module.size + " " + module.size),
+            noDataExplanation = params.noDataReason ? "<p>Recent entries will appear once you've " + params.noDataReason + "</p>": '';
+
+        enlargeLink.append("p")
+            .attr('class', 'nodata')
+            .html("No data" + noDataExplanation);
 
         return {
-            svg: function (size) {
-                return responsiveSvg(enlargeLink, size, noDataExplanation);
-            },
+            svg: svg,
             loaded: function () {
                 widget.classed('loading', false);
             },

@@ -1,7 +1,6 @@
-(function (timespan, widget, dataSource, jobColors) {
+(function (timespanSelection, graphFactory, dataSource, jobColors) {
     // Roughly following http://bl.ocks.org/mbostock/4063269
-    var diameter = 600,
-        jobCount = 5,
+    var jobCount = 5,
         borderWidthInPx = 30,
         worstFailureRatio = 0.25;
 
@@ -42,7 +41,7 @@
 
     var bubble = d3.layout.pack()
             .sort(null)
-            .size([diameter, diameter])
+            .size([graphFactory.size, graphFactory.size])
             .padding(1.5),
         noGrouping = function (bubbleNodes) {
             return bubbleNodes.filter(function(d) { return d.depth > 0; });
@@ -84,7 +83,7 @@
         node.append('text')
             .style("text-anchor", "middle")
             .each(function (d) {
-                widget.textWithLineBreaks(this, d.name.split(' '));
+                graphFactory.textWithLineBreaks(this, d.name.split(' '));
             });
 
         selection
@@ -97,32 +96,26 @@
             .style("stroke", function(d) { return color(d.failRatio); });
     };
 
-    var load = function (selectedTimespan, svg) {
-        var fromTimestamp = timespan.startingFromTimestamp(selectedTimespan);
+    var timespanSelector = timespanSelection.create(timespanSelection.timespans.twoWeeks),
+        graph = graphFactory.create({
+            id: 'failedBuilds',
+            headline: "Top 5 failed builds",
+            description: "<h3>What needs most manual intervention? Where are the biggest quality issues? Where do we receive either not so valuable or actually very valuable feedback?</h3><i>Border color: failure ratio, inner color: job, diameter: number of failures</i>",
+            csvUrl: "/jobs.csv",
+            noDataReason: "provided the <code>outcome</code> of your builds",
+            widgets: [timespanSelector.widget]
+        });
 
-        widgetInstance.loading();
+    timespanSelector.load(function (selectedTimespan) {
+        var fromTimestamp = timespanSelection.startingFromTimestamp(selectedTimespan);
+
+        graph.loading();
 
         dataSource.load('/jobs?from=' + fromTimestamp, function (data) {
-            widgetInstance.loaded();
+            graph.loaded();
 
-            renderData(data, svg);
+            renderData(data, graph.svg);
         });
-    };
+    });
 
-    var timespanSelected = function (selectedTimespan) {
-        load(selectedTimespan, svg);
-    };
-
-    var defaultTimespan = timespan.timespans.twoWeeks,
-        widgetInstance = widget.create("Top 5 failed builds",
-                                       "<h3>What needs most manual intervention? Where are the biggest quality issues? Where do we receive either not so valuable or actually very valuable feedback?</h3><i>Border color: failure ratio, inner color: job, diameter: number of failures</i>",
-                                       "/jobs.csv",
-                                       "provided the <code>outcome</code> of your builds",
-                                       defaultTimespan,
-                                       timespanSelected);
-    var svg = widgetInstance
-            .svg(diameter);
-
-    load(defaultTimespan, svg);
-
-}(timespan, widget, dataSource, jobColors));
+}(timespanSelection, graphFactory, dataSource, jobColors));
