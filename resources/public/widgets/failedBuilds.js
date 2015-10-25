@@ -82,10 +82,7 @@
 
         var node = selection
                 .enter()
-                .append('g')
-                .attr('id', function (d) {
-                    return d.id;
-                });
+                .append('g');
 
         node.append('title')
             .text(function(d) { return d.title; });
