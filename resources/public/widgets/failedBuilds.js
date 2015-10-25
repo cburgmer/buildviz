@@ -26,10 +26,14 @@
             });
     };
 
+    var failedCount = function (job) {
+        return job.failedCount || 0;
+    };
+
     var selectMostFailed = function (pipeline, n) {
         var jobNames = Object.keys(pipeline);
         jobNames.sort(function (jobA, jobB) {
-            return pipeline[jobA].failedCount - pipeline[jobB].failedCount;
+            return failedCount(pipeline[jobA]) - failedCount(pipeline[jobB]);
         });
 
         var selectedPipeline = {};

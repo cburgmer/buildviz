@@ -1,0 +1,44 @@
+<!doctype html>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../resources/public/common/base.css">
+<link rel="stylesheet" href="../../resources/public/common/timespanSelection.css">
+<link rel="stylesheet" href="../../resources/public/common/widget.css">
+<script>
+    var dataSource = {
+        load: function (_, callback) {
+            callback({
+                aBuild: {
+                    failedCount: 42,
+                    totalCount: 100
+                },
+                anotherBuild: {
+                    failedCount: 20,
+                    totalCount: 100
+                },
+                yetAnotherBuild: {
+                    failedCount: 10,
+                    totalCount: 200
+                },
+                someBuild: {
+                    totalCount: 0
+                },
+                someOtherBuild: {
+                    failedCount: 1,
+                    totalCount: 200
+                },
+                yetSomeOtherBuild: {
+                    failedCount: 3,
+                    totalCount: 30
+                }
+            });
+        }
+    };
+</script>
+<script src="../../resources/public/node_modules/d3/d3.min.js"></script>
+<script src="../../resources/public/common/timespanSelection.js"></script>
+<script src="../../resources/public/common/graphFactory.js"></script>
+<script src="../../resources/public/common/jobColors.js"></script>
+<body>
+    <script>d3.selection.prototype.transition = function(){ return this }</script>
+    <script src="../../resources/public/widgets/failedBuilds.js"></script>
+</body>
