@@ -1,8 +1,7 @@
-(function (widget, dataSource) {
-    var diameter = 600;
-
+(function (timespanSelection, graphFactory, dataSource) {
     var flakyTestsAsBubbles = function (testCase) {
         return {
+            id: [testCase.job, testCase.classname, testCase.name].join("\\"),
             name: testCase.name,
             title: [testCase.name,
                     testCase.classname,
@@ -18,20 +17,13 @@
         };
     };
 
-    var widgetInstance = widget.create("Flaky tests",
-                                       "<h3>Which tests provide questionable value and will probably be trusted the least?</h3><i>Color: flaky ratio, diameter: flaky count</i>",
-                                       "/flakytestcases.csv",
-                                       "provided the <code>outcome</code> and <code>inputs</code> for relevant builds and uploaded test results");
-    var svg = widgetInstance
-            .svg(diameter);
-
     var bubble = d3.layout.pack()
             .sort(null)
-            .size([diameter, diameter])
+            .size([graphFactory.size, graphFactory.size])
             .padding(1.5);
 
     var noGrouping = function (bubbleNodes) {
-        return bubbleNodes.filter(function(d) { return !d.children; });
+        return bubbleNodes.filter(function(d) { return d.depth > 0; });
     };
 
     var colorScale = function (minDomain, maxDomain) {
@@ -57,41 +49,70 @@
         return displayLines;
     };
 
-    var timestampTwoWeeksAgo = function () {
-        var today = new Date(),
-            twoWeeksAgo = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 14);
-        return +twoWeeksAgo;
-    };
-
-    d3.csv('/flakytestcases?from='+ timestampTwoWeeksAgo(), function (data) {
-        widgetInstance.loaded();
-
+    var renderData = function (data, svg) {
         var flakyTests = data.map(flakyTestsAsBubbles);
-
-        if (!flakyTests.length) {
-            return;
-        }
 
         var color = colorScale(d3.min(flakyTests, function (d) { return d.lastTime; }),
                                Date.now());
 
-        var node = svg.selectAll("g")
-                .data(noGrouping(bubble.nodes({children: flakyTests})))
-                .enter()
-                .append("g")
-                .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+        var selection = svg.selectAll("g")
+                .data(noGrouping(bubble.nodes({children: flakyTests})),
+                      function (d) {
+                          return d.id;
+                      });
 
-        node.append("title")
+        selection.exit()
+            .remove();
+
+        var node = selection
+                .enter()
+                .append("g");
+
+        node.append("title");
+        node.append("circle");
+        node.append("text")
+            .style("text-anchor", "middle");
+
+        selection
+            .transition()
+            .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+
+        selection.select('title')
             .text(function(d) { return d.title; });
 
-        node.append("circle")
+        selection.select("circle")
             .attr("r", function (d) { return d.r; })
             .style("fill", function(d) { return color(d.lastTime); });
 
-        node.append("text")
-            .style("text-anchor", "middle")
+        selection.select('text')
+            .selectAll('*')
+            .remove();
+        selection.select('text')
             .each(function (d) {
-                widget.textWithLineBreaks(this, getReadableTestName(d));
+                graphFactory.textWithLineBreaks(this, getReadableTestName(d));
             });
+    };
+
+    var timespanSelector = timespanSelection.create(timespanSelection.timespans.twoWeeks),
+        graph = graphFactory.create({
+            id: 'flakyTests',
+            headline: "Flaky tests",
+            description: "<h3>Which tests provide questionable value and will probably be trusted the least?</h3><i>Color: flaky ratio, diameter: flaky count</i>",
+            csvUrl: "/flakytestcases.csv",
+            noDataReason: "provided the <code>outcome</code> and <code>inputs</code> for relevant builds and uploaded test results",
+            widgets: [timespanSelector.widget]
+        });
+
+    timespanSelector.load(function (selectedTimespan) {
+        var fromTimestamp = timespanSelection.startingFromTimestamp(selectedTimespan);
+
+        graph.loading();
+
+        dataSource.loadCSV('/flakytestcases?from='+ fromTimestamp, function (data) {
+            graph.loaded();
+
+            renderData(data, graph.svg);
+        });
     });
-}(widget, dataSource));
+
+}(timespanSelection, graphFactory, dataSource));
