@@ -1,21 +1,40 @@
 var timespan = function (d3) {
     var module = {};
 
-    module.createSelector = function (selectedTimespan, onTimespanSelected) {
+    var timestampTwoWeeksAgo = function () {
+        var today = new Date(),
+            twoWeeksAgo = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 14);
+        return +twoWeeksAgo;
+    };
+
+    module.timespans = {
+        all: {
+            label: 'All',
+            timestamp: function () { return 0; }
+        },
+        twoWeeks: {
+            label: 'Last two weeks',
+            timestamp: timestampTwoWeeksAgo
+        }
+    };
+
+    module.startingFromTimestamp = function (span) {
+        return span.timestamp.call();
+    };
+
+    module.createSelector = function (selectedSpan, onTimespanSelected) {
         var container = d3.select(document.createElement('div'));
 
-        container.append("button")
-            .text('all')
-            .on('click', function () {
-                onTimespanSelected('all');
-                d3.event.preventDefault();
-            });
-        container.append("button")
-            .text(selectedTimespan)
-            .on('click', function () {
-                onTimespanSelected(selectedTimespan);
-                d3.event.preventDefault();
-            });
+        Object.keys(module.timespans).forEach(function (spanName) {
+            var span = module.timespans[spanName];
+
+            container.append("button")
+                .text(span.label)
+                .on('click', function () {
+                    onTimespanSelected(span);
+                    d3.event.preventDefault();
+                });
+        });
 
         return container.node();
     };

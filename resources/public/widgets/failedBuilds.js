@@ -1,4 +1,4 @@
-(function (widget, dataSource, jobColors) {
+(function (timespan, widget, dataSource, jobColors) {
     // Roughly following http://bl.ocks.org/mbostock/4063269
     var diameter = 600,
         jobCount = 5,
@@ -57,12 +57,6 @@
 
     var color = colorScale(worstFailureRatio);
 
-    var timestampTwoWeeksAgo = function () {
-        var today = new Date(),
-            twoWeeksAgo = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 14);
-        return +twoWeeksAgo;
-    };
-
     var renderData = function (root, svg) {
         var jobNames = Object.keys(root),
             jobColor = jobColors.colors(jobNames),
@@ -107,33 +101,30 @@
             .style("stroke", function(d) { return color(d.failRatio); });
     };
 
-    var load = function (timespan, svg) {
-        var query = '/jobs';
+    var load = function (selectedTimespan, svg) {
+        var fromTimestamp = timespan.startingFromTimestamp(selectedTimespan);
 
-        if (timespan === '2w') {
-            query += '?from=' + timestampTwoWeeksAgo();
-        }
-
-        dataSource.load(query, function (data) {
+        dataSource.load('/jobs?from=' + fromTimestamp, function (data) {
             widgetInstance.loaded();
 
             renderData(data, svg);
         });
     };
 
-    var timespanSelected = function (timespan) {
-        load(timespan, svg);
+    var timespanSelected = function (selectedTimespan) {
+        load(selectedTimespan, svg);
     };
 
-    var widgetInstance = widget.create("Top 5 failed builds",
+    var defaultTimespan = timespan.timespans.twoWeeks,
+        widgetInstance = widget.create("Top 5 failed builds",
                                        "<h3>What needs most manual intervention? Where are the biggest quality issues? Where do we receive either not so valuable or actually very valuable feedback?</h3><i>Border color: failure ratio, inner color: job, diameter: number of failures</i>",
                                        "/jobs.csv",
                                        "provided the <code>outcome</code> of your builds",
-                                       '2w',
+                                       defaultTimespan,
                                        timespanSelected);
     var svg = widgetInstance
             .svg(diameter);
 
-    load('2w', svg);
+    load(defaultTimespan, svg);
 
-}(widget, dataSource, jobColors));
+}(timespan, widget, dataSource, jobColors));
