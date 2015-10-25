@@ -70,7 +70,7 @@ var widget = function (d3, timespan) {
         widget.append('div')
             .attr('class', 'loader');
 
-        widget.classed('loading', true);
+        widget.classed('loading', true); // TODO remove once all graphs use loading() call
 
         return {
             svg: function (size) {
@@ -78,6 +78,9 @@ var widget = function (d3, timespan) {
             },
             loaded: function () {
                 widget.classed('loading', false);
+            },
+            loading: function () {
+                widget.classed('loading', true);
             }
         };
     };

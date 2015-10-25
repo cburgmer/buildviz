@@ -120,6 +120,7 @@
 .widget.loading svg:empty + .nodata {
     display: none;
 }
+
 .widget.loading .loader {
     display: block;
     position: absolute;

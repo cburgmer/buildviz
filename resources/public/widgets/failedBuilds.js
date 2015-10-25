@@ -104,6 +104,8 @@
     var load = function (selectedTimespan, svg) {
         var fromTimestamp = timespan.startingFromTimestamp(selectedTimespan);
 
+        widgetInstance.loading();
+
         dataSource.load('/jobs?from=' + fromTimestamp, function (data) {
             widgetInstance.loaded();
 
