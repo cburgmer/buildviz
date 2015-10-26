@@ -1,6 +1,6 @@
 (function (graphFactory, zoomableSunburst, utils, jobColors, dataSource) {
     var title = function (entry) {
-        return entry.name + ' (' + utils.formatTimeInMs(entry.size, {showMillis: true}) + ')';
+        return entry.name + ' (' + utils.formatTimeInMs(entry.averageRuntime, {showMillis: true}) + ')';
     };
 
     var hasOnlyOneChild = function (children) {
@@ -53,34 +53,23 @@
         return buildNodeStructure(packageHierarchy);
     };
 
-    var transformClassNode = function (elem) {
-        var children = elem.children && elem.children.map(transformClassNode);
+    var mergeSingleChildHierarchy = function (elem) {
+        var children = elem.children && elem.children.map(mergeSingleChildHierarchy);
 
-        if (children) {
-            if (children.length === 1 && children[0].children) {
-                return {
-                    name: elem.name + '.' + children[0].name,
-                    children: children[0].children
-                };
-            } else {
-                return {
-                    name: elem.name,
-                    children: children
-                };
-            }
-        } else {
-            return {
-                name: elem.name,
-                size: elem.averageRuntime
-            };
+        if (hasOnlyOneChild(children) && children[0].children) {
+            elem.name = elem.name + '.' + children[0].name;
+            elem.children = children[0].children;
+        } else if (elem.children) {
+            elem.children = elem.children;
         }
+        return elem;
     };
 
     var addAccumulatedApproximateRuntime = function (elem) {
         if (elem.children) {
             elem.children = elem.children.map(addAccumulatedApproximateRuntime);
-            elem.size = elem.children.reduce(function (acc, child) {
-                return acc + child.size;
+            elem.averageRuntime = elem.children.reduce(function (acc, child) {
+                return acc + child.averageRuntime;
             }, 0);
         }
         return elem;
@@ -94,11 +83,20 @@
         return elem;
     };
 
+    var toSunburstFormat = function (elem) {
+        elem.size = elem.averageRuntime;
+        if (elem.children) {
+            elem.children = elem.children.map(toSunburstFormat);
+        }
+        return elem;
+    };
+
     var transformClasses = function (classNodes) {
         return buildPackageHierarchy(classNodes)
-            .map(transformClassNode)
             .map(addAccumulatedApproximateRuntime)
-            .map(addTitle);
+            .map(mergeSingleChildHierarchy)
+            .map(addTitle)
+            .map(toSunburstFormat);
     };
 
     var transformTestSuite = function (node) {
