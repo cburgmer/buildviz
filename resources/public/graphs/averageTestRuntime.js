@@ -13,13 +13,15 @@
         return hasOnlyOneTestSuite ? children[0].children : children;
     };
 
+    var leafNodeName = '';
+
     var buildNodeStructure = function (hierarchy) {
         return Object.keys(hierarchy).map(function (nodeName) {
             var entry = hierarchy[nodeName];
 
-            if (entry.name) {
+            if (nodeName === leafNodeName) {
                 return {
-                    name: nodeName,
+                    name: '',
                     averageRuntime: entry.averageRuntime
                 };
             } else {
@@ -36,18 +38,16 @@
 
         classEntries.forEach(function (entry) {
             var packageClassName = entry.name,
-                components = packageClassName.split('.'),
-                packagePath = components.slice(0, -1),
-                className = components.pop();
+                components = packageClassName.split('.');
 
-            var branch = packagePath.reduce(function (packageBranch, packageName) {
-                if (!packageBranch[packageName]) {
-                    packageBranch[packageName] = {};
+            var branch = components.reduce(function (packageBranch, childName) {
+                if (!packageBranch[childName]) {
+                    packageBranch[childName] = {};
                 }
-                return packageBranch[packageName];
+                return packageBranch[childName];
             }, packageHierarchy);
 
-            branch[className] = entry;
+            branch[leafNodeName] = entry;
         });
 
         return buildNodeStructure(packageHierarchy);
@@ -75,6 +75,18 @@
         return elem;
     };
 
+    var removeLeafNodes = function (elem) {
+        if (elem.children) {
+            if (elem.children.length === 1 && elem.children[0].name === leafNodeName) {
+                delete elem.children;
+            } else {
+                elem.children = elem.children
+                    .map(removeLeafNodes);
+            }
+        }
+        return elem;
+    };
+
     var addTitle = function (elem) {
         elem.title = title(elem);
         if (elem.children) {
@@ -94,6 +106,7 @@
     var transformClasses = function (classNodes) {
         return buildPackageHierarchy(classNodes)
             .map(addAccumulatedApproximateRuntime)
+            .map(removeLeafNodes)
             .map(mergeSingleChildHierarchy)
             .map(addTitle)
             .map(toSunburstFormat);
