@@ -1,4 +1,4 @@
-(ns buildviz.build-results-test
+(ns buildviz.data.results-test
   (:require [buildviz.data.results :as results]
             [clj-time.core :as t]
             [clojure.test :refer :all]))
