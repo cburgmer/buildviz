@@ -178,7 +178,7 @@
 
 (defn- failures-for [build-results job-name from-timestamp]
   (when-some [failed-tests (seq (testsuites/accumulate-testsuite-failures (test-runs build-results job-name from-timestamp)))]
-    (let [build-data-entries (results/builds build-results job-name)]
+    (let [build-data-entries (results/builds build-results job-name from-timestamp)]
       {job-name (merge {:children failed-tests}
                        (failed-count-for build-data-entries))})))
 

@@ -376,7 +376,18 @@
                                                                                "children" [{"name" "another test"
                                                                                             "failedCount" 1}]}]}]}}
              (json-body (json-get-request app "/failures")))))
-    ))
+    )
+
+  (testing "should filter by start date"
+    (let [app (the-app {"aBuild" {"1" {:start 47 :outcome "fail"} "2" {:start 50 :outcome "fail"}}}
+                       {"aBuild" {"1" "<testsuite name=\"suite\"><testcase classname=\"c\" name=\"t\"><failure/></testcase></testsuite>"
+                                  "2" "<testsuite name=\"suite\"><testcase classname=\"c\" name=\"t\"><failure/></testcase></testsuite>"}})]
+      (is (= {"aBuild" {"failedCount" 1
+                        "children" [{"name" "suite"
+                                     "children" [{"name" "c"
+                                                  "children" [{"name" "t"
+                                                               "failedCount" 1}]}]}]}}
+             (json-body (json-get-request app "/failures" {"from" 50})))))))
 
 (deftest TestCasesSummary
   (testing "GET to /testcases"
