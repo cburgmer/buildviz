@@ -8,6 +8,7 @@
   (job-names     [this])
   (builds        [this job-name]
                  [this job-name from])
+  (all-builds    [this])
   (build         [this job-name build-id])
   (set-build!    [this job-name build-id build])
 
@@ -43,6 +44,11 @@
          (get @(:builds this))
          (builds-starting-from from)
          vals))
+
+  (all-builds [this]
+    (->> @(:builds this)
+         vals
+         (mapcat vals)))
 
   (build [_ job-name build-id]
     (get-in @builds [job-name build-id]))

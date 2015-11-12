@@ -40,6 +40,18 @@
       (is (= '({:start 200} {:start 100})
              (results/builds build-results "aJob" 100))))))
 
+(deftest test-build-results-all-builds
+  (testing "should return builds of all jobs"
+    (let [build-results (results/build-results {"someJob" {"1" {:start 1}
+                                                           "2" {:start 2}}
+                                                "otherJob" {"4" {:start 4}
+                                                            "6" {:start 5}}}
+                                               dummy-load-tests
+                                               dummy-store
+                                               dummy-store)]
+      (is (= '({:start 4} {:start 5} {:start 1} {:start 2})
+             (results/all-builds build-results))))))
+
 (deftest test-build-results-tests
    (testing "should return tests for a build"
      (let [load-tests (fn [job-name build-id]

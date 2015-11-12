@@ -65,8 +65,7 @@
     response))
 
 (defn- get-status [build-results pipeline-name]
-  (let [all-builds (seq (mapcat #(results/builds build-results %)
-                                (results/job-names build-results)))
+  (let [all-builds (results/all-builds build-results)
         total-build-count (count all-builds)]
     (http/respond-with-json (with-latest-build-start all-builds
                               {:totalBuildCount total-build-count
