@@ -126,4 +126,4 @@ failingTestCase | sendTestResult "aFlakyBuild" 1
 aBuild 'pass' $(( A_WEEK_AGO + 8000000 )) "abcd" | send "aFlakyBuild" 2
 passingTestCase | sendTestResult "aFlakyBuild" 2
 
-echo '{}' | send "buildWithoutInfo" "1"
+echo "{\"start\": $TODAY}" | send "buildWithoutInfo" "1"
