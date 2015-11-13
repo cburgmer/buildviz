@@ -47,7 +47,7 @@ For every build `PUT` JSON data in the following format to `http://localhost:300
 }
 ```
 
-You can omit any of the above values, however some of the statistics will not be available then.
+Only the build `start` is required.
 
 JUnit XML formatted test results can be `PUT` to `http://localhost:3000/builds/$JOB_NAME/$BUILD_ID/testresults`
 

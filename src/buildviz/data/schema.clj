@@ -16,6 +16,7 @@
                                    :properties {:revision {:type ["string" "integer"]}
                                                 :source_id {:type ["string" "integer"]}}
                                    :additionalProperties false}}}
+     :required [:start]
      :additionalProperties false}))
 
 (defn build-data-validation-errors [build-data]

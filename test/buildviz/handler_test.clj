@@ -81,7 +81,7 @@
 (deftest Storage
   (testing "PUT to /builds/:job/:build"
     ;; PUT should return 200
-    (is (= (:status (json-put-request (the-app) "/builds/abuild/1" {}))
+    (is (= (:status (json-put-request (the-app) "/builds/abuild/1" {:start 42}))
            200))
 
     ;; PUT should return 400 for unknown parameters
@@ -233,33 +233,33 @@
               "anotherBuild" {"averageRuntime" 2 "totalCount" 1}})))
 
     ;; GET should return total build count
-    (let [app (the-app)]
-      (a-build app "runOnce" 1, {})
-      (a-build app "runTwice" 1, {})
-      (a-build app "runTwice" 2, {})
+    (let [app (the-app {"runOnce" {1 {}}
+                        "runTwice" {1 {}
+                                    2 {}}}
+                       {})]
       (is (= (json-body (json-get-request app "/jobs"))
              {"runTwice" {"totalCount" 2}
               "runOnce" {"totalCount" 1}})))
 
     ;; GET should return failed build count
-    (let [app (the-app)]
-      (a-build app "flakyBuild" 1, {:outcome "pass"})
-      (a-build app "flakyBuild" 2, {:outcome "fail"})
-      (a-build app "brokenBuild" 1, {:outcome "fail"})
+    (let [app (the-app {"flakyBuild" {1 {:outcome "pass"}
+                                      2 {:outcome "fail"}}
+                        "brokenBuild" {1 {:outcome "fail"}}}
+                       {})]
       (is (= (json-body (json-get-request app "/jobs"))
              {"flakyBuild" {"failedCount" 1 "totalCount" 2 "flakyCount" 0}
               "brokenBuild" {"failedCount" 1 "totalCount" 1 "flakyCount" 0}})))
 
     ;; GET should return error build count
-    (let [app (the-app)]
-      (a-build app "goodBuild" 1, {:outcome "pass"})
+    (let [app (the-app {"goodBuild" {1 {:outcome "pass"}}}
+                       {})]
       (is (= (json-body (json-get-request app "/jobs"))
              {"goodBuild" {"failedCount" 0 "totalCount" 1 "flakyCount" 0}})))
 
     ;; GET should return a flaky build count
-    (let [app (the-app)]
-      (a-build app "flakyBuild" 1, {:outcome "pass" :inputs [{:source_id 42 :revision "dat_revision"}]})
-      (a-build app "flakyBuild" 2, {:outcome "fail" :inputs [{:source_id 42 :revision "dat_revision"}]})
+    (let [app (the-app {"flakyBuild" {1 {:outcome "pass" :inputs [{:source_id 42 :revision "dat_revision"}]}
+                                      2 {:outcome "fail" :inputs [{:source_id 42 :revision "dat_revision"}]}}}
+                       {})]
       (is (= (json-body (json-get-request app "/jobs"))
              {"flakyBuild" {"failedCount" 1 "totalCount" 2 "flakyCount" 1}})))
     )
@@ -307,11 +307,11 @@
            (:body (get-request (the-app) "/failphases"))))
 
     ;; GET should return fail phases
-    (let [app (the-app)]
-      (a-build app "badBuild" 1, {:end a-timestamp :outcome "fail"})
-      (a-build app "anotherBuild" 1, {:end (+ a-timestamp 10000) :outcome "fail"})
-      (a-build app "anotherBuild" 2, {:end (+ a-timestamp 20000) :outcome "pass"})
-      (a-build app "badBuild" 2, {:end (+ a-timestamp 30000) :outcome "pass"})
+    (let [app (the-app {"badBuild" {1 {:end a-timestamp :outcome "fail"}
+                                    2 {:end (+ a-timestamp 30000) :outcome "pass"}}
+                        "anotherBuild" {1 {:end (+ a-timestamp 10000) :outcome "fail"}
+                                        2 {:end (+ a-timestamp 20000) :outcome "pass"}}}
+                       {})]
       (is (= "start,end,culprits\n1986-10-14 04:03:27,1986-10-14 04:03:57,anotherBuild|badBuild\n"
              (:body (get-request app "/failphases")))))
 
@@ -320,9 +320,9 @@
            (json-body (json-get-request (the-app) "/failphases"))))
 
     ;; GET should return fail phases as JSON
-    (let [app (the-app)]
-      (a-build app "badBuild" 1, {:end 42 :outcome "fail"})
-      (a-build app "badBuild" 2, {:end 80 :outcome "pass"})
+    (let [app (the-app {"badBuild" {1 {:end 42 :outcome "fail"}
+                                    2 {:end 80 :outcome "pass"}}}
+                       {})]
       (is (= [{"start" 42 "end" 80 "culprits" ["badBuild"]}]
              (json-body (json-get-request app "/failphases")))))
     ))
@@ -338,16 +338,15 @@
            (:body (get-request (the-app) "/failures"))))
 
     ;; GET should include a list of failing test cases
-    (let [app (the-app)]
-      (a-build app "failingBuild" 1, {:outcome "fail"})
-      (some-test-results app "failingBuild" "1" "<testsuites><testsuite name=\"a suite\"><testcase name=\"a test\" classname=\"a class\"><failure/></testcase></testsuite></testsuites>")
-      (a-build app "failingBuild" 2, {:outcome "fail"})
-      (some-test-results app "failingBuild" "2" "<testsuites><testsuite name=\"a suite\"><testcase name=\"a test\" classname=\"a class\"><failure/></testcase></testsuite></testsuites>")
-      (a-build app "anotherFailingBuild" 1, {:outcome "fail"})
-      (some-test-results app "anotherFailingBuild" "1" "<testsuites><testsuite name=\"another suite\"><testsuite name=\"nested suite\"><testcase name=\"another test\" classname=\"some class\"><failure/></testcase></testsuite></testsuite></testsuites>")
-      (a-build app  "failingBuildWithoutTestResults" 1, {:outcome "fail"})
-      (a-build app "passingBuild" 1, {:outcome "pass"})
-      (some-test-results app "passingBuild" "1" "<testsuites><testsuite name=\"suite\"><testcase name=\"test\" classname=\"class\"></testcase></testsuite></testsuites>")
+    (let [app (the-app {"failingBuild" {1 {:outcome "fail"}
+                                        2 {:outcome "fail"}}
+                        "anotherFailingBuild" {1 {:outcome "fail"}}
+                        "failingBuildWithoutTestResults" {1 {:outcome "fail"}}
+                        "passingBuild" {1 {:outcome "pass"}}}
+                       {"failingBuild" {1 "<testsuites><testsuite name=\"a suite\"><testcase name=\"a test\" classname=\"a class\"><failure/></testcase></testsuite></testsuites>"
+                                        2 "<testsuites><testsuite name=\"a suite\"><testcase name=\"a test\" classname=\"a class\"><failure/></testcase></testsuite></testsuites>"}
+                        "anotherFailingBuild" {1 "<testsuites><testsuite name=\"another suite\"><testsuite name=\"nested suite\"><testcase name=\"another test\" classname=\"some class\"><failure/></testcase></testsuite></testsuite></testsuites>"}
+                        "passingBuild" {1 "<testsuites><testsuite name=\"suite\"><testcase name=\"test\" classname=\"class\"></testcase></testsuite></testsuites>"}})]
       (is (= (join "\n" ["failedCount,job,testsuite,classname,name"
                          "1,anotherFailingBuild,another suite: nested suite,some class,another test"
                          "2,failingBuild,a suite,a class,a test"
@@ -359,14 +358,13 @@
            (json-body (json-get-request (the-app) "/failures"))))
 
     ;; GET should include a list of failing test cases for JSON
-    (let [app (the-app)]
-      (a-build app "failingBuild" 1, {:outcome "fail"})
-      (some-test-results app "failingBuild" "1" "<testsuites><testsuite name=\"a suite\"><testcase classname=\"class\" name=\"a test\"><failure/></testcase></testsuite></testsuites>")
-      (a-build app "anotherFailingBuild" 1, {:outcome "fail"})
-      (some-test-results app "anotherFailingBuild" "1" "<testsuites><testsuite name=\"another suite\"><testcase classname=\"class\" name=\"another test\"><failure/></testcase></testsuite></testsuites>")
-      (a-build app "failingBuildWithoutTestResults" 1, {:outcome "fail"})
-      (a-build app "passingBuild" 1, {:outcome "pass"})
-      (some-test-results app "passingBuild" "1" "<testsuites><testsuite name=\"suite\"><testcase classname=\"class\" name=\"test\"></testcase></testsuite></testsuites>")
+    (let [app (the-app {"failingBuild" {1 {:outcome "fail"}}
+                        "anotherFailingBuild" {1 {:outcome "fail"}}
+                        "failingBuildWithoutTestResults" {1 {:outcome "fail"}}
+                        "passingBuild" {1 {:outcome "pass"}}}
+                       {"failingBuild" {1 "<testsuites><testsuite name=\"a suite\"><testcase classname=\"class\" name=\"a test\"><failure/></testcase></testsuite></testsuites>"}
+                        "anotherFailingBuild" {1 "<testsuites><testsuite name=\"another suite\"><testcase classname=\"class\" name=\"another test\"><failure/></testcase></testsuite></testsuites>"}
+                        "passingBuild" {1 "<testsuites><testsuite name=\"suite\"><testcase classname=\"class\" name=\"test\"></testcase></testsuite></testsuites>"}})]
       (is (= {"failingBuild" {"failedCount" 1 "children" [{"name" "a suite"
                                                            "children" [{"name" "class"
                                                                         "children" [{"name" "a test"
@@ -400,11 +398,10 @@
            (json-body (json-get-request (the-app) "/testcases"))))
 
     ;; GET should include a list of builds with test cases
-    (let [app (the-app)]
-      (a-build app "aBuild" 1, {})
-      (some-test-results app "aBuild" "1" "<testsuites><testsuite name=\"a suite\"><testcase classname=\"class\" name=\"a test\" time=\"10\"></testcase></testsuite></testsuites>")
-      (a-build app "aBuild" 2, {})
-      (some-test-results app "aBuild" "2" "<testsuites><testsuite name=\"a suite\"><testcase classname=\"class\" name=\"a test\" time=\"30\"></testcase></testsuite></testsuites>")
+    (let [app (the-app {"aBuild" {1 {}
+                                  2 {}}}
+                       {"aBuild" {1 "<testsuites><testsuite name=\"a suite\"><testcase classname=\"class\" name=\"a test\" time=\"10\"></testcase></testsuite></testsuites>"
+                                  2 "<testsuites><testsuite name=\"a suite\"><testcase classname=\"class\" name=\"a test\" time=\"30\"></testcase></testsuite></testsuites>"}})]
       (is (= {"aBuild" {"children" [{"name" "a suite"
                                      "children" [{"name" "class"
                                                   "children" [{"name" "a test"
@@ -412,17 +409,15 @@
              (json-body (json-get-request app "/testcases")))))
 
     ;; GET should return CSV by default
-    (let [app (the-app)]
-      (a-build app  "aBuild" 1, {})
-      (some-test-results app "aBuild" "1" "<testsuites><testsuite name=\"a suite\"><testcase name=\"a,test\" classname=\"a class\" time=\"10\"></testcase></testsuite></testsuites>")
+    (let [app (the-app {"aBuild" {1 {}}}
+                       {"aBuild" {1 "<testsuites><testsuite name=\"a suite\"><testcase name=\"a,test\" classname=\"a class\" time=\"10\"></testcase></testsuite></testsuites>"}})]
       (is (= (:body (get-request app "/testcases"))
              (join ["averageRuntime,job,testsuite,classname,name\n"
                     (format "%.8f,aBuild,a suite,a class,\"a,test\"\n" 0.00011574)]))))
 
     ;; GET should handle nested testsuites in CSV
-    (let [app (the-app)]
-      (a-build app "aBuild" 1, {})
-      (some-test-results app "aBuild" "1" "<testsuites><testsuite name=\"a suite\"><testsuite name=\"nested suite\"><testcase name=\"a,test\" classname=\"a class\" time=\"10\"></testcase></testsuite></testsuite></testsuites>")
+    (let [app (the-app {"aBuild" {1 {}}}
+                       {"aBuild" {1 "<testsuites><testsuite name=\"a suite\"><testsuite name=\"nested suite\"><testcase name=\"a,test\" classname=\"a class\" time=\"10\"></testcase></testsuite></testsuite></testsuites>"}})]
       (is (= (:body (plain-get-request app "/testcases"))
              (join ["averageRuntime,job,testsuite,classname,name\n"
                     (format "%.8f,aBuild,a suite: nested suite,a class,\"a,test\"\n" 0.00011574)]))))
