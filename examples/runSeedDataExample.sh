@@ -31,6 +31,14 @@ echo "Starting buildviz... (sending stdout to $LOGGING_PATH)"
 BUILDVIZ_DATA_DIR=$TMP_DIR BUILDVIZ_PIPELINE_NAME="Dummy data example" ./lein do deps, ring server-headless $PORT > "$LOGGING_PATH" &
 SERVER_PID=$!
 
+function clean_up() {
+    pkill -P $SERVER_PID
+    exit 0
+}
+
+# Handle Ctrl+C
+trap clean_up INT
+
 # Wait
 echo "Waiting for buildviz to come up"
 wait_for_server http://localhost:$PORT
@@ -47,4 +55,4 @@ echo "Later, press any key to stop the server"
 
 read -n 1
 
-pkill -P $SERVER_PID
+clean_up

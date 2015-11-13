@@ -45,6 +45,20 @@ echo "Starting buildviz... (sending stdout to $LOGGING_PATH)"
 BUILDVIZ_DATA_DIR=$TMP_DIR BUILDVIZ_PIPELINE_NAME="Go.cd example" ./lein do deps, ring server-headless $PORT > "$LOGGING_PATH" &
 SERVER_PID=$!
 
+function clean_up() {
+    echo "Taking down Vagrant instance and buildviz..."
+
+    cd "${SCRIPT_DIR}/go"
+    vagrant halt
+    cd -
+
+    pkill -P $SERVER_PID
+    exit 0
+}
+
+# Handle Ctrl+C
+trap clean_up INT
+
 # Wait
 echo "Waiting for buildviz to come up"
 wait_for_server "${BUILDVIZ_PATH}"
@@ -63,10 +77,4 @@ echo "Later, press any key to stop the server and bring down the vagrant box"
 
 read -n 1
 
-echo "Taking down Vagrant instance and buildviz..."
-
-cd "${SCRIPT_DIR}/go"
-vagrant halt
-cd -
-
-pkill -P $SERVER_PID
+clean_up
