@@ -2,22 +2,20 @@
   (:require [closchema.core :as schema]))
 
 (defn- build-schema [start-value]
-  (let [minimum-end (if (some? start-value)
-                     start-value
-                     0)]
-    {:type "object"
-     :properties {:start {:type "integer"
-                          :minimum 0}
-                  :end {:type "integer"
-                        :minimum minimum-end}
-                  :outcome {:enum ["pass" "fail"]}
-                  :inputs {:type "array"
-                           :items {:type "object"
-                                   :properties {:revision {:type ["string" "integer"]}
-                                                :source_id {:type ["string" "integer"]}}
-                                   :additionalProperties false}}}
-     :required [:start]
-     :additionalProperties false}))
+  {:type "object"
+   :properties {:start {:type "integer"
+                        :minimum 0}
+                :end {:type "integer"
+                      :minimum (or start-value
+                                   0)}
+                :outcome {:enum ["pass" "fail"]}
+                :inputs {:type "array"
+                         :items {:type "object"
+                                 :properties {:revision {:type ["string" "integer"]}
+                                              :source_id {:type ["string" "integer"]}}
+                                 :additionalProperties false}}}
+   :required [:start]
+   :additionalProperties false})
 
 (defn build-data-validation-errors [build-data]
   (let [start (get build-data :start)]

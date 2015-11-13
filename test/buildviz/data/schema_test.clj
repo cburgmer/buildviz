@@ -4,17 +4,24 @@
 
 (deftest test-build-data-validation-errors
   (testing "should require start time"
-    (is (not (empty? (schema/build-data-validation-errors {}))))
-    (is (empty? (schema/build-data-validation-errors {:start 0}))))
+    (is (empty? (schema/build-data-validation-errors {:start 0})))
+    (is (= [:start]
+           (:path (first (schema/build-data-validation-errors {})))))
+    (is (= [:start]
+           (:path (first (schema/build-data-validation-errors {:start -1})))))
+    (comment
+      "https://github.com/bigmlcom/closchema/pull/35"
+      (is (= [:start]
+           (:path (first (schema/build-data-validation-errors {:start nil})))))))
 
   (testing "should pass on 0 end time"
     (is (empty? (schema/build-data-validation-errors {:start 0 :end 0}))))
 
   (testing "should fail on negative end time"
-    (is (= (:path (first (schema/build-data-validation-errors {:end -1})))
-           [:end])))
+    (is (= [:end]
+           (:path (first (schema/build-data-validation-errors {:end -1}))))))
 
   (testing "should fail on end time before start time"
-    (is (= (:path (first (schema/build-data-validation-errors {:start 42
-                                                               :end 41})))
-           [:end]))))
+    (is (= [:end]
+           (:path (first (schema/build-data-validation-errors {:start 42
+                                                               :end 41})))))))

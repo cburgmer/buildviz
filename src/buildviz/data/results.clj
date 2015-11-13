@@ -17,11 +17,11 @@
   (set-tests!    [this job-name build-id xml]))
 
 (defn- builds-starting-from [from builds]
-  (if (some? from)
-    (->> builds
-         (remove (fn [[build-id build]] (nil? (:start build))))
-         (filter (fn [[build-id build]] (<= from (:start build)))))
-    builds))
+  (let [from-timestamp (or from
+                           0)]
+    (filter (fn [[build-id {start :start}]]
+              (<= from-timestamp start))
+            builds)))
 
 (defn- update-last-modified [build-results]
   (swap! (:last-modified-date build-results) (fn [_] (t/now))))

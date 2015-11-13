@@ -68,10 +68,10 @@
                                          "2" "<morexml>"}
                                  "anotherJob" {"3" "<somemorexml>"}}
                                 [job-name build-id]))
-           build-results (results/build-results {"aJob" {"1" {}
-                                                         "2" {}
-                                                         "4" {}}
-                                                 "anotherJob" {"3" {}}}
+           build-results (results/build-results {"aJob" {"1" {:start 0}
+                                                         "2" {:start 1}
+                                                         "4" {:start 3}}
+                                                 "anotherJob" {"3" {:start 2}}}
                                                 load-tests
                                                 dummy-store
                                                 dummy-store)]
