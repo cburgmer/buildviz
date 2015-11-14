@@ -16,6 +16,7 @@
   (tests         [this job-name build-id])
   (set-tests!    [this job-name build-id xml]))
 
+
 (defn- builds-starting-from [from builds]
   (let [from-timestamp (or from
                            0)]
@@ -36,17 +37,18 @@
     (keys @builds))
 
   (builds [this job-name]
-    (when-some [builds (get @builds job-name)]
-      (vals builds)))
+    (->> job-name
+         (get @builds)
+         vals))
 
   (builds [this job-name from]
     (->> job-name
-         (get @(:builds this))
+         (get @builds)
          (builds-starting-from from)
          vals))
 
   (all-builds [this]
-    (->> @(:builds this)
+    (->> @builds
          vals
          (mapcat vals)))
 
@@ -61,7 +63,7 @@
   ;; TODO find a solution for 'stale' tests with no matching builds
   (chronological-tests [this job-name from]
     (->> job-name
-         (get @(:builds this))
+         (get @builds)
          (builds-starting-from from)
          keys
          (map #(load-tests job-name %))
