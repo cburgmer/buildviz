@@ -43,8 +43,7 @@
   (Math/round (float (/ (reduce + series) (count series)))))
 
 (defn- runtime-for [build]
-  (if (and (contains? build :start)
-           (contains? build :end))
+  (if (contains? build :end)
     (- (build :end) (build :start))))
 
 (defn- build-runtime [build-data-entries]

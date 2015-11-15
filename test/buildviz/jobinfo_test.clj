@@ -44,7 +44,6 @@
   (testing "average-runtime"
      (is (= nil (average-runtime [])))
      (is (= nil (average-runtime [{:start 0}])))
-     (is (= nil (average-runtime [{:end 0}])))
      (is (= 42 (average-runtime [{:start 0 :end 42}])))
      (is (= 20 (average-runtime [{:start 10 :end 20} {:start 50 :end 80}])))
      (is (= 2 (average-runtime [{:start 1 :end 2} {:start 3 :end 5}])))
@@ -54,7 +53,6 @@
   (testing "average-runtime-by-day"
      (is (= {} (average-runtime-by-day [])))
      (is (= {} (average-runtime-by-day [{:start 0}])))
-     (is (= {} (average-runtime-by-day [{:end 0}])))
      (is (= {"1986-10-14" 1000}
             (average-runtime-by-day [{:start sometime-on-1986-10-14 :end (+ sometime-on-1986-10-14 1000)}])))
      (is (= {"1986-10-15" (* 24 60 60 1000)}
