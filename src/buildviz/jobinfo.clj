@@ -43,7 +43,7 @@
   (Math/round (float (/ (reduce + series) (count series)))))
 
 (defn- runtime-for [build]
-  (if (contains? build :end)
+  (when (contains? build :end)
     (- (build :end) (build :start))))
 
 (defn- build-runtime [build-data-entries]
@@ -51,7 +51,7 @@
           (map runtime-for build-data-entries)))
 
 (defn average-runtime [build-data-entries]
-  (if-let [runtimes (seq (build-runtime build-data-entries))]
+  (when-let [runtimes (seq (build-runtime build-data-entries))]
     (avg runtimes)))
 
 

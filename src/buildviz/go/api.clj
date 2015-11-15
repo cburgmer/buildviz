@@ -93,7 +93,7 @@
 
 ;; /api/pipelines/%pipelines/instance/%run
 
-(defn- revision->input [{modifications :modifications material :material}]
+(defn- revision->input [{:keys [modifications material]}]
   (let [{revision :revision} (first modifications)
         source_id (:id material)]
     {:revision revision
