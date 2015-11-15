@@ -16,11 +16,8 @@
                                          (cons {}
                                                (mapcat testsuite-list junit-xml-list))))))
 
-(defn- aggregate-junit-xml [{pipeline-name :pipelineName
-                             pipeline-run :pipelineRun
-                             stage-name :stageName
-                             stage-run :stageRun
-                             job-instances :job-instances}]
+(defn- aggregate-junit-xml [{:keys [pipeline-name pipeline-run stage-name
+                                    stage-run job-instances]}]
   (let [all-junit-xml (map :junit-xml job-instances)
         junit-xml-list (remove nil? all-junit-xml)]
     (when-not (empty? junit-xml-list)
@@ -54,9 +51,7 @@
 (defn- ignore-old-runs-for-rerun-stages [job-instances stage-run]
   (filter #(= stage-run (:actual-stage-run %)) job-instances))
 
-(defn- aggregate-build [{stage-run :stageRun
-                         stage-name :stageName
-                         job-instances :job-instances}]
+(defn- aggregate-build [{:keys [stage-run stage-name job-instances]}]
   (-> job-instances
       (ignore-old-runs-for-rerun-stages stage-run)
       aggregate-builds

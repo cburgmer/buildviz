@@ -53,14 +53,14 @@
 
 
 (defn- aggregate-jobs-for-stage-instance [stage-instance sync-jobs-for-pipelines]
-  (let [{pipeline-name :pipelineName} stage-instance]
+  (let [{pipeline-name :pipeline-name} stage-instance]
     (if (contains? sync-jobs-for-pipelines pipeline-name)
       stage-instance
       (goaggregate/aggregate-jobs-for-stage stage-instance))))
 
 
 (defn- build-for-job [stage-instance job-name]
-  (let [job-instance (assoc stage-instance :jobName job-name)]
+  (let [job-instance (assoc stage-instance :job-name job-name)]
     (-> (goapi/build-for go-url job-instance)
         (assoc :name job-name)
         (assoc :junit-xml (goapi/get-junit-xml go-url job-instance)))))
@@ -75,8 +75,8 @@
                              stage-run :counter
                              result :result
                              jobs :jobs}]
-  {:stageRun stage-run
-   :pipelineRun pipeline-run
+  {:stage-run stage-run
+   :pipeline-run pipeline-run
    :finished (not= "Unknown" result)
    :scheduled-time (tc/from-long (apply min (map :scheduled_date jobs)))
    :job-names (map :name jobs)})
@@ -85,14 +85,12 @@
   (let [safe-build-start-date (t/minus sync-start-time (t/millis 1))]
     (->> (goapi/get-stage-history go-url pipeline-name stage-name)
          (map parse-stage-instance)
-         (map #(assoc % :stageName stage-name :pipelineName pipeline-name))
+         (map #(assoc % :stage-name stage-name :pipeline-name pipeline-name))
          (take-while #(t/after? (:scheduled-time %) safe-build-start-date)))))
 
 
-(defn add-inputs-for-stage-instance [stage-instance]
-  (let [pipeline-run (:pipelineRun stage-instance)
-        pipeline-name (:pipelineName stage-instance)
-        inputs (goapi/get-inputs-for-pipeline-run go-url pipeline-name pipeline-run)]
+(defn add-inputs-for-stage-instance [{:keys [pipeline-run, pipeline-name] :as stage-instance}]
+  (let [inputs (goapi/get-inputs-for-pipeline-run go-url pipeline-name pipeline-run)]
     (assoc stage-instance :inputs inputs)))
 
 
@@ -109,12 +107,7 @@
     (format "%s %s" pipeline-name stage-name)
     (format "%s %s %s" pipeline-name stage-name job-name)))
 
-(defn- stage-instances->builds [{pipeline-name :pipelineName
-                                 pipeline-run :pipelineRun
-                                 stage-name :stageName
-                                 stage-run :stageRun
-                                 inputs :inputs
-                                 job-instances :job-instances}]
+(defn- stage-instances->builds [{:keys [pipeline-name pipeline-run stage-name stage-run inputs job-instances]}]
   (map (fn [{outcome :outcome
              start :start
              end :end

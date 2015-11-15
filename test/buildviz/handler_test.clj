@@ -66,9 +66,9 @@
 
 ;; test fixtures
 
-(defn a-build [app jobName buildNr content]
+(defn a-build [app job-name build-nr content]
   (json-put-request app
-                    (format "/builds/%s/%s" jobName buildNr)
+                    (format "/builds/%s/%s" job-name build-nr)
                     content))
 
 (defn some-test-results [app job-name build-no content]

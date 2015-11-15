@@ -55,12 +55,8 @@
                :outcome outcome
                :actual-stage-run actual-stage-run)))))
 
-(defn build-for [go-url
-                 {pipeline-name :pipelineName
-                  pipeline-run :pipelineRun
-                  stage-name :stageName
-                  stage-run :stageRun
-                  job-name :jobName}]
+(defn build-for [go-url {:keys [pipeline-name pipeline-run stage-name
+                                stage-run job-name]}]
   (try
     (let [build-properties (get-plain go-url
                                       "/properties/%s/%s/%s/%s/%s"
@@ -146,12 +142,8 @@
 (defn- force-evaluate-json [json]
   (doall json))
 
-(defn- try-get-artifact-tree [go-url
-                              {pipeline-name :pipelineName
-                              pipeline-run :pipelineRun
-                              stage-name :stageName
-                              stage-run :stageRun
-                              job-name :jobName}]
+(defn- try-get-artifact-tree [go-url {:keys [pipeline-name pipeline-run
+                                             stage-name stage-run job-name]}]
   (let [artifacts-url (format "/files/%s/%s/%s/%s/%s.json" pipeline-name pipeline-run stage-name stage-run job-name)]
     (try
       (force-evaluate-json (get-json go-url artifacts-url))
