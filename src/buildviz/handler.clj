@@ -151,11 +151,11 @@
 
 ;; fail phases
 
-(defn- all-builds-in-order [build-results]
-  (sort-by :end (results/all-builds build-results)))
+(defn- all-builds-in-order [build-results from-timestamp]
+  (sort-by :end (results/all-builds build-results from-timestamp)))
 
-(defn- get-fail-phases [build-results accept]
-  (let [fail-phases (pipelineinfo/pipeline-fail-phases (all-builds-in-order build-results))]
+(defn- get-fail-phases [build-results accept from-timestamp]
+  (let [fail-phases (pipelineinfo/pipeline-fail-phases (all-builds-in-order build-results from-timestamp))]
     (if (= (:mime accept) :json)
       (http/respond-with-json fail-phases)
       (http/respond-with-csv
@@ -307,8 +307,8 @@
    (GET "/jobs.csv" {query :query-params} (get-jobs build-results {:mime :csv} (from-timestamp query)))
    (GET "/pipelineruntime" {} (get-pipeline-runtime build-results))
    (GET "/pipelineruntime.csv" {} (get-pipeline-runtime build-results))
-   (GET "/failphases" {accept :accept} (get-fail-phases build-results accept))
-   (GET "/failphases.csv" {} (get-fail-phases build-results {:mime :csv}))
+   (GET "/failphases" {accept :accept query :query-params} (get-fail-phases build-results accept (from-timestamp query)))
+   (GET "/failphases.csv" {query :query-params} (get-fail-phases build-results {:mime :csv} (from-timestamp query)))
    (GET "/failures" {accept :accept query :query-params} (get-failures build-results accept (from-timestamp query)))
    (GET "/failures.csv" {query :query-params} (get-failures build-results {:mime :csv} (from-timestamp query)))
    (GET "/testcases" {accept :accept query :query-params} (get-testcases build-results accept (from-timestamp query)))

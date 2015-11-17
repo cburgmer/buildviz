@@ -14,6 +14,10 @@ var timespanSelection = function (d3) {
             label: 'all time',
             timestamp: function () { return 0; }
         },
+        twoMonths: {
+            label: 'last two months',
+            timestamp: fromDaysAgo(60)
+        },
         twoWeeks: {
             label: 'last two weeks',
             timestamp: fromDaysAgo(14)

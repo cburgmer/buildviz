@@ -1,4 +1,4 @@
-(function (graphFactory, utils, dataSource) {
+(function (timespanSelection , graphFactory, utils, dataSource) {
     var margin = {top: 10, right: 0, bottom: 30, left: 35},
         width = graphFactory.size - margin.left - margin.right,
         height = graphFactory.size - margin.top - margin.bottom;
@@ -213,19 +213,26 @@
             });
     };
 
-    var graph = graphFactory.create({
-        id: 'failPhases',
-        headline: "Fail phases",
-        description: "<h3>What is the general health of the build system? How much are we stopping the pipeline? How quickly can we resume the pipeline after failure?</h3><i>Color: healthy/broken state, length: duration of phase<i>",
-        csvUrl: "/failphases.csv",
-        noDataReason: "provided <code>start</code>, <code>end</code> times and the <code>outcome</code> of your builds"
+    var timespanSelector = timespanSelection.create(timespanSelection.timespans.twoMonths),
+        graph = graphFactory.create({
+            id: 'failPhases',
+            headline: "Fail phases",
+            description: "<h3>What is the general health of the build system? How much are we stopping the pipeline? How quickly can we resume the pipeline after failure?</h3><i>Color: healthy/broken state, length: duration of phase<i>",
+            csvUrl: "/failphases.csv",
+            noDataReason: "provided <code>start</code>, <code>end</code> times and the <code>outcome</code> of your builds",
+            widgets: [timespanSelector.widget]
+        });
+
+    timespanSelector.load(function (selectedTimespan) {
+        var fromTimestamp = timespanSelection.startingFromTimestamp(selectedTimespan);
+
+        graph.loading();
+
+        dataSource.load('/failphases?from=' + fromTimestamp, function (data) {
+            graph.loaded();
+
+            renderData(data, graph.svg);
+        });
     });
 
-    graph.loading();
-
-    dataSource.load('/failphases', function (data) {
-        graph.loaded();
-
-        renderData(data, graph.svg);
-    });
-}(graphFactory, utils, dataSource));
+}(timespanSelection, graphFactory, utils, dataSource));
