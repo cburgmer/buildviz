@@ -152,10 +152,7 @@
 ;; fail phases
 
 (defn- all-builds-in-order [build-results]
-  (sort-by :end
-           (mapcat (fn [[job builds]]
-                     (map #(assoc % :job job) (vals builds)))
-                   @(:builds build-results))))
+  (sort-by :end (results/all-builds build-results)))
 
 (defn- get-fail-phases [build-results accept]
   (let [fail-phases (pipelineinfo/pipeline-fail-phases (all-builds-in-order build-results))]

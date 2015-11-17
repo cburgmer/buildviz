@@ -49,8 +49,23 @@
                                                dummy-load-tests
                                                dummy-store
                                                dummy-store)]
-      (is (= '({:start 4} {:start 5} {:start 1} {:start 2})
-             (results/all-builds build-results))))))
+      (is (= '({:start 4 :job "otherJob"}
+               {:start 5 :job "otherJob"}
+               {:start 1 :job "someJob"}
+               {:start 2 :job "someJob"})
+             (results/all-builds build-results)))))
+
+  (testing "should filter by timestamp"
+    (let [build-results (results/build-results {"someJob" {"1" {:start 10}
+                                                           "4" {:start 40}}
+                                                "otherJob" {"2" {:start 20}
+                                                            "5" {:start 50}}}
+                                               dummy-load-tests
+                                               dummy-store
+                                               dummy-store)]
+      (is (= '({:start 50 :job "otherJob"}
+               {:start 40 :job "someJob"})
+             (results/all-builds build-results 30))))))
 
 (deftest test-build-results-tests
    (testing "should return tests for a build"

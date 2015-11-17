@@ -8,7 +8,8 @@
   (job-names     [this])
   (builds        [this job-name]
                  [this job-name from])
-  (all-builds    [this])
+  (all-builds    [this]
+                 [this from])
   (build         [this job-name build-id])
   (set-build!    [this job-name build-id build])
 
@@ -24,8 +25,19 @@
               (<= from-timestamp start))
             builds)))
 
+(defn- filter-builds-starting-from [from builds]
+  (let [from-timestamp (or from
+                           0)]
+    (filter (fn [{start :start}]
+              (<= from-timestamp start))
+            builds)))
+
 (defn- update-last-modified [build-results]
   (swap! (:last-modified-date build-results) (fn [_] (t/now))))
+
+(defn- builds-for-job [builds job]
+  (map #(assoc % :job job)
+       (vals (get builds job))))
 
 (defrecord BuildResults [last-modified-date builds load-tests store-build! store-tests!]
   BuildResultsProtocol
@@ -48,9 +60,12 @@
          vals))
 
   (all-builds [this]
-    (->> @builds
-         vals
-         (mapcat vals)))
+    (all-builds this 0))
+
+  (all-builds [this from]
+    (->> (keys @builds)
+         (mapcat #(builds-for-job @builds %))
+         (filter-builds-starting-from from)))
 
   (build [_ job-name build-id]
     (get-in @builds [job-name build-id]))

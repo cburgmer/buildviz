@@ -183,7 +183,7 @@
 
   (testing "should handle a build without a start"
     (let [app (the-app
-               {"aBuild" {"1" {}}}
+               {"aBuild" {"1" {:start 0}}}
                {})
           body (json-body (json-get-request app "/status"))]
       (is (= 1
@@ -306,10 +306,10 @@
            (:body (get-request (the-app) "/failphases"))))
 
     ;; GET should return fail phases
-    (let [app (the-app {"badBuild" {1 {:end a-timestamp :outcome "fail"}
-                                    2 {:end (+ a-timestamp 30000) :outcome "pass"}}
-                        "anotherBuild" {1 {:end (+ a-timestamp 10000) :outcome "fail"}
-                                        2 {:end (+ a-timestamp 20000) :outcome "pass"}}}
+    (let [app (the-app {"badBuild" {1 {:start 0 :end a-timestamp :outcome "fail"}
+                                    2 {:start 0 :end (+ a-timestamp 30000) :outcome "pass"}}
+                        "anotherBuild" {1 {:start 0 :end (+ a-timestamp 10000) :outcome "fail"}
+                                        2 {:start 0 :end (+ a-timestamp 20000) :outcome "pass"}}}
                        {})]
       (is (= "start,end,culprits\n1986-10-14 04:03:27,1986-10-14 04:03:57,anotherBuild|badBuild\n"
              (:body (get-request app "/failphases")))))
@@ -319,8 +319,8 @@
            (json-body (json-get-request (the-app) "/failphases"))))
 
     ;; GET should return fail phases as JSON
-    (let [app (the-app {"badBuild" {1 {:end 42 :outcome "fail"}
-                                    2 {:end 80 :outcome "pass"}}}
+    (let [app (the-app {"badBuild" {1 {:start 0 :end 42 :outcome "fail"}
+                                    2 {:start 70 :end 80 :outcome "pass"}}}
                        {})]
       (is (= [{"start" 42 "end" 80 "culprits" ["badBuild"]}]
              (json-body (json-get-request app "/failphases")))))
