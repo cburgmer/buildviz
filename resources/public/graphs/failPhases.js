@@ -140,6 +140,31 @@
         return axis;
     };
 
+    var axesPane,
+        getOrCreateAxesPane = function (svg) {
+            if (axesPane === undefined) {
+                axesPane = svg
+                    .append("g")
+                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+                axesPane.append("g")
+                    .attr("class", "x axis")
+                    .attr("transform", "translate(0," + height + ")");
+
+                axesPane.append("g")
+                    .attr("class", "y axis")
+                    .append("text")
+                    .attr("transform", "rotate(-90)")
+                    .attr("y", 6)
+                    .attr("dy", "-1.5em")
+                    .attr("dx", "-1.5em")
+                    .style("text-anchor", "end")
+                    .text("Time of the day");
+            }
+
+            return axesPane;
+        };
+
     var renderData = function (data, svg) {
         var phasesByDay = annotateDateAndTime(calculatePhasesByDay(data));
 
@@ -150,42 +175,26 @@
         x.domain([d3.min(phasesByDay, function(d) { return d.startOfDay; }),
                   d3.max(phasesByDay, function(d) { return d.endOfDay; })]);
 
-        var g = svg
-                .append("g")
-                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        var g = getOrCreateAxesPane(svg);
 
-        g.append("g")
-            .attr("class", "x axis")
-            .attr("transform", "translate(0," + height + ")")
+        g.selectAll('.x.axis')
             .call(saneDayTicks(xAxis, x));
 
-        g.append("g")
-            .attr("class", "y axis")
-            .call(yAxis)
-            .append("text")
-            .attr("transform", "rotate(-90)")
-            .attr("y", 6)
-            .attr("dy", "-1.5em")
-            .attr("dx", "-1.5em")
-            .style("text-anchor", "end")
-            .text("Time of the day");
+        g.selectAll('.y.axis')
+            .call(yAxis);
 
-        g.selectAll('rect')
-            .data(phasesByDay)
+        var selection = g.selectAll('rect')
+            .data(phasesByDay,
+                  function (d) {
+                      return d.start;
+                  });
+
+        selection.exit()
+            .remove();
+
+        selection
             .enter()
             .append('rect')
-            .attr('x', function (d) {
-                return x(startOfDay(d.start));
-            })
-            .attr('width', function (d) {
-                return x(d.endOfDay) - x(d.startOfDay);
-            })
-            .attr('y', function (d) {
-                return y(d.endTime);
-            })
-            .attr('height', function (d) {
-                return y(d.startTime) - y(d.endTime);
-            })
             .attr('class', function (d) {
                 var classNames = [];
                 if (isWeekend(d.start)) {
@@ -210,6 +219,20 @@
                     lines = lines.concat(d.culprits);
                 }
                 return lines.join('\n');
+            });
+
+        selection
+            .attr('x', function (d) {
+                return x(startOfDay(d.start));
+            })
+            .attr('width', function (d) {
+                return x(d.endOfDay) - x(d.startOfDay);
+            })
+            .attr('y', function (d) {
+                return y(d.endTime);
+            })
+            .attr('height', function (d) {
+                return y(d.startTime) - y(d.endTime);
             });
     };
 
