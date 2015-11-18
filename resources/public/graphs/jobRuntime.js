@@ -1,4 +1,4 @@
-(function (graphFactory, utils, jobColors, dataSource) {
+(function (timespanSelection, graphFactory, utils, jobColors, dataSource) {
     var margin = {top: 10, right: 0, bottom: 30, left: 60},
         width = graphFactory.size - margin.left - margin.right,
         height = graphFactory.size - margin.top - margin.bottom;
@@ -109,19 +109,25 @@
             });
     };
 
-    var graph = graphFactory.create({
-        id: 'jobRuntime',
-        headline: "Job runtime",
-        description: "<h3>Is the pipeline getting faster? Has a job gotten considerably slower?</h3><i>Color: job</i>",
-        csvUrl: "/pipelineruntime.csv",
-        noDataReason: "provided <code>start</code> and <code>end</code> times for your builds over at least two consecutive days"
+    var timespanSelector = timespanSelection.create(timespanSelection.timespans.twoMonths),
+        graph = graphFactory.create({
+            id: 'jobRuntime',
+            headline: "Job runtime",
+            description: "<h3>Is the pipeline getting faster? Has a job gotten considerably slower?</h3><i>Color: job</i>",
+            csvUrl: "/pipelineruntime.csv",
+            noDataReason: "provided <code>start</code> and <code>end</code> times for your builds over at least two consecutive days",
+            widgets: [timespanSelector.widget]
+        });
+
+    timespanSelector.load(function (selectedTimespan) {
+        var fromTimestamp = timespanSelection.startingFromTimestamp(selectedTimespan);
+
+        graph.loading();
+
+        dataSource.loadCSV('/pipelineruntime?from=' + fromTimestamp, function (data) {
+            graph.loaded();
+
+            renderData(data, graph.svg);
+        });
     });
-
-    graph.loading();
-
-    dataSource.loadCSV('/pipelineruntime', function (data) {
-        graph.loaded();
-
-        renderData(data, graph.svg);
-    });
-}(graphFactory, utils, jobColors, dataSource));
+}(timespanSelection, graphFactory, utils, jobColors, dataSource));
