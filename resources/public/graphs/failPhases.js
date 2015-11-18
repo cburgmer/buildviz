@@ -136,6 +136,8 @@
         var dayCount = (x.domain()[1] - x.domain()[0]) / (24 * 60 * 60 * 1000);
         if (dayCount < 10) {
             axis.ticks(d3.time.days, 1);
+        } else {
+            axis.ticks(10);
         }
         return axis;
     };
@@ -163,12 +165,18 @@
             }
 
             return axesPane;
+        },
+        removeAxesPane = function (svg) {
+            svg.select('g').remove();
+            axesPane = undefined;
         };
 
     var renderData = function (data, svg) {
         var phasesByDay = annotateDateAndTime(calculatePhasesByDay(data));
 
         if (!phasesByDay.length) {
+            removeAxesPane(svg);
+
             return;
         }
 
