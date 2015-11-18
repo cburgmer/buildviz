@@ -31,12 +31,43 @@
         var dayCount = (x.domain()[1] - x.domain()[0]) / (24 * 60 * 60 * 1000);
         if (dayCount < 10) {
             axis.ticks(d3.time.days, 1);
+        } else {
+            axis.ticks(10);
         }
         return axis;
     };
 
+    var axesPane,
+        getOrCreateAxesPane = function (svg) {
+            if (axesPane === undefined) {
+                 axesPane = svg
+                        .append("g")
+                        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+                axesPane.append("g")
+                    .attr("class", "x axis")
+                    .attr("transform", "translate(0," + height + ")");
+
+                axesPane.append("g")
+                    .attr("class", "y axis")
+                    .append("text")
+                    .attr("transform", "rotate(-90)")
+                    .attr("y", 6)
+                    .attr("dy", ".71em")
+                    .style("text-anchor", "end")
+                    .text("Runtime");
+            }
+
+            return axesPane;
+        },
+        removeAxesPane = function (svg) {
+            svg.select('g').remove();
+            axesPane = undefined;
+        };
+
     var renderData = function (data, svg) {
         if (data.length < 2) {
+            removeAxesPane(svg);
             return;
         }
 
@@ -68,28 +99,24 @@
             d3.max(runtimes, function(c) { return d3.max(c.values, function(v) { return v.runtime; }); })
         ]);
 
-        var g = svg
-                .append("g")
-                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        var g = getOrCreateAxesPane(svg);
 
-        g.append("g")
-            .attr("class", "x axis")
-            .attr("transform", "translate(0," + height + ")")
+        g.selectAll('.x.axis')
             .call(saneDayTicks(xAxis, x));
 
-        g.append("g")
-            .attr("class", "y axis")
-            .call(yAxis)
-            .append("text")
-            .attr("transform", "rotate(-90)")
-            .attr("y", 6)
-            .attr("dy", ".71em")
-            .style("text-anchor", "end")
-            .text("Runtime");
+        g.selectAll('.y.axis')
+            .call(yAxis);
 
-        g.selectAll(".job")
-            .data(runtimes)
-            .enter()
+        var selection = g.selectAll(".job")
+            .data(runtimes,
+                  function (d) {
+                      return d.jobName;
+                  });
+
+        selection.exit()
+            .remove();
+
+        selection.enter()
             .append("g")
             .attr("class", "job")
             .attr('data-id', function (d) {
@@ -97,15 +124,17 @@
             })
             .append("path")
             .attr("class", "line")
-            .attr("d", function (d) {
-                return line(d.values);
-            })
             .style('stroke', function (d) {
                 return color(d.jobName);
             })
             .append('title')
             .text(function (d) {
                 return d.jobName;
+            });
+
+        selection.select('path')
+            .attr("d", function (d) {
+                return line(d.values);
             });
     };
 
