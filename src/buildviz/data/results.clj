@@ -6,8 +6,7 @@
   (last-modified [this])
 
   (job-names     [this])
-  (builds        [this job-name]
-                 [this job-name from])
+  (builds        [this job-name from])
   (all-builds    [this]
                  [this from])
   (build         [this job-name build-id])
@@ -47,11 +46,6 @@
 
   (job-names [_]
     (keys @builds))
-
-  (builds [this job-name]
-    (->> job-name
-         (get @builds)
-         vals))
 
   (builds [this job-name from]
     (->> job-name

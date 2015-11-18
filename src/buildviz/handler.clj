@@ -112,9 +112,9 @@
 
 ;; pipelineruntime
 
-(defn- runtimes-by-day [build-results]
+(defn- runtimes-by-day [build-results from-timestamp]
   (let [job-names (results/job-names build-results)]
-    (->> (map #(jobinfo/average-runtime-by-day (results/builds build-results %))
+    (->> (map #(jobinfo/average-runtime-by-day (results/builds build-results % from-timestamp))
               job-names)
          (zipmap job-names)
          (filter #(not-empty (second %))))))
@@ -140,8 +140,8 @@
          (runtime-table-entry date runtimes-by-day job-names))
        runtimes))
 
-(defn- get-pipeline-runtime [build-results]
-  (let [runtimes-by-day (runtimes-by-day build-results)
+(defn- get-pipeline-runtime [build-results from-timestamp]
+  (let [runtimes-by-day (runtimes-by-day build-results from-timestamp)
         job-names (keys runtimes-by-day)]
 
     (http/respond-with-csv (csv/export-table (cons "date" job-names)
@@ -305,8 +305,8 @@
    (GET "/status" {} (get-status build-results pipeline-name))
    (GET "/jobs" {accept :accept query :query-params} (get-jobs build-results accept (from-timestamp query)))
    (GET "/jobs.csv" {query :query-params} (get-jobs build-results {:mime :csv} (from-timestamp query)))
-   (GET "/pipelineruntime" {} (get-pipeline-runtime build-results))
-   (GET "/pipelineruntime.csv" {} (get-pipeline-runtime build-results))
+   (GET "/pipelineruntime" {query :query-params} (get-pipeline-runtime build-results (from-timestamp query)))
+   (GET "/pipelineruntime.csv" {query :query-params} (get-pipeline-runtime build-results (from-timestamp query)))
    (GET "/failphases" {accept :accept query :query-params} (get-fail-phases build-results accept (from-timestamp query)))
    (GET "/failphases.csv" {query :query-params} (get-fail-phases build-results {:mime :csv} (from-timestamp query)))
    (GET "/failures" {accept :accept query :query-params} (get-failures build-results accept (from-timestamp query)))

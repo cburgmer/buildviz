@@ -36,8 +36,12 @@
 
 ;; helpers
 
-(defn get-request [app url]
-  (app (request :get url)))
+(defn get-request
+  ([app url]
+   (get-request app url {}))
+  ([app url query-params]
+   (app (-> (request :get url)
+            (query-string query-params)))))
 
 (defn plain-get-request [app url]
   (app (-> (request :get url)
@@ -292,8 +296,16 @@
                          (format "1986-10-14,%.8f,%.8f" 0.00001737 0.00004630)
                          (format "1986-10-15,%.8f," 0.00004630)
                          ""])
-             (:body (get-request app "/pipelineruntime")))))
-    ))
+             (:body (get-request app "/pipelineruntime"))))))
+
+  (testing "should respect 'from' filter"
+    (let [app (the-app {"aBuild" {1 {:start (- a-timestamp a-day), :end (- a-timestamp a-day)}}
+                        "anotherBuild" {1 {:start a-timestamp :end a-timestamp}}}
+                       {})]
+      (is (= (join "\n" ["date,anotherBuild"
+                         (format "1986-10-14,%.8f" 0.0)
+                         ""])
+             (:body (get-request app "/pipelineruntime" {"from" a-timestamp})))))))
 
 (deftest FailPhases
   (testing "GET to /failphases"
