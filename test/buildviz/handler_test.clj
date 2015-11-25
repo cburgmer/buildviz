@@ -6,7 +6,7 @@
              [coerce :as tc]
              [core :as t]]
             [clojure
-             [string :refer :all]
+             [string :as str]
              [test :refer :all]]
             [ring.mock.request :refer :all]))
 
@@ -221,7 +221,7 @@
       (a-build app "someBuild" 3, {:start 70 :end 90 :outcome "fail" :inputs [{:source_id 42 :revision "other_revision"}]})
       (a-build app "someBuild" 4, {:start 100 :end 120 :outcome "pass" :inputs [{:source_id 42 :revision "yet_another_revision"}]})
       (is (= (:body (plain-get-request app "/jobs"))
-             (join ["job,averageRuntime,totalCount,failedCount,flakyCount\n"
+             (str/join ["job,averageRuntime,totalCount,failedCount,flakyCount\n"
                     (format "someBuild,%.8f,4,2,1\n" 0.00000023)]))))
 
     ;; GET should return empty map for json by default
@@ -292,7 +292,7 @@
       (a-build app "aBuild" 3, {:start (+ a-timestamp a-day) :end (+ a-timestamp a-day 4000)})
       (a-build app "anotherBuild" 1, {:start a-timestamp :end (+ a-timestamp 4000)})
       (a-build app "buildWithoutTimestamps" 1, {:outcome "pass"})
-      (is (= (join "\n" ["date,aBuild,anotherBuild"
+      (is (= (str/join "\n" ["date,aBuild,anotherBuild"
                          (format "1986-10-14,%.8f,%.8f" 0.00001737 0.00004630)
                          (format "1986-10-15,%.8f," 0.00004630)
                          ""])
@@ -302,7 +302,7 @@
     (let [app (the-app {"aBuild" {1 {:start (- a-timestamp a-day), :end (- a-timestamp a-day)}}
                         "anotherBuild" {1 {:start a-timestamp :end a-timestamp}}}
                        {})]
-      (is (= (join "\n" ["date,anotherBuild"
+      (is (= (str/join "\n" ["date,anotherBuild"
                          (format "1986-10-14,%.8f" 0.0)
                          ""])
              (:body (get-request app "/pipelineruntime" {"from" a-timestamp})))))))
@@ -367,7 +367,7 @@
                                         2 "<testsuites><testsuite name=\"a suite\"><testcase name=\"a test\" classname=\"a class\"><failure/></testcase></testsuite></testsuites>"}
                         "anotherFailingBuild" {1 "<testsuites><testsuite name=\"another suite\"><testsuite name=\"nested suite\"><testcase name=\"another test\" classname=\"some class\"><failure/></testcase></testsuite></testsuite></testsuites>"}
                         "passingBuild" {1 "<testsuites><testsuite name=\"suite\"><testcase name=\"test\" classname=\"class\"></testcase></testsuite></testsuites>"}})]
-      (is (= (join "\n" ["failedCount,job,testsuite,classname,name"
+      (is (= (str/join "\n" ["failedCount,job,testsuite,classname,name"
                          "1,anotherFailingBuild,another suite: nested suite,some class,another test"
                          "2,failingBuild,a suite,a class,a test"
                          ""])
@@ -432,14 +432,14 @@
     (let [app (the-app {"aBuild" {1 {:start 0}}}
                        {"aBuild" {1 "<testsuites><testsuite name=\"a suite\"><testcase name=\"a,test\" classname=\"a class\" time=\"10\"></testcase></testsuite></testsuites>"}})]
       (is (= (:body (get-request app "/testcases"))
-             (join ["averageRuntime,job,testsuite,classname,name\n"
+             (str/join ["averageRuntime,job,testsuite,classname,name\n"
                     (format "%.8f,aBuild,a suite,a class,\"a,test\"\n" 0.00011574)]))))
 
     ;; GET should handle nested testsuites in CSV
     (let [app (the-app {"aBuild" {1 {:start 0}}}
                        {"aBuild" {1 "<testsuites><testsuite name=\"a suite\"><testsuite name=\"nested suite\"><testcase name=\"a,test\" classname=\"a class\" time=\"10\"></testcase></testsuite></testsuite></testsuites>"}})]
       (is (= (:body (plain-get-request app "/testcases"))
-             (join ["averageRuntime,job,testsuite,classname,name\n"
+             (str/join ["averageRuntime,job,testsuite,classname,name\n"
                     (format "%.8f,aBuild,a suite: nested suite,a class,\"a,test\"\n" 0.00011574)]))))
 
     ;; GET should not include builds without test cases
@@ -481,7 +481,7 @@
                           "2" {:start 1}}}
                {"aBuild" {"1" "<testsuite name=\"a suite\"><testsuite name=\"nested suite\"><testcase name=\"testcase\" classname=\"class\" time=\"10\"/><testcase name=\"another testcase\" classname=\"class\" time=\"30\"/></testsuite></testsuite>"
                           "2" "<testsuite name=\"a suite\"><testsuite name=\"nested suite\"><testcase name=\"testcase\" classname=\"class\" time=\"60\"/></testsuite></testsuite>"}})]
-      (is (= (join ["averageRuntime,job,testsuite,classname\n"
+      (is (= (str/join ["averageRuntime,job,testsuite,classname\n"
                     (format "%.8f,aBuild,a suite: nested suite,class\n" 0.0005787)])
              (:body (plain-get-request app "/testclasses")))))
 
@@ -507,7 +507,7 @@
                                      "passing" {:outcome "pass" :inputs {:revision 0 :source_id 42}}}}
                {"aBuild" {"failing" "<testsuite name=\"a suite\"><testsuite name=\"nested suite\"><testcase name=\"testcase\" classname=\"class\"><failure/></testcase></testsuite></testsuite>"}
                 "anotherBuild" {"failing" "<testsuite name=\"a suite\"><testcase name=\"testcase\" classname=\"class\"><failure/></testcase></testsuite>"}})]
-      (is (= (join ["latestFailure,flakyCount,job,latestBuildId,testsuite,classname,name\n"
+      (is (= (str/join ["latestFailure,flakyCount,job,latestBuildId,testsuite,classname,name\n"
                     "1986-10-14 04:03:27,1,aBuild,failing,a suite: nested suite,class,testcase\n"
                     "1986-10-14 04:03:27,1,anotherBuild,failing,a suite,class,testcase\n"])
              (:body (plain-get-request app "/flakytestcases")))))))
