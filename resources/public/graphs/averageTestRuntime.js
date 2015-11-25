@@ -1,4 +1,4 @@
-(function (graphFactory, zoomableSunburst, utils, jobColors, dataSource) {
+(function (timespanSelection, graphFactory, zoomableSunburst, utils, jobColors, dataSource) {
     var title = function (entry) {
         return entry.name + ' (' + utils.formatTimeInMs(entry.averageRuntime, {showMillis: true}) + ')';
     };
@@ -13,25 +13,32 @@
         return hasOnlyOneTestSuite ? children[0].children : children;
     };
 
-    var buildNodeStructure = function (hierarchy) {
+    var concatIds = function (parentId, id) {
+        return parentId + '/' + id;
+    };
+
+    var buildNodeStructure = function (hierarchy, parentId) {
         return Object.keys(hierarchy).map(function (nodeName) {
-            var entry = hierarchy[nodeName];
+            var entry = hierarchy[nodeName],
+                id = concatIds(parentId, nodeName);
 
             if (entry.name) {
                 return {
                     name: nodeName,
+                    id: id,
                     averageRuntime: entry.averageRuntime
                 };
             } else {
                 return {
                     name: nodeName,
-                    children: buildNodeStructure(entry)
+                    id: id,
+                    children: buildNodeStructure(entry, id)
                 };
             }
         });
     };
 
-    var buildPackageHierarchy = function (classEntries) {
+    var buildPackageHierarchy = function (classEntries, parentId) {
         var packageHierarchy = {};
 
         classEntries.forEach(function (entry) {
@@ -50,7 +57,7 @@
             branch[className] = entry;
         });
 
-        return buildNodeStructure(packageHierarchy);
+        return buildNodeStructure(packageHierarchy, parentId);
     };
 
     var mergeSingleChildHierarchy = function (elem) {
@@ -91,17 +98,17 @@
         return elem;
     };
 
-    var transformClasses = function (classNodes) {
-        return buildPackageHierarchy(classNodes)
+    var transformClasses = function (classNodes, parentId) {
+        return buildPackageHierarchy(classNodes, parentId)
             .map(addAccumulatedApproximateRuntime)
             .map(mergeSingleChildHierarchy)
             .map(addTitle)
             .map(toSunburstFormat);
     };
 
-    var transformTestSuite = function (node) {
+    var transformTestSuite = function (node, parentId) {
         if (!node.children) {
-            return transformClasses([node])[0];
+            return transformClasses([node], parentId)[0];
         }
 
         var classNodes = node.children.filter(function (child) {
@@ -112,9 +119,14 @@
             return child.children;
         });
 
+        var id = concatIds(parentId, node.name);
+
         return {
             name: node.name,
-            children: transformClasses(classNodes).concat(nestedSuites.map(transformTestSuite))
+            id: id,
+            children: transformClasses(classNodes, id).concat(nestedSuites.map(function(suite) {
+                return transformTestSuite(suite, id);
+            }))
         };
     };
 
@@ -148,36 +160,38 @@
                     name: jobName,
                     color: color(jobName),
                     id: 'jobname-' + jobName,
-                    children: skipParentNodesIfAllOnlyHaveOneChild(skipOnlyTestSuite(children.map(transformTestSuite)))
+                    children: skipParentNodesIfAllOnlyHaveOneChild(skipOnlyTestSuite(children.map(function (child) {
+                        return transformTestSuite(child, jobName);
+                    })))
                 };
             });
     };
 
-    var timestampOneWeekAgo = function () {
-        var today = new Date(),
-            oneWeekAgo = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);
-        return +oneWeekAgo;
-    };
-
-    var graph = graphFactory.create({
-        id: 'averageTestRuntime',
-        headline: "Average test runtime",
-        description: "<h3>Where is the time spent in testing?</h3><i>Color: job/test suite, arc size: duration</i>",
-        csvUrl: "/testclasses.csv",
-        noDataReason: "uploaded test results"
-    });
+    var timespanSelector = timespanSelection.create(timespanSelection.timespans.sevenDays),
+        graph = graphFactory.create({
+            id: 'averageTestRuntime',
+            headline: "Average test runtime",
+            description: "<h3>Where is the time spent in testing?</h3><i>Color: job/test suite, arc size: duration</i>",
+            csvUrl: "/testclasses.csv",
+            noDataReason: "uploaded test results",
+            widgets: [timespanSelector.widget]
+        });
     var sunburst = zoomableSunburst(graph.svg, graphFactory.size);
 
-    graph.loading();
+    timespanSelector.load(function (selectedTimespan) {
+        var fromTimestamp = timespanSelection.startingFromTimestamp(selectedTimespan);
+        graph.loading();
 
-    dataSource.load('/testclasses?from='+ timestampOneWeekAgo(), function (testsuites) {
-        graph.loaded();
+        dataSource.load('/testclasses?from='+ fromTimestamp, function (testsuites) {
+            graph.loaded();
 
-        var data = {
-            name: "Testsuites",
-            children: transformTestsuites(testsuites)
-        };
+            var data = {
+                name: "Testsuites",
+                id: '__testsuites__',
+                children: transformTestsuites(testsuites)
+            };
 
-        sunburst.render(data);
+            sunburst.render(data);
+        });
     });
-}(graphFactory, zoomableSunburst, utils, jobColors, dataSource));
+}(timespanSelection, graphFactory, zoomableSunburst, utils, jobColors, dataSource));

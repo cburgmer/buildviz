@@ -1,6 +1,19 @@
 var zoomableSunburst = function (svg, diameter) {
     // Following http://bl.ocks.org/metmajer/5480307
 
+    var rootPane,
+        getOrCreateRootPane = function () {
+            if (!rootPane) {
+                rootPane = svg.append("g")
+                    .attr("transform", "translate(" + (diameter / 2) + "," + (diameter / 2) + ")");
+            }
+            return rootPane;
+        },
+        removeRootPane = function () {
+            svg.select('g').remove();
+            rootPane = undefined;
+        };
+
     svg.attr('class', 'zoomableSunburst');
 
     var radius = diameter / 2,
@@ -70,6 +83,7 @@ var zoomableSunburst = function (svg, diameter) {
 
     var render = function (data) {
         if (!data.children.length) {
+            removeRootPane();
             return;
         }
 
@@ -125,11 +139,23 @@ var zoomableSunburst = function (svg, diameter) {
                 });
         };
 
-        var parent = svg.append("g")
-                .attr("transform", "translate(" + (diameter / 2) + "," + (diameter / 2) + ")");
+        var parent = getOrCreateRootPane();
 
-        var g = parent.datum(data).selectAll("g")
-                .data(partition.nodes)
+        var selection = parent
+                .selectAll('g')
+                .data(partition.nodes(data),
+                      function (d) {
+                          if (d.id) {
+                              return d.id;
+                          }
+                          // TODO handle missing IDs
+                          return Math.random();
+                      });
+
+        selection.exit()
+            .remove();
+
+        var g = selection
                 .enter()
                 .append("g")
                 .attr('data-id', function (d) {
@@ -140,27 +166,31 @@ var zoomableSunburst = function (svg, diameter) {
 
         var path = g.append("path")
                 .attr("d", arc)
-                .style("stroke", "#fff")
-                .style("fill", function (d) {
-                    if (d.depth) {
-                        return d.color || inheritDirectParentColorForLeafs(d);
-                    } else {
-                        return 'transparent';
-                    }
-                });
+                .style("stroke", "#fff");
 
         var text = g.append("text")
-                .attr("display", displayText)
-                .attr("transform", function(d) { return "rotate(" + computeTextRotation(d) + ")"; })
-                .attr("x", function(d) { return y(d.y); })
-                .attr("dx", "6") // margin
-                .attr("dy", ".35em") // vertical-align
-                .text(function(d) { return maxLength(d.name, 15); });
+            .text(function(d) { return maxLength(d.name, 15); });
 
         g.append("title")
             .text(function (d) {
                 return d.title || d.name;
             });
+
+        selection.select('path')
+            .style("fill", function (d) {
+                if (d.depth) {
+                    return d.color || inheritDirectParentColorForLeafs(d);
+                } else {
+                    return 'transparent';
+                }
+            });
+
+        selection.select("text")
+            .attr("display", displayText)
+            .attr("transform", function(d) { return "rotate(" + computeTextRotation(d) + ")"; })
+            .attr("x", function(d) { return y(d.y); })
+            .attr("dx", "6") // margin
+            .attr("dy", ".35em"); // vertical-align
     };
 
     return {
