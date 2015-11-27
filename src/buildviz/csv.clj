@@ -1,14 +1,15 @@
 (ns buildviz.csv
-  (:require [clj-time.core :as t]
-            [clj-time.format :as tf]
-            [clj-time.coerce :as tc])
-  (:use [clojure.string :only (join escape)]))
+  (:require [clj-time
+             [coerce :as tc]
+             [core :as t]
+             [format :as tf]]
+            [clojure.string :as str]))
 
 (def separator ",")
 
 (defn- in-quotes [value]
   (when-not (nil? value)
-    (join ["\"" (escape value {\" "\"\""}) "\""])))
+    (str/join ["\"" (str/escape value {\" "\"\""}) "\""])))
 
 (defn- needs-quoting? [value]
   (or (.contains value separator)
@@ -22,7 +23,7 @@
 
 (defn export [values]
   (->> (map quote-separator values)
-       (join separator)))
+       (str/join separator)))
 
 
 ;; http://stackoverflow.com/questions/804118/best-timestamp-format-for-csv-excel
@@ -40,6 +41,9 @@
     (format "%.8f" (float (/ duration day-in-millis)))))
 
 (defn export-table [header entries]
-  (join [(join "\n" (cons (export header)
+  (str/join [(str/join "\n" (cons (export header)
                           (map export entries)))
          "\n"]))
+
+(defn serialize-nested-testsuites [testsuite-id]
+  (str/join ": " testsuite-id))
