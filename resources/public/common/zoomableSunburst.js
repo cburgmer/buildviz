@@ -65,9 +65,17 @@ var zoomableSunburst = function (svg, diameter) {
             yd = d3.interpolate(y.domain(), [d.y, 1]),
             yr = d3.interpolate(y.range(), [d.y ? 20 : 0, radius]);
         return function(d, i) {
-            return i
-                ? function(t) { return arc(d); }
-            : function(t) { x.domain(xd(t)); y.domain(yd(t)).range(yr(t)); return arc(d); };
+            if (i === 0) {
+                return function(t) {
+                    x.domain(xd(t));
+                    y.domain(yd(t)).range(yr(t));
+                    return arc(d);
+                };
+            } else {
+                return function(t) {
+                    return arc(d);
+                };
+            }
         };
     };
 
@@ -81,60 +89,69 @@ var zoomableSunburst = function (svg, diameter) {
         }
     };
 
+    var isParentNode = function (potentialParentNode, node) {
+        var parentMaxY = potentialParentNode.y + potentialParentNode.dy,
+            parentMaxX = potentialParentNode.x + potentialParentNode.dx;
+        /*
+         Check if the node's hierarchical y placement just follows the
+         parent node's placement and the node's hierarchical x placement is
+         within the interval of the parent node
+         */
+        return parentMaxY === node.y && potentialParentNode.x <= node.x && node.x <= parentMaxX;
+    };
+
+    var isChildNode = function (node, potentialParentNode) {
+        // Check if the node's hierarchical placement lies within the interval of the parent node
+        return node.x >= potentialParentNode.x && node.x < (potentialParentNode.x + potentialParentNode.dx);
+    };
+
+    var enoughPlaceForText = function (d, selectedNode) {
+        var currentDx = selectedNode ? selectedNode.dx : 1;
+        return (d.dx / currentDx) > 0.015;
+    };
+
+    var displayText = function(d, selectedNode) {
+        var currentDepth = selectedNode ? selectedNode.depth : 0;
+        if (d.depth === 0 || d.depth < currentDepth || !enoughPlaceForText(d, selectedNode)) {
+            return false;
+        }
+        return true;
+    };
+
     var render = function (data) {
         if (!data.children.length) {
             removeRootPane();
             return;
         }
 
-        var selectedNode;
-        var selectNode = function (node) {
-            selectedNode = node;
-
+        var selectNode = function (selectedNode) {
             selection.select('text')
                 .attr("display", 'none');
 
             selection.select('path')
                 .transition()
                 .duration(750)
-                .attrTween("d", arcTween(node))
+                .attrTween("d", arcTween(selectedNode))
                 .each("start", function () {
                     d3.select(this.parentNode)
                         .attr("display", "inherit");
                 })
-                .each("end", function(e, i) {
-                    // check if the animated element's data e lies within the visible angle span given in d
-                    if (e.x >= node.x && e.x < (node.x + node.dx)) {
-                        d3.select(this.parentNode).select("text")
-                            .attr("display", displayText)
-                            .attr("transform", function() { return "rotate(" + computeTextRotation(e) + ")"; })
+                .each("end", function(e) {
+                    if (isChildNode(e, selectedNode)) {
+                        d3.select(this.parentNode)
+                            .select("text")
+                            .attr("display", function (d) {
+                                return displayText(d, selectedNode) ? 'inherit' : 'none';
+                            })
+                            .attr("transform", function(d) { return "rotate(" + computeTextRotation(d) + ")"; })
                             .attr("x", function(d) { return y(d.y); });
                     } else {
-                        if (!isParent(e, node)) {
+                        if (!isParentNode(e, selectedNode)) {
                             d3.select(this.parentNode)
                                 .attr("display", "none");
                         }
                     }
                 });
-        };
-
-        var enoughPlaceForText = function (d) {
-            var currentDx = selectedNode ? selectedNode.dx : 1;
-            return (d.dx / currentDx) > 0.015;
-        };
-
-        var displayText = function(d) {
-            var currentDepth = selectedNode ? selectedNode.depth : 0;
-            if (d.depth === 0 || d.depth < currentDepth || !enoughPlaceForText(d)) {
-                return 'none';
-            }
-            return '';
-        };
-
-        var isParent = function (parent, elem) {
-            var parentMaxY = parent.y + parent.dy,
-                parentMaxX = parent.x + parent.dx;
-            return parentMaxY === elem.y && parent.x <= elem.x && elem.x <= parentMaxX;
         };
 
         var parent = getOrCreateRootPane();
@@ -161,19 +178,19 @@ var zoomableSunburst = function (svg, diameter) {
                 .attr('data-id', function (d) {
                     return d.id;
                 })
-                .style('cursor', 'pointer')
                 .on('click', function (d) {
                     d3.event.preventDefault();
 
                     selectNode(d);
                 });
 
-        g.append("path")
-                .style("stroke", "#fff");
+        g.append("path");
 
         g.append("text")
-                .attr('display', 'none')
-                .text(function(d) { return maxLength(d.name, 15); });
+            .attr('display', 'none')
+            .attr("dx", "6") // margin
+            .attr("dy", ".35em") // vertical-align
+            .text(function(d) { return maxLength(d.name, 15); });
 
         g.append("title")
             .text(function (d) {
@@ -189,10 +206,6 @@ var zoomableSunburst = function (svg, diameter) {
                     return 'transparent';
                 }
             });
-
-        selection.select("text")
-            .attr("dx", "6") // margin
-            .attr("dy", ".35em"); // vertical-align
 
         selectNode(nodes[0]);
     };

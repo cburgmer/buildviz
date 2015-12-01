@@ -1,3 +1,9 @@
 .zoomableSunburst .highlightedElement:not(:hover) text {
     font-weight: bold;
 }
+.zoomableSunburst g {
+    cursor: pointer;
+}
+.zoomableSunburst path {
+    stroke: white;
+}
