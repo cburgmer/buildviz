@@ -1,5 +1,6 @@
 var zoomableSunburst = function (svg, diameter) {
-    var zoomTransitionDuration = 750;
+    var zoomTransitionDuration = 750,
+        maxCaptionCharacterCount = diameter / 16;
 
     var rootPane,
         getOrCreateRootPane = function () {
@@ -83,7 +84,7 @@ var zoomableSunburst = function (svg, diameter) {
     var maxLength = function (text, length) {
         var ellipsis = '…';
         if (text.length > length) {
-            return text.substr(0, length) + ellipsis;
+            return text.substr(0, length - 1) + ellipsis;
         } else {
             return text;
         }
@@ -153,7 +154,14 @@ var zoomableSunburst = function (svg, diameter) {
             .attr('display', 'none')
             .attr("dx", "6") // margin
             .attr("dy", ".35em") // vertical-align
-            .text(function(d) { return maxLength(d.name, 15); });
+            .text(function(d) {
+                if (d.children) {
+                    return maxLength(d.name, maxCaptionCharacterCount * d.dy);
+                }
+                var totalDepthCount = 1.0 / d.dy,
+                    depthsLeft = totalDepthCount - d.depth;
+                return maxLength(d.name, maxCaptionCharacterCount * depthsLeft * d.dy);
+            });
 
         g.append("title")
             .text(function (d) {
