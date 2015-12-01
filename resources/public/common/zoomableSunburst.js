@@ -124,13 +124,14 @@ var zoomableSunburst = function (svg, diameter) {
             return;
         }
 
+        var initialized = false;
         var selectNode = function (selectedNode) {
             selection.select('text')
                 .attr("display", 'none');
 
             selection.select('path')
                 .transition()
-                .duration(750)
+                .duration(initialized ? 750 : 0)
                 .attrTween("d", arcTween(selectedNode))
                 .each("start", function () {
                     d3.select(this.parentNode)
@@ -152,6 +153,8 @@ var zoomableSunburst = function (svg, diameter) {
                         }
                     }
                 });
+
+            initialized = true;
         };
 
         var parent = getOrCreateRootPane();
@@ -198,7 +201,6 @@ var zoomableSunburst = function (svg, diameter) {
             });
 
         selection.select('path')
-            .attr("d", arc)
             .style("fill", function (d) {
                 if (d.depth) {
                     return d.color || inheritDirectParentColorForLeafs(d);
