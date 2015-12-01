@@ -1,5 +1,5 @@
 var zoomableSunburst = function (svg, diameter) {
-    // Following http://bl.ocks.org/metmajer/5480307
+    var zoomTransitionDuration = 750;
 
     var rootPane,
         getOrCreateRootPane = function () {
@@ -89,22 +89,6 @@ var zoomableSunburst = function (svg, diameter) {
         }
     };
 
-    var isParentNode = function (potentialParentNode, node) {
-        var parentMaxY = potentialParentNode.y + potentialParentNode.dy,
-            parentMaxX = potentialParentNode.x + potentialParentNode.dx;
-        /*
-         Check if the node's hierarchical y placement just follows the
-         parent node's placement and the node's hierarchical x placement is
-         within the interval of the parent node
-         */
-        return parentMaxY === node.y && potentialParentNode.x <= node.x && node.x <= parentMaxX;
-    };
-
-    var isChildNode = function (node, potentialParentNode) {
-        // Check if the node's hierarchical placement lies within the interval of the parent node
-        return node.x >= potentialParentNode.x && node.x < (potentialParentNode.x + potentialParentNode.dx);
-    };
-
     var enoughPlaceForText = function (d, selectedNode) {
         var currentDx = selectedNode ? selectedNode.dx : 1;
         return (d.dx / currentDx) > 0.015;
@@ -118,50 +102,28 @@ var zoomableSunburst = function (svg, diameter) {
         return true;
     };
 
-    var render = function (data) {
-        if (!data.children.length) {
-            removeRootPane();
-            return;
+    var allChildNodesFor = function (parentNode) {
+        if (!parentNode.children) {
+            return [parentNode];
         }
 
-        var initialized = false;
-        var selectNode = function (selectedNode) {
-            selection.select('text')
-                .attr("display", 'none');
+        return parentNode.children.reduce(function (nodes, childNode) {
+            return nodes.concat(allChildNodesFor(childNode));
+        }, [parentNode]);
+    };
 
-            selection.select('path')
-                .transition()
-                .duration(initialized ? 750 : 0)
-                .attrTween("d", arcTween(selectedNode))
-                .each("start", function () {
-                    d3.select(this.parentNode)
-                        .attr("display", "inherit");
-                })
-                .each("end", function(e) {
-                    if (isChildNode(e, selectedNode)) {
-                        d3.select(this.parentNode)
-                            .select("text")
-                            .attr("display", function (d) {
-                                return displayText(d, selectedNode) ? 'inherit' : 'none';
-                            })
-                            .attr("transform", function(d) { return "rotate(" + computeTextRotation(d) + ")"; })
-                            .attr("x", function(d) { return y(d.y); });
-                    } else {
-                        if (!isParentNode(e, selectedNode)) {
-                            d3.select(this.parentNode)
-                                .attr("display", "none");
-                        }
-                    }
-                });
+    var allNodesFor = function (node) {
+        var nodes = allChildNodesFor(node);
+        if (node.parent) {
+            nodes.push(node.parent);
+        }
+        return nodes;
+    };
 
-            initialized = true;
-        };
+    var renderSunburst = function (node, domElement, showTransition) {
+        var nodes = allNodesFor(node);
 
-        var parent = getOrCreateRootPane();
-
-        var nodes = partition.nodes(data);
-
-        var selection = parent
+        var selection = domElement
                 .selectAll('g')
                 .data(nodes,
                       function (d) {
@@ -172,9 +134,7 @@ var zoomableSunburst = function (svg, diameter) {
                           return Math.random();
                       });
 
-        selection.exit()
-            .remove();
-
+        // enter
         var g = selection
                 .enter()
                 .append("g")
@@ -184,7 +144,7 @@ var zoomableSunburst = function (svg, diameter) {
                 .on('click', function (d) {
                     d3.event.preventDefault();
 
-                    selectNode(d);
+                    renderSunburst(d, domElement, true);
                 });
 
         g.append("path");
@@ -200,6 +160,10 @@ var zoomableSunburst = function (svg, diameter) {
                 return d.title || d.name;
             });
 
+        // data
+        selection.select('text')
+            .attr("display", 'none');
+
         selection.select('path')
             .style("fill", function (d) {
                 if (d.depth) {
@@ -209,7 +173,44 @@ var zoomableSunburst = function (svg, diameter) {
                 }
             });
 
-        selectNode(nodes[0]);
+        selection.select('path')
+            .transition()
+            .duration(showTransition ? zoomTransitionDuration : 0)
+            .attrTween("d", arcTween(node))
+            .each("end", function(e) {
+                d3.select(this.parentNode)
+                    .select("text")
+                    .attr("display", function (d) {
+                        return displayText(d, node) ? 'inherit' : 'none';
+                    })
+                    .attr("transform", function(d) { return "rotate(" + computeTextRotation(d) + ")"; })
+                    .attr("x", function(d) { return y(d.y); });
+            });
+
+        // exit
+        var exit = selection
+                .exit();
+
+        exit.select('text')
+            .remove();
+
+        exit.select('path')
+            .transition()
+            .duration(zoomTransitionDuration)
+            .attrTween("d", arcTween(node))
+            .each("end", function() {
+                d3.select(this.parentNode)
+                    .remove();
+            });
+    };
+
+    var render = function (data) {
+        if (!data.children.length) {
+            removeRootPane();
+            return;
+        }
+
+        renderSunburst(partition.nodes(data)[0], getOrCreateRootPane(), false);
     };
 
     return {
