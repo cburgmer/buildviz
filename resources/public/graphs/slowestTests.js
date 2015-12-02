@@ -1,5 +1,9 @@
-(function (graphFactory, zoomableSunburst, dataSource, jobColors, utils) {
+(function (timespanSelection, graphFactory, zoomableSunburst, dataSource, jobColors, utils) {
     var testCountPerJob = 5;
+
+    var concatIds = function (parentId, id) {
+        return parentId + '/' + id;
+    };
 
     var title = function (entry) {
         return entry.name + ' (' + utils.formatTimeInMs(entry.averageRuntime, {showMillis: true}) + ')';
@@ -31,15 +35,19 @@
         }
     };
 
-    var transformNode = function (node) {
-        var elem = skipTestSuiteWithOnlyOneClassOrNestedSuite(node);
+    var transformNode = function (node, parentId) {
+        var elem = skipTestSuiteWithOnlyOneClassOrNestedSuite(node),
+            id = concatIds(parentId, elem.name);
 
         var e = {
-            name: elem.name
+            name: elem.name,
+            id: id
         };
 
         if (elem.children) {
-            e.children = elem.children.map(transformNode);
+            e.children = elem.children.map(function (child) {
+                return transformNode(child, id);
+            });
         } else {
             e.size = elem.averageRuntime;
             e.title = title(elem);
@@ -124,36 +132,39 @@
                     name: jobName,
                     color: color(jobName),
                     id: 'jobname-' + jobName,
-                    children: children.map(transformNode)
+                    children: children.map(function (child) {
+                        return transformNode(child, jobName);
+                    })
                 };
             });
     };
 
-    var timestampOneWeekAgo = function () {
-        var today = new Date(),
-            oneWeekAgo = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);
-        return +oneWeekAgo;
-    };
-
-    var graph = graphFactory.create({
-        id: 'slowestTests',
-        headline: "Slowest tests",
-        description: "<h3>What could be the first place to look at to improve test runtime?</h3><i>Color: job/test suite, arc size: test runtime</i>",
-        csvUrl: "/testcases.csv",
-        noDataReason: "uploaded test results"
-    });
+    var timespanSelector = timespanSelection.create(timespanSelection.timespans.sevenDays),
+        graph = graphFactory.create({
+            id: 'slowestTests',
+            headline: "Slowest tests",
+            description: "<h3>What could be the first place to look at to improve test runtime?</h3><i>Color: job/test suite, arc size: test runtime</i>",
+            csvUrl: "/testcases.csv",
+            noDataReason: "uploaded test results",
+            widgets: [timespanSelector.widget]
+        });
     var sunburst = zoomableSunburst(graph.svg, graphFactory.size);
 
-    graph.loading();
+    timespanSelector.load(function (selectedTimespan) {
+        var fromTimestamp = timespanSelection.startingFromTimestamp(selectedTimespan);
+        graph.loading();
 
-    dataSource.load('/testcases?from='+ timestampOneWeekAgo(), function (testCases) {
-        graph.loaded();
+        dataSource.load('/testcases?from='+ fromTimestamp, function (testCases) {
+            graph.loaded();
 
-        var data = {
-            name: "Tests",
-            children: transformTestCases(testCases)
-        };
+            var data = {
+                name: "Tests",
+                id: '__tests__',
+                children: transformTestCases(testCases)
+            };
 
-        sunburst.render(data);
+            sunburst.render(data);
+        });
     });
-}(graphFactory, zoomableSunburst, dataSource, jobColors, utils));
+
+}(timespanSelection, graphFactory, zoomableSunburst, dataSource, jobColors, utils));

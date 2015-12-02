@@ -1,0 +1,83 @@
+<!doctype html>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../resources/public/common/base.css">
+<link rel="stylesheet" href="../../resources/public/common/graphFactory.css">
+<link rel="stylesheet" href="../../resources/public/common/timespanSelection.css">
+<link rel="stylesheet" href="../../resources/public/common/zoomableSunburst.css">
+<script>
+    var dataSource = {
+        load: function (_, callback) {
+            callback({
+                aBuild: {
+                    children: [{
+                        name: "test suite",
+                        children: [{
+                            name: "package.sub.classname",
+                            children: [{
+                                name: 'a test',
+                                averageRuntime: 44612
+                            }]
+                        }]
+                    }, {
+                        name: "another suite",
+                        children: [{
+                            name: "package.classname",
+                            children: [{
+                                name: 'a test',
+                                averageRuntime: 30000
+                            }]
+                        }]
+                    }]
+                },
+                anotherBuild: {
+                    children: [{
+                        name: "some suite",
+                        children: [{
+                            name: "com.example.and.more.class.doge",
+                            children: [{
+                                name: 'a test',
+                                averageRuntime: 25000
+                            }]
+                        }, {
+                            name: "com.example.bee",
+                            children: [{
+                                name: 'a test',
+                                averageRuntime: 55000
+                            }]
+                        }, {
+                            name: "com.example.zen.nested",
+                            children: [{
+                                name: 'a test',
+                                averageRuntime: 10000
+                            }]
+                        }, {
+                            name: "com.example.zen.nested",
+                            children: [{
+                                name: 'a test',
+                                averageRuntime: 10000
+                            }, {
+                                name: 'another test',
+                                averageRuntime: 20000
+                            }, {
+                                name: 'yet another test',
+                                averageRuntime: 30000
+                            }]
+                        }]
+                    }]
+                }
+            });
+        }
+    };
+</script>
+<script src="../../resources/public/node_modules/d3/d3.min.js"></script>
+<script src="../../resources/public/common/graphFactory.js"></script>
+<script src="../../resources/public/common/timespanSelection.js"></script>
+<script src="../../resources/public/common/utils.js"></script>
+<script src="../../resources/public/common/zoomableSunburst.js"></script>
+<script src="../../resources/public/common/jobColors.js"></script>
+<body>
+    <script src="../../resources/public/graphs/slowestTests.js"></script>
+    <script>
+        d3.timer.flush();
+    </script>
+</body>
