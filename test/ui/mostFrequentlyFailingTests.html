@@ -9,13 +9,14 @@
         load: function (_, callback) {
             callback({
                 aBuild: {
+                    failedCount: 5,
                     children: [{
                         name: "test suite",
                         children: [{
                             name: "package.sub.classname",
                             children: [{
                                 name: 'a test',
-                                averageRuntime: 44612
+                                failedCount: 4
                             }]
                         }]
                     }, {
@@ -24,43 +25,44 @@
                             name: "package.classname",
                             children: [{
                                 name: 'a test',
-                                averageRuntime: 30000
+                                failedCount: 3
                             }]
                         }]
                     }]
                 },
                 anotherBuild: {
+                    failedCount: 14,
                     children: [{
                         name: "some suite",
                         children: [{
                             name: "com.example.and.more.class.doge",
                             children: [{
                                 name: 'a test',
-                                averageRuntime: 25000
+                                failedCount: 10
                             }]
                         }, {
                             name: "com.example.bee",
                             children: [{
                                 name: 'a test',
-                                averageRuntime: 55000
+                                failedCount: 12
                             }]
                         }, {
                             name: "com.example.zen.some",
                             children: [{
                                 name: 'a test',
-                                averageRuntime: 10000
+                                failedCount: 8
                             }]
                         }, {
                             name: "com.example.zen.nested",
                             children: [{
                                 name: 'a test',
-                                averageRuntime: 10000
+                                failedCount: 2
                             }, {
                                 name: 'another test',
-                                averageRuntime: 20000
+                                failedCount: 1
                             }, {
                                 name: 'yet another test',
-                                averageRuntime: 30000
+                                failedCount: 3
                             }]
                         }]
                     }]
@@ -76,7 +78,7 @@
 <script src="../../resources/public/common/zoomableSunburst.js"></script>
 <script src="../../resources/public/common/jobColors.js"></script>
 <body>
-    <script src="../../resources/public/graphs/slowestTests.js"></script>
+    <script src="../../resources/public/graphs/mostFrequentlyFailingTests.js"></script>
     <script>
         d3.timer.flush();
     </script>

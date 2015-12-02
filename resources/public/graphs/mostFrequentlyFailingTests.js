@@ -1,5 +1,9 @@
-(function (graphFactory, zoomableSunburst, dataSource, jobColors) {
+(function (timespanSelection, graphFactory, zoomableSunburst, dataSource, jobColors) {
     var testCountPerJob = 5;
+
+    var concatIds = function (parentId, id) {
+        return parentId + '/' + id;
+    };
 
     var title = function (entry) {
         var failures = entry.failedCount ? ' (' + entry.failedCount + ')' : '';
@@ -32,15 +36,19 @@
         }
     };
 
-    var transformNode = function (node) {
-        var elem = skipTestSuiteWithOnlyOneClassOrNestedSuite(node);
+    var transformNode = function (node, parentId) {
+        var elem = skipTestSuiteWithOnlyOneClassOrNestedSuite(node),
+            id = concatIds(parentId, elem.name);
 
         var e = {
-            name: elem.name
+            name: elem.name,
+            id: id
         };
 
         if (elem.children) {
-            e.children = elem.children.map(transformNode);
+            e.children = elem.children.map(function (child) {
+                return transformNode(child, id);
+            });
         } else {
             e.size = elem.failedCount;
             e.title = title(elem);
@@ -129,36 +137,39 @@
                     name: jobName,
                     color: color(jobName),
                     id: 'jobname-' + jobName,
-                    children: children.map(transformNode)
+                    children: children.map(function (child) {
+                        return transformNode(child, jobName);
+                    })
                 };
             });
     };
 
-    var timestampOneWeekAgo = function () {
-        var today = new Date(),
-            oneWeekAgo = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);
-        return +oneWeekAgo;
-    };
-
-    var graph = graphFactory.create({
-        id: 'mostFrequentlyFailingTests',
-        headline: "Most frequently failing tests",
-        description: "<h3>What are the tests that provide either the most or the least feedback?</h3><i>Color: job/test suite, arc size: number of test failures</i>",
-        csvUrl: "/failures.csv",
-        noDataReason: "uploaded test results"
-    });
+    var timespanSelector = timespanSelection.create(timespanSelection.timespans.sevenDays),
+        graph = graphFactory.create({
+            id: 'mostFrequentlyFailingTests',
+            headline: "Most frequently failing tests",
+            description: "<h3>What are the tests that provide either the most or the least feedback?</h3><i>Color: job/test suite, arc size: number of test failures</i>",
+            csvUrl: "/failures.csv",
+            noDataReason: "uploaded test results",
+            widgets: [timespanSelector.widget]
+        });
     var sunburst = zoomableSunburst(graph.svg, graphFactory.size);
 
-    graph.loading();
+    timespanSelector.load(function (selectedTimespan) {
+        var fromTimestamp = timespanSelection.startingFromTimestamp(selectedTimespan);
+        graph.loading();
 
-    dataSource.load('/failures?from='+ timestampOneWeekAgo(), function (failures) {
-        graph.loaded();
+        dataSource.load('/failures?from='+ fromTimestamp, function (failures) {
+            graph.loaded();
 
-        var data = {
-            name: "Most frequently failing tests",
-            children: transformFailures(failures)
-        };
+            var data = {
+                name: "Most frequently failing tests",
+                id: '__most_frequently_failing_tests__',
+                children: transformFailures(failures)
+            };
 
-        sunburst.render(data);
+            sunburst.render(data);
+        });
     });
-}(graphFactory, zoomableSunburst, dataSource, jobColors));
+
+}(timespanSelection, graphFactory, zoomableSunburst, dataSource, jobColors));

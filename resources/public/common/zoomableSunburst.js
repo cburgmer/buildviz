@@ -128,11 +128,7 @@ var zoomableSunburst = function (svg, diameter) {
                 .selectAll('g')
                 .data(nodes,
                       function (d) {
-                          if (d.id) {
-                              return d.id;
-                          }
-                          // TODO handle missing IDs
-                          return Math.random();
+                          return d.id;
                       });
 
         // enter
