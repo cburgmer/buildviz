@@ -121,8 +121,8 @@ var zoomableSunburst = function (svg, diameter) {
         return nodes;
     };
 
-    var renderSunburst = function (node, domElement, showTransition) {
-        var nodes = allNodesFor(node);
+    var renderSunburst = function (rootNode, domElement, showTransition) {
+        var nodes = allNodesFor(rootNode);
 
         var selection = domElement
                 .selectAll('g')
@@ -148,10 +148,16 @@ var zoomableSunburst = function (svg, diameter) {
                     renderSunburst(d, domElement, true);
                 });
 
-        g.append("path");
+        g.append("path")
+            .style("fill", function (d) {
+                if (d.depth) {
+                    return d.color || inheritDirectParentColorForLeafs(d);
+                } else {
+                    return 'transparent';
+                }
+            });
 
         g.append("text")
-            .attr('display', 'none')
             .attr("dx", "6") // margin
             .attr("dy", ".35em") // vertical-align
             .text(function(d) {
@@ -173,23 +179,14 @@ var zoomableSunburst = function (svg, diameter) {
             .attr("display", 'none');
 
         selection.select('path')
-            .style("fill", function (d) {
-                if (d.depth) {
-                    return d.color || inheritDirectParentColorForLeafs(d);
-                } else {
-                    return 'transparent';
-                }
-            });
-
-        selection.select('path')
             .transition()
             .duration(showTransition ? zoomTransitionDuration : 0)
-            .attrTween("d", arcTween(node))
+            .attrTween("d", arcTween(rootNode))
             .each("end", function(e) {
                 d3.select(this.parentNode)
                     .select("text")
                     .attr("display", function (d) {
-                        return displayText(d, node) ? 'inherit' : 'none';
+                        return displayText(d, rootNode) ? 'inherit' : 'none';
                     })
                     .attr("transform", function(d) { return "rotate(" + computeTextRotation(d) + ")"; })
                     .attr("x", function(d) { return y(d.y); });
@@ -205,7 +202,7 @@ var zoomableSunburst = function (svg, diameter) {
         exit.select('path')
             .transition()
             .duration(zoomTransitionDuration)
-            .attrTween("d", arcTween(node))
+            .attrTween("d", arcTween(rootNode))
             .each("end", function() {
                 d3.select(this.parentNode)
                     .remove();
