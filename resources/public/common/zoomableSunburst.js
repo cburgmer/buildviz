@@ -197,7 +197,7 @@ var zoomableSunburst = function (svg, diameter) {
 
         exit.select('path')
             .transition()
-            .duration(zoomTransitionDuration)
+            .duration(showTransition ? zoomTransitionDuration : 0)
             .attrTween("d", arcTween(rootNode))
             .each("end", function() {
                 d3.select(this.parentNode)
