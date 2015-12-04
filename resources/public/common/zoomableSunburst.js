@@ -145,7 +145,6 @@ var zoomableSunburst = function (svg, diameter) {
                 });
 
         selection.attr('role', function (d) {
-            console.log(d);
             if (d.depth - rootNode.depth <= 1) {
                 return 'link';
             }
