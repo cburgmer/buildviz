@@ -22,8 +22,14 @@ var graphFactory = function (d3) {
             widget = d3.select("body")
                 .append("section")
                 .attr("class", "graph " + params.id)
-                .attr('id', id),
-            enlargeLink = widget.append("a")
+                .attr('id', id);
+
+        widget.append('a')
+            .attr('class', 'close')
+            .attr('href', '#')
+            .text('╳');
+
+        var enlargeLink = widget.append("a")
                 .attr('class', 'enlarge')
                 .attr("href", '#' + id);
 

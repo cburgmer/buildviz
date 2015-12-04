@@ -61,6 +61,21 @@
     z-index: -1;
 }
 
+.graph .close {
+    display: none;
+}
+.graph:target .close {
+    display: block;
+    position: absolute;
+    top: 5px; right: -40px;
+    font-size: 2rem;
+    content: '╳';
+    color: #777
+}
+.graph:target .close:hover {
+    color: #000;
+}
+
 .graph .timespan {
     margin-right: 10px;
 }
