@@ -79,28 +79,23 @@
                              accumulated-testcase)]))))
 
 
-(defn- build-testcase-data-with-failures [unrolled-testcase-map]
-  (zipmap (keys unrolled-testcase-map)
-          (map #(assoc {} :failedCount %) (vals unrolled-testcase-map))))
-
 (defn- count-failures [unrolled-testcases]
   (->> unrolled-testcases
        (group-by first)
        (map (fn [[testcase-id group]]
-              [testcase-id (->> group
-                                (map last)
-                                (remove junit-xml/is-ok?)
-                                count)]))
-       (filter (fn [[testcase-id fail-count]]
-                 (< 0 fail-count)))
+              [testcase-id {:failedCount (->> group
+                                              (map last)
+                                              (remove junit-xml/is-ok?)
+                                              count)}]))
+       (filter (fn [[testcase-id {failed-count :failedCount}]]
+                 (< 0 failed-count)))
        (into {})))
 
 (defn- accumulate-testsuite-failures-by-testcase [test-runs]
   (->> test-runs
        (map unroll-testsuites)
        (mapcat accumulate-testcases-with-duplicate-names)
-       count-failures
-       build-testcase-data-with-failures))
+       count-failures))
 
 (defn accumulate-testsuite-failures [test-runs]
   (->> (accumulate-testsuite-failures-by-testcase test-runs)
@@ -116,31 +111,31 @@
                :failedCount failed-count}))))
 
 
-(defn- extract-runtime [unrolled-testcases]
-  (map (fn [[testcase-id testcase]] [testcase-id (:runtime testcase)])
-       unrolled-testcases))
-
 (defn- avg [series]
   (Math/round (float (/ (reduce + series) (count series)))))
 
-
-
 (defn- average-runtime-for-testcase-runs [testcases]
-  (if-let [runtimes (seq (keep second testcases))]
-    {:averageRuntime (avg runtimes)}
-    {}))
+  (when-let [runtimes (seq (remove nil? (map :runtime testcases)))]
+    (avg runtimes)))
 
-(defn- average-runtimes [testcase-runtimes]
-  (let [groups (group-by first testcase-runtimes)]
-    (zipmap (keys groups)
-            (map average-runtime-for-testcase-runs (vals groups)))))
+(defn- average-runtimes [unrolled-testcases]
+  (->> unrolled-testcases
+       (group-by first)
+       (map (fn [[testcase-id group]]
+              (let [average-runtime (->> group
+                                         (map last)
+                                         average-runtime-for-testcase-runs)]
+                [testcase-id (if average-runtime
+                               {:averageRuntime average-runtime}
+                               {})])))
+       (into {})))
 
 (defn- average-runtimes-by-testcase [test-runs]
   (->> test-runs
        (map unroll-testsuites)
        (mapcat accumulate-testcases-with-duplicate-names)
-       extract-runtime
        average-runtimes))
+
 
 (defn- accumulated-runtime [testcases]
   (let [runtimes (map :runtime testcases)]
@@ -165,7 +160,6 @@
   (->> (map #(map accumulate-runtime-by-class %) test-runs)
        (map unroll-testsuites)
        (mapcat accumulate-testcases-with-duplicate-names)
-       extract-runtime
        average-runtimes))
 
 

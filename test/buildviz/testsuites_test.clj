@@ -48,14 +48,14 @@
                          :children [{:name "a case" :failedCount 1}]}]}]
            (accumulate-testsuite-failures [[(a-testsuite "suite" (a-testcase "the class" "a case" :error))]])))
     (is (= [{:name "suite"
-             :children [{:name "a case" :failedCount 1}
-                        {:name "another case" :failedCount 1}]}]
+             :children [{:name "another case" :failedCount 1}
+                        {:name "a case" :failedCount 1}]}]
            (accumulate-testsuite-failures [[(a-testsuite "suite" (a-testcase "a case" :fail))]
                                            [(a-testsuite "suite" (a-testcase "another case" :fail))]])))
-    (is (= [{:name "suite"
-             :children [{:name "a case" :failedCount 1}]}
-            {:name "another suite"
-             :children [{:name "another case" :failedCount 1}]}]
+    (is (= [{:name "another suite"
+             :children [{:name "another case" :failedCount 1}]}
+            {:name "suite"
+             :children [{:name "a case" :failedCount 1}]}]
            (accumulate-testsuite-failures [[(a-testsuite "suite" (a-testcase "a case" :fail))]
                                            [(a-testsuite "another suite" (a-testcase "another case" :fail))]])))
     (is (= [{:name "suite"
@@ -68,8 +68,8 @@
                                            [(a-testsuite "suite" (a-testcase "a case" :fail))]])))
     (is (= [{:name "suite"
              :children [{:name "nested suite"
-                         :children [{:name "a case" :failedCount 1}
-                                    {:name "another case" :failedCount 1}]}]}]
+                         :children [{:name "another case" :failedCount 1}
+                                    {:name "a case" :failedCount 1}]}]}]
            (accumulate-testsuite-failures [[(a-testsuite "suite"
                                                          (a-testsuite "nested suite" (a-testcase "a case" :fail)))]
                                            [(a-testsuite "suite"
@@ -100,21 +100,21 @@
            (accumulate-testsuite-failures-as-list [[(a-testsuite "suite" (a-testcase "a class" "a case" :error))]])))
     (is (= [{:testsuite ["suite"]
              :classname "a class"
-             :name "another case"
+             :name "a case"
              :failedCount 1}
             {:testsuite ["suite"]
              :classname "a class"
-             :name "a case"
+             :name "another case"
              :failedCount 1}]
            (accumulate-testsuite-failures-as-list [[(a-testsuite "suite" (a-testcase "a class" "a case" :fail))]
                                                    [(a-testsuite "suite" (a-testcase "a class" "another case" :fail))]])))
-    (is (= [{:testsuite ["another suite"]
-             :classname "a class"
-             :name "another case"
-             :failedCount 1}
-            {:testsuite ["suite"]
+    (is (= [{:testsuite ["suite"]
              :classname "a class"
              :name "a case"
+             :failedCount 1}
+            {:testsuite ["another suite"]
+             :classname "a class"
+             :name "another case"
              :failedCount 1}]
            (accumulate-testsuite-failures-as-list [[(a-testsuite "suite" (a-testcase "a class" "a case" :fail))]
                                                    [(a-testsuite "another suite" (a-testcase "a class" "another case" :fail))]])))
@@ -132,11 +132,11 @@
                                                    [(a-testsuite "suite" (a-testcase "a class" "a case" :fail))]])))
     (is (= [{:testsuite ["suite" "nested suite"]
              :classname "a class"
-             :name "another case"
+             :name "a case"
              :failedCount 1}
             {:testsuite ["suite" "nested suite"]
              :classname "a class"
-             :name "a case"
+             :name "another case"
              :failedCount 1}
             ]
            (accumulate-testsuite-failures-as-list [[(a-testsuite "suite"
@@ -167,16 +167,16 @@
              :children [{:name "a case" :averageRuntime 21}]}]
            (average-testcase-runtime [[(a-testsuite "suite" (a-testcase-with-runtime "a case" 30))]
                                       [(a-testsuite "suite" (a-testcase-with-runtime "a case" 11))]])))
-    (is (= [{:name "suite"
-             :children [{:name "a case" :averageRuntime 10}]}
-            {:name "another suite"
-             :children [{:name "another case" :averageRuntime 20}]}]
+    (is (= [{:name "another suite"
+             :children [{:name "another case" :averageRuntime 20}]}
+            {:name "suite"
+             :children [{:name "a case" :averageRuntime 10}]}]
            (average-testcase-runtime [[(a-testsuite "suite" (a-testcase-with-runtime "a case" 10))]
                                       [(a-testsuite "another suite" (a-testcase-with-runtime "another case" 20))]])))
     (is (= [{:name "suite"
              :children [{:name "nested suite"
-                         :children [{:name "a case" :averageRuntime 10}
-                                    {:name "another case" :averageRuntime 20}]}]}]
+                         :children [{:name "another case" :averageRuntime 20}
+                                    {:name "a case" :averageRuntime 10}]}]}]
            (average-testcase-runtime [[(a-testsuite "suite"
                                                     (a-testsuite "nested suite" (a-testcase-with-runtime "a case" 10)))]
                                       [(a-testsuite "suite"
@@ -199,12 +199,12 @@
     (is (= [{:testsuite ["suite"] :classname "a class" :name "a case" :averageRuntime 20}]
            (average-testcase-runtime-as-list [[(a-testsuite "suite" (a-testcase-with-runtime "a class" "a case" 30))]
                                               [(a-testsuite "suite" (a-testcase-with-runtime "a class" "a case" 10))]])))
-    (is (= [{:testsuite ["another suite"] :classname "another class" :name "another case" :averageRuntime 20}
-            {:testsuite ["suite"] :classname "a class" :name "a case" :averageRuntime 10}]
+    (is (= [{:testsuite ["suite"] :classname "a class" :name "a case" :averageRuntime 10}
+            {:testsuite ["another suite"] :classname "another class" :name "another case" :averageRuntime 20}]
            (average-testcase-runtime-as-list [[(a-testsuite "suite" (a-testcase-with-runtime "a class" "a case" 10))]
                                               [(a-testsuite "another suite" (a-testcase-with-runtime "another class" "another case" 20))]])))
-    (is (= [{:testsuite ["suite" "nested suite"] :classname "another class" :name "another case" :averageRuntime 20}
-            {:testsuite ["suite" "nested suite"] :classname "a class" :name "a case" :averageRuntime 10}]
+    (is (= [{:testsuite ["suite" "nested suite"] :classname "a class" :name "a case" :averageRuntime 10}
+            {:testsuite ["suite" "nested suite"] :classname "another class" :name "another case" :averageRuntime 20}]
            (average-testcase-runtime-as-list [[(a-testsuite "suite"
                                                             (a-testsuite "nested suite" (a-testcase-with-runtime "a class" "a case" 10)))]
                                               [(a-testsuite "suite"
