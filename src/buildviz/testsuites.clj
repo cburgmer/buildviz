@@ -43,12 +43,6 @@
   (mapcat (partial unroll-testcases-for-suite []) testsuites))
 
 
-(defn- failed-testcase-ids [unrolled-testcases]
-  (map #(first %)
-       (remove #(junit-xml/is-ok? (last %))
-               unrolled-testcases)))
-
-
 (defn- assoc-testcase-entry [testsuite testcase-id testcase-data]
   (let [testcase {(peek testcase-id) testcase-data}
         suite-path (pop testcase-id)]
@@ -71,10 +65,21 @@
   (zipmap (keys unrolled-testcase-map)
           (map #(assoc {} :failedCount %) (vals unrolled-testcase-map))))
 
+(defn- count-failures [unrolled-testcases]
+  (->> unrolled-testcases
+       (group-by first)
+       (map (fn [[testcase-id group]]
+              [testcase-id (->> group
+                                (map last)
+                                (remove junit-xml/is-ok?)
+                                count)]))
+       (filter (fn [[testcase-id fail-count]]
+                 (< 0 fail-count)))
+       (into {})))
+
 (defn- accumulate-testsuite-failures-by-testcase [test-runs]
   (->> (mapcat unroll-testsuites test-runs)
-       failed-testcase-ids
-       frequencies
+       count-failures
        build-testcase-data-with-failures))
 
 (defn accumulate-testsuite-failures [test-runs]
