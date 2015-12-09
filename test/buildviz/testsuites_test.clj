@@ -73,7 +73,15 @@
            (accumulate-testsuite-failures [[(a-testsuite "suite"
                                                          (a-testsuite "nested suite" (a-testcase "a case" :fail)))]
                                            [(a-testsuite "suite"
-                                                         (a-testsuite "nested suite" (a-testcase "another case" :fail)))]])))))
+                                                         (a-testsuite "nested suite" (a-testcase "another case" :fail)))]]))))
+
+  (testing "should count multiple failures as one for testcases with the same name/class/suite"
+    (is (= [{:name "suite"
+             :children [{:name "a case" :failedCount 1}]}]
+           (accumulate-testsuite-failures [[(a-testsuite "suite" (a-testcase "a case" :fail))
+                                            (a-testsuite "suite" (a-testcase "a case" :fail))
+                                            (a-testsuite "suite" (a-testcase "a case" :pass))]])))))
+
 (deftest test-accumulate-testsuite-failures-as-list
   (testing "accumulate-testsuite-failures-as-list"
     (is (= []

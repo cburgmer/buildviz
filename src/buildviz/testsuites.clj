@@ -60,6 +60,24 @@
 (defn- build-suite-hierarchy [testcase-entries]
   (build-suite-hierarchy-recursively {} testcase-entries))
 
+(defn- accumulated-testcase [testcases]
+  (let [runtimes (filter some? (map :runtime testcases))
+        failed-testcase-status (remove junit-xml/is-ok?
+                                       (map :status testcases))]
+    {:runtime (when (seq runtimes)
+                (reduce + runtimes))
+     :status (if (empty? failed-testcase-status)
+               (:status (first testcases))
+               (first failed-testcase-status))}))
+
+(defn- accumulate-testcases-with-duplicate-names [unrolled-entries]
+  (->> unrolled-entries
+       (group-by first)
+       (map (fn [[entry-id duplicate-entry-list]]
+              [entry-id (->> duplicate-entry-list
+                             (map last)
+                             accumulated-testcase)]))))
+
 
 (defn- build-testcase-data-with-failures [unrolled-testcase-map]
   (zipmap (keys unrolled-testcase-map)
@@ -78,7 +96,9 @@
        (into {})))
 
 (defn- accumulate-testsuite-failures-by-testcase [test-runs]
-  (->> (mapcat unroll-testsuites test-runs)
+  (->> test-runs
+       (map unroll-testsuites)
+       (mapcat accumulate-testcases-with-duplicate-names)
        count-failures
        build-testcase-data-with-failures))
 
@@ -103,17 +123,6 @@
 (defn- avg [series]
   (Math/round (float (/ (reduce + series) (count series)))))
 
-(defn- accumulated-runtimes [entries]
-  {:runtime (->> entries
-                 (map last)
-                 (map :runtime)
-                 (reduce +))})
-
-(defn- treat-duplicate-entries-as-additions [unrolled-entries]
-  (->> unrolled-entries
-       (group-by first)
-       (map (fn [[entry-id duplicate-entry-list]]
-              [entry-id (accumulated-runtimes duplicate-entry-list)]))))
 
 
 (defn- average-runtime-for-testcase-runs [testcases]
@@ -129,7 +138,7 @@
 (defn- average-runtimes-by-testcase [test-runs]
   (->> test-runs
        (map unroll-testsuites)
-       (mapcat treat-duplicate-entries-as-additions)
+       (mapcat accumulate-testcases-with-duplicate-names)
        extract-runtime
        average-runtimes))
 
@@ -155,7 +164,7 @@
 (defn- average-runtimes-by-testclass [test-runs]
   (->> (map #(map accumulate-runtime-by-class %) test-runs)
        (map unroll-testsuites)
-       (mapcat treat-duplicate-entries-as-additions)
+       (mapcat accumulate-testcases-with-duplicate-names)
        extract-runtime
        average-runtimes))
 
