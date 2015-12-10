@@ -425,7 +425,8 @@
       (is (= {"aBuild" {"children" [{"name" "a suite"
                                      "children" [{"name" "class"
                                                   "children" [{"name" "a test"
-                                                               "averageRuntime" 20000}]}]}]}}
+                                                               "averageRuntime" 20000
+                                                               "failedCount" 0}]}]}]}}
              (json-body (json-get-request app "/testcases")))))
 
     ;; GET should return CSV by default

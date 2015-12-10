@@ -118,23 +118,28 @@
   (when-let [runtimes (seq (remove nil? (map :runtime testcases)))]
     (avg runtimes)))
 
-(defn- average-runtimes [unrolled-testcases]
+(defn aggregate-testcase-runs [testcases]
+  (let [average-runtime (average-runtime-for-testcase-runs testcases)
+        failed-count (count (remove junit-xml/is-ok? testcases))]
+    (let [aggregated {:failedCount failed-count}]
+      (if average-runtime
+        (assoc aggregated :averageRuntime average-runtime)
+        aggregated))))
+
+(defn- aggregate-runs [unrolled-testcases]
   (->> unrolled-testcases
        (group-by first)
        (map (fn [[testcase-id group]]
-              (let [average-runtime (->> group
-                                         (map last)
-                                         average-runtime-for-testcase-runs)]
-                [testcase-id (if average-runtime
-                               {:averageRuntime average-runtime}
-                               {})])))
+              [testcase-id (->> group
+                                (map last)
+                                aggregate-testcase-runs)]))
        (into {})))
 
 (defn- average-runtimes-by-testcase [test-runs]
   (->> test-runs
        (map unroll-testsuites)
        (mapcat accumulate-testcases-with-duplicate-names)
-       average-runtimes))
+       aggregate-runs))
 
 
 (defn- accumulated-runtime [testcases]
@@ -156,11 +161,27 @@
            (concat (map accumulate-runtime-by-class nested-suites)
                    (accumulate-runtime-by-class-for-testcases testcases)))))
 
+(defn average-testclass-runs [testclasses]
+  (let [average-runtime (average-runtime-for-testcase-runs testclasses)]
+    (if average-runtime
+      {:averageRuntime average-runtime}
+      {})))
+
+(defn- average-runs [unrolled-testcases]
+  (->> unrolled-testcases
+       (group-by first)
+       (map (fn [[testcase-id group]]
+              [testcase-id (->> group
+                                (map last)
+                                average-testclass-runs)]))
+       (into {})))
+
 (defn- average-runtimes-by-testclass [test-runs]
-  (->> (map #(map accumulate-runtime-by-class %) test-runs)
+  (->> test-runs
+       (map #(map accumulate-runtime-by-class %))
        (map unroll-testsuites)
        (mapcat accumulate-testcases-with-duplicate-names)
-       average-runtimes))
+       average-runs))
 
 
 (defn average-testcase-runtime [test-runs]
