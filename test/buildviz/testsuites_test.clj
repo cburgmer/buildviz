@@ -145,40 +145,40 @@
                                                    [(a-testsuite "suite"
                                                                  (a-testsuite "nested suite" (a-testcase "a class" "another case" :fail)))]])))))
 
-(deftest test-average-testcase-runtime
-  (testing "average-testcase-runtime"
+(deftest test-aggregate-testcase-info
+  (testing "aggregate-testcase-info"
     (is (= []
-           (average-testcase-runtime [])))
+           (aggregate-testcase-info [])))
     (is (= [{:name "suite"
              :children [{:name "a case" :failedCount 1}]}]
-           (average-testcase-runtime [[(a-testsuite "suite" (a-testcase "a case" :fail))]])))
+           (aggregate-testcase-info [[(a-testsuite "suite" (a-testcase "a case" :fail))]])))
     (is (= [{:name "suite"
              :children [{:name "a case" :averageRuntime 42 :failedCount 0}]}]
-           (average-testcase-runtime [[(a-testsuite "suite" (a-testcase-with-runtime "a case" 42))]])))
+           (aggregate-testcase-info [[(a-testsuite "suite" (a-testcase-with-runtime "a case" 42))]])))
     (is (= [{:name "suite"
              :children [{:name "a class"
                          :children [{:name "the case" :averageRuntime 42 :failedCount 0}]}]}]
-           (average-testcase-runtime [[(a-testsuite "suite" (a-testcase-with-runtime "a class" "the case" 42))]])))
+           (aggregate-testcase-info [[(a-testsuite "suite" (a-testcase-with-runtime "a class" "the case" 42))]])))
     (is (= [{:name "suite"
              :children [{:name "a case" :averageRuntime 20 :failedCount 0}]}]
-           (average-testcase-runtime [[(a-testsuite "suite" (a-testcase-with-runtime "a case" 30))]
+           (aggregate-testcase-info [[(a-testsuite "suite" (a-testcase-with-runtime "a case" 30))]
                                       [(a-testsuite "suite" (a-testcase-with-runtime "a case" 10))]])))
     ;; should deal with fractions and round up
     (is (= [{:name "suite"
              :children [{:name "a case" :averageRuntime 21 :failedCount 0}]}]
-           (average-testcase-runtime [[(a-testsuite "suite" (a-testcase-with-runtime "a case" 30))]
+           (aggregate-testcase-info [[(a-testsuite "suite" (a-testcase-with-runtime "a case" 30))]
                                       [(a-testsuite "suite" (a-testcase-with-runtime "a case" 11))]])))
     (is (= [{:name "another suite"
              :children [{:name "another case" :averageRuntime 20 :failedCount 0}]}
             {:name "suite"
              :children [{:name "a case" :averageRuntime 10 :failedCount 0}]}]
-           (average-testcase-runtime [[(a-testsuite "suite" (a-testcase-with-runtime "a case" 10))]
+           (aggregate-testcase-info [[(a-testsuite "suite" (a-testcase-with-runtime "a case" 10))]
                                       [(a-testsuite "another suite" (a-testcase-with-runtime "another case" 20))]])))
     (is (= [{:name "suite"
              :children [{:name "nested suite"
                          :children [{:name "another case" :averageRuntime 20 :failedCount 0}
                                     {:name "a case" :averageRuntime 10 :failedCount 0}]}]}]
-           (average-testcase-runtime [[(a-testsuite "suite"
+           (aggregate-testcase-info [[(a-testsuite "suite"
                                                     (a-testsuite "nested suite" (a-testcase-with-runtime "a case" 10)))]
                                       [(a-testsuite "suite"
                                                     (a-testsuite "nested suite" (a-testcase-with-runtime "another case" 20)))]])))
@@ -188,25 +188,25 @@
                :children [{:name "a class"
                            :children [{:name "a case"
                                        :averageRuntime 35 :failedCount 0}]}]}]
-             (average-testcase-runtime [[(a-testsuite "suite" (a-testcase-with-runtime "a class" "a case" 12))
+             (aggregate-testcase-info [[(a-testsuite "suite" (a-testcase-with-runtime "a class" "a case" 12))
                                          (a-testsuite "suite" (a-testcase-with-runtime "a class" "a case" 23))]]))))))
 
-(deftest test-average-testcase-runtime-as-list
-  (testing "average-testcase-runtime-as-list"
+(deftest test-aggregate-testcase-info-as-list
+  (testing "aggregate-testcase-info-as-list"
     (is (= []
-           (average-testcase-runtime-as-list [])))
+           (aggregate-testcase-info-as-list [])))
     (is (= [{:testsuite ["suite"] :classname "a class" :name "a case" :averageRuntime 42}]
-           (average-testcase-runtime-as-list [[(a-testsuite "suite" (a-testcase-with-runtime "a class" "a case" 42))]])))
+           (aggregate-testcase-info-as-list [[(a-testsuite "suite" (a-testcase-with-runtime "a class" "a case" 42))]])))
     (is (= [{:testsuite ["suite"] :classname "a class" :name "a case" :averageRuntime 20}]
-           (average-testcase-runtime-as-list [[(a-testsuite "suite" (a-testcase-with-runtime "a class" "a case" 30))]
+           (aggregate-testcase-info-as-list [[(a-testsuite "suite" (a-testcase-with-runtime "a class" "a case" 30))]
                                               [(a-testsuite "suite" (a-testcase-with-runtime "a class" "a case" 10))]])))
     (is (= [{:testsuite ["suite"] :classname "a class" :name "a case" :averageRuntime 10}
             {:testsuite ["another suite"] :classname "another class" :name "another case" :averageRuntime 20}]
-           (average-testcase-runtime-as-list [[(a-testsuite "suite" (a-testcase-with-runtime "a class" "a case" 10))]
+           (aggregate-testcase-info-as-list [[(a-testsuite "suite" (a-testcase-with-runtime "a class" "a case" 10))]
                                               [(a-testsuite "another suite" (a-testcase-with-runtime "another class" "another case" 20))]])))
     (is (= [{:testsuite ["suite" "nested suite"] :classname "a class" :name "a case" :averageRuntime 10}
             {:testsuite ["suite" "nested suite"] :classname "another class" :name "another case" :averageRuntime 20}]
-           (average-testcase-runtime-as-list [[(a-testsuite "suite"
+           (aggregate-testcase-info-as-list [[(a-testsuite "suite"
                                                             (a-testsuite "nested suite" (a-testcase-with-runtime "a class" "a case" 10)))]
                                               [(a-testsuite "suite"
                                                             (a-testsuite "nested suite" (a-testcase-with-runtime "another class" "another case" 20)))]])))))

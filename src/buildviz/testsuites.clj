@@ -135,7 +135,7 @@
                                 aggregate-testcase-runs)]))
        (into {})))
 
-(defn- average-runtimes-by-testcase [test-runs]
+(defn- aggregated-info-by-testcase [test-runs]
   (->> test-runs
        (map unroll-testsuites)
        (mapcat accumulate-testcases-with-duplicate-names)
@@ -184,13 +184,13 @@
        average-runs))
 
 
-(defn average-testcase-runtime [test-runs]
-  (->> (average-runtimes-by-testcase test-runs)
+(defn aggregate-testcase-info [test-runs]
+  (->> (aggregated-info-by-testcase test-runs)
        build-suite-hierarchy
        testsuites-map->list))
 
-(defn average-testcase-runtime-as-list [test-runs]
-  (->> (average-runtimes-by-testcase test-runs)
+(defn aggregate-testcase-info-as-list [test-runs]
+  (->> (aggregated-info-by-testcase test-runs)
        (map (fn [[testcase-id {average-runtime :averageRuntime}]]
               {:testsuite (pop (pop testcase-id))
                :classname (last (pop testcase-id))
