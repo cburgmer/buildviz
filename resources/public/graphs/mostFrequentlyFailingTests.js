@@ -95,8 +95,14 @@
             });
     };
 
+    var excludeAlwaysGreenTests = function (tests) {
+        return tests.filter(function (testCase) {
+            return testCase.failedCount > 0;
+        });
+    };
+
     var filterMostNFailingTests = function (testsuites, n) {
-        var tests = flattenTests(testsuites);
+        var tests = excludeAlwaysGreenTests(flattenTests(testsuites));
 
         tests.sort(function (a, b) {
             return a.failedCount - b.failedCount;
@@ -125,10 +131,6 @@
             color = jobColors.colors(jobNames);
 
         return Object.keys(failureMap)
-            .filter(function (jobName) {
-                var job = failureMap[jobName];
-                return job.failedCount;
-            })
             .map(function (jobName) {
                 var job = failureMap[jobName],
                     children = skipOnlyTestSuite(filterMostNFailingTests(job.children, testCountPerJob));
@@ -141,6 +143,8 @@
                         return transformNode(child, jobName);
                     })
                 };
+            }).filter(function (entry) {
+                return entry.children.length > 0;
             });
     };
 
@@ -149,7 +153,7 @@
             id: 'mostFrequentlyFailingTests',
             headline: "Most frequently failing tests",
             description: "<h3>What are the tests that provide either the most or the least feedback?</h3><i>Color: job/test suite, arc size: number of test failures</i>",
-            csvUrl: "/failures.csv",
+            csvUrl: "/testcases.csv",
             noDataReason: "uploaded test results",
             widgets: [timespanSelector.widget]
         });
@@ -159,7 +163,7 @@
         var fromTimestamp = timespanSelection.startingFromTimestamp(selectedTimespan);
         graph.loading();
 
-        dataSource.load('/failures?from='+ fromTimestamp, function (failures) {
+        dataSource.load('/testcases?from='+ fromTimestamp, function (failures) {
             graph.loaded();
 
             var data = {

@@ -8,8 +8,19 @@
     var dataSource = {
         load: function (_, callback) {
             callback({
+                aGoodBuild: {
+                    children: [{
+                        name: "test suite",
+                        children: [{
+                            name: "package",
+                            children: [{
+                                name: 'test',
+                                failedCount: 0
+                            }]
+                        }]
+                    }]
+                },
                 aBuild: {
-                    failedCount: 5,
                     children: [{
                         name: "test suite",
                         children: [{
@@ -31,7 +42,6 @@
                     }]
                 },
                 anotherBuild: {
-                    failedCount: 14,
                     children: [{
                         name: "some suite",
                         children: [{
@@ -63,6 +73,12 @@
                             }, {
                                 name: 'yet another test',
                                 failedCount: 3
+                            }]
+                        }, {
+                            name: 'good.test',
+                            children: [{
+                                name: 'test',
+                                failedCount: 0
                             }]
                         }]
                     }]
