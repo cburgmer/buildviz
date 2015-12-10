@@ -411,13 +411,13 @@
   (testing "GET to /testcases"
     ;; GET should return 200
     (is (= 200
-           (:status (json-get-request (the-app) "/testcases"))))
+           (:status (json-get-request (the-app) "/testcases")))))
 
-    ;; GET should return empty map by default
+  (testing "GET should return empty map by default"
     (is (= {}
-           (json-body (json-get-request (the-app) "/testcases"))))
+           (json-body (json-get-request (the-app) "/testcases")))))
 
-    ;; GET should include a list of builds with test cases
+  (testing "GET should include a list of builds with test cases"
     (let [app (the-app {"aBuild" {1 {:start 0}
                                   2 {:start 1}}}
                        {"aBuild" {1 "<testsuites><testsuite name=\"a suite\"><testcase classname=\"class\" name=\"a test\" time=\"10\"></testcase></testsuite></testsuites>"
@@ -427,28 +427,27 @@
                                                   "children" [{"name" "a test"
                                                                "averageRuntime" 20000
                                                                "failedCount" 0}]}]}]}}
-             (json-body (json-get-request app "/testcases")))))
+             (json-body (json-get-request app "/testcases"))))))
 
-    ;; GET should return CSV by default
+  (testing "GET should return CSV by default"
     (let [app (the-app {"aBuild" {1 {:start 0}}}
                        {"aBuild" {1 "<testsuites><testsuite name=\"a suite\"><testcase name=\"a,test\" classname=\"a class\" time=\"10\"></testcase></testsuite></testsuites>"}})]
-      (is (= (:body (get-request app "/testcases"))
-             (str/join ["averageRuntime,job,testsuite,classname,name\n"
-                    (format "%.8f,aBuild,a suite,a class,\"a,test\"\n" 0.00011574)]))))
+      (is (= (str/join ["averageRuntime,failedCount,job,testsuite,classname,name\n"
+                    (format "%.8f,0,aBuild,a suite,a class,\"a,test\"\n" 0.00011574)])
+             (:body (get-request app "/testcases"))))))
 
-    ;; GET should handle nested testsuites in CSV
+  (testing "GET should handle nested testsuites in CSV"
     (let [app (the-app {"aBuild" {1 {:start 0}}}
-                       {"aBuild" {1 "<testsuites><testsuite name=\"a suite\"><testsuite name=\"nested suite\"><testcase name=\"a,test\" classname=\"a class\" time=\"10\"></testcase></testsuite></testsuite></testsuites>"}})]
-      (is (= (:body (plain-get-request app "/testcases"))
-             (str/join ["averageRuntime,job,testsuite,classname,name\n"
-                    (format "%.8f,aBuild,a suite: nested suite,a class,\"a,test\"\n" 0.00011574)]))))
+                       {"aBuild" {1 "<testsuites><testsuite name=\"a suite\"><testsuite name=\"nested suite\"><testcase name=\"a,test\" classname=\"a class\" time=\"10\"><failure/></testcase></testsuite></testsuite></testsuites>"}})]
+      (is (= (str/join ["averageRuntime,failedCount,job,testsuite,classname,name\n"
+                    (format "%.8f,1,aBuild,a suite: nested suite,a class,\"a,test\"\n" 0.00011574)])
+             (:body (plain-get-request app "/testcases"))))))
 
-    ;; GET should not include builds without test cases
+  (testing "GET should not include builds without test cases"
     (let [app (the-app {"aBuild" {1 {:start 0}}}
                        {})]
       (is (= {}
-             (json-body (json-get-request app "/testcases")))))
-    ))
+             (json-body (json-get-request app "/testcases")))))))
 
 (deftest TestClassesSummary
   (testing "GET to /testclasses as application/json"

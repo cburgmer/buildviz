@@ -191,11 +191,12 @@
 
 (defn aggregate-testcase-info-as-list [test-runs]
   (->> (aggregated-info-by-testcase test-runs)
-       (map (fn [[testcase-id {average-runtime :averageRuntime}]]
+       (map (fn [[testcase-id {average-runtime :averageRuntime failed-count :failedCount}]]
               {:testsuite (pop (pop testcase-id))
                :classname (last (pop testcase-id))
                :name (last testcase-id)
-               :averageRuntime average-runtime}))))
+               :averageRuntime average-runtime
+               :failedCount failed-count}))))
 
 (defn average-testclass-runtime [test-runs]
   (->> (average-runtimes-by-testclass test-runs)
