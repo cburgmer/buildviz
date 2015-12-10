@@ -198,36 +198,44 @@
     (is (= [{:testsuite ["suite"]
              :classname "a class"
              :name "a case"
-             :averageRuntime 42
-             :failedCount 0}]
+             :average-runtime 42
+             :failed-count 0}]
            (aggregate-testcase-info-as-list [[(a-testsuite "suite" (a-testcase-with-runtime "a class" "a case" 42))]])))
     (is (= [{:testsuite ["suite"]
              :classname "a class"
              :name "a case"
-             :averageRuntime nil
-             :failedCount 1}]
+             :average-runtime nil
+             :failed-count 1}]
            (aggregate-testcase-info-as-list [[(a-testsuite "suite" (a-testcase "a class" "a case" :failed))]])))
     (is (= [{:testsuite ["suite"]
              :classname "a class"
              :name "a case"
-             :averageRuntime 20
-             :failedCount 0}]
+             :average-runtime 20
+             :failed-count 0}]
            (aggregate-testcase-info-as-list [[(a-testsuite "suite" (a-testcase-with-runtime "a class" "a case" 30))]
                                               [(a-testsuite "suite" (a-testcase-with-runtime "a class" "a case" 10))]])))
     (is (= [{:testsuite ["suite"]
              :classname "a class"
              :name "a case"
-             :averageRuntime 10
-             :failedCount 0}
-            {:testsuite ["another suite"] :classname "another class" :name "another case" :averageRuntime 20 :failedCount 0}]
+             :average-runtime 10
+             :failed-count 0}
+            {:testsuite ["another suite"]
+             :classname "another class"
+             :name "another case"
+             :average-runtime 20
+             :failed-count 0}]
            (aggregate-testcase-info-as-list [[(a-testsuite "suite" (a-testcase-with-runtime "a class" "a case" 10))]
                                               [(a-testsuite "another suite" (a-testcase-with-runtime "another class" "another case" 20))]])))
     (is (= [{:testsuite ["suite" "nested suite"]
              :classname "a class"
              :name "a case"
-             :averageRuntime 10
-             :failedCount 0}
-            {:testsuite ["suite" "nested suite"] :classname "another class" :name "another case" :averageRuntime 20 :failedCount 0}]
+             :average-runtime 10
+             :failed-count 0}
+            {:testsuite ["suite" "nested suite"]
+             :classname "another class"
+             :name "another case"
+             :average-runtime 20
+             :failed-count 0}]
            (aggregate-testcase-info-as-list [[(a-testsuite "suite"
                                                             (a-testsuite "nested suite" (a-testcase-with-runtime "a class" "a case" 10)))]
                                               [(a-testsuite "suite"

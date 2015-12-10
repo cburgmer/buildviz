@@ -447,7 +447,14 @@
     (let [app (the-app {"aBuild" {1 {:start 0}}}
                        {})]
       (is (= {}
-             (json-body (json-get-request app "/testcases")))))))
+             (json-body (json-get-request app "/testcases"))))))
+
+  (testing "should handle missing runtime"
+    (let [app (the-app {"aBuild" {1 {:start 0}}}
+                       {"aBuild" {1 "<testsuites><testsuite name=\"a suite\"><testcase name=\"a,test\" classname=\"a class\"></testcase></testsuite></testsuites>"}})]
+      (is (= (str/join ["averageRuntime,failedCount,job,testsuite,classname,name\n"
+                        ",0,aBuild,a suite,a class,\"a,test\"\n"])
+             (:body (get-request app "/testcases")))))))
 
 (deftest TestClassesSummary
   (testing "GET to /testclasses as application/json"

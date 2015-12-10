@@ -15,7 +15,7 @@
 
 (defn- flat-testcase-info [build-results job-name from-timestamp]
   (->> (testsuites/aggregate-testcase-info-as-list (test-runs build-results job-name from-timestamp))
-       (map (fn [{testsuite :testsuite classname :classname name :name average-runtime :averageRuntime failed-count :failedCount}]
+       (map (fn [{:keys [testsuite classname name average-runtime failed-count]}]
               [(csv/format-duration average-runtime)
                failed-count
                job-name

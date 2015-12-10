@@ -119,12 +119,11 @@
     (avg runtimes)))
 
 (defn aggregate-testcase-runs [testcases]
-  (let [average-runtime (average-runtime-for-testcase-runs testcases)
-        failed-count (count (remove junit-xml/is-ok? testcases))]
-    (let [aggregated {:failedCount failed-count}]
-      (if average-runtime
-        (assoc aggregated :averageRuntime average-runtime)
-        aggregated))))
+  (let [failed-count (count (remove junit-xml/is-ok? testcases))
+        aggregated {:failedCount failed-count}]
+    (if-let [average-runtime (average-runtime-for-testcase-runs testcases)]
+      (assoc aggregated :averageRuntime average-runtime)
+      aggregated)))
 
 (defn- aggregate-runs [unrolled-testcases]
   (->> unrolled-testcases
@@ -162,10 +161,9 @@
                    (accumulate-runtime-by-class-for-testcases testcases)))))
 
 (defn average-testclass-runs [testclasses]
-  (let [average-runtime (average-runtime-for-testcase-runs testclasses)]
-    (if average-runtime
-      {:averageRuntime average-runtime}
-      {})))
+  (if-let [average-runtime (average-runtime-for-testcase-runs testclasses)]
+    {:averageRuntime average-runtime}
+    {}))
 
 (defn- average-runs [unrolled-testcases]
   (->> unrolled-testcases
@@ -195,8 +193,8 @@
               {:testsuite (pop (pop testcase-id))
                :classname (last (pop testcase-id))
                :name (last testcase-id)
-               :averageRuntime average-runtime
-               :failedCount failed-count}))))
+               :average-runtime average-runtime
+               :failed-count failed-count}))))
 
 (defn average-testclass-runtime [test-runs]
   (->> (average-runtimes-by-testclass test-runs)
