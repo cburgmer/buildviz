@@ -2,7 +2,6 @@
   (:require [buildviz.controllers
              [builds :as builds]
              [fail-phases :as fail-phases]
-             [failures :as failures]
              [flaky-testcases :as flaky-testcases]
              [jobs :as jobs]
              [pipeline-runtime :as pipeline-runtime]
@@ -41,8 +40,6 @@
    (GET "/pipelineruntime.csv" {query :query-params} (pipeline-runtime/get-pipeline-runtime build-results (from-timestamp query)))
    (GET "/failphases" {accept :accept query :query-params} (fail-phases/get-fail-phases build-results accept (from-timestamp query)))
    (GET "/failphases.csv" {query :query-params} (fail-phases/get-fail-phases build-results {:mime :csv} (from-timestamp query)))
-   (GET "/failures" {accept :accept query :query-params} (failures/get-failures build-results accept (from-timestamp query)))
-   (GET "/failures.csv" {query :query-params} (failures/get-failures build-results {:mime :csv} (from-timestamp query)))
    (GET "/testcases" {accept :accept query :query-params} (testcases/get-testcases build-results accept (from-timestamp query)))
    (GET "/testcases.csv" {query :query-params} (testcases/get-testcases build-results {:mime :csv} (from-timestamp query)))
    (GET "/testclasses" {accept :accept query :query-params} (testclasses/get-testclasses build-results accept (from-timestamp query)))

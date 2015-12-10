@@ -79,38 +79,6 @@
                              accumulated-testcase)]))))
 
 
-(defn- count-failures [unrolled-testcases]
-  (->> unrolled-testcases
-       (group-by first)
-       (map (fn [[testcase-id group]]
-              [testcase-id {:failedCount (->> group
-                                              (map last)
-                                              (remove junit-xml/is-ok?)
-                                              count)}]))
-       (filter (fn [[testcase-id {failed-count :failedCount}]]
-                 (< 0 failed-count)))
-       (into {})))
-
-(defn- accumulate-testsuite-failures-by-testcase [test-runs]
-  (->> test-runs
-       (map unroll-testsuites)
-       (mapcat accumulate-testcases-with-duplicate-names)
-       count-failures))
-
-(defn accumulate-testsuite-failures [test-runs]
-  (->> (accumulate-testsuite-failures-by-testcase test-runs)
-       build-suite-hierarchy
-       testsuites-map->list))
-
-(defn accumulate-testsuite-failures-as-list [test-runs]
-  (->> (accumulate-testsuite-failures-by-testcase test-runs)
-       (map (fn [[testcase-id {failed-count :failedCount}]]
-              {:testsuite (pop (pop testcase-id))
-               :classname (last (pop testcase-id))
-               :name (last testcase-id)
-               :failedCount failed-count}))))
-
-
 (defn- avg [series]
   (Math/round (float (/ (reduce + series) (count series)))))
 
