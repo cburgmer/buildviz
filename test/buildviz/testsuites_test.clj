@@ -88,6 +88,12 @@
              :failed-count 0}]
            (aggregate-testcase-info-as-list [[(a-testsuite "suite" (a-testcase-with-runtime "a class" "a case" 42))]])))
     (is (= [{:testsuite ["suite"]
+             :classname nil
+             :name "a case"
+             :average-runtime 42
+             :failed-count 0}]
+           (aggregate-testcase-info-as-list [[(a-testsuite "suite" (a-testcase-with-runtime "a case" 42))]])))
+    (is (= [{:testsuite ["suite"]
              :classname "a class"
              :name "a case"
              :average-runtime nil

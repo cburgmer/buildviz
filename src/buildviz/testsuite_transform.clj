@@ -1,11 +1,8 @@
 (ns buildviz.testsuite-transform
   (:require [buildviz.junit-xml :as junit-xml]))
 
-(defn- testcase-id [suite-id testcase]
-  (let [name (:name testcase)]
-    (if-let [classname (:classname testcase)]
-      (conj suite-id classname name)
-      (conj suite-id name))))
+(defn- testcase-id [suite-id {:keys [classname name]}]
+  (conj suite-id classname name))
 
 (defn- rolled-out-testcase [suite-id testcase]
   (let [testcase-content (dissoc testcase :name :classname)]
@@ -48,17 +45,22 @@
        (mapcat accumulate-testcases-with-duplicate-names)))
 
 
+(defn- skip-optional-testclass [testcase-id]
+  (if (nil? (peek testcase-id))
+    (pop testcase-id)
+    testcase-id))
+
 (defn- assoc-testcase-entry [testsuite testcase-id testcase-data]
   (let [testcase {(peek testcase-id) testcase-data}
-        suite-path (pop testcase-id)]
+        suite-path (skip-optional-testclass (pop testcase-id))]
     (update-in testsuite suite-path merge testcase)))
 
 (defn- build-suite-hierarchy-recursively [testsuite testcase-entries]
   (if-let [next-testcase (first testcase-entries)]
     (let [testcase-id (key next-testcase)
-          fail-count (val next-testcase)]
+          testcase-data (val next-testcase)]
       (recur
-       (assoc-testcase-entry testsuite testcase-id fail-count)
+       (assoc-testcase-entry testsuite testcase-id testcase-data)
        (rest testcase-entries)))
     testsuite))
 
@@ -91,10 +93,12 @@
 
 
 (defn testclass->map [[testclass-id statistics]]
-  (merge {:testsuite (pop testclass-id)
+  (merge {:testsuite (pop (pop testclass-id))
           :classname (last testclass-id)}
          statistics))
 
 (defn testcase->map [[testcase-id statistics]]
-  (-> (testclass->map [(pop testcase-id) statistics])
-      (assoc :name (last testcase-id))))
+  (-> {:testsuite (pop (pop testcase-id))
+       :classname (last (pop testcase-id))}
+      (assoc :name (last testcase-id))
+      (merge statistics)))
