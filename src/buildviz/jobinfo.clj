@@ -1,5 +1,6 @@
 (ns buildviz.jobinfo
   (:require [buildviz.data.schema :as schema]
+            [buildviz.math :as math]
             [clj-time
              [coerce :as tc]
              [core :as t]
@@ -39,9 +40,6 @@
 
 ;; avg runtime
 
-(defn- avg [series]
-  (Math/round (float (/ (reduce + series) (count series)))))
-
 (defn- runtime-for [build]
   (when (contains? build :end)
     (- (build :end) (build :start))))
@@ -52,7 +50,7 @@
 
 (defn average-runtime [build-data-entries]
   (when-let [runtimes (seq (build-runtime build-data-entries))]
-    (avg runtimes)))
+    (math/avg runtimes)))
 
 
 (def date-only-formatter (tf/formatter "yyyy-MM-dd" (t/default-time-zone)))
