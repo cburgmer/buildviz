@@ -39,8 +39,8 @@
 (defn aggregate-testcase-info-as-list [test-runs]
   (->> (aggregated-info-by-testcase test-runs)
        (map (fn [[testcase-id {average-runtime :averageRuntime failed-count :failedCount}]]
-              (transform/testcase->map [(apply vector testcase-id) {:average-runtime average-runtime
-                                                                    :failed-count failed-count}])))))
+              (transform/testcase->map [testcase-id {:average-runtime average-runtime
+                                                     :failed-count failed-count}])))))
 
 
 (defn- average-runs [unrolled-testcases]
