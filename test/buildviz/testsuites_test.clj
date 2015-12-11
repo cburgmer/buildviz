@@ -175,7 +175,7 @@
   (testing "average-testclass-runtime-as-list"
     (is (= []
            (average-testclass-runtime-as-list [])))
-    (is (= [{:testsuite ["suite"] :classname "a class" :averageRuntime nil}]
+    (is (= [{:testsuite ["suite"] :classname "a class"}]
            (average-testclass-runtime-as-list [[(a-testsuite "suite"
                                                              (a-testcase "a class" "a case" :fail)
                                                              (a-testcase-with-runtime "a class" "another case" 10))]]

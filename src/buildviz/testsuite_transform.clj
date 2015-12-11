@@ -88,3 +88,13 @@
   (->> testcase-list
        build-suite-hierarchy
        testsuites-map->list))
+
+
+(defn testclass->map [[testclass-id statistics]]
+  (merge {:testsuite (pop testclass-id)
+          :classname (last testclass-id)}
+         statistics))
+
+(defn testcase->map [[testcase-id statistics]]
+  (-> (testclass->map [(pop testcase-id) statistics])
+      (assoc :name (last testcase-id))))

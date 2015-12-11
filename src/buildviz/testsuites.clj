@@ -29,6 +29,31 @@
   (aggregate-runs (transform/test-runs->testcase-list test-runs)))
 
 
+(defn aggregate-testcase-info [test-runs]
+  (->> (aggregated-info-by-testcase test-runs)
+       transform/testcase-list->testsuite-tree))
+
+(defn aggregate-testcase-info-as-list [test-runs]
+  (->> (aggregated-info-by-testcase test-runs)
+       (map (fn [[testcase-id {average-runtime :averageRuntime failed-count :failedCount}]]
+              (transform/testcase->map [(apply vector testcase-id) {:average-runtime average-runtime
+                                                                    :failed-count failed-count}])))))
+
+
+(defn average-testclass-runs [testclasses]
+  (if-let [average-runtime (average-runtime-for-testcase-runs testclasses)]
+    {:averageRuntime average-runtime}
+    {}))
+
+(defn- average-runs [unrolled-testcases]
+  (->> unrolled-testcases
+       (group-by first)
+       (map (fn [[testcase-id group]]
+              [testcase-id (->> group
+                                (map last)
+                                average-testclass-runs)]))
+       (into {})))
+
 (defn- accumulated-runtime [testcases]
   (let [runtimes (map :runtime testcases)]
     (when (every? number? runtimes)
@@ -48,20 +73,6 @@
            (concat (map accumulate-runtime-by-class nested-suites)
                    (accumulate-runtime-by-class-for-testcases testcases)))))
 
-(defn average-testclass-runs [testclasses]
-  (if-let [average-runtime (average-runtime-for-testcase-runs testclasses)]
-    {:averageRuntime average-runtime}
-    {}))
-
-(defn- average-runs [unrolled-testcases]
-  (->> unrolled-testcases
-       (group-by first)
-       (map (fn [[testcase-id group]]
-              [testcase-id (->> group
-                                (map last)
-                                average-testclass-runs)]))
-       (into {})))
-
 (defn- average-runtimes-by-testclass [test-runs]
   (->> test-runs
        (map #(map accumulate-runtime-by-class %))
@@ -69,29 +80,12 @@
        average-runs))
 
 
-(defn aggregate-testcase-info [test-runs]
-  (->> (aggregated-info-by-testcase test-runs)
-       transform/testcase-list->testsuite-tree))
-
-(defn aggregate-testcase-info-as-list [test-runs]
-  (->> (aggregated-info-by-testcase test-runs)
-       (map (fn [[testcase-id {average-runtime :averageRuntime failed-count :failedCount}]]
-              {:testsuite (pop (pop testcase-id))
-               :classname (last (pop testcase-id))
-               :name (last testcase-id)
-               :average-runtime average-runtime
-               :failed-count failed-count}))))
-
 (defn average-testclass-runtime [test-runs]
-  (->> (average-runtimes-by-testclass test-runs)
-       transform/testcase-list->testsuite-tree))
+  (transform/testcase-list->testsuite-tree (average-runtimes-by-testclass test-runs)))
 
 (defn average-testclass-runtime-as-list [test-runs]
-  (->> (average-runtimes-by-testclass test-runs)
-       (map (fn [[testclass-id {average-runtime :averageRuntime}]]
-              {:testsuite (pop testclass-id)
-               :classname (last testclass-id)
-               :averageRuntime average-runtime}))))
+  (map transform/testclass->map
+       (average-runtimes-by-testclass test-runs)))
 
 
 (defn- find-flaky-build-groups [jobs]
@@ -132,8 +126,4 @@
        flaky-builds
        (mapcat #(flaky-testcases-for-build % test-results-func))
        flaky-testcase-summaries
-       (map (fn [[testcase-id summary]]
-              (assoc summary
-                     :testsuite (pop (pop testcase-id))
-                     :classname (last (pop testcase-id))
-                     :name (last testcase-id))))))
+       (map transform/testcase->map)))
