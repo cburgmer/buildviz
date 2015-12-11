@@ -35,9 +35,10 @@
       (http/respond-with-json build-summary)
       (http/respond-with-csv
        (csv/export-table ["job" "averageRuntime" "totalCount" "failedCount" "flakyCount"]
-                         (map (fn [[job-name job]] [job-name
-                                                    (csv/format-duration (:averageRuntime job))
-                                                    (:totalCount job)
-                                                    (:failedCount job)
-                                                    (:flakyCount job)])
+                         (map (fn [[job-name {:keys [averageRuntime totalCount failedCount flakyCount]}]]
+                                [job-name
+                                 (csv/format-duration averageRuntime)
+                                 totalCount
+                                 failedCount
+                                 flakyCount])
                               build-summary))))))

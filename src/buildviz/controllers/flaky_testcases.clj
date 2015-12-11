@@ -23,12 +23,7 @@
   (let [builds (builds-after-timestamp build-results job-name from-timestamp)
         test-lookup (partial test-results-for-build build-results job-name)]
     (->> (testsuites/flaky-testcases-as-list builds test-lookup)
-         (map (fn [{testsuite :testsuite
-                    classname :classname
-                    name :name
-                    build-id :build-id
-                    latest-failure :latest-failure
-                    flaky-count :flaky-count}]
+         (map (fn [{:keys [testsuite classname name build-id latest-failure flaky-count]}]
                 [(csv/format-timestamp latest-failure)
                  flaky-count
                  job-name
