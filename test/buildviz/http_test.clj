@@ -40,3 +40,8 @@
               :headers {"Last-Modified" "Tue, 14 Oct 1986 04:03:27 GMT"}
               :body nil}
              (http/not-modified-request handler date request))))))
+
+(deftest test-respond-with-json
+  (testing "should translate dash-keywords to JSON camel-case"
+    (is (= {:body {"camelCase" "a-value"}}
+           (http/respond-with-json {:camel-case "a-value"})))))
