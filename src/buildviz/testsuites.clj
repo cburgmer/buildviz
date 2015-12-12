@@ -11,13 +11,13 @@
 
 (defn average-runtime [testclasses]
   (if-let [average-runtime (avg-with-nil (map :runtime testclasses))]
-    {:averageRuntime average-runtime}
+    {:average-runtime average-runtime}
     {}))
 
 (defn aggregate-testcase-runs [testcases]
   (let [failed-count (count (remove junit-xml/is-ok? testcases))]
     (assoc (average-runtime testcases)
-           :failedCount failed-count)))
+           :failed-count failed-count)))
 
 (defn- aggregate-runs [unrolled-testcases]
   (->> unrolled-testcases
@@ -38,9 +38,7 @@
 
 (defn aggregate-testcase-info-as-list [test-runs]
   (->> (aggregated-info-by-testcase test-runs)
-       (map (fn [[testcase-id {average-runtime :averageRuntime failed-count :failedCount}]]
-              (transform/testcase->map [testcase-id {:average-runtime average-runtime
-                                                     :failed-count failed-count}])))))
+       (map transform/testcase->map)))
 
 
 (defn- average-runs [unrolled-testcases]

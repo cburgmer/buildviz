@@ -32,7 +32,7 @@
                                    (remove (fn [[job-name testcases]]
                                              (empty? testcases)))
                                    (map (fn [[job-name testcases]]
-                                          {:jobName job-name
+                                          {:job-name job-name
                                            :children testcases}))))
       (http/respond-with-csv (csv/export-table
                               ["averageRuntime" "failedCount" "job" "testsuite" "classname" "name"]

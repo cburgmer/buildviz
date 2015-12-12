@@ -7,18 +7,18 @@
 
 (defn- average-runtime-for [build-data-entries]
   (if-let [avg-runtime (jobinfo/average-runtime build-data-entries)]
-    {:averageRuntime avg-runtime}))
+    {:average-runtime avg-runtime}))
 
 (defn- total-count-for [build-data-entries]
-  {:totalCount (count build-data-entries)})
+  {:total-count (count build-data-entries)})
 
 (defn- failed-count-for [build-data-entries]
   (if-some [builds (seq (jobinfo/builds-with-outcome build-data-entries))]
-    {:failedCount (jobinfo/fail-count builds)}))
+    {:failed-count (jobinfo/fail-count builds)}))
 
 (defn- flaky-count-for [build-data-entries]
   (if-some [builds (seq (jobinfo/builds-with-outcome build-data-entries))]
-    {:flakyCount (jobinfo/flaky-build-count builds)}))
+    {:flaky-count (jobinfo/flaky-build-count builds)}))
 
 (defn- summary-for [build-results job-name from-timestamp]
   (let [build-data-entries (results/builds build-results job-name from-timestamp)]
@@ -31,16 +31,16 @@
   (let [job-names (results/job-names build-results)
         job-entries (map (fn [job-name]
                            (assoc (summary-for build-results job-name from-timestamp)
-                                  :jobName job-name))
+                                  :job-name job-name))
                          job-names)]
     (if (= (:mime accept) :json)
       (http/respond-with-json job-entries)
       (http/respond-with-csv
        (csv/export-table ["job" "averageRuntime" "totalCount" "failedCount" "flakyCount"]
-                         (map (fn [{:keys [jobName averageRuntime totalCount failedCount flakyCount]}]
-                                [jobName
-                                 (csv/format-duration averageRuntime)
-                                 totalCount
-                                 failedCount
-                                 flakyCount])
+                         (map (fn [{:keys [job-name average-runtime total-count failed-count flaky-count]}]
+                                [job-name
+                                 (csv/format-duration average-runtime)
+                                 total-count
+                                 failed-count
+                                 flaky-count])
                               job-entries))))))

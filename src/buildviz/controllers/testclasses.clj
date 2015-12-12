@@ -15,7 +15,7 @@
 
 (defn- flat-testclass-runtimes [build-results job-name from-timestamp]
   (->> (testsuites/average-testclass-runtime-as-list (test-runs build-results job-name from-timestamp))
-       (map (fn [{testsuite :testsuite classname :classname average-runtime :averageRuntime}]
+       (map (fn [{:keys [testsuite classname average-runtime]}]
               [(csv/format-duration average-runtime)
                job-name
                (csv/serialize-nested-testsuites testsuite)
@@ -30,7 +30,7 @@
                                    (remove (fn [[job-name testcases]]
                                              (empty? testcases)))
                                    (map (fn [[job-name testcases]]
-                                          {:jobName job-name
+                                          {:job-name job-name
                                            :children testcases}))))
       (http/respond-with-csv (csv/export-table
                               ["averageRuntime" "job" "testsuite" "classname"]
