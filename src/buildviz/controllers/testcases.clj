@@ -11,7 +11,7 @@
        (results/chronological-tests build-results job-name from-timestamp)))
 
 (defn- testcase-info [build-results job-name from-timestamp]
-  {:children (testsuites/aggregate-testcase-info (test-runs build-results job-name from-timestamp))})
+  (testsuites/aggregate-testcase-info (test-runs build-results job-name from-timestamp)))
 
 (defn- flat-testcase-info [build-results job-name from-timestamp]
   (->> (testsuites/aggregate-testcase-info-as-list (test-runs build-results job-name from-timestamp))
@@ -29,8 +29,11 @@
       (http/respond-with-json (->> job-names
                                    (map #(testcase-info build-results % from-timestamp))
                                    (zipmap job-names)
-                                   (remove (fn [[job-name testcases]] (empty? (:children testcases))))
-                                   (into {})))
+                                   (remove (fn [[job-name testcases]]
+                                             (empty? testcases)))
+                                   (map (fn [[job-name testcases]]
+                                          {:jobName job-name
+                                           :children testcases}))))
       (http/respond-with-csv (csv/export-table
                               ["averageRuntime" "failedCount" "job" "testsuite" "classname" "name"]
                               (mapcat #(flat-testcase-info build-results % from-timestamp) job-names))))))

@@ -7,83 +7,81 @@
 <script>
     var dataSource = {
         load: function (_, callback) {
-            callback({
-                aGoodBuild: {
+            callback([{
+                jobName: 'aGoodBuild',
+                children: [{
+                    name: "test suite",
                     children: [{
-                        name: "test suite",
+                        name: "package",
                         children: [{
-                            name: "package",
-                            children: [{
-                                name: 'test',
-                                failedCount: 0
-                            }]
+                            name: 'test',
+                            failedCount: 0
                         }]
                     }]
-                },
-                aBuild: {
+                }]
+            }, {
+                jobName: 'aBuild',
+                children: [{
+                    name: "test suite",
                     children: [{
-                        name: "test suite",
+                        name: "package.sub.classname",
                         children: [{
-                            name: "package.sub.classname",
-                            children: [{
-                                name: 'a test',
-                                failedCount: 4
-                            }]
+                            name: 'a test',
+                            failedCount: 4
+                        }]
+                    }]
+                }, {
+                    name: "another suite",
+                    children: [{
+                        name: "package.classname",
+                        children: [{
+                            name: 'a test',
+                            failedCount: 3
+                        }]
+                    }]
+                }]
+            }, {
+                jobName: 'anotherBuild',
+                children: [{
+                    name: "some suite",
+                    children: [{
+                        name: "com.example.and.more.class.doge",
+                        children: [{
+                            name: 'a test',
+                            failedCount: 10
                         }]
                     }, {
-                        name: "another suite",
+                        name: "com.example.bee",
                         children: [{
-                            name: "package.classname",
-                            children: [{
-                                name: 'a test',
-                                failedCount: 3
-                            }]
+                            name: 'a test',
+                            failedCount: 12
+                        }]
+                    }, {
+                        name: "com.example.zen.some",
+                        children: [{
+                            name: 'a test',
+                            failedCount: 8
+                        }]
+                    }, {
+                        name: "com.example.zen.nested",
+                        children: [{
+                            name: 'a test',
+                            failedCount: 2
+                        }, {
+                            name: 'another test',
+                            failedCount: 1
+                        }, {
+                            name: 'yet another test',
+                            failedCount: 3
+                        }]
+                    }, {
+                        name: 'good.test',
+                        children: [{
+                            name: 'test',
+                            failedCount: 0
                         }]
                     }]
-                },
-                anotherBuild: {
-                    children: [{
-                        name: "some suite",
-                        children: [{
-                            name: "com.example.and.more.class.doge",
-                            children: [{
-                                name: 'a test',
-                                failedCount: 10
-                            }]
-                        }, {
-                            name: "com.example.bee",
-                            children: [{
-                                name: 'a test',
-                                failedCount: 12
-                            }]
-                        }, {
-                            name: "com.example.zen.some",
-                            children: [{
-                                name: 'a test',
-                                failedCount: 8
-                            }]
-                        }, {
-                            name: "com.example.zen.nested",
-                            children: [{
-                                name: 'a test',
-                                failedCount: 2
-                            }, {
-                                name: 'another test',
-                                failedCount: 1
-                            }, {
-                                name: 'yet another test',
-                                failedCount: 3
-                            }]
-                        }, {
-                            name: 'good.test',
-                            children: [{
-                                name: 'test',
-                                failedCount: 0
-                            }]
-                        }]
-                    }]
-                }
-            });
+                }]}]);
         }
     };
 </script>

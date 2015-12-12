@@ -126,26 +126,27 @@
         return suites;
     };
 
-    var transformFailures = function (failureMap) {
-        var jobNames = Object.keys(failureMap),
-            color = jobColors.colors(jobNames);
+    var transformFailingTests = function (testcasesByJob) {
+        var jobNames = testcasesByJob.map(function (jobEntry) {
+            return jobEntry.jobName;
+        });
+        var color = jobColors.colors(jobNames);
 
-        return Object.keys(failureMap)
-            .map(function (jobName) {
-                var job = failureMap[jobName],
-                    children = skipOnlyTestSuite(filterMostNFailingTests(job.children, testCountPerJob));
+        return testcasesByJob .map(function (jobEntry) {
+            var jobName = jobEntry.jobName,
+                children = skipOnlyTestSuite(filterMostNFailingTests(jobEntry.children, testCountPerJob));
 
-                return {
-                    name: jobName,
-                    color: color(jobName),
-                    id: 'jobname-' + jobName,
-                    children: children.map(function (child) {
-                        return transformNode(child, jobName);
-                    })
-                };
-            }).filter(function (entry) {
-                return entry.children.length > 0;
-            });
+            return {
+                name: jobName,
+                color: color(jobName),
+                id: 'jobname-' + jobName,
+                children: children.map(function (child) {
+                    return transformNode(child, jobName);
+                })
+            };
+        }).filter(function (entry) {
+            return entry.children.length > 0;
+        });
     };
 
     var timespanSelector = timespanSelection.create(timespanSelection.timespans.sevenDays),
@@ -169,7 +170,7 @@
             var data = {
                 name: "Most frequently failing tests",
                 id: '__most_frequently_failing_tests__',
-                children: transformFailures(failures)
+                children: transformFailingTests(failures)
             };
 
             sunburst.render(data);

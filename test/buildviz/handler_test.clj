@@ -354,7 +354,7 @@
            (:status (json-get-request (the-app) "/testcases")))))
 
   (testing "GET should return empty map by default"
-    (is (= {}
+    (is (= []
            (json-body (json-get-request (the-app) "/testcases")))))
 
   (testing "GET should include a list of builds with test cases"
@@ -362,11 +362,12 @@
                                   2 {:start 1}}}
                        {"aBuild" {1 "<testsuites><testsuite name=\"a suite\"><testcase classname=\"class\" name=\"a test\" time=\"10\"></testcase></testsuite></testsuites>"
                                   2 "<testsuites><testsuite name=\"a suite\"><testcase classname=\"class\" name=\"a test\" time=\"30\"></testcase></testsuite></testsuites>"}})]
-      (is (= {"aBuild" {"children" [{"name" "a suite"
-                                     "children" [{"name" "class"
-                                                  "children" [{"name" "a test"
-                                                               "averageRuntime" 20000
-                                                               "failedCount" 0}]}]}]}}
+      (is (= [{"jobName" "aBuild"
+               "children" [{"name" "a suite"
+                            "children" [{"name" "class"
+                                         "children" [{"name" "a test"
+                                                      "averageRuntime" 20000
+                                                      "failedCount" 0}]}]}]}]
              (json-body (json-get-request app "/testcases"))))))
 
   (testing "GET should return CSV by default"
@@ -386,7 +387,7 @@
   (testing "GET should not include builds without test cases"
     (let [app (the-app {"aBuild" {1 {:start 0}}}
                        {})]
-      (is (= {}
+      (is (= []
              (json-body (json-get-request app "/testcases"))))))
 
   (testing "should handle missing runtime"
@@ -400,10 +401,11 @@
     (let [app (the-app {"aBuild" {"1" {:start 47} "2" {:start 50}}}
                        {"aBuild" {"1" "<testsuite name=\"suite\"><testcase classname=\"c\" name=\"t\"><failure/></testcase></testsuite>"
                                   "2" "<testsuite name=\"suite\"><testcase classname=\"c\" name=\"t\"><failure/></testcase></testsuite>"}})]
-      (is (= {"aBuild" {"children" [{"name" "suite"
-                                     "children" [{"name" "c"
-                                                  "children" [{"name" "t"
-                                                               "failedCount" 1}]}]}]}}
+      (is (= [{"jobName" "aBuild"
+               "children" [{"name" "suite"
+                            "children" [{"name" "c"
+                                         "children" [{"name" "t"
+                                                      "failedCount" 1}]}]}]}]
              (json-body (json-get-request app "/testcases" {"from" 50})))))))
 
 (deftest TestClassesSummary

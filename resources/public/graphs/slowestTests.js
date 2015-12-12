@@ -119,24 +119,26 @@
         return suites;
     };
 
-    var transformTestCases = function (jobMap) {
-        var jobNames = Object.keys(jobMap),
-            color = jobColors.colors(jobNames);
+    var transformTestCases = function (testcasesByJob) {
+        console.log(testcasesByJob);
+        var jobNames = testcasesByJob.map(function (jobEntry) {
+            return jobEntry.jobName;
+        });
+        var color = jobColors.colors(jobNames);
 
-        return Object.keys(jobMap)
-            .map(function (jobName) {
-                var job = jobMap[jobName],
-                    children = skipOnlyTestSuite(filterNSlowestTests(job.children, testCountPerJob));
+        return testcasesByJob.map(function (jobEntry) {
+            var jobName = jobEntry.jobName,
+                children = skipOnlyTestSuite(filterNSlowestTests(jobEntry.children, testCountPerJob));
 
-                return {
-                    name: jobName,
-                    color: color(jobName),
-                    id: 'jobname-' + jobName,
-                    children: children.map(function (child) {
-                        return transformNode(child, jobName);
-                    })
-                };
-            });
+            return {
+                name: jobName,
+                color: color(jobName),
+                id: 'jobname-' + jobName,
+                children: children.map(function (child) {
+                    return transformNode(child, jobName);
+                })
+            };
+        });
     };
 
     var timespanSelector = timespanSelection.create(timespanSelection.timespans.sevenDays),

@@ -7,65 +7,63 @@
 <script>
     var dataSource = {
         load: function (_, callback) {
-            callback({
-                aBuild: {
+            callback([{
+                jobName: 'aBuild',
+                children: [{
+                    name: "test suite",
                     children: [{
-                        name: "test suite",
+                        name: "package.sub.classname",
                         children: [{
-                            name: "package.sub.classname",
-                            children: [{
-                                name: 'a test',
-                                averageRuntime: 44612
-                            }]
+                            name: 'a test',
+                            averageRuntime: 44612
+                        }]
+                    }]
+                }, {
+                    name: "another suite",
+                    children: [{
+                        name: "package.classname",
+                        children: [{
+                            name: 'a test',
+                            averageRuntime: 30000
+                        }]
+                    }]
+                }]
+            }, {
+                jobName: 'anotherBuild',
+                children: [{
+                    name: "some suite",
+                    children: [{
+                        name: "com.example.and.more.class.doge",
+                        children: [{
+                            name: 'a test',
+                            averageRuntime: 25000
                         }]
                     }, {
-                        name: "another suite",
+                        name: "com.example.bee",
                         children: [{
-                            name: "package.classname",
-                            children: [{
-                                name: 'a test',
-                                averageRuntime: 30000
-                            }]
+                            name: 'a test',
+                            averageRuntime: 55000
+                        }]
+                    }, {
+                        name: "com.example.zen.some",
+                        children: [{
+                            name: 'a test',
+                            averageRuntime: 10000
+                        }]
+                    }, {
+                        name: "com.example.zen.nested",
+                        children: [{
+                            name: 'a test',
+                            averageRuntime: 10000
+                        }, {
+                            name: 'another test',
+                            averageRuntime: 20000
+                        }, {
+                            name: 'yet another test',
+                            averageRuntime: 30000
                         }]
                     }]
-                },
-                anotherBuild: {
-                    children: [{
-                        name: "some suite",
-                        children: [{
-                            name: "com.example.and.more.class.doge",
-                            children: [{
-                                name: 'a test',
-                                averageRuntime: 25000
-                            }]
-                        }, {
-                            name: "com.example.bee",
-                            children: [{
-                                name: 'a test',
-                                averageRuntime: 55000
-                            }]
-                        }, {
-                            name: "com.example.zen.some",
-                            children: [{
-                                name: 'a test',
-                                averageRuntime: 10000
-                            }]
-                        }, {
-                            name: "com.example.zen.nested",
-                            children: [{
-                                name: 'a test',
-                                averageRuntime: 10000
-                            }, {
-                                name: 'another test',
-                                averageRuntime: 20000
-                            }, {
-                                name: 'yet another test',
-                                averageRuntime: 30000
-                            }]
-                        }]
-                    }]
-                }
-            });
+                }]}]);
         }
     };
 </script>
