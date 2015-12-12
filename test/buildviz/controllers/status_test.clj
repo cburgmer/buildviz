@@ -1,5 +1,7 @@
 (ns buildviz.controllers.status-test
   (:require [buildviz.test-utils :refer :all]
+            [buildviz.data.results :as results]
+            [buildviz.handler :as handler]
             [clj-time
              [coerce :as tc]
              [core :as t]]
@@ -35,6 +37,12 @@
              0))))
 
   (testing "should expose pipeline name"
-    (let [body (json-body (json-get-request (the-app) "/status"))]
+    (let [pipeline-name "Test Pipeline"
+          app (handler/create-app (results/build-results {}
+                                                         (fn [])
+                                                         dummy-persist
+                                                         dummy-persist)
+                                  pipeline-name)
+          body (json-body (json-get-request (the-app) "/status"))]
       (is (= pipeline-name
              (get body "pipelineName"))))))

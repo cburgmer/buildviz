@@ -10,8 +10,6 @@
   (fn [job-name build-id]
     (get-in @mock-testresults [job-name build-id])))
 
-(def pipeline-name "Test Pipeline")
-
 (defn the-app
   ([]
    (the-app {} {}))
@@ -23,7 +21,7 @@
                                         (load-tests-from stored-testresults)
                                         dummy-persist
                                         persist-testresults)
-                         pipeline-name))))
+                         "Test Pipeline"))))
 
 ;; helpers
 
