@@ -7,17 +7,17 @@
         return flakyCount / job.totalCount;
     };
 
-    var flakyBuildsAsBubbles = function (pipeline) {
-        return Object.keys(pipeline)
-            .filter(function (jobName) {
-                return pipeline[jobName].flakyCount > 0;
+    var flakyBuildsAsBubbles = function (jobEntries) {
+        return jobEntries
+            .filter(function (job) {
+                return job.flakyCount > 0;
             })
-            .map(function (jobName) {
-                var flakyCount = pipeline[jobName].flakyCount,
-                    ratio = flakyRatio(pipeline[jobName]);
+            .map(function (job) {
+                var flakyCount = job.flakyCount,
+                    ratio = flakyRatio(job);
                 return {
-                    name: jobName,
-                    title: jobName + '\n\n' + flakyCount + ' flaky failures\n' + (ratio * 100).toFixed(0) + '% of the time',
+                    name: job.jobName,
+                    title: job.jobName + '\n\n' + flakyCount + ' flaky failures\n' + (ratio * 100).toFixed(0) + '% of the time',
                     ratio: ratio,
                     value: flakyCount
                 };

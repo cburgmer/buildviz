@@ -29,16 +29,18 @@
 
 (defn get-jobs [build-results accept from-timestamp]
   (let [job-names (results/job-names build-results)
-        build-summaries (map #(summary-for build-results % from-timestamp) job-names)
-        build-summary (zipmap job-names build-summaries)]
+        job-entries (map (fn [job-name]
+                           (assoc (summary-for build-results job-name from-timestamp)
+                                  :jobName job-name))
+                         job-names)]
     (if (= (:mime accept) :json)
-      (http/respond-with-json build-summary)
+      (http/respond-with-json job-entries)
       (http/respond-with-csv
        (csv/export-table ["job" "averageRuntime" "totalCount" "failedCount" "flakyCount"]
-                         (map (fn [[job-name {:keys [averageRuntime totalCount failedCount flakyCount]}]]
-                                [job-name
+                         (map (fn [{:keys [jobName averageRuntime totalCount failedCount flakyCount]}]
+                                [jobName
                                  (csv/format-duration averageRuntime)
                                  totalCount
                                  failedCount
                                  flakyCount])
-                              build-summary))))))
+                              job-entries))))))

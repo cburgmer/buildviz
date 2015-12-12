@@ -1,16 +1,16 @@
 (function (timespanSelection, graphFactory, utils, jobColors, dataSource) {
-    var buildEntries = function (pipeline) {
-        return Object.keys(pipeline)
-            .filter(function (jobName) {
-                return pipeline[jobName].averageRuntime;
+    var buildEntries = function (jobEntries) {
+        return jobEntries
+            .filter(function (job) {
+                return job.averageRuntime;
             })
-            .map(function (jobName) {
-                var averageRuntime = pipeline[jobName].averageRuntime,
+            .map(function (job) {
+                var averageRuntime = job.averageRuntime,
                     runtime = averageRuntime ? ' (' + utils.formatTimeInMs(averageRuntime) + ')' : '';
 
                 return {
-                    name: jobName,
-                    title: jobName + ' ' + runtime,
+                    name: job.jobName,
+                    title: job.jobName + ' ' + runtime,
                     value: averageRuntime
                 };
             });
@@ -40,10 +40,12 @@
         return nodes.filter(function(d) { return d.depth > 0 && !d.children; });
     };
 
-    var renderGraph = function (root, svg) {
-        var jobNames = Object.keys(root),
-            color = jobColors.colors(jobNames),
-            builds = buildHierarchy(buildEntries(root));
+    var renderGraph = function (jobEntries, svg) {
+        var jobNames = jobEntries.map(function (job) {
+            return job.jobName;
+        });
+        var color = jobColors.colors(jobNames),
+            builds = buildHierarchy(buildEntries(jobEntries));
 
         var selection = svg
                 .selectAll("g")

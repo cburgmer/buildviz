@@ -6,32 +6,38 @@
 <script>
     var dataSource = {
         load: function (_, callback) {
-            callback({
-                aBuild: {
+            callback([
+                {
+                    jobName: "aBuild",
                     flakyCount: 42,
                     totalCount: 100
                 },
-                anotherBuild: {
+                {
+                    jobName: "anotherBuild",
                     flakyCount: 20,
                     totalCount: 100
                 },
-                yetAnotherBuild: {
+                {
+                    jobName: "yetAnotherBuild",
                     flakyCount: 10,
                     totalCount: 200
                 },
-                someBuild: {
+                {
+                    jobName: "someBuild",
                     flakyCount: 3,
                     totalCount: 20
                 },
-                someOtherBuild: {
+                {
+                    jobName: "someOtherBuild",
                     flakyCount: 1,
                     totalCount: 200
                 },
-                yetSomeOtherBuild: {
+                {
+                    jobName: "yetSomeOtherBuild",
                     flakyCount: 3,
                     totalCount: 30
                 }
-            });
+            ]);
         }
     };
 </script>

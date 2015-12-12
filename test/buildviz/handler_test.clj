@@ -225,54 +225,73 @@
                     (format "someBuild,%.8f,4,2,1\n" 0.00000023)]))))
 
     ;; GET should return empty map for json by default
-    (is (= (json-body (json-get-request (the-app) "/jobs"))
-           {}))
+    (is (= []
+           (json-body (json-get-request (the-app) "/jobs"))))
 
     ;; GET should return job summary
     (let [app (the-app)]
       (a-build app "someBuild" 1, {:start 42 :end 43})
       (a-build app "anotherBuild" 1, {:start 10 :end 12})
-      (is (= (json-body (json-get-request app "/jobs"))
-             {"someBuild" {"averageRuntime" 1 "totalCount" 1}
-              "anotherBuild" {"averageRuntime" 2 "totalCount" 1}})))
+      (is (= [{"jobName" "anotherBuild"
+               "averageRuntime" 2
+               "totalCount" 1}
+              {"jobName" "someBuild"
+               "averageRuntime" 1
+               "totalCount" 1}]
+             (json-body (json-get-request app "/jobs")))))
 
     ;; GET should return total build count
     (let [app (the-app {"runOnce" {1 {:start 10}}
                         "runTwice" {1 {:start 20}
                                     2 {:start 30}}}
                        {})]
-      (is (= (json-body (json-get-request app "/jobs"))
-             {"runTwice" {"totalCount" 2}
-              "runOnce" {"totalCount" 1}})))
+      (is (= [{"jobName" "runOnce"
+               "totalCount" 1}
+              {"jobName" "runTwice"
+               "totalCount" 2}]
+             (json-body (json-get-request app "/jobs")))))
 
     ;; GET should return failed build count
     (let [app (the-app {"flakyBuild" {1 {:outcome "pass" :start 10}
                                       2 {:outcome "fail" :start 20}}
                         "brokenBuild" {1 {:outcome "fail" :start 30}}}
                        {})]
-      (is (= (json-body (json-get-request app "/jobs"))
-             {"flakyBuild" {"failedCount" 1 "totalCount" 2 "flakyCount" 0}
-              "brokenBuild" {"failedCount" 1 "totalCount" 1 "flakyCount" 0}})))
+      (is (= [{"jobName" "brokenBuild"
+               "failedCount" 1
+               "totalCount" 1
+               "flakyCount" 0}
+              {"jobName" "flakyBuild"
+               "failedCount" 1
+               "totalCount" 2
+               "flakyCount" 0}]
+             (json-body (json-get-request app "/jobs")))))
 
     ;; GET should return error build count
     (let [app (the-app {"goodBuild" {1 {:outcome "pass" :start 10}}}
                        {})]
-      (is (= (json-body (json-get-request app "/jobs"))
-             {"goodBuild" {"failedCount" 0 "totalCount" 1 "flakyCount" 0}})))
+      (is (= [{"jobName" "goodBuild"
+               "failedCount" 0
+               "totalCount" 1
+               "flakyCount" 0}]
+             (json-body (json-get-request app "/jobs")))))
 
     ;; GET should return a flaky build count
     (let [app (the-app {"flakyBuild" {1 {:outcome "pass" :inputs [{:source_id 42 :revision "dat_revision"}] :start 10}
                                       2 {:outcome "fail" :inputs [{:source_id 42 :revision "dat_revision"}] :start 20}}}
                        {})]
-      (is (= (json-body (json-get-request app "/jobs"))
-             {"flakyBuild" {"failedCount" 1 "totalCount" 2 "flakyCount" 1}}))))
+      (is (= [{"jobName" "flakyBuild"
+               "failedCount" 1
+               "totalCount" 2
+               "flakyCount" 1}]
+             (json-body (json-get-request app "/jobs"))))))
 
   (testing "should respect 'from' filter"
     (let [app (the-app
                {"aBuild" {"1" {:start 42}
                           "2" {:start 43}}}
                {})]
-      (is (= {"aBuild" {"totalCount" 1}}
+      (is (= [{"jobName" "aBuild"
+               "totalCount" 1}]
              (json-body (json-get-request app "/jobs" {"from" 43})))))))
 
 (deftest PipelineRuntimeSummary

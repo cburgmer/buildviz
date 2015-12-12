@@ -6,17 +6,20 @@
 <script>
     var dataSource = {
         load: function (_, callback) {
-            callback({
-                aBuild: {
+            callback([
+                {
+                    jobName: "aBuild",
                     totalCount: 0
                 },
-                "aGroup anotherBuild": {
+                {
+                    jobName: "aGroup anotherBuild",
                     totalCount: 0
                 },
-                "aGroup yetAnotherBuild": {
+                {
+                    jobName: "aGroup yetAnotherBuild",
                     totalCount: 0
                 }
-            });
+            ]);
         }
     };
 </script>

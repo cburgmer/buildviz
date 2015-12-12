@@ -7,17 +7,17 @@
         return failCount / job.totalCount;
     };
 
-    var failedBuildsAsBubbles = function (pipeline) {
-        return Object.keys(pipeline)
-            .filter(function (jobName) {
-                return pipeline[jobName].failedCount > 0;
+    var failedBuildsAsBubbles = function (jobEntries) {
+        return jobEntries
+            .filter(function (job) {
+                return job.failedCount > 0;
             })
-            .map(function (jobName) {
-                var failedCount = pipeline[jobName].failedCount,
-                    ratio = failRatio(pipeline[jobName]);
+            .map(function (job) {
+                var failedCount = job.failedCount,
+                    ratio = failRatio(job);
                 return {
-                    name: jobName,
-                    title: jobName + '\n\n' + failedCount + ' failures\n' + (ratio * 100).toFixed(0) + '% of the time',
+                    name: job.jobName,
+                    title: job.jobName + '\n\n' + failedCount + ' failures\n' + (ratio * 100).toFixed(0) + '% of the time',
                     ratio: ratio,
                     value: failedCount
                 };

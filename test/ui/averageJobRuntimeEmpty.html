@@ -7,17 +7,20 @@
 <script>
     var dataSource = {
         load: function (_, callback) {
-            callback({
-                aBuild: {
-                    totalCount: 0
+            callback([
+                {
+                    jobName: "aBuild",
+                    averageRuntime: 0
                 },
-                "aGroup anotherBuild": {
-                    totalCount: 0
+                {
+                    jobName: "aGroup anotherBuild",
+                    averageRuntime: 0
                 },
-                "aGroup yetAnotherBuild": {
-                    totalCount: 0
+                {
+                    jobName: "aGroup yetAnotherBuild",
+                    averageRuntime: 0
                 }
-            });
+            ]);
         }
     };
 </script>

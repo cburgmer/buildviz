@@ -120,7 +120,6 @@
     };
 
     var transformTestCases = function (testcasesByJob) {
-        console.log(testcasesByJob);
         var jobNames = testcasesByJob.map(function (jobEntry) {
             return jobEntry.jobName;
         });
