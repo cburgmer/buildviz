@@ -84,19 +84,18 @@
        (average-runtimes-by-testclass test-runs)))
 
 
-(defn- find-flaky-job-candidates [jobs]
-  (->> (seq jobs)
+(defn- find-flaky-build-candidates [builds]
+  (->> (seq builds)
        (map (fn [[build-id build-data]]
               (assoc build-data :id build-id)))
        (jobinfo/builds-grouped-by-same-inputs)
        (filter #(< 1 (count %)))))
 
-(defn- unrolled-testcases [{build-id :id start :start} test-results-func]
-  (->> (test-results-func build-id)
+(defn- unrolled-testcases [build test-results-func]
+  (->> (test-results-func (:id build))
        transform/unroll-testsuites
        (map (fn [[testcase-id testcase]]
-              [testcase-id {:build-id build-id
-                            :failure-time start
+              [testcase-id {:build build
                             :ok? (junit-xml/is-ok? testcase)}]))))
 
 (defn- flaky-testcases-for-builds [builds test-results-func]
@@ -114,10 +113,10 @@
               (get testcase-result-groups false)))))
 
 (defn- flaky-testcase-summary [unrolled-testcases]
-  (let [build-infos (map last unrolled-testcases)
-        last-build (apply max-key :failure-time build-infos)]
-    {:build-id (:build-id last-build)
-     :latest-failure (:failure-time last-build)
+  (let [testcase-data (map last unrolled-testcases)
+        last-builds-testcase (apply max-key #(get-in % [:build :start]) testcase-data)]
+    {:build-id (get-in last-builds-testcase [:build :id])
+     :latest-failure (get-in last-builds-testcase [:build :start])
      :flaky-count (count unrolled-testcases)}))
 
 (defn- flaky-testcase-summaries [unrolled-testcases]
@@ -128,7 +127,7 @@
 
 (defn flaky-testcases-as-list [builds test-results-func]
   (->> builds
-       find-flaky-job-candidates
+       find-flaky-build-candidates
        (mapcat #(flaky-testcases-for-builds % test-results-func))
        flaky-testcase-summaries
        (map transform/testcase->map)))
