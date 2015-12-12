@@ -99,7 +99,7 @@
             headline: "Flaky tests",
             description: "<h3>Which tests provide questionable value and will probably be trusted the least?</h3><i>Color: flaky ratio, diameter: flaky count</i>",
             csvUrl: "/flakytestcases.csv",
-            noDataReason: "provided the <code>outcome</code> and <code>inputs</code> for relevant builds and uploaded test results",
+            noDataReason: "provided the <code>inputs</code> for relevant builds and uploaded test results",
             widgets: [timespanSelector.widget]
         });
 
