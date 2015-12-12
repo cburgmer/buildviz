@@ -84,25 +84,34 @@
        (average-runtimes-by-testclass test-runs)))
 
 
-(defn- find-flaky-build-groups [jobs]
+(defn- find-flaky-job-candidates [jobs]
   (->> (seq jobs)
        (map (fn [[build-id build-data]]
               (assoc build-data :id build-id)))
        (jobinfo/builds-grouped-by-same-inputs)
-       (map #(group-by :outcome %))
        (filter #(< 1 (count %)))))
 
-(defn- flaky-builds [jobs]
-  (->> jobs
-       find-flaky-build-groups
-       (map #(get % "fail"))
-       (apply concat)))
-
-(defn- flaky-testcases-for-build [{build-id :id start :start} test-results-func]
+(defn- unrolled-testcases [{build-id :id start :start} test-results-func]
   (->> (test-results-func build-id)
        transform/unroll-testsuites
-       (remove (fn [[testcase-id testcase]] (junit-xml/is-ok? testcase)))
-       (map (fn [[testcase-id {}]] [testcase-id {:build-id build-id :failure-time start}]))))
+       (map (fn [[testcase-id testcase]]
+              [testcase-id {:build-id build-id
+                            :failure-time start
+                            :ok? (junit-xml/is-ok? testcase)}]))))
+
+(defn- flaky-testcases-for-builds [builds test-results-func]
+  (->> builds
+       (mapcat (fn [build]
+                 (unrolled-testcases build test-results-func)))
+       (group-by (fn [[testcase-id _]] testcase-id))
+       vals
+       (map (fn [testcases]
+              (group-by (fn [[testcase-id {ok? :ok?}]] ok?)
+                        testcases)))
+       (filter (fn [testcase-result-groups]
+                 (< 1 (count testcase-result-groups))))
+       (mapcat (fn [testcase-result-groups]
+              (get testcase-result-groups false)))))
 
 (defn- flaky-testcase-summary [unrolled-testcases]
   (let [build-infos (map last unrolled-testcases)
@@ -119,7 +128,7 @@
 
 (defn flaky-testcases-as-list [builds test-results-func]
   (->> builds
-       flaky-builds
-       (mapcat #(flaky-testcases-for-build % test-results-func))
+       find-flaky-job-candidates
+       (mapcat #(flaky-testcases-for-builds % test-results-func))
        flaky-testcase-summaries
        (map transform/testcase->map)))
