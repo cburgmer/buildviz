@@ -1,7 +1,8 @@
 (ns buildviz.controllers.status-test
-  (:require [buildviz.test-utils :refer :all]
+  (:require [buildviz
+             [handler :as handler]
+             [test-utils :refer :all]]
             [buildviz.data.results :as results]
-            [buildviz.handler :as handler]
             [clj-time
              [coerce :as tc]
              [core :as t]]

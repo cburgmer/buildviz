@@ -1,5 +1,5 @@
 (ns buildviz.test-utils
-  (:require [buildviz.data.results :refer :all]
+  (:require [buildviz.data.results :as results]
             [buildviz.handler :as handler]
             [cheshire.core :as json]
             [ring.mock.request :refer :all]))
@@ -17,10 +17,10 @@
    (let [stored-testresults (atom testresults)
          persist-testresults (fn [job-name build-id xml]
                                (swap! stored-testresults assoc-in [job-name build-id] xml))]
-     (handler/create-app (build-results jobs
-                                        (load-tests-from stored-testresults)
-                                        dummy-persist
-                                        persist-testresults)
+     (handler/create-app (results/build-results jobs
+                                                (load-tests-from stored-testresults)
+                                                dummy-persist
+                                                persist-testresults)
                          "Test Pipeline"))))
 
 ;; helpers

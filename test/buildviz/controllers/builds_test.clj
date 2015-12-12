@@ -1,6 +1,5 @@
 (ns buildviz.controllers.builds-test
   (:require [buildviz.test-utils :refer :all]
-            [cheshire.core :as json]
             [clojure.test :refer :all]))
 
 (defn some-test-results [app job-name build-no content]
@@ -24,7 +23,7 @@
 
     ;; PUT should return content
     (let [response (json-put-request (the-app) "/builds/abuild/1" {:start 42 :end 43})
-          resp-data (json/parse-string (:body response))]
+          resp-data (json-body response)]
       (is (= resp-data
              {"start" 42 "end" 43}))))
 
