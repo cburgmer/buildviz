@@ -7,50 +7,49 @@
 <script>
     var dataSource = {
         load: function (_, callback) {
-            callback({
-                aBuild: {
+            callback([{
+                jobName: "aBuild",
+                children: [{
+                    name: "test suite",
                     children: [{
-                        name: "test suite",
-                        children: [{
-                            name: "package.sub.classname",
-                            averageRuntime: 2
-                        }]
+                        name: "package.sub.classname",
+                        averageRuntime: 2
+                    }]
+                }, {
+                    name: "another suite",
+                    children: [{
+                        name: "package.classname",
+                        averageRuntime: 0.5
+                    }]
+                }]
+            }, {
+                jobName: "anotherBuild",
+                children: [{
+                    name: "some suite",
+                    children: [{
+                        name: "com.example.and.more.class.doge",
+                        averageRuntime: 2
                     }, {
-                        name: "another suite",
-                        children: [{
-                            name: "package.classname",
-                            averageRuntime: 0.5
-                        }]
+                        name: "com.example.bee",
+                        averageRuntime: 15
+                    }, {
+                        name: "com.example.zen.nested",
+                        averageRuntime: 10
+                    }, {
+                        name: "com.example.y",
+                        averageRuntime: 10
+                    }, {
+                        name: "com.example.some.more.and.one",
+                        averageRuntime: 2
+                    }, {
+                        name: "com.example.some.more.and.two",
+                        averageRuntime: 2
+                    }, {
+                        name: "com.something",
+                        averageRuntime: 10
                     }]
-                },
-                anotherBuild: {
-                    children: [{
-                        name: "some suite",
-                        children: [{
-                            name: "com.example.and.more.class.doge",
-                            averageRuntime: 2
-                        }, {
-                            name: "com.example.bee",
-                            averageRuntime: 15
-                        }, {
-                            name: "com.example.zen.nested",
-                            averageRuntime: 10
-                        }, {
-                            name: "com.example.y",
-                            averageRuntime: 10
-                        }, {
-                            name: "com.example.some.more.and.one",
-                            averageRuntime: 2
-                        }, {
-                            name: "com.example.some.more.and.two",
-                            averageRuntime: 2
-                        }, {
-                            name: "com.something",
-                            averageRuntime: 10
-                        }]
-                    }]
-                }
-            });
+                }]
+            }]);
         }
     };
 </script>

@@ -144,17 +144,19 @@
         }
     };
 
-    var transformTestsuites = function (jobMap) {
-        var jobNames = Object.keys(jobMap),
-            color = jobColors.colors(jobNames);
+    var transformTestsuites = function (testclassesByJob) {
+        var jobNames = testclassesByJob.map(function (jobEntry) {
+            return jobEntry.jobName;
+        });
+        var color = jobColors.colors(jobNames);
 
-        return jobNames
-            .filter(function (jobName) {
-                return jobMap[jobName].children.length > 0;
+        return testclassesByJob
+            .filter(function (jobEntry) {
+                return jobEntry.children.length > 0;
             })
-            .map(function (jobName) {
-                var job = jobMap[jobName],
-                    children = job.children;
+            .map(function (jobEntry) {
+                var jobName = jobEntry.jobName,
+                    children = jobEntry.children;
 
                 return {
                     name: jobName,

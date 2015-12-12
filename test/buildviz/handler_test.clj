@@ -412,24 +412,25 @@
   (testing "GET to /testclasses as application/json"
     (is (= 200
            (:status (json-get-request (the-app) "/testclasses"))))
-    (is (= {}
+    (is (= []
            (json-body (json-get-request (the-app) "/testclasses"))))
     (let [app (the-app
                {"aBuild" {"1" {:start 0}
                           "2" {:start 1}}}
                {"aBuild" {"1" "<testsuite name=\"a suite\"><testsuite name=\"nested suite\"><testcase name=\"testcase\" classname=\"class\" time=\"10\"/><testcase name=\"another testcase\" classname=\"class\" time=\"30\"/></testsuite></testsuite>"
                           "2" "<testsuite name=\"a suite\"><testsuite name=\"nested suite\"><testcase name=\"testcase\" classname=\"class\" time=\"60\"/></testsuite></testsuite>"}})]
-      (is (= {"aBuild" {"children" [{"name" "a suite"
-                                     "children" [{"name" "nested suite"
-                                                  "children" [{"name" "class"
-                                                               "averageRuntime" 50000}]}]}]}}
+      (is (= [{"jobName" "aBuild"
+               "children" [{"name" "a suite"
+                            "children" [{"name" "nested suite"
+                                         "children" [{"name" "class"
+                                                      "averageRuntime" 50000}]}]}]}]
              (json-body (json-get-request app "/testclasses"))))
 
       ;; GET should not include builds without test cases
       (let [app (the-app
                  {"aBuild" {"1" {:start 0}}}
                  {})]
-        (is (= {}
+        (is (= []
                (json-body (json-get-request app "/testclasses")))))))
 
   (testing "GET to /testclasses as text/plain"
