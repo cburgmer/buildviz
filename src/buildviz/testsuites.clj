@@ -9,23 +9,26 @@
   (when-let [non-nil-values (seq (remove nil? values))]
     (math/avg non-nil-values)))
 
-(defn average-runtime [testclasses]
-  (if-let [average-runtime (avg-with-nil (map :runtime testclasses))]
+(defn average-runtime [testcases]
+  (if-let [average-runtime (->> testcases
+                                (map #(transform/testcase->data % :runtime))
+                                avg-with-nil)]
     {:average-runtime average-runtime}
     {}))
 
 (defn aggregate-testcase-runs [testcases]
-  (let [failed-count (count (remove junit-xml/is-ok? testcases))]
+  (let [failed-count (->> testcases
+                          (map transform/testcase->data)
+                          (remove junit-xml/is-ok?)
+                          count)]
     (assoc (average-runtime testcases)
            :failed-count failed-count)))
 
 (defn- aggregate-runs [unrolled-testcases]
   (->> unrolled-testcases
-       (group-by first)
-       (map (fn [[testcase-id group]]
-              [testcase-id (->> group
-                                (map last)
-                                aggregate-testcase-runs)]))
+       (group-by transform/testcase->id)
+       (map (transform/testcase-with-data
+             (fn [testcase-group] (aggregate-testcase-runs testcase-group))))
        (into {})))
 
 (defn- aggregated-info-by-testcase [test-runs]
@@ -43,11 +46,9 @@
 
 (defn- average-runs [unrolled-testcases]
   (->> unrolled-testcases
-       (group-by first)
-       (map (fn [[testcase-id group]]
-              [testcase-id (->> group
-                                (map last)
-                                average-runtime)]))
+       (group-by transform/testcase->id)
+       (map (transform/testcase-with-data
+             (fn [testcase-group] (average-runtime testcase-group))))
        (into {})))
 
 (defn- accumulated-runtime [testcases]
@@ -94,18 +95,18 @@
 (defn- unrolled-testcases [build test-results-func]
   (->> (test-results-func (:id build))
        transform/unroll-testsuites
-       (map (fn [[testcase-id testcase]]
-              [testcase-id {:build build
-                            :ok? (junit-xml/is-ok? testcase)}]))))
+       (map (transform/testcase-with-data
+             (fn [testcase] {:build build
+                             :ok? (junit-xml/is-ok? testcase)})))))
 
 (defn- flaky-testcases-for-builds [builds test-results-func]
   (->> builds
        (mapcat (fn [build]
                  (unrolled-testcases build test-results-func)))
-       (group-by (fn [[testcase-id _]] testcase-id))
+       (group-by transform/testcase->id)
        vals
        (map (fn [testcases]
-              (group-by (fn [[testcase-id {ok? :ok?}]] ok?)
+              (group-by #(transform/testcase->data % :ok?)
                         testcases)))
        (filter (fn [testcase-result-groups]
                  (< 1 (count testcase-result-groups))))
@@ -113,17 +114,17 @@
               (get testcase-result-groups false)))))
 
 (defn- flaky-testcase-summary [unrolled-testcases]
-  (let [testcase-data (map last unrolled-testcases)
-        last-builds-testcase (apply max-key #(get-in % [:build :start]) testcase-data)]
-    {:build-id (get-in last-builds-testcase [:build :id])
-     :latest-failure (get-in last-builds-testcase [:build :start])
+  (let [flaky-builds (map #(transform/testcase->data % :build) unrolled-testcases)
+        last-build (apply max-key :start flaky-builds)]
+    {:build-id (:id last-build)
+     :latest-failure (:start last-build)
      :flaky-count (count unrolled-testcases)}))
 
 (defn- flaky-testcase-summaries [unrolled-testcases]
   (->> unrolled-testcases
-       (group-by (fn [[testcase-id {}]] testcase-id))
-       (map (fn [[testcase-id testcases]]
-              [testcase-id (flaky-testcase-summary testcases)]))))
+       (group-by transform/testcase->id)
+       (map (transform/testcase-with-data
+             (fn [testcases] (flaky-testcase-summary testcases))))))
 
 (defn flaky-testcases-as-list [builds test-results-func]
   (->> builds

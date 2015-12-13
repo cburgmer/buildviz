@@ -21,23 +21,33 @@
   (mapcat (partial unroll-testcases-for-suite []) testsuites))
 
 
+(defn testcase->id [[testcase-id _]]
+  testcase-id)
+
+(defn testcase->data
+  ([[_ data]] data)
+  ([[_ data] key] (get data key)))
+
+(defn testcase-with-data [func]
+  (fn [[testcase-id testcase-data]]
+    [testcase-id (func testcase-data)]))
+
+
 (defn- accumulated-testcase [testcases]
-  (let [runtimes (filter some? (map :runtime testcases))
+  (let [runtimes (remove nil? (map #(testcase->data % :runtime) testcases))
         failed-testcase-status (remove junit-xml/is-ok?
-                                       (map :status testcases))]
+                                       (map #(testcase->data % :status) testcases))]
     {:runtime (when (seq runtimes)
                 (reduce + runtimes))
      :status (if (empty? failed-testcase-status)
-               (:status (first testcases))
+               (testcase->data (first testcases) :status)
                (first failed-testcase-status))}))
 
-(defn- accumulate-testcases-with-duplicate-names [unrolled-entries]
-  (->> unrolled-entries
-       (group-by first)
-       (map (fn [[entry-id duplicate-entry-list]]
-              [entry-id (->> duplicate-entry-list
-                             (map last)
-                             accumulated-testcase)]))))
+(defn- accumulate-testcases-with-duplicate-names [unrolled-testcases]
+  (->> unrolled-testcases
+       (group-by testcase->id)
+       (map (testcase-with-data
+             (fn [duplicate-testcases] (accumulated-testcase duplicate-testcases))))))
 
 
 (defn test-runs->testcase-list [test-runs]
@@ -51,18 +61,17 @@
     (conj testsuite classname)
     testsuite))
 
-(defn- assoc-testcase-entry [testsuite testcase-id testcase-data]
-  (let [testcase {(:name testcase-id) testcase-data}
+(defn- assoc-testcase-entry [testsuite testcase]
+  (let [testcase-id (testcase->id testcase)
+        testcase-data (assoc {} (:name testcase-id) (testcase->data testcase))
         suite-path (build-suite-path testcase-id)]
-    (update-in testsuite suite-path merge testcase)))
+    (update-in testsuite suite-path merge testcase-data)))
 
 (defn- build-suite-hierarchy-recursively [testsuite testcase-entries]
   (if-let [next-testcase (first testcase-entries)]
-    (let [testcase-id (key next-testcase)
-          testcase-data (val next-testcase)]
-      (recur
-       (assoc-testcase-entry testsuite testcase-id testcase-data)
-       (rest testcase-entries)))
+    (recur
+     (assoc-testcase-entry testsuite next-testcase)
+     (rest testcase-entries))
     testsuite))
 
 (defn- build-suite-hierarchy [testcase-entries]
