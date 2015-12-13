@@ -29,7 +29,7 @@ Seed dummy data for a quick impression
     $ curl -OL https://github.com/cburgmer/buildviz/releases/download/0.6.0/buildviz-0.6.0-standalone.jar
     $ java -jar buildviz-0.6.0-standalone.jar
 
-Now, buildviz takes in new build results via `PUT` to `/builds`. Some suggestions how to do the setup:
+Now, buildviz takes in new build results via `PUT` to `/builds`. Some suggestions how to set it up:
 
 #### DIY
 
