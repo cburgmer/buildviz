@@ -22,7 +22,9 @@
       (is (= 3
              (get body "totalBuildCount")))
       (is (= (+ a-timestamp (* 2 a-day))
-             (get body "latestBuildStart")))))
+             (get body "latestBuildStart")))
+      (is (= a-timestamp
+             (get body "earliestBuildStart")))))
 
   (testing "should handle a build without a start"
     (let [app (the-app

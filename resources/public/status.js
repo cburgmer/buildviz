@@ -30,6 +30,20 @@
             .text(commands.join('\n'));
     };
 
+    var durationToString = function (start, end) {
+        var duration = end - start,
+            momentDuration = moment.duration(duration);
+        if (duration < 60 * 60 * 1000) {
+            return momentDuration.format("m [minutes]");
+        } else if (duration < 24 * 60 * 60 * 1000) {
+            return momentDuration.format("h [hours]");
+        } else if (duration < 7 * 24 * 60 * 60 * 1000) {
+            return momentDuration.format("d [days]");
+        } else {
+            return momentDuration.format("w [weeks]");
+        }
+    };
+
     dataSource.load("/status", function (status) {
         if (status.pipelineName) {
             pipelineNameSpan.text(status.pipelineName + ' - ');
@@ -41,9 +55,12 @@
             .attr('class', 'details')
             .text(function () {
                 var latestBuild = status.latestBuildStart ?
-                        ', latest from ' + new Date(status.latestBuildStart).toLocaleString()
+                        ', latest from ' + durationToString(status.latestBuildStart, +Date.now()) + ' ago'
+                        : '',
+                    totalTimeOfBuilds = status.earliestBuildStart ?
+                        ', ' + durationToString(status.earliestBuildStart, status.latestBuildStart) + "' worth of data"
                         : '';
-                return " (" + status.totalBuildCount + " builds" + latestBuild + ")";
+                return " (" + status.totalBuildCount.toLocaleString() + " builds" + totalTimeOfBuilds + latestBuild + ")";
             });
 
         if (status.totalBuildCount === 0) {

@@ -4,7 +4,9 @@
 
 (defn- with-latest-build-start [all-builds response]
   (if-let [build-starts (seq (remove nil? (map :start all-builds)))]
-    (assoc response :latestBuildStart (apply max build-starts))
+    (assoc response
+           :latestBuildStart (apply max build-starts)
+           :earliestBuildStart (apply min build-starts))
     response))
 
 (defn get-status [build-results pipeline-name]
