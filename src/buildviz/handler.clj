@@ -44,8 +44,8 @@
    (GET "/testcases.csv" {query :query-params} (testcases/get-testcases build-results {:mime :csv} (from-timestamp query)))
    (GET "/testclasses" {accept :accept query :query-params} (testclasses/get-testclasses build-results accept (from-timestamp query)))
    (GET "/testclasses.csv" {query :query-params} (testclasses/get-testclasses build-results {:mime :csv} (from-timestamp query)))
-   (GET "/flakytestcases" {query :query-params} (flaky-testcases/get-flaky-testclasses build-results (from-timestamp query)))
-   (GET "/flakytestcases.csv" {query :query-params} (flaky-testcases/get-flaky-testclasses build-results (from-timestamp query)))))
+   (GET "/flakytestcases" {accept :accept query :query-params} (flaky-testcases/get-flaky-testclasses build-results accept (from-timestamp query)))
+   (GET "/flakytestcases.csv" {query :query-params} (flaky-testcases/get-flaky-testclasses build-results {:mime :csv} (from-timestamp query)))))
 
 (defn wrap-build-results-not-modified [handler build-results]
   (fn [request]

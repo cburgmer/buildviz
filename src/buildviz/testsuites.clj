@@ -109,15 +109,20 @@
 (defn- flaky-testcase-summary [unrolled-testcases]
   (let [flaky-builds (map #(transform/testcase->data % :build) unrolled-testcases)
         last-build (apply max-key :start flaky-builds)]
-    {:build-id (:id last-build)
+    {:latest-build-id (:id last-build)
      :latest-failure (:start last-build)
      :flaky-count (count unrolled-testcases)}))
 
-(defn flaky-testcases-as-list [builds test-results-func]
+(defn- find-flaky-testcases [builds test-results-func]
   (->> builds
        find-flaky-build-candidates
        (mapcat #(flaky-testcases-for-builds % test-results-func))
        (group-by transform/testcase->id)
        (map (transform/testcase-with-data
-             (fn [testcases] (flaky-testcase-summary testcases))))
-       (map transform/testcase->map)))
+             (fn [testcases] (flaky-testcase-summary testcases))))))
+
+(defn flaky-testcases [builds test-results-func]
+  (transform/testcase-list->testsuite-tree (find-flaky-testcases builds test-results-func)))
+
+(defn flaky-testcases-as-list [builds test-results-func]
+  (map transform/testcase->map (find-flaky-testcases builds test-results-func)))

@@ -19,21 +19,36 @@
            (into {}))
       builds)))
 
+(defn- flaky-testcases [build-results job-name from-timestamp]
+  (let [builds (builds-after-timestamp build-results job-name from-timestamp)
+        test-lookup (partial test-results-for-build build-results job-name)]
+    (testsuites/flaky-testcases builds test-lookup)))
+
 (defn- flat-flaky-testcases [build-results job-name from-timestamp]
   (let [builds (builds-after-timestamp build-results job-name from-timestamp)
         test-lookup (partial test-results-for-build build-results job-name)]
     (->> (testsuites/flaky-testcases-as-list builds test-lookup)
-         (map (fn [{:keys [testsuite classname name build-id latest-failure flaky-count]}]
+         (map (fn [{:keys [testsuite classname name latest-build-id latest-failure flaky-count]}]
                 [(csv/format-timestamp latest-failure)
                  flaky-count
                  job-name
-                 build-id
+                 latest-build-id
                  (csv/serialize-nested-testsuites testsuite)
                  classname
                  name])))))
 
-(defn get-flaky-testclasses [build-results from-timestamp]
-  (http/respond-with-csv (csv/export-table
-                          ["latestFailure" "flakyCount" "job" "latestBuildId" "testsuite" "classname" "name"]
-                          (mapcat #(flat-flaky-testcases build-results % from-timestamp)
-                                  (results/job-names build-results)))))
+(defn get-flaky-testclasses [build-results accept from-timestamp]
+  (let [job-names (results/job-names build-results)]
+    (if (= (:mime accept) :json)
+      (http/respond-with-json (->> job-names
+                                   (map #(flaky-testcases build-results % from-timestamp))
+                                   (zipmap job-names)
+                                   (remove (fn [[job-name testcases]]
+                                             (empty? testcases)))
+                                   (map (fn [[job-name testcases]]
+                                          {:job-name job-name
+                                           :children testcases}))))
+      (http/respond-with-csv (csv/export-table
+                              ["latestFailure" "flakyCount" "job" "latestBuildId" "testsuite" "classname" "name"]
+                              (mapcat #(flat-flaky-testcases build-results % from-timestamp)
+                                      job-names))))))

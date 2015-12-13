@@ -208,6 +208,46 @@
   (a-testsuite "some suite"
                (a-testcase "some class" "another testcase" status)))
 
+(deftest test-flakt-testcases
+  (testing "should return empty results"
+    (is (= []
+           (flaky-testcases {} (dummy-test-lookup {})))))
+
+  (testing "should return map for flaky testcase"
+    (is (= [{:name "a suite"
+             :children [{:name "a class"
+                         :children [{:name "the testcase"
+                                     :latest-build-id "failed-run-id"
+                                     :latest-failure (:start another-build-input-1)
+                                     :flaky-count 1}]}]}]
+           (flaky-testcases {"passed-run-id" build-input-1
+                             "failed-run-id" another-build-input-1}
+                            (dummy-test-lookup {"passed-run-id" [(the-testcase :pass)]
+                                                "failed-run-id" [(the-testcase :fail)]})))))
+
+  (testing "should include two flaky tests of same class"
+    (is (= [{:name "a suite"
+             :children [{:name "nested suite"
+                         :children [{:name "a class"
+                                     :children [{:name "second test"
+                                                 :latest-build-id "failed-run-id"
+                                                 :latest-failure (:start another-build-input-1)
+                                                 :flaky-count 1}
+                                                {:name "first test"
+                                                 :latest-build-id "failed-run-id"
+                                                 :latest-failure (:start another-build-input-1)
+                                                 :flaky-count 1}]}]}]}]
+           (flaky-testcases {"passed-run-id" build-input-1
+                             "failed-run-id" another-build-input-1}
+                            (dummy-test-lookup {"passed-run-id" [(a-testsuite "a suite"
+                                                                              (a-testsuite "nested suite"
+                                                                                          (a-testcase "a class" "first test" :pass)
+                                                                                          (a-testcase "a class" "second test" :pass)))]
+                                                "failed-run-id" [(a-testsuite "a suite"
+                                                                              (a-testsuite "nested suite"
+                                                                                          (a-testcase "a class" "first test" :fail)
+                                                                                          (a-testcase "a class" "second test" :fail)))]}))))))
+
 (deftest test-flaky-testcases-as-list
   (testing "flaky-testcases-as-list"
     (is (= []
@@ -216,7 +256,7 @@
     (is (= [{:testsuite ["a suite"]
              :classname "a class"
              :name "the testcase"
-             :build-id "failed-run-id"
+             :latest-build-id "failed-run-id"
              :latest-failure (:start another-build-input-1)
              :flaky-count 1}]
            (flaky-testcases-as-list {"passed-run-id" build-input-1
@@ -226,7 +266,7 @@
     (is (= [{:testsuite ["a suite"]
              :classname "a class"
              :name "the testcase"
-             :build-id "failed-run-id"
+             :latest-build-id "failed-run-id"
              :latest-failure (:start another-build-input-1)
              :flaky-count 1}]
            (flaky-testcases-as-list {"passed-run-id" build-input-1
@@ -241,7 +281,7 @@
     (is (= [{:testsuite ["some suite"]
              :classname "some class"
              :name "another testcase"
-             :build-id "failed-run-id"
+             :latest-build-id "failed-run-id"
              :latest-failure (:start another-build-input-1)
              :flaky-count 1}]
            (flaky-testcases-as-list {"passed-run-id" build-input-1
@@ -261,7 +301,7 @@
     (is (= [{:testsuite ["a suite"]
              :classname "a class"
              :name "the testcase"
-             :build-id "failed-run-id"
+             :latest-build-id "failed-run-id"
              :latest-failure (:start another-build-input-1)
              :flaky-count 1}]
            (flaky-testcases-as-list {"passed-run-id" build-input-1
@@ -274,13 +314,13 @@
     (is (= [{:testsuite ["a suite"]
              :classname "a class"
              :name "the testcase"
-             :build-id "failed-run-id"
+             :latest-build-id "failed-run-id"
              :latest-failure (:start build-input-1)
              :flaky-count 1}
             {:testsuite ["some suite"]
              :classname "some class"
              :name "another testcase"
-             :build-id "another-failed-run-id"
+             :latest-build-id "another-failed-run-id"
              :latest-failure (:start another-build-input-1)
              :flaky-count 1}]
            (flaky-testcases-as-list {"passed-run-id" build-input-1
@@ -293,7 +333,7 @@
     (is (= [{:testsuite ["a suite"]
              :classname "a class"
              :name "the testcase"
-             :build-id "another-failed-run-id"
+             :latest-build-id "another-failed-run-id"
              :latest-failure (:start another-build-input-1)
              :flaky-count 2}]
            (flaky-testcases-as-list {"passed-run-id" build-input-1
@@ -316,7 +356,7 @@
     (is (= [{:testsuite ["a suite"]
              :classname "a class"
              :name "the testcase"
-             :build-id "another-failed-run-id"
+             :latest-build-id "another-failed-run-id"
              :latest-failure (:start build-input-2)
              :flaky-count 2}]
            (flaky-testcases-as-list {"passed-run-id" build-input-1
@@ -344,7 +384,7 @@
     (is (= [{:testsuite ["a suite"]
              :classname "a class"
              :name "flaky testcase"
-             :build-id "second-failed-run-id"
+             :latest-build-id "second-failed-run-id"
              :latest-failure (:start another-build-input-1)
              :flaky-count 1}]
            (flaky-testcases-as-list {"first-failed-run-id" build-input-1
