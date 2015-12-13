@@ -24,32 +24,25 @@
     (assoc (average-runtime testcases)
            :failed-count failed-count)))
 
-(defn- aggregate-runs [unrolled-testcases]
-  (->> unrolled-testcases
+(defn- aggregated-info-by-testcase [test-runs]
+  (->> (transform/test-runs->testcase-list test-runs)
        (group-by transform/testcase->id)
        (map (transform/testcase-with-data
-             (fn [testcase-group] (aggregate-testcase-runs testcase-group))))
-       (into {})))
-
-(defn- aggregated-info-by-testcase [test-runs]
-  (aggregate-runs (transform/test-runs->testcase-list test-runs)))
+             (fn [testcase-group] (aggregate-testcase-runs testcase-group))))))
 
 
 (defn aggregate-testcase-info [test-runs]
-  (->> (aggregated-info-by-testcase test-runs)
-       transform/testcase-list->testsuite-tree))
+  (transform/testcase-list->testsuite-tree (aggregated-info-by-testcase test-runs)))
 
 (defn aggregate-testcase-info-as-list [test-runs]
-  (->> (aggregated-info-by-testcase test-runs)
-       (map transform/testcase->map)))
+  (map transform/testcase->map (aggregated-info-by-testcase test-runs)))
 
 
 (defn- average-runs [unrolled-testcases]
   (->> unrolled-testcases
        (group-by transform/testcase->id)
        (map (transform/testcase-with-data
-             (fn [testcase-group] (average-runtime testcase-group))))
-       (into {})))
+             (fn [testcase-group] (average-runtime testcase-group))))))
 
 (defn- accumulated-runtime [testcases]
   (let [runtimes (map :runtime testcases)]
@@ -99,8 +92,8 @@
              (fn [testcase] {:build build
                              :ok? (junit-xml/is-ok? testcase)})))))
 
-(defn- flaky-testcases-for-builds [builds test-results-func]
-  (->> builds
+(defn- flaky-testcases-for-builds [builds-with-same-input test-results-func]
+  (->> builds-with-same-input
        (mapcat (fn [build]
                  (unrolled-testcases build test-results-func)))
        (group-by transform/testcase->id)
@@ -120,15 +113,11 @@
      :latest-failure (:start last-build)
      :flaky-count (count unrolled-testcases)}))
 
-(defn- flaky-testcase-summaries [unrolled-testcases]
-  (->> unrolled-testcases
-       (group-by transform/testcase->id)
-       (map (transform/testcase-with-data
-             (fn [testcases] (flaky-testcase-summary testcases))))))
-
 (defn flaky-testcases-as-list [builds test-results-func]
   (->> builds
        find-flaky-build-candidates
        (mapcat #(flaky-testcases-for-builds % test-results-func))
-       flaky-testcase-summaries
+       (group-by transform/testcase->id)
+       (map (transform/testcase-with-data
+             (fn [testcases] (flaky-testcase-summary testcases))))
        (map transform/testcase->map)))
