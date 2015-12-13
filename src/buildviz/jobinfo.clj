@@ -10,18 +10,10 @@
   (filter schema/build-with-outcome? build-data-entries))
 
 
-(defn- build-inputs-as-map [build]
-  (let [inputs (:inputs build)
-        input-map (->> inputs
-                       (map (fn [{id :id revision :revision}] {id revision}))
-                       (into {}))]
-    (assoc build :inputs input-map)))
-
 (defn builds-grouped-by-same-inputs [builds]
   (->> builds
        (filter :inputs)
-       (map build-inputs-as-map)
-       (group-by :inputs)
+       (group-by #(set (:inputs %)))
        vals))
 
 ;; flaky builds
