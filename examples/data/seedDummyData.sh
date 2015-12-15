@@ -80,14 +80,26 @@ function failingTestCase {
 EOF
 }
 
-function anotherFailingTestCase {
+function anotherTestcase {
+    RESULT=$1
+    if [ "$RESULT" == "fail" ]; then
+        TESTCASE="<failure>Meh</failure>"
+    else
+        TESTCASE=""
+    fi
+
+    TESTNAME=$2
+    if [ -z "$TESTNAME" ]; then
+        TESTNAME="Another Test Case"
+    fi
+
     cat <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <testsuites>
   <testsuite name="Another Test Suite">
     <testsuite name="Nested Test Suite">
-      <testcase classname="some.class" name="Another Test Case" time="0.0021">
-        <failure>Meh</failure>
+      <testcase classname="some.class" name="$TESTNAME" time="0.0021">
+        $TESTCASE
       </testcase>
     </testsuite>
   </testsuite>
@@ -118,12 +130,23 @@ for i in $(seq 1 3); do
     aBuild "fail" $[ $TODAY - $i * 5000000 ] | send "aBrokenBuild" "$i"
 done
 failingTestCase | sendTestResult "aBrokenBuild" 1
-anotherFailingTestCase | sendTestResult "aBrokenBuild" 2
-anotherFailingTestCase | sendTestResult "aBrokenBuild" 3
+anotherTestcase "fail" | sendTestResult "aBrokenBuild" 2
+anotherTestcase "fail" | sendTestResult "aBrokenBuild" 3
 
 aBuild 'fail' $A_WEEK_AGO "abcd" | send "aFlakyBuild" 1
 failingTestCase | sendTestResult "aFlakyBuild" 1
 aBuild 'pass' $(( A_WEEK_AGO + 8000000 )) "abcd" | send "aFlakyBuild" 2
 passingTestCase | sendTestResult "aFlakyBuild" 2
+aBuild 'fail' '' "xyz" | send "aFlakyBuild" 3
+anotherTestcase "fail" | sendTestResult "aFlakyBuild" 3
+aBuild 'fail' '' "xyz" | send "aFlakyBuild" 4
+anotherTestcase "fail" | sendTestResult "aFlakyBuild" 4
+aBuild 'pass' '' "xyz" | send "aFlakyBuild" 5
+anotherTestcase "pass" | sendTestResult "aFlakyBuild" 5
+aBuild 'fail' '' "123" | send "aFlakyBuild" 6
+anotherTestcase "fail" "test" | sendTestResult "aFlakyBuild" 6
+aBuild 'pass' '' "123" | send "aFlakyBuild" 7
+anotherTestcase "pass" "test" | sendTestResult "aFlakyBuild" 7
+
 
 echo "{\"start\": $TODAY}" | send "buildWithoutInfo" "1"
