@@ -196,9 +196,9 @@
                                                              (a-testsuite "nested suite"
                                                                           (a-testcase-with-runtime "class" "a case" 10)))]])))))
 
-(def build-input-1 {:start 1 :inputs '({:revision "abcd" :id 21} {:revision "1" :id 42})})
-(def another-build-input-1 {:start 2 :inputs '({:revision "abcd" :id 21} {:revision "1" :id 42})})
-(def build-input-2 {:start 4 :inputs '({:revision "2" :id 42})})
+(def build-input-1 {:start 1 :inputs '({:revision "abcd" :source_id 21} {:revision "1" :source_id 42})})
+(def another-build-input-1 {:start 2 :inputs '({:revision "abcd" :source_id 21} {:revision "1" :source_id 42})})
+(def build-input-2 {:start 4 :inputs '({:revision "2" :source_id 42})})
 
 (defn- the-testcase [status]
   (a-testsuite "a suite"
