@@ -12,6 +12,13 @@
                                            :end end-time
                                            :actual-stage-run actual-stage-run}))
 
+(defn- a-job-instance-with-xml [xml actual-stage-run]
+  {:outcome "pass"
+   :start 100
+   :end 200
+   :actual-stage-run actual-stage-run
+   :junit-xml xml})
+
 (defn- a-stage-instance [job-instances stage-run]
   {:pipeline-name "my pipeline"
    :pipeline-run "42"
@@ -26,6 +33,11 @@
 
 (deftest test-aggregate-jobs-for-stage
   (testing "outcome"
+    (testing "should reduce multiple jobs to only one"
+      (is (= 1
+             (count (:job-instances (aggregate/aggregate-jobs-for-stage (a-stage-instance [(a-job-instance "pass" "1")
+                                                                                           (a-job-instance "fail" "1")
+                                                                                           (a-job-instance "pass" "1")] "1")))))))
     (testing "should set outcome to pass for all jobs passing"
       (is (= "pass"
              (:outcome (aggregated-job-instance (aggregate/aggregate-jobs-for-stage (a-stage-instance [(a-job-instance "pass" "1")
@@ -63,4 +75,10 @@
         (is (= 200
                (:start aggregated-job)))
         (is (= 300
-               (:end aggregated-job)))))))
+               (:end aggregated-job))))))
+
+  (testing "xml"
+    (testing "should merge XML"
+      (is (= "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"some test\"></testsuite><testsuite name=\"another test\"></testsuite></testsuites>"
+             (:junit-xml (aggregated-job-instance (aggregate/aggregate-jobs-for-stage (a-stage-instance [(a-job-instance-with-xml "<testsuites><testsuite name=\"some test\"/></testsuites>" "1")
+                                                                                                         (a-job-instance-with-xml "<testsuite name=\"another test\"></testsuite>" "1")] "1")))))))))
