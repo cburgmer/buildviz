@@ -39,22 +39,22 @@
        :end (apply max end-times)}
       {})))
 
-(defn- aggregate-builds [job-instances]
+(defn- ignore-old-runs-for-rerun-stages [job-instances stage-run]
+  (filter #(= stage-run (:actual-stage-run %)) job-instances))
+
+(defn- aggregate-builds [job-instances stage-run]
   (let [outcomes (map :outcome job-instances)
         accumulated-outcome (if (every? #(= "pass" %) outcomes)
                               "pass"
                               "fail")]
-    (assoc (aggregate-build-times job-instances)
-           :outcome accumulated-outcome)))
-
-
-(defn- ignore-old-runs-for-rerun-stages [job-instances stage-run]
-  (filter #(= stage-run (:actual-stage-run %)) job-instances))
+    (-> job-instances
+        (ignore-old-runs-for-rerun-stages stage-run)
+        aggregate-build-times
+        (assoc :outcome accumulated-outcome))))
 
 (defn- aggregate-build [{:keys [stage-run stage-name job-instances]}]
   (-> job-instances
-      (ignore-old-runs-for-rerun-stages stage-run)
-      aggregate-builds
+      (aggregate-builds stage-run)
       (assoc :name stage-name)))
 
 (defn aggregate-jobs-for-stage [stage-instance]
