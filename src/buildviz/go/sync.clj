@@ -135,8 +135,8 @@
               {:body xml-content}))
 
 (defn put-to-buildviz [{job-name :job-name build-no :build-id build :build junit-xml :junit-xml}]
-  (log/info (format "Syncing %s %s: build" job-name build-no build))
-  (put-build job-name build-no  build)
+  (log/info (format "Syncing %s %s: build" job-name build-no))
+  (put-build job-name build-no build)
   (when (some? junit-xml)
     (try
       (put-junit-xml job-name build-no junit-xml)

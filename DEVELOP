@@ -15,7 +15,7 @@ Just a few pointers if you want to make changes to buildviz:
 
 ## Run gosync locally
 
-    $ ./lein run -m buildviz.gosync http://$USER:$PW@localhost:8153/go
+    $ ./lein run -m buildviz.go.sync http://$USER:$PW@localhost:8153/go
 
 ## Run gosync against mock for testing
 
