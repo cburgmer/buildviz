@@ -10,5 +10,6 @@ pom.xml.asc
 /resources/public/node_modules/
 /test/node_modules/
 /examples/go/.vagrant/
+/examples/jenkins/.vagrant/
 /data/
 /log/
