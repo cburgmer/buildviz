@@ -16,6 +16,9 @@
         <command>#!/bin/bash
 RUNTIME=$(( $RANDOM % 20 ))
 sleep $RUNTIME
+if [ $(( $RANDOM % 5 )) -eq 0 ]; then
+  exit 1
+fi
 </command>
     </hudson.tasks.Shell>
   </builders>
