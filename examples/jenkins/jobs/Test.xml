@@ -1,0 +1,64 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+        <command><![CDATA[#!/bin/bash
+RUNTIME=$(( $RANDOM % 20 ))
+sleep $RUNTIME
+
+
+function aTestcase {
+    local TEST_OUTCOME=$1
+    if [ "$TEST_OUTCOME" -eq 0 ]; then
+        TESTCASE="<failure>Meh</failure>"
+    else
+        TESTCASE=""
+    fi
+
+    cat <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="Another Test Suite">
+    <testsuite name="Nested Test Suite">
+      <testcase classname="some.class" name="A Test" time="0.0021">
+        $TESTCASE
+      </testcase>
+      <testcase classname="some.class" name="Another Test" time="0.003">
+      </testcase>
+    </testsuite>
+  </testsuite>
+</testsuites>
+EOF
+}
+
+OUTCOME=$(( $RANDOM % 3 ))
+
+aTestcase $OUTCOME > results.xml
+
+if [ "$OUTCOME" -eq 0 ]; then
+  exit 1
+fi
+]]></command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <hudson.tasks.junit.JUnitResultArchiver plugin="junit@1.2-beta-4">
+      <testResults>results.xml</testResults>
+      <keepLongStdio>false</keepLongStdio>
+      <testDataPublishers/>
+      <healthScaleFactor>1.0</healthScaleFactor>
+    </hudson.tasks.junit.JUnitResultArchiver>
+  </publishers>
+  <buildWrappers/>
+</project>
