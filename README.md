@@ -33,16 +33,16 @@ Now, buildviz takes in new build results via `PUT` to `/builds`. Some suggestion
 
 #### DIY
 
-For every build `PUT` JSON data in the following format to `http://localhost:3000/builds/$JOB_NAME/$BUILD_ID`
+For every build `PUT` JSON data to `http://localhost:3000/builds/$JOB_NAME/$BUILD_ID`, for example:
 
 ```js
 {
-  "start": $START_TIMESTAMP,
-  "end": $END_TIMESTAMP,
+  "start": 1451449853542,
+  "end": 1451449870555,
   "outcome": "pass", /* or "fail" */
   "inputs": [{
-    "revision": "$REVISION",
-    "source_id": "$SOURCE_ID"
+    "revision": "1eadcdd4d35f9a",
+    "source_id": "git@github.com:cburgmer/buildviz.git"
   }]
 }
 ```
