@@ -14,7 +14,7 @@ buildviz provides various graphs detailing your build pipeline's behaviour. So f
 
 * **jobs**, a job is part of the pipeline and executes some meaningful action,
 * **builds**, a build is an instance of the job being triggered, it has a unique **id**, a **start** and **end time**, an **outcome** and possibly one or more **inputs** with a given **revision**,
-* **test results**, a list of tests with **runtime** and **outcome**.
+* **test results**, a list of tests with **runtime** and **status**.
 
 ## Example
 
@@ -49,7 +49,7 @@ For every build `PUT` JSON data in the following format to `http://localhost:300
 
 The build `start` is required, all other values are optional.
 
-JUnit XML formatted test results can be `PUT` to `http://localhost:3000/builds/$JOB_NAME/$BUILD_ID/testresults`
+JUnit XML ([or JSON](https://github.com/cburgmer/buildviz/wiki#help-my-tests-dont-generate-junit-xml)) formatted test results can be `PUT` to `http://localhost:3000/builds/$JOB_NAME/$BUILD_ID/testresults`
 
 #### Sync from [Go.cd](http://www.go.cd)
 
