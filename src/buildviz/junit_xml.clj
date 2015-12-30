@@ -84,3 +84,44 @@
   (let [root (xml/parse-str junit-xml-result)]
     (map parse-testsuite
          (all-testsuites root))))
+
+
+
+(declare element->node)
+
+(defn format-runtime-in-millis [duration]
+  (when-not (nil? duration)
+    (format "%.3f" (float (/ duration 1000)))))
+
+(defn- testcase-status->node [status]
+  (case status
+    "fail" (xml/element "failure")
+    "error" (xml/element "error")
+    "skipped" (xml/element "skipped")
+    nil))
+
+(defn- testcase->node [{:keys [:name :classname :runtime :status]}]
+  (let [status-element (testcase-status->node status)
+        mandatory-testcase-attributes {:name name :time (format-runtime-in-millis runtime)}
+        testcase-attributes (if classname
+                              (assoc mandatory-testcase-attributes :classname classname)
+                              mandatory-testcase-attributes)]
+    (apply xml/element (list* :testcase
+                              testcase-attributes
+                              (list status-element)))))
+
+(defn- testsuite->node [{:keys [:name :children]}]
+  (apply xml/element (list* :testsuite
+                            {:name name}
+                            (map element->node children))))
+
+(defn- element->node [element]
+  (if (contains? element :children)
+    (testsuite->node element)
+    (testcase->node element)))
+
+(defn- testsuites->node [testsuites]
+  (apply xml/element (list* :testsuites {} (map element->node testsuites))))
+
+(defn serialize-testsuites [testsuites]
+  (xml/emit-str (testsuites->node testsuites)))

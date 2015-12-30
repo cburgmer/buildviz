@@ -1,5 +1,6 @@
 (ns buildviz.controllers.builds-test
   (:require [buildviz.test-utils :refer :all]
+            [buildviz.data.results :as results]
             [clojure.test :refer :all]))
 
 (defn some-test-results [app job-name build-no content]
@@ -58,10 +59,25 @@
 
 
 (deftest JUnitStorage
-  (testing "PUT to /builds/:job/:build/testresults"
+  (testing "PUT with XML"
     (is (= 204 (:status (xml-put-request (the-app) "/builds/mybuild/1/testresults" "<testsuites></testsuites>"))))
     (is (= 400 (:status (xml-put-request (the-app) "/builds/mybuild/1/testresults" "not xml"))))
     (is (= 400 (:status (xml-put-request (the-app) "/builds/mybuild/1/testresults" "<testsuite name=\"suite\"><testcase classname=\"class\"/></testsuite>")))))
+
+  (testing "PUT with JSON"
+    (is (= 204 (:status (json-put-request (the-app) "/builds/somebuild/42/testresults" [{:name "Some Testsuite"
+                                                                                         :children [{:name "A Test"
+                                                                                                     :runtime 21
+                                                                                                     :status "pass"}]}]))))
+    (let [test-results (atom {})
+          app (the-app {} test-results)]
+      (json-put-request app "/builds/somebuild/42/testresults" [{:name "Some Testsuite"
+                                                                 :children [{:name "A Test"
+                                                                             :classname "A Class"
+                                                                             :runtime 21
+                                                                             :status "fail"}]}])
+      (is (= "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"Some Testsuite\"><testcase classname=\"A Class\" name=\"A Test\" time=\"0.021\"><failure></failure></testcase></testsuite></testsuites>"
+             (get-in @test-results ["somebuild" "42"])))))
 
   (testing "GET to /builds/:job/:build/testresults"
     (let [app (the-app)]

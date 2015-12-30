@@ -22,15 +22,19 @@
 (defn- force-evaluate-junit-xml [content]
   (walk/postwalk identity (junit-xml/parse-testsuites content)))
 
-(defn store-test-results! [build-results job-name build-id body]
-  (let [content (slurp body)]
-    (try
-      (force-evaluate-junit-xml content)
-      (results/set-tests! build-results job-name build-id content)
-      {:status 204}
-      (catch Exception e
-        {:status 400
-         :body (.getMessage e)}))))
+(defn store-test-results! [build-results job-name build-id body content-type]
+  (if (= "application/json" content-type)
+    (do
+     (results/set-tests! build-results job-name build-id (junit-xml/serialize-testsuites body))
+     {:status 204})
+    (let [content (slurp body)]
+      (try
+        (force-evaluate-junit-xml content)
+        (results/set-tests! build-results job-name build-id content)
+        {:status 204}
+        (catch Exception e
+          {:status 400
+           :body (.getMessage e)})))))
 
 (defn get-test-results [build-results job-name build-id accept]
   (if-some [content (results/tests build-results job-name build-id)]

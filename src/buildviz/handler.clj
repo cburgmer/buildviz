@@ -30,7 +30,7 @@
 
    (PUT "/builds/:job/:build" [job build :as {body :body}] (builds/store-build! build-results job build body))
    (GET "/builds/:job/:build" [job build] (builds/get-build build-results job build))
-   (PUT "/builds/:job/:build/testresults" [job build :as {body :body}] (builds/store-test-results! build-results job build body))
+   (PUT "/builds/:job/:build/testresults" [job build :as {body :body content-type :content-type}] (builds/store-test-results! build-results job build body content-type))
    (GET "/builds/:job/:build/testresults" [job build :as {accept :accept}] (builds/get-test-results build-results job build accept))
 
    (GET "/status" {} (status/get-status build-results pipeline-name))

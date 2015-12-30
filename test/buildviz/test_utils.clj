@@ -14,7 +14,9 @@
   ([]
    (the-app {} {}))
   ([jobs testresults]
-   (let [stored-testresults (atom testresults)
+   (let [stored-testresults (if (instance? clojure.lang.Atom testresults)
+                              testresults
+                              (atom testresults))
          persist-testresults (fn [job-name build-id xml]
                                (swap! stored-testresults assoc-in [job-name build-id] xml))]
      (handler/create-app (results/build-results jobs
