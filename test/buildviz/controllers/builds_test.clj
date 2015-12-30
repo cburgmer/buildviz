@@ -69,15 +69,19 @@
                                                                                          :children [{:name "A Test"
                                                                                                      :runtime 21
                                                                                                      :status "pass"}]}]))))
-    (let [test-results (atom {})
-          app (the-app {} test-results)]
-      (json-put-request app "/builds/somebuild/42/testresults" [{:name "Some Testsuite"
-                                                                 :children [{:name "A Test"
-                                                                             :classname "A Class"
-                                                                             :runtime 21
-                                                                             :status "fail"}]}])
-      (is (= "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"Some Testsuite\"><testcase classname=\"A Class\" name=\"A Test\" time=\"0.021\"><failure></failure></testcase></testsuite></testsuites>"
-             (get-in @test-results ["somebuild" "42"])))))
+    (testing "should store as JUnit XML"
+      (let [test-results (atom {})
+            app (the-app {} test-results)]
+        (json-put-request app "/builds/somebuild/42/testresults" [{:name "Some Testsuite"
+                                                                   :children [{:name "A Test"
+                                                                               :classname "A Class"
+                                                                               :runtime 21
+                                                                               :status "fail"}]}])
+        (is (= "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"Some Testsuite\"><testcase classname=\"A Class\" name=\"A Test\" time=\"0.021\"><failure></failure></testcase></testsuite></testsuites>"
+               (get-in @test-results ["somebuild" "42"])))))
+
+    (testing "should fail on invalid testsuite"
+      (is (= 400 (:status (json-put-request (the-app) "/builds/somebuild/42/testresults" [{:name "A Suite without children"}]))))))
 
   (testing "GET to /builds/:job/:build/testresults"
     (let [app (the-app)]
