@@ -17,5 +17,12 @@ Vagrant.configure(2) do |config|
     curl --silent -X POST --data-binary @/mnt/jobs/Deploy.xml http://localhost:8080/job/Deploy/config.xml > /dev/null
     curl --silent -X POST --data-binary @/mnt/jobs/Test.xml -H "Content-Type: application/xml" http://localhost:8080/createItem\?name\=Test > /dev/null
     curl --silent -X POST --data-binary @/mnt/jobs/Test.xml http://localhost:8080/job/Test/config.xml > /dev/null
+
+    echo "Triggering builds"
+    for i in 1 2 3 4 5; do
+      curl --silent -X POST http://localhost:8080/job/Test/build > /dev/null
+      # Wait for build to run to enqueue next
+      sleep 10
+    done
   SHELL
 end
