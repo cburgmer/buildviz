@@ -3,6 +3,7 @@
             [cheshire.core :as j]
             [clj-http.client :as client]
             [clojure.string :as string]
+            [clj-progress.core :as progress]
             [clojure.tools.logging :as log]))
 
 (defn add-test-results [jenkins-url {:keys [job-name number] :as build}]
@@ -62,7 +63,10 @@
 
     (->> (api/get-jobs jenkins-url)
          (mapcat (partial api/get-builds jenkins-url))
+         (progress/init "Syncing")
          (map (partial add-test-results jenkins-url))
          (map jenkins-build->buildviz-build)
          (map (partial put-to-buildviz buildviz-url))
-         doall)))
+         (map progress/tick)
+         dorun
+         (progress/done))))
