@@ -4,7 +4,27 @@
             [clj-http.client :as client]
             [clojure.string :as string]
             [clj-progress.core :as progress]
-            [clojure.tools.logging :as log]))
+            [clojure.tools
+             [cli :refer [parse-opts]]
+             [logging :as log]]))
+
+(def cli-options
+  [["-b" "--buildviz URL" "URL pointing to a running buildviz instance"
+    :id :buildviz-url
+    :default "http://localhost:3000"]
+   ["-h" "--help"]])
+
+(defn usage [options-summary]
+  (string/join "\n"
+               [""
+                "Syncs Jenkins build history with buildviz"
+                ""
+                "Usage: buildviz.jenkins.sync [OPTIONS] JENKINS_URL"
+                ""
+                "JENKINS_URL            The URL of the Jenkins installation"
+                ""
+                "Options"
+                options-summary]))
 
 (defn add-test-results [jenkins-url {:keys [job-name number] :as build}]
   (assoc build :test-report (api/get-test-report jenkins-url job-name number)))
@@ -57,17 +77,25 @@
     (put-test-results buildviz-url job-name build-id test-results)))
 
 
+(defn- sync-jobs [jenkins-url buildviz-url]
+  (->> (api/get-jobs jenkins-url)
+       (mapcat (partial api/get-builds jenkins-url))
+       (progress/init "Syncing")
+       (map (partial add-test-results jenkins-url))
+       (map jenkins-build->buildviz-build)
+       (map (partial put-to-buildviz buildviz-url))
+       (map progress/tick)
+       dorun
+       (progress/done)))
+
 (defn -main [& c-args]
+  (let [args (parse-opts c-args cli-options)]
+    (when (or (:help (:options args))
+              (empty? (:arguments args)))
+      (println (usage (:summary args)))
+      (System/exit 0))
 
-  (let [jenkins-url "http://localhost:8080"
-        buildviz-url "http://localhost:3000"]
+    (let [jenkins-url (first (:arguments args))
+          buildviz-url (:buildviz-url (:options args))]
 
-    (->> (api/get-jobs jenkins-url)
-         (mapcat (partial api/get-builds jenkins-url))
-         (progress/init "Syncing")
-         (map (partial add-test-results jenkins-url))
-         (map jenkins-build->buildviz-build)
-         (map (partial put-to-buildviz buildviz-url))
-         (map progress/tick)
-         dorun
-         (progress/done))))
+      (sync-jobs jenkins-url buildviz-url))))

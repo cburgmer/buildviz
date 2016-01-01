@@ -27,7 +27,7 @@
                [""
                 "Syncs Go.cd build history with buildviz"
                 ""
-                "Usage: gosync.clj [OPTIONS] GO_URL"
+                "Usage: buildviz.go.sync [OPTIONS] GO_URL"
                 ""
                 "GO_URL            The URL of the Go.cd installation"
                 ""
