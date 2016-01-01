@@ -15,8 +15,9 @@
    :runtime (Math/round (* duration 1000))
    :status (case status
              "PASSED" "pass"
+             "FIXED" "pass"
+             "REGRESSION" "fail"
              "FAILED" "fail"
-             "ERROR" "error"
              "SKIPPED" "skipped")})
 
 (defn- jenkins-suite->buildviz-suite [{:keys [:name :cases]}]

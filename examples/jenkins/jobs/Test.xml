@@ -21,9 +21,11 @@ sleep $RUNTIME
 function aTestcase {
     local TEST_OUTCOME=$1
     if [ "$TEST_OUTCOME" -eq 0 ]; then
-        TESTCASE="<failure>Meh</failure>"
+        TESTCASE_FAILURE="<failure>Meh</failure>"
+        TESTCASE_ERROR="<error>Argh</error>"
     else
-        TESTCASE=""
+        TESTCASE_FAILURE=""
+        TESTCASE_ERROR=""
     fi
 
     cat <<EOF
@@ -32,9 +34,15 @@ function aTestcase {
   <testsuite name="Another Test Suite">
     <testsuite name="Nested Test Suite">
       <testcase classname="some.class" name="A Test" time="0.0021">
-        $TESTCASE
+        $TESTCASE_FAILURE
+      </testcase>
+      <testcase classname="some.class" name="Some Test" time="0.005">
+        $TESTCASE_ERROR
       </testcase>
       <testcase classname="some.class" name="Another Test" time="0.003">
+      </testcase>
+      <testcase classname="some.class" name="Skipped Test" time="0.004">
+          <skipped/>
       </testcase>
     </testsuite>
   </testsuite>
