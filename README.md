@@ -57,6 +57,12 @@ Sync existing history (see `--help` for details):
 
     $ java -cp buildviz-0.7.0-standalone.jar buildviz.go.sync http://$USER:$PW@localhost:8153/go
 
+#### Sync from [Jenkins](http://jenkins-ci.org)
+
+*(Starting with 0.8.0)* There is experimental support for syncing all Jenkins builds (see `--help` for details):
+
+    $ ./lein run -m buildviz.jenkins.sync http://$USER:$PW@localhost:8080
+
 ## More
 
 [FAQ](https://github.com/cburgmer/buildviz/wiki)
