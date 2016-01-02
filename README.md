@@ -20,9 +20,11 @@ buildviz provides various graphs detailing your build pipeline's behaviour. So f
 
 ![Screenshot](https://github.com/cburgmer/buildviz/raw/master/examples/data/screenshot.png)
 
-Seed dummy data for a quick impression
+#### Seed dummy data for a quick impression
 
     $ ./examples/runSeedDataExample.sh
+    
+Also see the other examples under [examples/](https://github.com/cburgmer/buildviz/tree/master/examples).
 
 ## Usage
 
@@ -47,7 +49,7 @@ For every build `PUT` JSON data to `http://localhost:3000/builds/$JOB_NAME/$BUIL
 }
 ```
 
-The build `start` is required, all other values are optional.
+The build's `start` is required, all other values are optional.
 
 JUnit XML ([or JSON](https://github.com/cburgmer/buildviz/wiki#help-my-tests-dont-generate-junit-xml)) formatted test results can be `PUT` to `http://localhost:3000/builds/$JOB_NAME/$BUILD_ID/testresults`
 
