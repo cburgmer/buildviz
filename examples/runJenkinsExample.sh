@@ -47,7 +47,7 @@ SERVER_PID=$!
 function clean_up() {
     echo "Taking down Vagrant instance and buildviz..."
 
-    cd "${SCRIPT_DIR}/go"
+    cd "${SCRIPT_DIR}/jenkins"
     vagrant halt
     cd -
 
