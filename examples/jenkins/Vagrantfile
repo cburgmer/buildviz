@@ -13,9 +13,17 @@ Vagrant.configure(2) do |config|
     sudo apt-get update
     sudo apt-get -qy install jenkins curl
 
+    sudo apt-get -qy install git
+    for PLUGIN in git scm-api token-macro promoted-builds git-client parameterized-trigger; do
+      curl --silent --location http://updates.jenkins-ci.org/latest/${PLUGIN}.hpi -o /var/lib/jenkins/plugins/${PLUGIN}.hpi > /dev/null
+      chown jenkins:jenkins /var/lib/jenkins/plugins/${PLUGIN}.hpi
+    done
+
+    sudo service jenkins restart
+
     echo "Waiting for Jenkins to come up"
     until $(curl --output /dev/null --silent --head --fail http://localhost:8080); do
-        sleep 1
+      sleep 1
     done
 
     # Create or Update
@@ -25,7 +33,7 @@ Vagrant.configure(2) do |config|
     curl --silent -X POST --data-binary @/mnt/jobs/Test.xml http://localhost:8080/job/Test/config.xml > /dev/null
 
     echo "Triggering builds"
-    for i in 1 2 3 4 5; do
+    for I in 1 2 3 4 5; do
       curl --silent -X POST http://localhost:8080/job/Test/build > /dev/null
       # Wait for build to run to enqueue next
       sleep 10
