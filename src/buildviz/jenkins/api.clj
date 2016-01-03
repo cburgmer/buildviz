@@ -12,7 +12,7 @@
     (map :name (get response :jobs))))
 
 (defn get-builds [jenkins-url job-name]
-  (let [response (get-json jenkins-url (format "/job/%s/api/json?tree=builds[number,timestamp,duration,result]" job-name))]
+  (let [response (get-json jenkins-url (format "/job/%s/api/json?tree=builds[number,timestamp,duration,result,actions[lastBuiltRevision[SHA1],remoteUrls]]" job-name))]
     (->> (get response :builds)
          (map #(assoc % :job-name job-name)))))
 

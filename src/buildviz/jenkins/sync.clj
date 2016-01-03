@@ -49,14 +49,26 @@
     (->> (get test-report :suites)
          (map jenkins-suite->buildviz-suite))))
 
-(defn- jenkins-build->buildviz-build [{:keys [job-name number timestamp duration result test-report]}]
+(defn- git-input-from [{actions :actions}]
+  (when-let [git-revision-info (first (filter :lastBuiltRevision actions))]
+    {:revision (get-in git-revision-info [:lastBuiltRevision :SHA1])
+     :source_id (get-in git-revision-info [:remoteUrls 0])}))
+
+(defn- with-inputs [map jenkins-build]
+  (let [git-input (git-input-from jenkins-build)]
+    (if git-input
+      (assoc map :inputs [git-input])
+      map)))
+
+(defn- jenkins-build->buildviz-build [{:keys [job-name number timestamp duration result test-report] :as build}]
   {:job-name job-name
    :build-id number
-   :build {:start timestamp
-           :end (+ timestamp duration)
-           :outcome (if (= result "SUCCESS")
-                      "pass"
-                      "fail")}
+   :build (-> {:start timestamp
+               :end (+ timestamp duration)
+               :outcome (if (= result "SUCCESS")
+                          "pass"
+                          "fail")}
+              (with-inputs build))
    :test-results (convert-test-results test-report)})
 
 (defn put-build [buildviz-url job-name build-id build]
