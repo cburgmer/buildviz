@@ -1,9 +1,11 @@
 (ns buildviz.jenkins.sync
-  (:require [buildviz.jenkins.api :as api]
+  (:require [buildviz.jenkins
+             [api :as api]
+             [transform :as transform]]
             [cheshire.core :as j]
             [clj-http.client :as client]
-            [clojure.string :as string]
             [clj-progress.core :as progress]
+            [clojure.string :as string]
             [clojure.tools
              [cli :refer [parse-opts]]
              [logging :as log]]))
@@ -29,48 +31,6 @@
 (defn add-test-results [jenkins-url {:keys [job-name number] :as build}]
   (assoc build :test-report (api/get-test-report jenkins-url job-name number)))
 
-(defn- jenkins-test-case->buildviz-test-case [{:keys [:className :name :duration :status]}]
-  {:classname className
-   :name name
-   :runtime (Math/round (* duration 1000))
-   :status (case status
-             "PASSED" "pass"
-             "FIXED" "pass"
-             "REGRESSION" "fail"
-             "FAILED" "fail"
-             "SKIPPED" "skipped")})
-
-(defn- jenkins-suite->buildviz-suite [{:keys [:name :cases]}]
-  {:name name
-   :children (map jenkins-test-case->buildviz-test-case cases)})
-
-(defn- convert-test-results [test-report]
-  (when test-report
-    (->> (get test-report :suites)
-         (map jenkins-suite->buildviz-suite))))
-
-(defn- git-input-from [{actions :actions}]
-  (when-let [git-revision-info (first (filter :lastBuiltRevision actions))]
-    {:revision (get-in git-revision-info [:lastBuiltRevision :SHA1])
-     :source_id (get-in git-revision-info [:remoteUrls 0])}))
-
-(defn- with-inputs [map jenkins-build]
-  (let [git-input (git-input-from jenkins-build)]
-    (if git-input
-      (assoc map :inputs [git-input])
-      map)))
-
-(defn- jenkins-build->buildviz-build [{:keys [job-name number timestamp duration result test-report] :as build}]
-  {:job-name job-name
-   :build-id number
-   :build (-> {:start timestamp
-               :end (+ timestamp duration)
-               :outcome (if (= result "SUCCESS")
-                          "pass"
-                          "fail")}
-              (with-inputs build))
-   :test-results (convert-test-results test-report)})
-
 (defn put-build [buildviz-url job-name build-id build]
   (client/put (string/join [buildviz-url (format "/builds/%s/%s" job-name build-id)])
               {:content-type :json
@@ -94,7 +54,7 @@
        (mapcat (partial api/get-builds jenkins-url))
        (progress/init "Syncing")
        (map (partial add-test-results jenkins-url))
-       (map jenkins-build->buildviz-build)
+       (map transform/jenkins-build->buildviz-build)
        (map (partial put-to-buildviz buildviz-url))
        (map progress/tick)
        dorun
