@@ -72,7 +72,20 @@
        dorun
        (progress/done)))
 
+
 (def last-week (t/minus (.withTimeAtStartOfDay (l/local-now)) (t/weeks 1)))
+
+(defn- get-latest-synced-build-start [buildviz-url]
+  (let [response (client/get (format "%s/status" buildviz-url))
+        buildviz-status (j/parse-string (:body response) true)]
+    (when-let [latest-build-start (:latestBuildStart buildviz-status)]
+      (tc/from-long latest-build-start))))
+
+(defn- get-start-date [buildviz-url]
+  (if-let [latest-sync-build-start (get-latest-synced-build-start buildviz-url)]
+    latest-sync-build-start
+    last-week))
+
 
 (defn -main [& c-args]
   (let [args (parse-opts c-args cli-options)]
@@ -83,6 +96,6 @@
 
     (let [jenkins-url (first (:arguments args))
           buildviz-url (:buildviz-url (:options args))
-          sync-start-time last-week]
+          sync-start-time (get-start-date buildviz-url)]
 
       (sync-jobs jenkins-url buildviz-url sync-start-time))))
