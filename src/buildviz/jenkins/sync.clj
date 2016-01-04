@@ -56,15 +56,23 @@
 (defn- jenkins-build->start-time [{timestamp :timestamp}]
   (tc/from-long timestamp))
 
+(defn- ignore-ongoing-builds [builds]
+  (filter :result builds))
+
 (defn- all-builds-for-job [jenkins-url sync-start-time job-name]
   (let [safe-build-start-time (t/minus sync-start-time (t/millis 1))]
     (->> (api/get-builds jenkins-url job-name)
-         (take-while #(t/after? (jenkins-build->start-time %) safe-build-start-time)))))
+         (take-while #(t/after? (jenkins-build->start-time %) safe-build-start-time))
+         ignore-ongoing-builds)))
+
+(defn- sync-oldest-first-to-deal-with-cancellation [builds]
+  (sort-by :timestamp builds))
 
 (defn- sync-jobs [jenkins-url buildviz-url sync-start-time]
   (->> (api/get-jobs jenkins-url)
        (mapcat #(all-builds-for-job jenkins-url sync-start-time %))
        (progress/init "Syncing")
+       sync-oldest-first-to-deal-with-cancellation
        (map (partial add-test-results jenkins-url))
        (map transform/jenkins-build->buildviz-build)
        (map (partial put-to-buildviz buildviz-url))
