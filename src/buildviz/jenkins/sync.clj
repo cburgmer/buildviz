@@ -8,16 +8,24 @@
             [clj-time
              [coerce :as tc]
              [core :as t]
+             [format :as tf]
              [local :as l]]
             [clojure.string :as string]
             [clojure.tools
              [cli :refer [parse-opts]]
              [logging :as log]]))
 
+(def tz (t/default-time-zone))
+
+(def date-formatter (tf/formatter tz "YYYY-MM-dd" "YYYY/MM/dd" "YYYYMMdd" "dd.MM.YYYY"))
+
 (def cli-options
   [["-b" "--buildviz URL" "URL pointing to a running buildviz instance"
     :id :buildviz-url
     :default "http://localhost:3000"]
+   ["-f" "--from DATE" "Date from which on builds are loaded, if not specified tries to pick up where the last run finished"
+    :id :sync-start-time
+    :parse-fn #(tf/parse date-formatter %)]
    ["-h" "--help"]])
 
 (defn usage [options-summary]
@@ -69,6 +77,9 @@
   (sort-by :timestamp builds))
 
 (defn- sync-jobs [jenkins-url buildviz-url sync-start-time]
+  (println "Jenkins" jenkins-url "-> buildviz" buildviz-url)
+  (println (format "Finding all builds for syncing (starting from %s)..."
+                 (tf/unparse (:date-time tf/formatters) sync-start-time)))
   (->> (api/get-jobs jenkins-url)
        (mapcat #(all-builds-for-job jenkins-url sync-start-time %))
        (progress/init "Syncing")
@@ -89,10 +100,12 @@
     (when-let [latest-build-start (:latestBuildStart buildviz-status)]
       (tc/from-long latest-build-start))))
 
-(defn- get-start-date [buildviz-url]
-  (if-let [latest-sync-build-start (get-latest-synced-build-start buildviz-url)]
-    latest-sync-build-start
-    last-week))
+(defn- get-start-date [buildviz-url date-from-config]
+  (if (some? date-from-config)
+    date-from-config
+    (if-let [latest-sync-build-start (get-latest-synced-build-start buildviz-url)]
+      latest-sync-build-start
+      last-week)))
 
 
 (defn -main [& c-args]
@@ -104,6 +117,6 @@
 
     (let [jenkins-url (first (:arguments args))
           buildviz-url (:buildviz-url (:options args))
-          sync-start-time (get-start-date buildviz-url)]
+          sync-start-time (get-start-date buildviz-url (:sync-start-time (:options args)))]
 
       (sync-jobs jenkins-url buildviz-url sync-start-time))))
