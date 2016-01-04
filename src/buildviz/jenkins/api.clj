@@ -11,10 +11,25 @@
   (let [response (get-json jenkins-url "/api/json")]
     (map :name (get response :jobs))))
 
+
+(defn- builds-response->builds [response job-name]
+  (->> (get response :allBuilds)
+       (map #(assoc % :job-name job-name))))
+
+(def pagination-size 10)
+
+(defn- get-builds-starting-from [jenkins-url job-name offset]
+  (let [offset-end (+ offset pagination-size)
+        response (get-json jenkins-url (format "/job/%s/api/json?tree=allBuilds[number,timestamp,duration,result,actions[lastBuiltRevision[SHA1],remoteUrls]]{%s,%s}" job-name offset offset-end))
+        builds (builds-response->builds response job-name)]
+    (if (> pagination-size (count builds))
+      builds
+      (let [next-offset (+ offset (count builds))]
+        (concat builds
+                (get-builds-starting-from jenkins-url job-name next-offset))))))
+
 (defn get-builds [jenkins-url job-name]
-  (let [response (get-json jenkins-url (format "/job/%s/api/json?tree=builds[number,timestamp,duration,result,actions[lastBuiltRevision[SHA1],remoteUrls]]" job-name))]
-    (->> (get response :builds)
-         (map #(assoc % :job-name job-name)))))
+  (get-builds-starting-from jenkins-url job-name 0))
 
 (defn get-test-report [jenkins-url job-name build-number]
   (let [test-report-url (format "/job/%s/%s/testReport/api/json" job-name build-number)]
