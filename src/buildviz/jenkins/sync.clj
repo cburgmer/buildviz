@@ -5,6 +5,10 @@
             [cheshire.core :as j]
             [clj-http.client :as client]
             [clj-progress.core :as progress]
+            [clj-time
+             [coerce :as tc]
+             [core :as t]
+             [local :as l]]
             [clojure.string :as string]
             [clojure.tools
              [cli :refer [parse-opts]]
@@ -31,6 +35,7 @@
 (defn add-test-results [jenkins-url {:keys [job-name number] :as build}]
   (assoc build :test-report (api/get-test-report jenkins-url job-name number)))
 
+
 (defn put-build [buildviz-url job-name build-id build]
   (client/put (string/join [buildviz-url (format "/builds/%s/%s" job-name build-id)])
               {:content-type :json
@@ -41,7 +46,6 @@
               {:content-type :json
                :body (j/generate-string test-results)}))
 
-
 (defn put-to-buildviz [buildviz-url {:keys [job-name build-id build test-results]}]
   (log/info (format "Syncing %s %s: build" job-name build-id))
   (put-build buildviz-url job-name build-id build)
@@ -49,9 +53,17 @@
     (put-test-results buildviz-url job-name build-id test-results)))
 
 
-(defn- sync-jobs [jenkins-url buildviz-url]
+(defn- jenkins-build->start-time [{timestamp :timestamp}]
+  (tc/from-long timestamp))
+
+(defn- all-builds-for-job [jenkins-url sync-start-time job-name]
+  (let [safe-build-start-time (t/minus sync-start-time (t/millis 1))]
+    (->> (api/get-builds jenkins-url job-name)
+         (take-while #(t/after? (jenkins-build->start-time %) safe-build-start-time)))))
+
+(defn- sync-jobs [jenkins-url buildviz-url sync-start-time]
   (->> (api/get-jobs jenkins-url)
-       (mapcat (partial api/get-builds jenkins-url))
+       (mapcat #(all-builds-for-job jenkins-url sync-start-time %))
        (progress/init "Syncing")
        (map (partial add-test-results jenkins-url))
        (map transform/jenkins-build->buildviz-build)
@@ -59,6 +71,8 @@
        (map progress/tick)
        dorun
        (progress/done)))
+
+(def last-week (t/minus (.withTimeAtStartOfDay (l/local-now)) (t/weeks 1)))
 
 (defn -main [& c-args]
   (let [args (parse-opts c-args cli-options)]
@@ -68,6 +82,7 @@
       (System/exit 0))
 
     (let [jenkins-url (first (:arguments args))
-          buildviz-url (:buildviz-url (:options args))]
+          buildviz-url (:buildviz-url (:options args))
+          sync-start-time last-week]
 
-      (sync-jobs jenkins-url buildviz-url))))
+      (sync-jobs jenkins-url buildviz-url sync-start-time))))

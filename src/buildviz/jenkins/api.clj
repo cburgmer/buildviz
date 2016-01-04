@@ -26,7 +26,7 @@
       builds
       (let [next-offset (+ offset (count builds))]
         (concat builds
-                (get-builds-starting-from jenkins-url job-name next-offset))))))
+                (lazy-seq (get-builds-starting-from jenkins-url job-name next-offset)))))))
 
 (defn get-builds [jenkins-url job-name]
   (get-builds-starting-from jenkins-url job-name 0))

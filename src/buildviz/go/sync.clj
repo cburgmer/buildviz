@@ -8,7 +8,8 @@
             [clj-time
              [coerce :as tc]
              [core :as t]
-             [format :as tf]]
+             [format :as tf]
+             [local :as l]]
             [clojure.string :as string]
             [clojure.tools
              [cli :refer [parse-opts]]
@@ -149,7 +150,7 @@
 
 ;; build load start date
 
-(def last-week (t/minus (t/today-at-midnight tz) (t/weeks 1)))
+(def last-week (t/minus (.withTimeAtStartOfDay (l/local-now)) (t/weeks 1)))
 
 (defn- get-latest-synced-build-start []
   (let [response (client/get (format "%s/status" buildviz-url))
