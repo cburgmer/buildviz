@@ -44,6 +44,13 @@
                                                                                     {:lastBuiltRevision {:SHA1 "abcd1234"}
                                                                                      :remoteUrls ["git://some_git"]}]))))))))
 
+  (testing "should extract build parameters"
+    (is (= [{:source_id "PARAM_NAME"
+             :revision "the value"}]
+           (:inputs (:build (sut/jenkins-build->buildviz-build (-> a-jenkins-build
+                                                                   (assoc :actions [{:parameters [{:name "PARAM_NAME"
+                                                                                                   :value "the value"}]}]))))))))
+
   (testing "should convert test results"
     (is (= [{:name "a test suite"
              :children [{:classname "the class"
