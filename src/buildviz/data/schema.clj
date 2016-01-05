@@ -11,8 +11,9 @@
                 :outcome {:enum ["pass" "fail"]}
                 :inputs {:type "array"
                          :items {:type "object"
-                                 :properties {:revision {:type ["string" "integer"]}
-                                              :source_id {:type ["string" "integer"]}}
+                                 :properties {:revision {:type ["string" "integer"] :required true}
+                                              :source_id {:type ["string" "integer"]}
+                                              :sourceId {:type ["string" "integer"]}}
                                  :additionalProperties false}}
                 :triggeredBy {:type "object"
                               :properties {:jobName {:type ["string"] :required true}

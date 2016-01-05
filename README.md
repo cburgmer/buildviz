@@ -44,7 +44,7 @@ For every build `PUT` JSON data to `http://localhost:3000/builds/$JOB_NAME/$BUIL
   "outcome": "pass", /* or "fail" */
   "inputs": [{
     "revision": "1eadcdd4d35f9a",
-    "source_id": "git@github.com:cburgmer/buildviz.git"
+    "sourceId": "git@github.com:cburgmer/buildviz.git"
   }],
   "triggeredBy": {
     "jobName": "Test",

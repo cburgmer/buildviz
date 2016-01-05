@@ -32,7 +32,7 @@ function aBuild {
     fi
 
     SOURCE_ID=42
-    echo '{"start": '$START', "end": '$END', "outcome": "'$OUTCOME'", "inputs": [{"revision": "'$REVISION'", "source_id": "'$SOURCE_ID'"}]}'
+    echo '{"start": '$START', "end": '$END', "outcome": "'$OUTCOME'", "inputs": [{"revision": "'$REVISION'", "sourceId": "'$SOURCE_ID'"}]}'
 }
 
 function send {

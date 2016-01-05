@@ -26,6 +26,17 @@
            (:path (first (schema/build-data-validation-errors {:start 42
                                                                :end 41}))))))
 
+  (testing "should fail on missing revision for inputs"
+    (is (= [:inputs 0 :revision]
+           (:path (first (schema/build-data-validation-errors {:start 42
+                                                               :inputs [{:sourceId "43"}]}))))))
+
+  ;; TODO we should validate, once "source_id" is gone
+  ;; (testing "should fail on missing sourceId for inputs"
+  ;;   (is (= [:inputs 0 :sourceId]
+  ;;          (:path (first (schema/build-data-validation-errors {:start 42
+  ;;                                                              :inputs [{:revision "abcd"}]}))))))
+
   (testing "should fail on missing jobName for triggeredBy"
     (is (= [:triggeredBy :jobName]
            (:path (first (schema/build-data-validation-errors {:start 42
