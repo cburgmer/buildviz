@@ -90,10 +90,8 @@
 ;; /api/pipelines/%pipelines/instance/%run
 
 (defn- revision->input [{:keys [modifications material]}]
-  (let [{revision :revision} (first modifications)
-        source-id (:id material)]
-    {:revision revision
-     :source_id source-id}))
+  {:revision (:revision (first modifications))
+   :sourceId (:id material)})
 
 (defn get-inputs-for-pipeline-run [go-url pipeline-name run]
   (let [pipeline-instance (get-json go-url "/api/pipelines/%s/instance/%s" pipeline-name run)

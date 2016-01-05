@@ -16,11 +16,11 @@
            "job,averageRuntime,totalCount,failedCount,flakyCount\n"))
 
     ;; GET should return job summary
-    (let [app (the-app)]
-      (a-build app "someBuild" 1, {:start 10 :end 20 :outcome "pass" :inputs [{:source_id 42 :revision "dat_revision"}]})
-      (a-build app "someBuild" 2, {:start 30 :end 60 :outcome "fail" :inputs [{:source_id 42 :revision "dat_revision"}]})
-      (a-build app "someBuild" 3, {:start 70 :end 90 :outcome "fail" :inputs [{:source_id 42 :revision "other_revision"}]})
-      (a-build app "someBuild" 4, {:start 100 :end 120 :outcome "pass" :inputs [{:source_id 42 :revision "yet_another_revision"}]})
+    (let [app (the-app {"someBuild" {1 {:start 10 :end 20 :outcome "pass" :inputs [{:source-id 42 :revision "dat_revision"}]}
+                                     2 {:start 30 :end 60 :outcome "fail" :inputs [{:source-id 42 :revision "dat_revision"}]}
+                                     3 {:start 70 :end 90 :outcome "fail" :inputs [{:source-id 42 :revision "other_revision"}]}
+                                     4 {:start 100 :end 120 :outcome "pass" :inputs [{:source-id 42 :revision "yet_another_revision"}]}}}
+                       {})]
       (is (= (:body (plain-get-request app "/jobs"))
              (str/join ["job,averageRuntime,totalCount,failedCount,flakyCount\n"
                     (format "someBuild,%.8f,4,2,1\n" 0.00000023)]))))
@@ -77,8 +77,8 @@
              (json-body (json-get-request app "/jobs")))))
 
     ;; GET should return a flaky build count
-    (let [app (the-app {"flakyBuild" {1 {:outcome "pass" :inputs [{:source_id 42 :revision "dat_revision"}] :start 10}
-                                      2 {:outcome "fail" :inputs [{:source_id 42 :revision "dat_revision"}] :start 20}}}
+    (let [app (the-app {"flakyBuild" {1 {:outcome "pass" :inputs [{:source-id 42 :revision "dat_revision"}] :start 10}
+                                      2 {:outcome "fail" :inputs [{:source-id 42 :revision "dat_revision"}] :start 20}}}
                        {})]
       (is (= [{"jobName" "flakyBuild"
                "failedCount" 1
