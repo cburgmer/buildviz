@@ -2,6 +2,7 @@
   (:require [buildviz.jenkins
              [api :as api]
              [transform :as transform]]
+            [buildviz.util.json :as json]
             [cheshire.core :as j]
             [clj-http.client :as client]
             [clj-progress.core :as progress]
@@ -13,8 +14,7 @@
             [clojure.string :as string]
             [clojure.tools
              [cli :refer [parse-opts]]
-             [logging :as log]]
-            [wharf.core :as wharf]))
+             [logging :as log]]))
 
 (def tz (t/default-time-zone))
 
@@ -48,7 +48,7 @@
 (defn put-build [buildviz-url job-name build-id build]
   (client/put (string/join [buildviz-url (format "/builds/%s/%s" job-name build-id)])
               {:content-type :json
-               :body (j/generate-string (wharf/transform-keys (comp wharf/hyphen->lower-camel name) build))}))
+               :body (json/to-str build)}))
 
 (defn put-test-results [buildviz-url job-name build-id test-results]
   (client/put (string/join [buildviz-url (format "/builds/%s/%s/testresults" job-name build-id)])

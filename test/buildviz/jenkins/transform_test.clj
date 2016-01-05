@@ -37,7 +37,7 @@
                                                           (assoc :result "FAILURE")))))))
 
   (testing "should extract Git input"
-    (is (= [{:source_id "git://some_git"
+    (is (= [{:source-id "git://some_git"
              :revision "abcd1234"}]
            (:inputs (:build (sut/jenkins-build->buildviz-build (-> a-jenkins-build
                                                                    (assoc :actions [{}
@@ -45,7 +45,7 @@
                                                                                      :remoteUrls ["git://some_git"]}]))))))))
 
   (testing "should extract build parameters"
-    (is (= [{:source_id "PARAM_NAME"
+    (is (= [{:source-id "PARAM_NAME"
              :revision "the value"}]
            (:inputs (:build (sut/jenkins-build->buildviz-build (-> a-jenkins-build
                                                                    (assoc :actions [{:parameters [{:name "PARAM_NAME"

@@ -23,13 +23,13 @@
 (defn- git-input-from [{actions :actions}]
   (when-let [git-revision-info (first (filter :lastBuiltRevision actions))]
     [{:revision (get-in git-revision-info [:lastBuiltRevision :SHA1])
-      :source_id (get-in git-revision-info [:remoteUrls 0])}]))
+      :source-id (get-in git-revision-info [:remoteUrls 0])}]))
 
 (defn- parameters-input-from [{actions :actions}]
   (->> (some :parameters actions)
        (map (fn [{:keys [name value]}]
               {:revision value
-               :source_id name}))))
+               :source-id name}))))
 
 (defn- with-inputs [map jenkins-build]
   (if-let [inputs (seq (concat (git-input-from jenkins-build)
