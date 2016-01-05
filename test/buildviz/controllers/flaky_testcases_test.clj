@@ -16,12 +16,12 @@
     (is (= "latestFailure,flakyCount,job,latestBuildId,testsuite,classname,name\n"
            (:body (plain-get-request (the-app) "/flakytestcases"))))
     (let [app (the-app
-               {"aBuild" {"failing" {:inputs {:revision 1 :source_id 0} :start a-timestamp}
-                          "passing" {:inputs {:revision 1 :source_id 0}}}
-                "anotherBuild" {"failing" {:inputs {:revision "abcd" :source_id "100"} :start a-timestamp}
-                                "passing" {:inputs {:revision "abcd" :source_id "100"}}}
-                "buildWithoutTests" {"failing" {:inputs {:revision 0 :source_id 42}}
-                                     "passing" {:inputs {:revision 0 :source_id 42}}}}
+               {"aBuild" {"failing" {:inputs {:revision 1 :sourceId 0} :start a-timestamp}
+                          "passing" {:inputs {:revision 1 :sourceId 0}}}
+                "anotherBuild" {"failing" {:inputs {:revision "abcd" :source-id "100"} :start a-timestamp}
+                                "passing" {:inputs {:revision "abcd" :source-id "100"}}}
+                "buildWithoutTests" {"failing" {:inputs {:revision 0 :source-id 42}}
+                                     "passing" {:inputs {:revision 0 :source-id 42}}}}
                {"aBuild" {"failing" "<testsuite name=\"a suite\"><testsuite name=\"nested suite\"><testcase name=\"testcase\" classname=\"class\"><failure/></testcase></testsuite></testsuite>"
                           "passing" "<testsuite name=\"a suite\"><testsuite name=\"nested suite\"><testcase name=\"testcase\" classname=\"class\"></testcase></testsuite></testsuite>"}
                 "anotherBuild" {"failing" "<testsuite name=\"a suite\"><testcase name=\"testcase\" classname=\"class\"><failure/></testcase></testsuite>"
@@ -34,12 +34,12 @@
   (testing "should return JSON if requested"
     (is (= []
            (json-body (json-get-request (the-app) "/flakytestcases"))))
-    (let [app (the-app {"aBuild" {"failing" {:inputs {:revision 1 :source_id 0} :start a-timestamp}
-                                  "passing" {:inputs {:revision 1 :source_id 0}}}
-                        "anotherBuild" {"failing" {:inputs {:revision "abcd" :source_id "100"} :start a-timestamp}
-                                        "passing" {:inputs {:revision "abcd" :source_id "100"}}}
-                        "buildWithoutTests" {"failing" {:inputs {:revision 0 :source_id 42}}
-                                             "passing" {:inputs {:revision 0 :source_id 42}}}}
+    (let [app (the-app {"aBuild" {"failing" {:inputs {:revision 1 :source-id 0} :start a-timestamp}
+                                  "passing" {:inputs {:revision 1 :source-id 0}}}
+                        "anotherBuild" {"failing" {:inputs {:revision "abcd" :source-id "100"} :start a-timestamp}
+                                        "passing" {:inputs {:revision "abcd" :source-id "100"}}}
+                        "buildWithoutTests" {"failing" {:inputs {:revision 0 :source-id 42}}
+                                             "passing" {:inputs {:revision 0 :source-id 42}}}}
                        {"aBuild" {"failing" "<testsuite name=\"a suite\"><testsuite name=\"nested suite\"><testcase name=\"testcase\" classname=\"class\"><failure/></testcase></testsuite></testsuite>"
                                   "passing" "<testsuite name=\"a suite\"><testsuite name=\"nested suite\"><testcase name=\"testcase\" classname=\"class\"></testcase></testsuite></testsuite>"}
                         "anotherBuild" {"failing" "<testsuite name=\"a suite\"><testcase name=\"testcase\" classname=\"class\"><failure/></testcase></testsuite>"

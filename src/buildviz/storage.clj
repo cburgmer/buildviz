@@ -1,5 +1,5 @@
 (ns buildviz.storage
-  (:require [cheshire.core :as j]
+  (:require [buildviz.util.json :as json]
             [clojure.java.io :as io]
             [clojure.string :as str]))
 
@@ -7,7 +7,7 @@
   (let [job-dir (io/file base-dir job-name)]
     (.mkdirs job-dir)
     (let [build-file (io/file job-dir (str/join [build-id ".json"]))]
-      (spit build-file (j/generate-string build-data)))))
+      (spit build-file (json/to-str build-data)))))
 
 
 (defn- match-build-id [build-file]
@@ -32,7 +32,7 @@
        (reduce (fn [jobs [job-name build-id file]]
                  (assoc-in jobs
                            [job-name build-id]
-                           (j/parse-string (slurp file) true)))
+                           (json/from-string (slurp file))))
                {})))
 
 

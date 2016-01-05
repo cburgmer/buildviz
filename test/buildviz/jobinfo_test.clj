@@ -5,14 +5,14 @@
             [clj-time.coerce :as tc]))
 
 
-(def failed-test-input-1 {:outcome "fail" :inputs '({:revision "1" :source_id 42})})
-(def passed-test-input-1 {:outcome "pass" :inputs '({:revision "1" :source_id 42})})
-(def passed-test-input-2 {:outcome "pass" :inputs '({:revision "2" :source_id 42})})
+(def failed-test-input-1 {:outcome "fail" :inputs '({:revision "1" :source-id 42})})
+(def passed-test-input-1 {:outcome "pass" :inputs '({:revision "1" :source-id 42})})
+(def passed-test-input-2 {:outcome "pass" :inputs '({:revision "2" :source-id 42})})
 
-(def failed-test-multiple-inputs-changed {:outcome "fail" :inputs '({:revision "1" :source_id 42}
-                                                                    {:revision "a" :source_id 43})})
-(def passed-test-multiple-inputs-changed {:outcome "pass" :inputs '({:revision "1" :source_id 42}
-                                                                    {:revision "b" :source_id 43})})
+(def failed-test-multiple-inputs-changed {:outcome "fail" :inputs '({:revision "1" :source-id 42}
+                                                                    {:revision "a" :source-id 43})})
+(def passed-test-multiple-inputs-changed {:outcome "pass" :inputs '({:revision "1" :source-id 42}
+                                                                    {:revision "b" :source-id 43})})
 
 (def sometime-on-1986-10-14 (tc/to-long (t/from-time-zone (t/date-time 1986 10 14 4 3 27 456) (t/default-time-zone))))
 (def sometime-on-1988-1-1 (tc/to-long (t/from-time-zone (t/date-time 1988 1 1 14 3 27 456) (t/default-time-zone))))
@@ -28,14 +28,14 @@
   (testing "flaky-build-count"
      (is (= 1 (flaky-build-count [failed-test-input-1 passed-test-input-1])))
      (is (= 1 (flaky-build-count [passed-test-input-1 failed-test-input-1])))
-     (is (= 1 (flaky-build-count [{:outcome "pass" :inputs '({:revision "b" :source_id 43}
-                                                             {:revision "1" :source_id 42})}
-                                  {:outcome "fail" :inputs '({:revision "1" :source_id 42}
-                                                             {:revision "b" :source_id 43})}])))
-     (is (= 0 (flaky-build-count [{:outcome "pass" :inputs '({:revision "1" :source_id 42}
-                                                             {:revision "b" :source_id 43})}
-                                  {:outcome "fail" :inputs '({:revision "2" :source_id 42}
-                                                             {:revision "b" :source_id 43})}])))
+     (is (= 1 (flaky-build-count [{:outcome "pass" :inputs '({:revision "b" :source-id 43}
+                                                             {:revision "1" :source-id 42})}
+                                  {:outcome "fail" :inputs '({:revision "1" :source-id 42}
+                                                             {:revision "b" :source-id 43})}])))
+     (is (= 0 (flaky-build-count [{:outcome "pass" :inputs '({:revision "1" :source-id 42}
+                                                             {:revision "b" :source-id 43})}
+                                  {:outcome "fail" :inputs '({:revision "2" :source-id 42}
+                                                             {:revision "b" :source-id 43})}])))
      (is (= 0 (flaky-build-count [passed-test-input-1 passed-test-input-1])))
      (is (= 0 (flaky-build-count [failed-test-input-1 passed-test-input-2])))
      (is (= 0 (flaky-build-count [failed-test-multiple-inputs-changed passed-test-multiple-inputs-changed])))

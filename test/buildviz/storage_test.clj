@@ -15,6 +15,12 @@
     (let [data-dir (create-tmp-dir "buildviz-data")]
       (store-build! data-dir "aJob" "aBuild" {:start 42})
       (is (= "{\"start\":42}"
+             (slurp (io/file data-dir "aJob/aBuild.json"))))))
+
+  (testing "should transform to camel-case keys"
+    (let [data-dir (create-tmp-dir "buildviz-data")]
+      (store-build! data-dir "aJob" "aBuild" {:start 42 :inputs [{:revision "abcd" :source-id 42}]})
+      (is (= "{\"start\":42,\"inputs\":[{\"revision\":\"abcd\",\"sourceId\":42}]}"
              (slurp (io/file data-dir "aJob/aBuild.json")))))))
 
 (deftest test-load-builds
@@ -24,6 +30,14 @@
       (.mkdirs (.getParentFile build-file))
       (spit build-file "{\"outcome\":\"fail\"}")
       (is (= {"someJob" {"someBuild" {:outcome "fail"}}}
+             (load-builds data-dir)))))
+
+  (testing "should transform from camel-case keys"
+    (let [data-dir (create-tmp-dir "buildviz-data")
+          build-file (io/file data-dir "someJob/someBuild.json")]
+      (.mkdirs (.getParentFile build-file))
+      (spit build-file "{\"outcome\":\"fail\",\"inputs\":[{\"revision\":\"abcd\",\"sourceId\":42}]}")
+      (is (= {"someJob" {"someBuild" {:outcome "fail" :inputs [{:revision "abcd" :source-id 42}]}}}
              (load-builds data-dir))))))
 
 (deftest test-store-testresults!
