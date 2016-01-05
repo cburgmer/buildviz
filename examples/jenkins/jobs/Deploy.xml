@@ -3,7 +3,17 @@
   <actions/>
   <description></description>
   <keepDependencies>false</keepDependencies>
-  <properties/>
+  <properties>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>TEST_GIT_COMMIT</name>
+          <description>Example parameter set by preceding build</description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
   <scm class="hudson.scm.NullSCM"/>
   <canRoam>true</canRoam>
   <disabled>false</disabled>
@@ -13,7 +23,8 @@
   <concurrentBuild>false</concurrentBuild>
   <builders>
     <hudson.tasks.Shell>
-        <command>#!/bin/bash
+      <command>#!/bin/bash
+echo $TEST_GIT_COMMIT
 RUNTIME=$(( $RANDOM % 20 ))
 sleep $RUNTIME
 if [ $(( $RANDOM % 5 )) -eq 0 ]; then
