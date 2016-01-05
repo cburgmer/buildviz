@@ -1,10 +1,11 @@
 (ns buildviz.controllers.flaky-testcases
   (:require [buildviz
-             [csv :as csv]
-             [http :as http]
              [junit-xml :as junit-xml]
              [testsuites :as testsuites]]
-            [buildviz.data.results :as results]))
+            [buildviz.data.results :as results]
+            [buildviz.util
+             [csv :as csv]
+             [http :as http]]))
 
 (defn- test-results-for-build [build-results job-name build-id]
   (if-let [test-results (results/tests build-results job-name build-id)]

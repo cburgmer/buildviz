@@ -1,4 +1,4 @@
-(ns buildviz.http
+(ns buildviz.util.http
   (:require [clj-time.core :as t]
             [clojure.tools.logging :as log]
             [ring.util

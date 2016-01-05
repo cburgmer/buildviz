@@ -1,8 +1,9 @@
-(ns buildviz.csv-test
-  (:require [clj-time.core :as t]
-            [clj-time.coerce :as tc])
-  (:use clojure.test
-        buildviz.csv))
+(ns buildviz.util.csv-test
+(:require [buildviz.util.csv :refer :all]
+[clj-time
+[coerce :as tc]
+[core :as t]]
+[clojure.test :refer :all]))
 
 (def a-datetime (t/from-time-zone (t/date-time 1986 10 14 4 3 27 456) (t/default-time-zone)))
 

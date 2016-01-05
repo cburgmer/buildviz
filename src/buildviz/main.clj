@@ -1,9 +1,9 @@
 (ns buildviz.main
   (:require [buildviz
              [handler :as handler]
-             [http :as http]
              [storage :as storage]]
-            [buildviz.data.results :as results]))
+            [buildviz.data.results :as results]
+            [buildviz.util.http :as http]))
 
 (def data-dir (if-let [data-dir (System/getenv "BUILDVIZ_DATA_DIR")]
                 data-dir

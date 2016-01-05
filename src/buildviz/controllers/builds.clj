@@ -1,11 +1,10 @@
 (ns buildviz.controllers.builds
-  (:require [buildviz
-             [http :as http]
-             [junit-xml :as junit-xml]]
-            [buildviz.data
+  (:require [buildviz.data
              [results :as results]
              [schema :as schema]
              [tests-schema :as tests-schema]]
+            [buildviz.junit-xml :as junit-xml]
+            [buildviz.util.http :as http]
             [clojure.walk :as walk]))
 
 (defn store-build! [build-results job-name build-id build-data]

@@ -1,6 +1,6 @@
 (ns buildviz.controllers.status
   (:require [buildviz.data.results :as results]
-            [buildviz.http :as http]))
+            [buildviz.util.http :as http]))
 
 (defn- with-latest-build-start [all-builds response]
   (if-let [build-starts (seq (remove nil? (map :start all-builds)))]

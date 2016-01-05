@@ -1,9 +1,9 @@
 (ns buildviz.controllers.pipeline-runtime
-  (:require [buildviz
+  (:require [buildviz.data.results :as results]
+            [buildviz.jobinfo :as jobinfo]
+            [buildviz.util
              [csv :as csv]
-             [http :as http]
-             [jobinfo :as jobinfo]]
-            [buildviz.data.results :as results]))
+             [http :as http]]))
 
 (defn- runtimes-by-day [build-results from-timestamp]
   (let [job-names (results/job-names build-results)]

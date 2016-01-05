@@ -1,9 +1,9 @@
 (ns buildviz.controllers.jobs
-  (:require [buildviz
+  (:require [buildviz.data.results :as results]
+            [buildviz.jobinfo :as jobinfo]
+            [buildviz.util
              [csv :as csv]
-             [http :as http]
-             [jobinfo :as jobinfo]]
-            [buildviz.data.results :as results]))
+             [http :as http]]))
 
 (defn- average-runtime-for [build-data-entries]
   (if-let [avg-runtime (jobinfo/average-runtime build-data-entries)]

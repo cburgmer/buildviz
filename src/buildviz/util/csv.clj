@@ -1,4 +1,4 @@
-(ns buildviz.csv
+(ns buildviz.util.csv
   (:require [clj-time
              [coerce :as tc]
              [core :as t]

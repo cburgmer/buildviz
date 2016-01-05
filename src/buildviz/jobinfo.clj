@@ -1,6 +1,6 @@
 (ns buildviz.jobinfo
   (:require [buildviz.data.schema :as schema]
-            [buildviz.math :as math]
+            [buildviz.util.math :as math]
             [clj-time
              [coerce :as tc]
              [core :as t]

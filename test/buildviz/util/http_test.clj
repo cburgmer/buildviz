@@ -1,7 +1,7 @@
-(ns buildviz.http-test
-  (:require [buildviz.http :as http]
-            [clj-time.core :as t]
-            [clojure.test :refer :all]))
+(ns buildviz.util.http-test
+(:require [buildviz.util.http :as http]
+[clj-time.core :as t]
+[clojure.test :refer :all]))
 
 (def date (t/date-time 1986 10 14 4 3 27 456))
 

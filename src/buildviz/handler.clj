@@ -9,7 +9,7 @@
              [testcases :as testcases]
              [testclasses :as testclasses]]
             [buildviz.data.results :as results]
-            [buildviz.http :as http]
+            [buildviz.util.http :as http]
             [compojure.core :as compojure :refer :all]
             [ring.middleware
              [accept :as accept]

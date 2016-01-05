@@ -1,10 +1,11 @@
 (ns buildviz.controllers.testcases
   (:require [buildviz
-             [csv :as csv]
-             [http :as http]
              [junit-xml :as junit-xml]
              [testsuites :as testsuites]]
-            [buildviz.data.results :as results]))
+            [buildviz.data.results :as results]
+            [buildviz.util
+             [csv :as csv]
+             [http :as http]]))
 
 (defn- test-runs [build-results job-name from-timestamp]
   (map junit-xml/parse-testsuites

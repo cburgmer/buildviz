@@ -1,9 +1,9 @@
 (ns buildviz.controllers.fail-phases
-  (:require [buildviz
+  (:require [buildviz.data.results :as results]
+            [buildviz.pipelineinfo :as pipelineinfo]
+            [buildviz.util
              [csv :as csv]
-             [http :as http]
-             [pipelineinfo :as pipelineinfo]]
-            [buildviz.data.results :as results]
+             [http :as http]]
             [clojure.string :as str]))
 
 (defn- all-builds-in-order [build-results from-timestamp]

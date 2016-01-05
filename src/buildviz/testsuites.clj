@@ -2,8 +2,8 @@
   (:require [buildviz
              [jobinfo :as jobinfo]
              [junit-xml :as junit-xml]
-             [math :as math]
-             [testsuite-transform :as transform]]))
+             [testsuite-transform :as transform]]
+            [buildviz.util.math :as math]))
 
 (defn- avg-with-nil [values]
   (when-let [non-nil-values (seq (remove nil? values))]
