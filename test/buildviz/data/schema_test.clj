@@ -24,4 +24,15 @@
   (testing "should fail on end time before start time"
     (is (= [:end]
            (:path (first (schema/build-data-validation-errors {:start 42
-                                                               :end 41})))))))
+                                                               :end 41}))))))
+
+  (testing "should fail on missing jobName for triggeredBy"
+    (is (= [:triggeredBy :jobName]
+           (:path (first (schema/build-data-validation-errors {:start 42
+                                                               :triggeredBy {:buildId 42}}))))))
+
+  (testing "should fail on missing buildId for triggeredBy"
+    (is (= [:triggeredBy :buildId]
+           (:path (first (schema/build-data-validation-errors {:start 42
+                                                               :triggeredBy {:jobName "the_job"}}))))))
+  )

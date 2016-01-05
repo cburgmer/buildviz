@@ -23,7 +23,7 @@ buildviz provides various graphs detailing your build pipeline's behaviour. So f
 #### Seed dummy data for a quick impression
 
     $ ./examples/runSeedDataExample.sh
-    
+
 Also see the other examples under [examples/](https://github.com/cburgmer/buildviz/tree/master/examples).
 
 ## Usage
@@ -45,7 +45,11 @@ For every build `PUT` JSON data to `http://localhost:3000/builds/$JOB_NAME/$BUIL
   "inputs": [{
     "revision": "1eadcdd4d35f9a",
     "source_id": "git@github.com:cburgmer/buildviz.git"
-  }]
+  }],
+  "triggeredBy": {
+    "jobName": "Test",
+    "buildId": "42"
+  }
 }
 ```
 
