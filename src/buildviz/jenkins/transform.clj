@@ -37,13 +37,26 @@
     (assoc map :inputs inputs)
     map))
 
+(defn- trigger-by-from [{actions :actions}]
+  (when-let [upstream-cause (->> (some :causes actions)
+                                 (filter :upstreamProject)
+                                 first)]
+    {:job-name (:upstreamProject upstream-cause)
+     :build-id (:upstreamBuild upstream-cause)}))
+
+(defn- with-triggered-by [map jenkins-build]
+  (if-let [triggered-by (trigger-by-from jenkins-build)]
+    (assoc map :triggered-by triggered-by)
+    map))
+
 (defn- convert-build [{:keys [timestamp duration result] :as build}]
   (-> {:start timestamp
        :end (+ timestamp duration)
        :outcome (if (= result "SUCCESS")
                   "pass"
                   "fail")}
-      (with-inputs build)))
+      (with-inputs build)
+      (with-triggered-by build)))
 
 (defn jenkins-build->buildviz-build [{:keys [job-name number] :as build}]
   {:job-name job-name

@@ -13,7 +13,8 @@
             [clojure.string :as string]
             [clojure.tools
              [cli :refer [parse-opts]]
-             [logging :as log]]))
+             [logging :as log]]
+            [wharf.core :as wharf]))
 
 (def tz (t/default-time-zone))
 
@@ -47,7 +48,7 @@
 (defn put-build [buildviz-url job-name build-id build]
   (client/put (string/join [buildviz-url (format "/builds/%s/%s" job-name build-id)])
               {:content-type :json
-               :body (j/generate-string build)}))
+               :body (j/generate-string (wharf/transform-keys (comp wharf/hyphen->lower-camel name) build))}))
 
 (defn put-test-results [buildviz-url job-name build-id test-results]
   (client/put (string/join [buildviz-url (format "/builds/%s/%s/testresults" job-name build-id)])
