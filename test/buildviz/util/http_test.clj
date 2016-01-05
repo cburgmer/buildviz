@@ -43,5 +43,5 @@
 
 (deftest test-respond-with-json
   (testing "should translate dash-keywords to JSON camel-case"
-    (is (= {:body {"camelCase" "a-value"}}
-           (http/respond-with-json {:camel-case "a-value"})))))
+    (is (= "{\"camelCase\":\"a-value\"}"
+           (:body (http/respond-with-json {:camel-case "a-value"}))))))

@@ -1,13 +1,15 @@
 (ns buildviz.util.http
   (:require [clj-time.core :as t]
             [clojure.tools.logging :as log]
+            [buildviz.util.json :as json]
             [ring.util
              [response :as resp]
              [time :as time]]
             [wharf.core :as wharf]))
 
 (defn respond-with-json [content]
-  {:body (wharf/transform-keys (comp wharf/hyphen->lower-camel name) content)})
+  {:body (json/to-str content)
+   :headers {"Content-Type" "application/json;charset=UTF-8"}})
 
 (defn respond-with-csv [content]
   {:body content
