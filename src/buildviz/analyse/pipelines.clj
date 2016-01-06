@@ -1,33 +1,29 @@
-(ns buildviz.analyse.pipelines)
+(ns buildviz.analyse.pipelines
+  (:require [buildviz.data.build-schema :as build-schema]))
 
 (defn- find-build [{:keys [job-name build-id]} builds]
-  (first (filter (fn [{that-job-name :job that-build-id :build-id}]
-                   (and (= job-name that-job-name)
-                        (= build-id that-build-id)))
-                 builds)))
+  (when job-name
+    (first (filter (fn [{that-job-name :job that-build-id :build-id}]
+                     (and (= job-name that-job-name)
+                          (= build-id that-build-id)))
+                   builds))))
 
-(defn- was-triggered-by? [{{this-job-name :job-name this-build-id :build-id} :triggered-by}
-                          {that-job-name :job that-build-id :build-id}]
-  (and (= this-job-name that-job-name)
-       (= this-build-id that-build-id)))
-
-(defn- is-pipeline-end? [build builds]
-  (empty? (filter #(was-triggered-by? % build)
-                  builds)))
+(defn- is-pipeline-end? [candidate-build builds]
+  (->> builds
+       (filter #(build-schema/was-triggered-by? % candidate-build))
+       empty?))
 
 (defn- find-pipeline [pipeline-end-build builds]
   (loop [pipeline [pipeline-end-build]]
     (let [current-start (first pipeline)]
-      (if (:triggered-by current-start)
-        (if-let [triggering-build (find-build (:triggered-by current-start)
-                                              builds)]
-          (recur (cons triggering-build pipeline))
-          pipeline)
+      (if-let [triggering-build (find-build (:triggered-by current-start)
+                                            builds)]
+        (recur (cons triggering-build pipeline))
         pipeline))))
 
 (defn find-pipelines [builds]
-  (let [pipeline-end-builds (filter #(is-pipeline-end? % builds) builds)]
-    (->> pipeline-end-builds
+  (let [pipeline-end-candidates (filter #(is-pipeline-end? % builds) builds)]
+    (->> pipeline-end-candidates
          (map #(find-pipeline % builds))
          (filter #(< 1 (count %)))
          (map #(map :job %)))))

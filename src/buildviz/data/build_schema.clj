@@ -37,3 +37,8 @@
 (defn failed-build? [build]
   (and (build-with-outcome? build)
        (not (passed-build? build))))
+
+(defn was-triggered-by? [{{this-job-name :job-name this-build-id :build-id} :triggered-by}
+                          {that-job-name :job that-build-id :build-id}]
+  (and (= this-job-name that-job-name)
+       (= this-build-id that-build-id)))
