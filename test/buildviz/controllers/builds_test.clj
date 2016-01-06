@@ -1,5 +1,7 @@
 (ns buildviz.controllers.builds-test
-  (:require [buildviz.test-utils :refer :all]
+  (:require [buildviz
+             [handler :as handler]
+             [test-utils :refer :all]]
             [buildviz.data.results :as results]
             [clojure.test :refer :all]))
 
@@ -8,7 +10,16 @@
                    (format "/builds/%s/%s/testresults" job-name build-no)
                    content))
 
-(deftest Storage
+
+(defn- the-app-with-builds [builds]
+  (handler/create-app (results/build-results @builds
+                                             (fn [_ _])
+                                             (fn [job-name build-id build]
+                                               (swap! builds assoc-in [job-name build-id] build))
+                                             (fn [_ _ _]))
+                      "Test Pipeline"))
+
+(deftest test-store-build!
   (testing "PUT to /builds/:job/:build"
     ;; PUT should return 200
     (is (= (:status (json-put-request (the-app) "/builds/abuild/1" {:start 42}))
@@ -28,6 +39,21 @@
       (is (= resp-data
              {"start" 42 "end" 43}))))
 
+  (testing "should store build"
+    (let [builds (atom {})
+          app (the-app-with-builds builds)]
+      (json-put-request app "/builds/abuild/1" {:start 42})
+      (is (= {:start 42}
+             (get-in @builds ["abuild" "1"])))))
+
+  (testing "should convert from camel-case"
+    (let [builds (atom {})
+          app (the-app-with-builds builds)]
+      (json-put-request app "/builds/abuild/1" {:start 42 :inputs [{:revision "xyz" :sourceId 21}]})
+      (is (= {:revision "xyz" :source-id 21}
+             (first (:inputs (get-in @builds ["abuild" "1"]))))))))
+
+(deftest test-get-build
   (testing "GET to /builds/:job/:build"
     ;; GET should return 200
     (let [app (the-app)]
@@ -58,7 +84,7 @@
              404)))))
 
 
-(deftest JUnitStorage
+(deftest test-store-test-results!
   (testing "PUT with XML"
     (is (= 204 (:status (xml-put-request (the-app) "/builds/mybuild/1/testresults" "<testsuites></testsuites>"))))
     (is (= 400 (:status (xml-put-request (the-app) "/builds/mybuild/1/testresults" "not xml"))))

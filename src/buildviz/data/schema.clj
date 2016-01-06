@@ -13,13 +13,13 @@
                          :items {:type "object"
                                  :properties {:revision {:type ["string" "integer"] :required true}
                                               :source_id {:type ["string" "integer"]}
-                                              :sourceId {:type ["string" "integer"]}}
+                                              :source-id {:type ["string" "integer"]}}
                                  :additionalProperties false}}
-                :triggeredBy {:type "object"
-                              :properties {:jobName {:type ["string"] :required true}
-                                           :buildId {:type ["string" "integer"] :required true}}
-                              ;; :required [:jobName :buildId] # Not correctly implemented in closchema
-                              :additionalProperties false}}
+                :triggered-by {:type "object"
+                               :properties {:job-name {:type ["string"] :required true}
+                                            :build-id {:type ["string" "integer"] :required true}}
+                               ;; :required [:jobName :buildId] # Not correctly implemented in closchema
+                               :additionalProperties false}}
    :required [:start]
    :additionalProperties false})
 
