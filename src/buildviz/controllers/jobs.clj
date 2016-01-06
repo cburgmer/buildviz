@@ -1,6 +1,6 @@
 (ns buildviz.controllers.jobs
-  (:require [buildviz.data.results :as results]
-            [buildviz.jobinfo :as jobinfo]
+  (:require [buildviz.analyse.builds :as jobinfo]
+            [buildviz.data.results :as results]
             [buildviz.util
              [csv :as csv]
              [http :as http]]))

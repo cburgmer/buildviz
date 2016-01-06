@@ -1,6 +1,6 @@
-(ns buildviz.testsuites-test
-  (:use clojure.test
-        buildviz.testsuites))
+(ns buildviz.analyse.testsuites-test
+  (:require [buildviz.analyse.testsuites :refer :all]
+            [clojure.test :refer :all]))
 
 (defn- a-testcase
   ([name] {:name name})

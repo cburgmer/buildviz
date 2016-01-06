@@ -1,4 +1,4 @@
-(ns buildviz.testsuite-transform
+(ns buildviz.analyse.testsuite-transform
   (:require [buildviz.junit-xml :as junit-xml]))
 
 (defn- testcase-id [suite-id {:keys [classname name]}]

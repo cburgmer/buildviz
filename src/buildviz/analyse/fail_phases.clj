@@ -1,4 +1,4 @@
-(ns buildviz.pipelineinfo
+(ns buildviz.analyse.fail-phases
   (:require [buildviz.data.build-schema :as schema]))
 
 (defn- update-ongoing-fail-phase [fail-phases ongoing-fail-phase]

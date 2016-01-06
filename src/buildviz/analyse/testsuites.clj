@@ -1,8 +1,8 @@
-(ns buildviz.testsuites
-  (:require [buildviz
-             [jobinfo :as jobinfo]
-             [junit-xml :as junit-xml]
+(ns buildviz.analyse.testsuites
+  (:require [buildviz.analyse
+             [builds :as jobinfo]
              [testsuite-transform :as transform]]
+            [buildviz.junit-xml :as junit-xml]
             [buildviz.util.math :as math]))
 
 (defn- avg-with-nil [values]

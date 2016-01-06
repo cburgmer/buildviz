@@ -1,8 +1,7 @@
 (ns buildviz.controllers.testclasses
-  (:require [buildviz
-             [junit-xml :as junit-xml]
-             [testsuites :as testsuites]]
+  (:require [buildviz.analyse.testsuites :as testsuites]
             [buildviz.data.results :as results]
+            [buildviz.junit-xml :as junit-xml]
             [buildviz.util
              [csv :as csv]
              [http :as http]]))

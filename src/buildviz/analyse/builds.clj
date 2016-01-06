@@ -1,4 +1,4 @@
-(ns buildviz.jobinfo
+(ns buildviz.analyse.builds
   (:require [buildviz.data.build-schema :as schema]
             [buildviz.util.math :as math]
             [clj-time

@@ -1,9 +1,9 @@
-(ns buildviz.jobinfo-test
-  (:use clojure.test
-        buildviz.jobinfo)
-  (:require [clj-time.core :as t]
-            [clj-time.coerce :as tc]))
-
+(ns buildviz.analyse.builds-test
+  (:require [buildviz.analyse.builds :refer :all]
+            [clj-time
+             [coerce :as tc]
+             [core :as t]]
+            [clojure.test :refer :all]))
 
 (def failed-test-input-1 {:outcome "fail" :inputs '({:revision "1" :source-id 42})})
 (def passed-test-input-1 {:outcome "pass" :inputs '({:revision "1" :source-id 42})})

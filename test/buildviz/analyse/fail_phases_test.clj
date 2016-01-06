@@ -1,7 +1,6 @@
-(ns buildviz.pipelineinfo-test
-  (:use clojure.test
-        buildviz.pipelineinfo))
-
+(ns buildviz.analyse.fail-phases-test
+  (:require [buildviz.analyse.fail-phases :refer :all]
+            [clojure.test :refer :all]))
 
 (deftest PipelineInfo
   (testing "pipeline-fail-phases"

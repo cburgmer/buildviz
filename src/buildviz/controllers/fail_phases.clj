@@ -1,6 +1,6 @@
 (ns buildviz.controllers.fail-phases
-  (:require [buildviz.data.results :as results]
-            [buildviz.pipelineinfo :as pipelineinfo]
+  (:require [buildviz.analyse.fail-phases :as pipelineinfo]
+            [buildviz.data.results :as results]
             [buildviz.util
              [csv :as csv]
              [http :as http]]
