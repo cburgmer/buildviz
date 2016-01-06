@@ -1,6 +1,7 @@
 (ns buildviz.data.tests-schema
   (:require [closchema.core :as schema]))
 
+;; TODO The schema does not fully resemble the internal schema, as values for :status are keywords, not strings (:pass not "pass")
 (def tests-schema {:type "array"
                    :items {:type "object"
                            :properties {:name "string"

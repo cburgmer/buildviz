@@ -1,5 +1,5 @@
-(ns buildviz.data.schema-test
-  (:require [buildviz.data.schema :as schema]
+(ns buildviz.data.build-schema-test
+  (:require [buildviz.data.build-schema :as schema]
             [clojure.test :refer :all]))
 
 (deftest test-build-data-validation-errors

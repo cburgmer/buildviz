@@ -1,7 +1,7 @@
 (ns buildviz.controllers.builds
   (:require [buildviz.data
+             [build-schema :as schema]
              [results :as results]
-             [schema :as schema]
              [tests-schema :as tests-schema]]
             [buildviz.junit-xml :as junit-xml]
             [buildviz.util.http :as http]

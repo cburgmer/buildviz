@@ -1,4 +1,4 @@
-(ns buildviz.data.schema
+(ns buildviz.data.build-schema
   (:require [closchema.core :as schema]))
 
 (defn- build-schema [start-value]

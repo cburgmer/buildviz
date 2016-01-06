@@ -1,5 +1,5 @@
 (ns buildviz.pipelineinfo
-  (:require [buildviz.data.schema :as schema]))
+  (:require [buildviz.data.build-schema :as schema]))
 
 (defn- update-ongoing-fail-phase [fail-phases ongoing-fail-phase]
   (conj (pop fail-phases) ongoing-fail-phase))
