@@ -1,5 +1,5 @@
 (ns buildviz.controllers.pipeline-runtime
-  (:require [buildviz.analyse.builds :as jobinfo]
+  (:require [buildviz.analyse.builds :refer [average-runtime-by-day]]
             [buildviz.data.results :as results]
             [buildviz.util
              [csv :as csv]
@@ -7,7 +7,7 @@
 
 (defn- runtimes-by-day [build-results from-timestamp]
   (let [job-names (results/job-names build-results)]
-    (->> (map #(jobinfo/average-runtime-by-day (results/builds build-results % from-timestamp))
+    (->> (map #(average-runtime-by-day (results/builds build-results % from-timestamp))
               job-names)
          (zipmap job-names)
          (filter #(not-empty (second %))))))

@@ -1,24 +1,24 @@
 (ns buildviz.controllers.jobs
-  (:require [buildviz.analyse.builds :as jobinfo]
+  (:require [buildviz.analyse.builds :as builds]
             [buildviz.data.results :as results]
             [buildviz.util
              [csv :as csv]
              [http :as http]]))
 
 (defn- average-runtime-for [build-data-entries]
-  (if-let [avg-runtime (jobinfo/average-runtime build-data-entries)]
+  (if-let [avg-runtime (builds/average-runtime build-data-entries)]
     {:average-runtime avg-runtime}))
 
 (defn- total-count-for [build-data-entries]
   {:total-count (count build-data-entries)})
 
 (defn- failed-count-for [build-data-entries]
-  (if-some [builds (seq (jobinfo/builds-with-outcome build-data-entries))]
-    {:failed-count (jobinfo/fail-count builds)}))
+  (if-some [builds (seq (builds/builds-with-outcome build-data-entries))]
+    {:failed-count (builds/fail-count builds)}))
 
 (defn- flaky-count-for [build-data-entries]
-  (if-some [builds (seq (jobinfo/builds-with-outcome build-data-entries))]
-    {:flaky-count (jobinfo/flaky-build-count builds)}))
+  (if-some [builds (seq (builds/builds-with-outcome build-data-entries))]
+    {:flaky-count (builds/flaky-build-count builds)}))
 
 (defn- summary-for [build-results job-name from-timestamp]
   (let [build-data-entries (results/builds build-results job-name from-timestamp)]
