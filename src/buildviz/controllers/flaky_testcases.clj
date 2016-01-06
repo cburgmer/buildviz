@@ -1,7 +1,8 @@
 (ns buildviz.controllers.flaky-testcases
   (:require [buildviz.analyse.testsuites :as testsuites]
-            [buildviz.data.results :as results]
-            [buildviz.junit-xml :as junit-xml]
+            [buildviz.data
+             [junit-xml :as junit-xml]
+             [results :as results]]
             [buildviz.util
              [csv :as csv]
              [http :as http]]))

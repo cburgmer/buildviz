@@ -1,4 +1,4 @@
-(ns buildviz.junit-xml
+(ns buildviz.data.junit-xml
   (:require [clojure.data.xml :as xml]))
 
 (defn is-ok? [{status :status}]

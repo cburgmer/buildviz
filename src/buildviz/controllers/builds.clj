@@ -1,9 +1,9 @@
 (ns buildviz.controllers.builds
   (:require [buildviz.data
              [build-schema :as schema]
+             [junit-xml :as junit-xml]
              [results :as results]
              [tests-schema :as tests-schema]]
-            [buildviz.junit-xml :as junit-xml]
             [buildviz.util.http :as http]
             [clojure.walk :as walk]))
 

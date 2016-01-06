@@ -1,7 +1,8 @@
-(ns buildviz.junit-xml-test
-  (:use clojure.test
-        [clojure.walk :only (postwalk)])
-  (:require [buildviz.junit-xml :as junit-xml]))
+(ns buildviz.data.junit-xml-test
+(:require [buildviz.data.junit-xml :as junit-xml]
+[clojure
+[test :refer :all]
+[walk :refer :all]]))
 
 (deftest Info
   (testing "is-ok?"
