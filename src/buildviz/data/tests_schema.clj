@@ -17,3 +17,7 @@
 
 (defn tests-validation-errors [test-results]
   (schema/report-errors (schema/validate tests-schema test-results)))
+
+
+(defn is-ok? [{status :status}]
+  (contains? #{:pass :skipped} status))

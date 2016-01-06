@@ -1,5 +1,5 @@
 (ns buildviz.analyse.testsuite-transform
-  (:require [buildviz.data.junit-xml :as junit-xml]))
+  (:require [buildviz.data.tests-schema :as tests-schema]))
 
 (defn- testcase-id [suite-id {:keys [classname name]}]
   {:testsuite suite-id
@@ -35,7 +35,7 @@
 
 (defn- accumulated-testcase [testcases]
   (let [runtimes (remove nil? (map #(testcase->data % :runtime) testcases))
-        failed-testcase-status (remove junit-xml/is-ok?
+        failed-testcase-status (remove tests-schema/is-ok?
                                        (map #(testcase->data % :status) testcases))]
     {:runtime (when (seq runtimes)
                 (reduce + runtimes))

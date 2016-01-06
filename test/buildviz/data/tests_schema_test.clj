@@ -39,3 +39,14 @@
     (is (not (empty? (tests-schema/tests-validation-errors [(a-suite [(a-testcase {:status "failure"})])]))))
     (is (not (empty? (tests-schema/tests-validation-errors [(a-suite [(a-testcase {:runtime "101"})])])))))
   )
+
+(deftest test-is-ok?
+  (testing "is-ok?"
+    (is (= true
+           (tests-schema/is-ok? {:status :pass})))
+    (is (= true
+           (tests-schema/is-ok? {:status :skipped})))
+    (is (= false
+           (tests-schema/is-ok? {:status :fail})))
+    (is (= false
+           (tests-schema/is-ok? {:status :error})))))

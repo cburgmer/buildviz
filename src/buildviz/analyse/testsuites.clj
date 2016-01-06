@@ -2,7 +2,7 @@
   (:require [buildviz.analyse
              [builds :as jobinfo]
              [testsuite-transform :as transform]]
-            [buildviz.data.junit-xml :as junit-xml]
+            [buildviz.data.tests-schema :as tests-schema]
             [buildviz.util.math :as math]))
 
 (defn- avg-with-nil [values]
@@ -19,7 +19,7 @@
 (defn aggregate-testcase-runs [testcases]
   (let [failed-count (->> testcases
                           (map transform/testcase->data)
-                          (remove junit-xml/is-ok?)
+                          (remove tests-schema/is-ok?)
                           count)]
     (assoc (average-runtime testcases)
            :failed-count failed-count)))
@@ -90,7 +90,7 @@
        transform/unroll-testsuites
        (map (transform/testcase-with-data
              (fn [testcase] {:build build
-                             :ok? (junit-xml/is-ok? testcase)})))))
+                             :ok? (tests-schema/is-ok? testcase)})))))
 
 (defn- flaky-testcases-for-builds [builds-with-same-input test-results-func]
   (->> builds-with-same-input

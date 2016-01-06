@@ -1,19 +1,8 @@
 (ns buildviz.data.junit-xml-test
-(:require [buildviz.data.junit-xml :as junit-xml]
-[clojure
-[test :refer :all]
-[walk :refer :all]]))
-
-(deftest Info
-  (testing "is-ok?"
-    (is (= true
-           (junit-xml/is-ok? {:status :pass})))
-    (is (= true
-           (junit-xml/is-ok? {:status :skipped})))
-    (is (= false
-           (junit-xml/is-ok? {:status :fail})))
-    (is (= false
-           (junit-xml/is-ok? {:status :error})))))
+  (:require [buildviz.data.junit-xml :as junit-xml]
+            [clojure
+             [test :refer :all]
+             [walk :refer :all]]))
 
 (deftest test-parse-testsuites
   (testing "status"
