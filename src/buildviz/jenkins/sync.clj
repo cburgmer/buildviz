@@ -14,7 +14,8 @@
             [clojure.string :as string]
             [clojure.tools
              [cli :refer [parse-opts]]
-             [logging :as log]]))
+             [logging :as log]])
+  (:gen-class))
 
 (def tz (t/default-time-zone))
 

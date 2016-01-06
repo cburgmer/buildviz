@@ -30,7 +30,8 @@
                        [moment-duration-format "1.3.0"]]
         :root "resources/public"}
   :ring {:handler buildviz.main/app}
-  :aot [buildviz.go.sync]
+  :aot [buildviz.go.sync
+        buildviz.jenkins.sync]
   :profiles {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
                                   [cheshire "5.4.0"]
                                   [ring-mock "0.1.5"]]}})
