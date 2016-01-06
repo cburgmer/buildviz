@@ -7,7 +7,7 @@
   (let [job-dir (io/file base-dir job-name)]
     (.mkdirs job-dir)
     (let [build-file (io/file job-dir (str/join [build-id ".json"]))]
-      (spit build-file (json/to-str build-data)))))
+      (spit build-file (json/to-string build-data)))))
 
 
 (defn- match-build-id [build-file]

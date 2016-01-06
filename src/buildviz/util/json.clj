@@ -2,7 +2,7 @@
   (:require [cheshire.core :as j]
             [wharf.core :as wharf]))
 
-(defn to-str [data]
+(defn to-string [data]
   (->> data
        (wharf/transform-keys (comp wharf/hyphen->lower-camel name))
        j/generate-string))

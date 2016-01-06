@@ -8,7 +8,7 @@
             [wharf.core :as wharf]))
 
 (defn respond-with-json [content]
-  {:body (json/to-str content)
+  {:body (json/to-string content)
    :headers {"Content-Type" "application/json;charset=UTF-8"}})
 
 (defn respond-with-csv [content]

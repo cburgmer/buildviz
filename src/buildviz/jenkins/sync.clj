@@ -48,7 +48,7 @@
 (defn put-build [buildviz-url job-name build-id build]
   (client/put (string/join [buildviz-url (format "/builds/%s/%s" job-name build-id)])
               {:content-type :json
-               :body (json/to-str build)}))
+               :body (json/to-string build)}))
 
 (defn put-test-results [buildviz-url job-name build-id test-results]
   (client/put (string/join [buildviz-url (format "/builds/%s/%s/testresults" job-name build-id)])
