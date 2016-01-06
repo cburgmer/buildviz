@@ -1,13 +1,13 @@
 (ns buildviz.analyse.builds
-  (:require [buildviz.data.build-schema :as schema]
+  (:require [buildviz.data.build-schema :refer [build-with-outcome? failed-build?]]
             [buildviz.util.math :as math]
             [clj-time
              [coerce :as tc]
              [core :as t]
              [format :as tf]]))
 
-(defn builds-with-outcome [build-data-entries]
-  (filter schema/build-with-outcome? build-data-entries))
+(defn builds-with-outcome [builds]
+  (filter build-with-outcome? builds))
 
 
 (defn builds-grouped-by-same-inputs [builds]
@@ -18,46 +18,45 @@
 
 ;; flaky builds
 
-(defn- outcomes-for-builds-grouped-by-input [build-data-entries]
-  (->> build-data-entries
+(defn- outcomes-for-builds-grouped-by-input [builds]
+  (->> builds
        builds-grouped-by-same-inputs
        (map #(map :outcome %))
        (map distinct)))
 
-(defn flaky-build-count [build-data-entries]
-  (->> (outcomes-for-builds-grouped-by-input build-data-entries)
+(defn flaky-build-count [builds]
+  (->> (outcomes-for-builds-grouped-by-input builds)
        (map count)
        (filter #(< 1 %))
        count))
 
 ;; avg runtime
 
-(defn- runtime-for [build]
-  (when (contains? build :end)
-    (- (build :end) (build :start))))
+(defn- runtime-for [{:keys [start end]}]
+  (- end start))
 
-(defn- build-runtime [build-data-entries]
-  (filter some?
-          (map runtime-for build-data-entries)))
+(defn- build-runtimes [builds]
+  (map runtime-for (filter :end builds)))
 
-(defn average-runtime [build-data-entries]
-  (when-let [runtimes (seq (build-runtime build-data-entries))]
+(defn average-runtime [builds]
+  (when-let [runtimes (seq (build-runtimes builds))]
     (math/avg runtimes)))
 
 
 (def date-only-formatter (tf/formatter "yyyy-MM-dd" (t/default-time-zone)))
 
 (defn- date-for [{end :end}]
-  (when (some? end)
+  (when end
     (tf/unparse date-only-formatter (tc/from-long (long end)))))
 
-(defn average-runtime-by-day [build-data-entries]
-  (->> (group-by date-for build-data-entries)
+(defn average-runtime-by-day [builds]
+  (->> builds
+       (filter :end)
+       (group-by date-for)
        (map (fn [[date builds]] [date (average-runtime builds)]))
-       (filter second)
        (into {})))
 
 ;; error count
 
-(defn fail-count [build-data-entries]
-  (count (filter schema/failed-build? build-data-entries)))
+(defn fail-count [builds]
+  (count (filter failed-build? builds)))
