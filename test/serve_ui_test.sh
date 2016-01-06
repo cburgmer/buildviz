@@ -8,5 +8,7 @@ if [ ! -d "node_modules" ]; then
     npm install csscritic
 fi
 
+echo "Please go to http://localhost:8000/test/RegressionRunner.html"
+
 cd "$SCRIPT_DIR/.."
 python -m SimpleHTTPServer

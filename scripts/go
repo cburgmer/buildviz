@@ -1,9 +1,16 @@
 #!/bin/bash
-
 # Full test run
+set -e
 
 SCRIPT_DIR=$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)
 
 $SCRIPT_DIR/../lein test
+
+cd $SCRIPT_DIR/../test/gosync
+./mock.sh &
+MOCK_SERVER_PID=$!
+$SCRIPT_DIR/../lein run -m buildviz.go.sync http://localhost:3334 --from 2014-01-01
+pkill -P $MOCK_SERVER_PID
+cd -
 
 yes | $SCRIPT_DIR/../examples/runSeedDataExample.sh
