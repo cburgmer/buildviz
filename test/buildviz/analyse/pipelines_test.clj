@@ -35,4 +35,29 @@
                                                 :build-id 41}}
                                 {:job "deploy-uat"
                                  :triggered-by {:job-name "test"
-                                                :build-id 41}}])))))
+                                                :build-id 41}}]))))
+
+  (testing "should handle missing triggering build"
+    (is (= [["deploy-staging" "deploy-live"]]
+           (sut/find-pipelines [{:job "deploy-live"
+                                 :build-id "42"
+                                 :triggered-by {:job-name "deploy-staging"
+                                                :build-id "42"}}
+                                {:job "deploy-staging"
+                                 :build-id "42"
+                                 :triggered-by {:job-name "test"
+                                                :build-id "41"}}]))))
+
+  (testing "should ignore 'stand-alone' builds"
+    (is (= []
+           (sut/find-pipelines [{:job "deploy"
+                                 :build-id "42"}
+                                {:job "test"
+                                 :build-id "41"}]))))
+
+  (testing "should ignore 1-build pipeline due to missing triggering build"
+    (is (= []
+           (sut/find-pipelines [{:job "deploy"
+                                 :build-id "42"
+                                 :triggered-by {:job-name "test"
+                                                :build-id "40"}}])))))

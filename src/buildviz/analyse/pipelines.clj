@@ -18,10 +18,14 @@
 (defn- find-pipeline [pipeline-end-build builds]
   (loop [pipeline [pipeline-end-build]]
     (if (:triggered-by (first pipeline))
-      (recur (cons (find-build (:triggered-by (first pipeline)) builds)
-                   pipeline))
+      (if-let [triggering-build (find-build (:triggered-by (first pipeline)) builds)]
+        (recur (cons triggering-build pipeline))
+        pipeline)
       pipeline)))
 
 (defn find-pipelines [builds]
   (let [pipeline-end-builds (filter #(is-pipeline-end? % builds) builds)]
-    (map #(map :job %) (map #(find-pipeline % builds) pipeline-end-builds))))
+    (->> pipeline-end-builds
+         (map #(find-pipeline % builds))
+         (filter #(< 1 (count %)))
+         (map #(map :job %)))))
