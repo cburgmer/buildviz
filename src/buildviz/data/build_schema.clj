@@ -23,9 +23,8 @@
    :required [:start]
    :additionalProperties false})
 
-(defn build-data-validation-errors [build-data]
-  (let [start (get build-data :start)]
-    (schema/report-errors (schema/validate (build-schema start) build-data))))
+(defn build-validation-errors [{:keys [start] :as build}]
+  (schema/report-errors (schema/validate (build-schema start) build)))
 
 
 (defn build-with-outcome? [build]

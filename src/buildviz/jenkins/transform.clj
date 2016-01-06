@@ -1,6 +1,6 @@
 (ns buildviz.jenkins.transform)
 
-(defn- jenkins-test-case->buildviz-test-case [{:keys [:className :name :duration :status]}]
+(defn- jenkins-test-case->buildviz-test-case [{:keys [className name duration status]}]
   {:classname className
    :name name
    :runtime (Math/round (* duration 1000))
@@ -11,7 +11,7 @@
              "FAILED" "fail"
              "SKIPPED" "skipped")})
 
-(defn- jenkins-suite->buildviz-suite [{:keys [:name :cases]}]
+(defn- jenkins-suite->buildviz-suite [{:keys [name cases]}]
   {:name name
    :children (map jenkins-test-case->buildviz-test-case cases)})
 
@@ -37,7 +37,7 @@
     (assoc map :inputs inputs)
     map))
 
-(defn- trigger-by-from [{actions :actions}]
+(defn- triggered-by-from [{actions :actions}]
   (when-let [upstream-cause (->> (some :causes actions)
                                  (filter :upstreamProject)
                                  first)]
@@ -45,7 +45,7 @@
      :build-id (:upstreamBuild upstream-cause)}))
 
 (defn- with-triggered-by [map jenkins-build]
-  (if-let [triggered-by (trigger-by-from jenkins-build)]
+  (if-let [triggered-by (triggered-by-from jenkins-build)]
     (assoc map :triggered-by triggered-by)
     map))
 

@@ -7,16 +7,16 @@
             [buildviz.util.http :as http]
             [clojure.walk :as walk]))
 
-(defn store-build! [build-results job-name build-id build-data]
-  (if-some [errors (seq (schema/build-data-validation-errors build-data))]
+(defn store-build! [build-results job-name build-id build]
+  (if-some [errors (seq (schema/build-validation-errors build))]
     {:status 400
      :body errors}
-    (do (results/set-build! build-results job-name build-id build-data)
-        (http/respond-with-json build-data))))
+    (do (results/set-build! build-results job-name build-id build)
+        (http/respond-with-json build))))
 
 (defn get-build [build-results job-name build-id]
-  (if-some [build-data (results/build build-results job-name build-id)]
-    (http/respond-with-json build-data)
+  (if-some [build (results/build build-results job-name build-id)]
+    (http/respond-with-json build)
     {:status 404}))
 
 

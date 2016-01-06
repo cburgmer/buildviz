@@ -5,27 +5,27 @@
              [csv :as csv]
              [http :as http]]))
 
-(defn- average-runtime-for [build-data-entries]
-  (if-let [avg-runtime (builds/average-runtime build-data-entries)]
+(defn- average-runtime-for [builds]
+  (when-let [avg-runtime (builds/average-runtime builds)]
     {:average-runtime avg-runtime}))
 
-(defn- total-count-for [build-data-entries]
-  {:total-count (count build-data-entries)})
+(defn- total-count-for [builds]
+  {:total-count (count builds)})
 
-(defn- failed-count-for [build-data-entries]
-  (if-some [builds (seq (builds/builds-with-outcome build-data-entries))]
+(defn- failed-count-for [builds]
+  (when-let [builds (seq (builds/builds-with-outcome builds))]
     {:failed-count (builds/fail-count builds)}))
 
-(defn- flaky-count-for [build-data-entries]
-  (if-some [builds (seq (builds/builds-with-outcome build-data-entries))]
+(defn- flaky-count-for [builds]
+  (when-let [builds (seq (builds/builds-with-outcome builds))]
     {:flaky-count (builds/flaky-build-count builds)}))
 
 (defn- summary-for [build-results job-name from-timestamp]
-  (let [build-data-entries (results/builds build-results job-name from-timestamp)]
-    (merge (average-runtime-for build-data-entries)
-           (total-count-for build-data-entries)
-           (failed-count-for build-data-entries)
-           (flaky-count-for build-data-entries))))
+  (let [builds (results/builds build-results job-name from-timestamp)]
+    (merge (average-runtime-for builds)
+           (total-count-for builds)
+           (failed-count-for builds)
+           (flaky-count-for builds))))
 
 (defn get-jobs [build-results accept from-timestamp]
   (let [job-names (results/job-names build-results)
