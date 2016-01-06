@@ -8,12 +8,12 @@
 
   (testing "GET to /jobs"
     ;; GET should return 200
-    (is (= (:status (get-request (the-app) "/jobs"))
-           200))
+    (is (= 200
+           (:status (get-request (the-app) "/jobs"))))
 
     ;; GET should return empty list
-    (is (= (:body (plain-get-request (the-app) "/jobs"))
-           "job,averageRuntime,totalCount,failedCount,flakyCount\n"))
+    (is (= "job,averageRuntime,totalCount,failedCount,flakyCount\n"
+           (:body (plain-get-request (the-app) "/jobs"))))
 
     ;; GET should return job summary
     (let [app (the-app {"someBuild" {1 {:start 10 :end 20 :outcome "pass" :inputs [{:source-id 42 :revision "dat_revision"}]}
@@ -21,9 +21,9 @@
                                      3 {:start 70 :end 90 :outcome "fail" :inputs [{:source-id 42 :revision "other_revision"}]}
                                      4 {:start 100 :end 120 :outcome "pass" :inputs [{:source-id 42 :revision "yet_another_revision"}]}}}
                        {})]
-      (is (= (:body (plain-get-request app "/jobs"))
-             (str/join ["job,averageRuntime,totalCount,failedCount,flakyCount\n"
-                    (format "someBuild,%.8f,4,2,1\n" 0.00000023)]))))
+      (is (= (str/join ["job,averageRuntime,totalCount,failedCount,flakyCount\n"
+                    (format "someBuild,%.8f,4,2,1\n" 0.00000023)])
+             (:body (plain-get-request app "/jobs")))))
 
     ;; GET should return empty map for json by default
     (is (= []

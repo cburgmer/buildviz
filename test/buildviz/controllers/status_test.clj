@@ -36,8 +36,8 @@
 
   (testing "should handle no builds"
     (let [body (json-body (json-get-request (the-app) "/status"))]
-      (is (= (get body "totalBuildCount")
-             0))))
+      (is (= 0
+             (get body "totalBuildCount")))))
 
   (testing "should expose pipeline name"
     (let [pipeline-name "Test Pipeline"

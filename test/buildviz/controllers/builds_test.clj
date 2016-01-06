@@ -22,22 +22,22 @@
 (deftest test-store-build!
   (testing "PUT to /builds/:job/:build"
     ;; PUT should return 200
-    (is (= (:status (json-put-request (the-app) "/builds/abuild/1" {:start 42}))
-           200))
+    (is (= 200
+           (:status (json-put-request (the-app) "/builds/abuild/1" {:start 42}))))
 
     ;; PUT should return 400 for unknown parameters
-    (is (= (:status (json-put-request (the-app) "/builds/abuild/1" {:unknown "value"}))
-           400))
+    (is (= 400
+           (:status (json-put-request (the-app) "/builds/abuild/1" {:unknown "value"}))))
 
     ;; PUT should return 400 for illegal outcome
-    (is (= (:status (json-put-request (the-app) "/builds/abuild/1" {:outcome "banana"}))
-           400))
+    (is (= 400
+           (:status (json-put-request (the-app) "/builds/abuild/1" {:outcome "banana"}))))
 
     ;; PUT should return content
     (let [response (json-put-request (the-app) "/builds/abuild/1" {:start 42 :end 43})
           resp-data (json-body response)]
-      (is (= resp-data
-             {"start" 42 "end" 43}))))
+      (is (= {"start" 42 "end" 43}
+             resp-data))))
 
   (testing "should store build"
     (let [builds (atom {})
@@ -58,30 +58,30 @@
     ;; GET should return 200
     (let [app (the-app)]
       (a-build app "anotherBuild" 1 {:start 42 :end 43})
-      (is (= (:status (get-request app "/builds/anotherBuild/1"))
-             200)))
+      (is (= 200
+             (:status (get-request app "/builds/anotherBuild/1")))))
 
     ;; GET should return content stored by PUT
     (let [app (the-app)]
       (a-build app "yetAnotherBuild" 1, {:start 42 :end 43})
-      (is (= (json-body (get-request app "/builds/yetAnotherBuild/1"))
-             {"start" 42 "end" 43})))
+      (is (= {"start" 42 "end" 43}
+             (json-body (get-request app "/builds/yetAnotherBuild/1")))))
 
     ;; GET should return 404 if job not found
-    (is (= (:status (get-request (the-app) "/builds/unknownBuild/10"))
-           404))
+    (is (= 404
+           (:status (get-request (the-app) "/builds/unknownBuild/10"))))
 
     ;; GET should return 404 if build not found
     (let [app (the-app)]
       (a-build app "anExistingBuild" 1, {:start 42 :end 43})
-      (is (= (:status (get-request app "/builds/anExistingBuild/2"))
-             404)))
+      (is (= 404
+             (:status (get-request app "/builds/anExistingBuild/2")))))
 
     ;; Different jobs should not interfere with each other
     (let [app (the-app)]
       (a-build app "someBuild" 1, {:start 42 :end 43})
-      (is (= (:status (get-request app "/builds/totallyUnrelatedBuild/1"))
-             404)))))
+      (is (= 404
+             (:status (get-request app "/builds/totallyUnrelatedBuild/1")))))))
 
 
 (deftest test-store-test-results!
