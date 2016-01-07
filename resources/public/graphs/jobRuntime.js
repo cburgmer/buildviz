@@ -143,7 +143,7 @@
             id: 'jobRuntime',
             headline: "Job runtime",
             description: "<h3>Is the pipeline getting faster? Has a job gotten considerably slower?</h3><i>Color: job</i>",
-            csvUrl: "/pipelineruntime.csv",
+            csvUrl: "/jobruntime.csv",
             noDataReason: "provided <code>start</code> and <code>end</code> times for your builds over at least two consecutive days",
             widgets: [timespanSelector.widget]
         });
@@ -153,7 +153,7 @@
 
         graph.loading();
 
-        dataSource.loadCSV('/pipelineruntime?from=' + fromTimestamp, function (data) {
+        dataSource.loadCSV('/jobruntime?from=' + fromTimestamp, function (data) {
             graph.loaded();
 
             renderData(data, graph.svg);

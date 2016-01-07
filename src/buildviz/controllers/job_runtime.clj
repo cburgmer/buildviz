@@ -1,4 +1,4 @@
-(ns buildviz.controllers.pipeline-runtime
+(ns buildviz.controllers.job-runtime
   (:require [buildviz.analyse.builds :refer [average-runtime-by-day]]
             [buildviz.data.results :as results]
             [buildviz.util
@@ -33,7 +33,7 @@
          (runtime-table-entry date runtimes-by-day job-names))
        runtimes))
 
-(defn get-pipeline-runtime [build-results from-timestamp]
+(defn get-job-runtime [build-results from-timestamp]
   (let [runtimes-by-day (runtimes-by-day build-results from-timestamp)
         job-names (keys runtimes-by-day)]
 

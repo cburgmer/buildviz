@@ -26,14 +26,14 @@
         (recur (cons triggering-build pipeline))
         pipeline))))
 
-(defn find-pipeline-runs [builds]
+(defn- find-pipeline-runs [builds]
   (let [pipeline-end-candidates (filter #(is-pipeline-end? % builds) builds)]
     (->> pipeline-end-candidates
          (map #(find-pipeline-ending-with % builds))
          (filter #(< 1 (count %))))))
 
 
-(def date-only-formatter (tf/formatter "yyyy-MM-dd" (t/default-time-zone)))
+(def ^:private date-only-formatter (tf/formatter "yyyy-MM-dd" (t/default-time-zone)))
 
 (defn- date-for [timestamp]
   (when timestamp
