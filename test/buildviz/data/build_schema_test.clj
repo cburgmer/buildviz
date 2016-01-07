@@ -47,3 +47,11 @@
            (:path (first (schema/build-validation-errors {:start 42
                                                           :triggered-by {:job-name "the_job"}}))))))
   )
+
+(deftest test-was-triggered-by?
+  (testing "should find triggering build"
+    (is (schema/was-triggered-by? {:triggered-by {:job-name "Test" :build-id "42"}} {:job "Test" :build-id "42"})))
+
+  (testing "should return false if not triggered by build"
+    (is (not (schema/was-triggered-by? {:triggered-by {:job-name "Test" :build-id 42}} {:job "Deploy" :build-id 42})))
+    (is (not (schema/was-triggered-by? {:triggered-by {:job-name "Test" :build-id 42}} {:job "Test" :build-id 43})))))

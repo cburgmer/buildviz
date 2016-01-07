@@ -1,10 +1,13 @@
 (ns buildviz.handler
   (:require [buildviz.controllers
-             [builds :refer [get-build get-test-results store-build! store-test-results!]]
+             [builds
+              :refer
+              [get-build get-test-results store-build! store-test-results!]]
              [fail-phases :refer [get-fail-phases]]
              [flaky-testcases :refer [get-flaky-testclasses]]
              [job-runtime :refer [get-job-runtime]]
              [jobs :refer [get-jobs]]
+             [pipeline-runtime :refer [get-pipeline-runtime]]
              [status :refer [get-status]]
              [testcases :refer [get-testcases]]
              [testclasses :refer [get-testclasses]]]
@@ -37,6 +40,7 @@
    (GET "/jobs.csv" {query :query-params} (get-jobs build-results {:mime :csv} (from-timestamp query)))
    (GET "/jobruntime" {query :query-params} (get-job-runtime build-results (from-timestamp query)))
    (GET "/jobruntime.csv" {query :query-params} (get-job-runtime build-results (from-timestamp query)))
+   (GET "/pipelineruntime" {} (get-pipeline-runtime build-results))
    (GET "/failphases" {accept :accept query :query-params} (get-fail-phases build-results accept (from-timestamp query)))
    (GET "/failphases.csv" {query :query-params} (get-fail-phases build-results {:mime :csv} (from-timestamp query)))
    (GET "/testcases" {accept :accept query :query-params} (get-testcases build-results accept (from-timestamp query)))

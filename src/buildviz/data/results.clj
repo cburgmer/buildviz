@@ -35,8 +35,11 @@
   (swap! (:last-modified-date build-results) (fn [_] (t/now))))
 
 (defn- builds-for-job [builds job]
-  (map #(assoc % :job job)
-       (vals (get builds job))))
+  (->> (get builds job)
+       (map (fn [[build-id build]]
+              (assoc build
+                     :build-id build-id
+                     :job job)))))
 
 (defrecord BuildResults [last-modified-date builds load-tests store-build! store-tests!]
   BuildResultsProtocol

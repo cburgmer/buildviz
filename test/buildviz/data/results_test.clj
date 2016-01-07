@@ -49,10 +49,10 @@
                                                dummy-load-tests
                                                dummy-store
                                                dummy-store)]
-      (is (= '({:start 1 :job "someJob"}
-               {:start 2 :job "someJob"}
-               {:start 4 :job "otherJob"}
-               {:start 5 :job "otherJob"})
+      (is (= '({:start 1 :job "someJob" :build-id "1"}
+               {:start 2 :job "someJob" :build-id "2"}
+               {:start 4 :job "otherJob" :build-id "4"}
+               {:start 5 :job "otherJob" :build-id "6"})
              (results/all-builds build-results)))))
 
   (testing "should filter by timestamp"
@@ -63,8 +63,8 @@
                                                dummy-load-tests
                                                dummy-store
                                                dummy-store)]
-      (is (= '({:start 40 :job "someJob"}
-               {:start 50 :job "otherJob"})
+      (is (= '({:start 40 :job "someJob" :build-id "4"}
+               {:start 50 :job "otherJob" :build-id "5"})
              (results/all-builds build-results 30))))))
 
 (deftest test-build-results-tests
