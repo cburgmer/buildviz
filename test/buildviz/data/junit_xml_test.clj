@@ -89,7 +89,7 @@
 
 (deftest test-serialize-testsuites
   (testing "should serialize suite"
-    (is (= "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"The Suite\"><testcase classname=\"The Class\" name=\"The Test\" time=\"0.042\"></testcase></testsuite></testsuites>"
+    (is (= "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"The Suite\"><testcase name=\"The Test\" time=\"0.042\" classname=\"The Class\"></testcase></testsuite></testsuites>"
            (junit-xml/serialize-testsuites [{:name "The Suite"
                                              :children [{:name "The Test"
                                                          :classname "The Class"
@@ -97,7 +97,7 @@
                                                          :status "pass"}]}]))))
 
   (testing "should serialize failing test"
-    (is (= "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"The Suite\"><testcase classname=\"The Class\" name=\"The Test\" time=\"0.042\"><failure></failure></testcase></testsuite></testsuites>"
+    (is (= "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"The Suite\"><testcase name=\"The Test\" time=\"0.042\" classname=\"The Class\"><failure></failure></testcase></testsuite></testsuites>"
            (junit-xml/serialize-testsuites [{:name "The Suite"
                                              :children [{:name "The Test"
                                                          :classname "The Class"
@@ -105,7 +105,7 @@
                                                          :status "fail"}]}]))))
 
   (testing "should serialize errored test"
-    (is (= "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"The Suite\"><testcase classname=\"The Class\" name=\"The Test\" time=\"0.042\"><error></error></testcase></testsuite></testsuites>"
+    (is (= "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"The Suite\"><testcase name=\"The Test\" time=\"0.042\" classname=\"The Class\"><error></error></testcase></testsuite></testsuites>"
            (junit-xml/serialize-testsuites [{:name "The Suite"
                                              :children [{:name "The Test"
                                                          :classname "The Class"
@@ -113,7 +113,7 @@
                                                          :status "error"}]}]))))
 
   (testing "should serialize skipped test"
-    (is (= "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"The Suite\"><testcase classname=\"The Class\" name=\"The Test\" time=\"0.042\"><skipped></skipped></testcase></testsuite></testsuites>"
+    (is (= "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"The Suite\"><testcase name=\"The Test\" time=\"0.042\" classname=\"The Class\"><skipped></skipped></testcase></testsuite></testsuites>"
            (junit-xml/serialize-testsuites [{:name "The Suite"
                                              :children [{:name "The Test"
                                                          :classname "The Class"
@@ -121,7 +121,7 @@
                                                          :status "skipped"}]}]))))
 
   (testing "should serialize nested testsuite"
-    (is (= "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"The Suite\"><testsuite name=\"Nested Suite\"><testcase classname=\"The Class\" name=\"The Test\" time=\"0.042\"></testcase></testsuite></testsuite></testsuites>"
+    (is (= "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"The Suite\"><testsuite name=\"Nested Suite\"><testcase name=\"The Test\" time=\"0.042\" classname=\"The Class\"></testcase></testsuite></testsuite></testsuites>"
            (junit-xml/serialize-testsuites [{:name "The Suite"
                                              :children [{:name "Nested Suite"
                                                          :children [{:name "The Test"

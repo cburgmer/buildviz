@@ -48,16 +48,16 @@
              :children [{:name "a case" :average-runtime 21 :failed-count 0}]}]
            (aggregate-testcase-info [[(a-testsuite "suite" (a-testcase-with-runtime "a case" 30))]
                                       [(a-testsuite "suite" (a-testcase-with-runtime "a case" 11))]])))
-    (is (= [{:name "another suite"
-             :children [{:name "another case" :average-runtime 20 :failed-count 0}]}
-            {:name "suite"
-             :children [{:name "a case" :average-runtime 10 :failed-count 0}]}]
+    (is (= [{:name "suite"
+             :children [{:name "a case" :average-runtime 10 :failed-count 0}]}
+            {:name "another suite"
+             :children [{:name "another case" :average-runtime 20 :failed-count 0}]}]
            (aggregate-testcase-info [[(a-testsuite "suite" (a-testcase-with-runtime "a case" 10))]
                                       [(a-testsuite "another suite" (a-testcase-with-runtime "another case" 20))]])))
     (is (= [{:name "suite"
              :children [{:name "nested suite"
-                         :children [{:name "another case" :average-runtime 20 :failed-count 0}
-                                    {:name "a case" :average-runtime 10 :failed-count 0}]}]}]
+                         :children [{:name "a case" :average-runtime 10 :failed-count 0}
+                                    {:name "another case" :average-runtime 20 :failed-count 0}]}]}]
            (aggregate-testcase-info [[(a-testsuite "suite"
                                                     (a-testsuite "nested suite" (a-testcase-with-runtime "a case" 10)))]
                                       [(a-testsuite "suite"
@@ -229,11 +229,11 @@
     (is (= [{:name "a suite"
              :children [{:name "nested suite"
                          :children [{:name "a class"
-                                     :children [{:name "second test"
+                                     :children [{:name "first test"
                                                  :latest-build-id "failed-run-id"
                                                  :latest-failure (:start another-build-input-1)
                                                  :flaky-count 1}
-                                                {:name "first test"
+                                                {:name "second test"
                                                  :latest-build-id "failed-run-id"
                                                  :latest-failure (:start another-build-input-1)
                                                  :flaky-count 1}]}]}]}]

@@ -33,11 +33,11 @@
     (let [app (the-app)]
       (a-build app "someBuild" 1, {:start 42 :end 43})
       (a-build app "anotherBuild" 1, {:start 10 :end 12})
-      (is (= [{"jobName" "anotherBuild"
-               "averageRuntime" 2
-               "totalCount" 1}
-              {"jobName" "someBuild"
+      (is (= [{"jobName" "someBuild"
                "averageRuntime" 1
+               "totalCount" 1}
+              {"jobName" "anotherBuild"
+               "averageRuntime" 2
                "totalCount" 1}]
              (json-body (json-get-request app "/jobs")))))
 
@@ -57,13 +57,13 @@
                                       2 {:outcome "fail" :start 20}}
                         "brokenBuild" {1 {:outcome "fail" :start 30}}}
                        {})]
-      (is (= [{"jobName" "brokenBuild"
-               "failedCount" 1
-               "totalCount" 1
-               "flakyCount" 0}
-              {"jobName" "flakyBuild"
+      (is (= [{"jobName" "flakyBuild"
                "failedCount" 1
                "totalCount" 2
+               "flakyCount" 0}
+              {"jobName" "brokenBuild"
+               "failedCount" 1
+               "totalCount" 1
                "flakyCount" 0}]
              (json-body (json-get-request app "/jobs")))))
 

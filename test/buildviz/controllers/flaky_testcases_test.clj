@@ -44,19 +44,19 @@
                                   "passing" "<testsuite name=\"a suite\"><testsuite name=\"nested suite\"><testcase name=\"testcase\" classname=\"class\"></testcase></testsuite></testsuite>"}
                         "anotherBuild" {"failing" "<testsuite name=\"a suite\"><testcase name=\"testcase\" classname=\"class\"><failure/></testcase></testsuite>"
                                         "passing" "<testsuite name=\"a suite\"><testcase name=\"testcase\" classname=\"class\"></testcase></testsuite>"}})]
-      (is (= [{"jobName" "anotherBuild"
-               "children" [{"name" "a suite"
-                            "children" [{"name" "class"
-                                         "children" [{"name" "testcase"
-                                                      "latestFailure" a-timestamp
-                                                      "flakyCount" 1
-                                                      "latestBuildId" "failing"}]}]}]}
-              {"jobName" "aBuild"
+      (is (= [{"jobName" "aBuild"
                "children" [{"name" "a suite"
                             "children" [{"name" "nested suite"
                                          "children" [{"name" "class"
                                                       "children" [{"name" "testcase"
                                                                    "latestFailure" a-timestamp
                                                                    "flakyCount" 1
-                                                                   "latestBuildId" "failing"}]}]}]}]}]
+                                                                   "latestBuildId" "failing"}]}]}]}]}
+              {"jobName" "anotherBuild"
+               "children" [{"name" "a suite"
+                            "children" [{"name" "class"
+                                         "children" [{"name" "testcase"
+                                                      "latestFailure" a-timestamp
+                                                      "flakyCount" 1
+                                                      "latestBuildId" "failing"}]}]}]}]
              (json-body (json-get-request app "/flakytestcases")))))))

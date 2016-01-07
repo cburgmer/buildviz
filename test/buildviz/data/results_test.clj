@@ -37,7 +37,7 @@
                                                dummy-load-tests
                                                dummy-store
                                                dummy-store)]
-      (is (= '({:start 200} {:start 100})
+      (is (= '({:start 100} {:start 200})
              (results/builds build-results "aJob" 100))))))
 
 (deftest test-build-results-all-builds
@@ -49,10 +49,10 @@
                                                dummy-load-tests
                                                dummy-store
                                                dummy-store)]
-      (is (= '({:start 4 :job "otherJob"}
-               {:start 5 :job "otherJob"}
-               {:start 1 :job "someJob"}
-               {:start 2 :job "someJob"})
+      (is (= '({:start 1 :job "someJob"}
+               {:start 2 :job "someJob"}
+               {:start 4 :job "otherJob"}
+               {:start 5 :job "otherJob"})
              (results/all-builds build-results)))))
 
   (testing "should filter by timestamp"
@@ -63,8 +63,8 @@
                                                dummy-load-tests
                                                dummy-store
                                                dummy-store)]
-      (is (= '({:start 50 :job "otherJob"}
-               {:start 40 :job "someJob"})
+      (is (= '({:start 40 :job "someJob"}
+               {:start 50 :job "otherJob"})
              (results/all-builds build-results 30))))))
 
 (deftest test-build-results-tests
@@ -107,7 +107,7 @@
                                                 load-tests
                                                 dummy-store
                                                 dummy-store)]
-       (is (= '("<evenmorexml>" "<morexml>")
+       (is (= '("<morexml>" "<evenmorexml>")
               (results/chronological-tests build-results "aJob" 100))))))
 
 (deftest test-build-results-set-build!
