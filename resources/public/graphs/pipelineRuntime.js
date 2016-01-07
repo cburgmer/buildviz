@@ -1,11 +1,11 @@
 (function (timespanSelection, graphFactory, runtimes, dataSource) {
     var timespanSelector = timespanSelection.create(timespanSelection.timespans.twoMonths),
         graph = graphFactory.create({
-            id: 'jobRuntime',
-            headline: "Job runtime",
-            description: "<h3>Is the pipeline getting faster? Has a job gotten considerably slower?</h3><i>Color: job</i>",
-            csvUrl: "/jobruntime.csv",
-            noDataReason: "provided <code>start</code> and <code>end</code> times for your builds over at least two consecutive days",
+            id: 'pipelineRuntime',
+            headline: "Pipeline runtime",
+            description: "<h3>When are we getting final feedback on changes?</h3>",
+            csvUrl: "/pipelineruntime.csv",
+            noDataReason: "provided <code>start</code>, <code>end</code> times and <code>triggeredBy</code> information for your builds over at least two consecutive days",
             widgets: [timespanSelector.widget]
         });
 
@@ -14,7 +14,7 @@
 
         graph.loading();
 
-        dataSource.loadCSV('/jobruntime?from=' + fromTimestamp, function (data) {
+        dataSource.loadCSV('/pipelineruntime?from=' + fromTimestamp, function (data) {
             graph.loaded();
 
             runtimes.renderData(data, graph.svg);
