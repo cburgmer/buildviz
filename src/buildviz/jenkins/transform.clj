@@ -42,7 +42,7 @@
                                  (filter :upstreamProject)
                                  first)]
     {:job-name (:upstreamProject upstream-cause)
-     :build-id (:upstreamBuild upstream-cause)}))
+     :build-id (.toString (:upstreamBuild upstream-cause))}))
 
 (defn- with-triggered-by [map jenkins-build]
   (if-let [triggered-by (triggered-by-from jenkins-build)]

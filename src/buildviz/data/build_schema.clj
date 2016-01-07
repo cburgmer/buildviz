@@ -16,8 +16,8 @@
                                               :source-id {:type ["string" "integer"]}}
                                  :additionalProperties false}}
                 :triggered-by {:type "object"
-                               :properties {:job-name {:type ["string"] :required true}
-                                            :build-id {:type ["string" "integer"] :required true}}
+                               :properties {:job-name {:type "string" :required true}
+                                            :build-id {:type "string" :required true}}
                                ;; :required [:jobName :buildId] # Not correctly implemented in closchema
                                :additionalProperties false}}
    :required [:start]

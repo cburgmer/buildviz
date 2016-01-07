@@ -53,7 +53,7 @@
 
   (testing "should extract build trigger input"
     (is (= {:job-name "build_name"
-            :build-id 42}
+            :build-id "42"}
            (:triggered-by (:build (sut/jenkins-build->buildviz-build (-> a-jenkins-build
                                                                         (assoc :actions [{:causes [{:upstreamProject "build_name"
                                                                                                     :upstreamBuild 42}]}]))))))))

@@ -40,7 +40,7 @@
   (testing "should fail on missing jobName for triggeredBy"
     (is (= [:triggered-by :job-name]
            (:path (first (schema/build-validation-errors {:start 42
-                                                          :triggered-by {:build-id 42}}))))))
+                                                          :triggered-by {:build-id "42"}}))))))
 
   (testing "should fail on missing buildId for triggeredBy"
     (is (= [:triggered-by :build-id]
