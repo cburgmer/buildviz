@@ -32,10 +32,10 @@
                            (map #(runtime-of-day-row pipelines %))))))
 
 (defn- runtimes-as-list [runtime-by-day]
-  (map (fn [[date runtime]]
-         {:date date
-          :runtime runtime})
-       runtime-by-day))
+  (sort-by :date (map (fn [[date runtime]]
+                        {:date date
+                         :runtime runtime})
+                      runtime-by-day)))
 
 (defn get-pipeline-runtime [build-results accept from]
   (let [pipeline-runtimes (pipeline-runtimes-by-day (results/all-builds build-results from))]

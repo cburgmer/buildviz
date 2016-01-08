@@ -11,20 +11,22 @@
 
 (deftest test-get-pipeline-runtime
   (testing "should return pipeline runtime"
-    (let [app (the-app {"test" {1 {:start 100}
-                                2 {:start 2000}}
-                        "deploy" {1 {:start 200
+    (let [app (the-app {"test" {2 {:start (+ 2000 a-day)}
+                                1 {:start 100}}
+                        "deploy" {2 {:start (+ 2500 a-day)
+                                     :end (+ 2800 a-day)
+                                     :triggered-by {:job-name "test"
+                                                    :build-id 2}}
+                                  1 {:start 200
                                      :end 700
                                      :triggered-by {:job-name "test"
-                                                    :build-id 1}}
-                                  2 {:start 2500
-                                     :end 2800
-                                     :triggered-by {:job-name "test"
-                                                    :build-id 2}}}}
+                                                    :build-id 1}}}}
                        {})]
       (is (= [{"pipeline" ["test" "deploy"]
                "runtimes" [{"date" "1970-01-01"
-                            "runtime" 700}]}]
+                            "runtime" 600}
+                           {"date" "1970-01-02"
+                            "runtime" 800}]}]
              (json-body (json-get-request app "/pipelineruntime"))))))
 
   (testing "should respect time offset"

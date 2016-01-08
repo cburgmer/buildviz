@@ -3,36 +3,31 @@
         graph = graphFactory.create({
             id: 'pipelineRuntime',
             headline: "Pipeline runtime",
-            description: "<h3>When are we getting final feedback on changes?</h3>",
+            description: "<h3>When are we getting final feedback on changes?</h3><i>Color: final job of pipeline</i>",
             csvUrl: "/pipelineruntime.csv",
             noDataReason: "provided <code>start</code>, <code>end</code> times and <code>triggeredBy</code> information for your builds over at least two consecutive days",
             widgets: [timespanSelector.widget]
         });
 
     var transformRuntimes = function (data) {
-        var jobNames = d3.keys(data[0]).filter(function(key) { return key !== "date"; }),
-            color = jobColors.colors(jobNames);
-
-        data.forEach(function (d) {
-            d.date = new Date(d.date);
+        var pipelineEndJobNames = data.map(function (entry) {
+            return entry.pipeline[entry.pipeline.length - 1];
         });
+        var color = jobColors.colors(pipelineEndJobNames);
 
-        return jobNames.map(function (jobName) {
+        return data.map(function (entry) {
             return {
-                title: jobName,
-                color: color(jobName),
-                runtimes: data
-                    .map(function (d) {
-                        return {
-                            date: d.date,
-                            runtime: d[jobName] ? (new Number(d[jobName]) * 24 * 60 * 60) : undefined
-                        };
-                    }).filter(function (d) {
-                        return d.runtime !== undefined;
-                    })
+                title: entry.pipeline.join(', '),
+                color: color(entry.pipeline[entry.pipeline.length - 1]),
+                runtimes: entry.runtimes.map(function (day) {
+                    return {
+                        date: new Date(day.date),
+                        runtime: day.runtime / 1000
+                    };
+                })
             };
-        }).filter(function (jobRuntimes) {
-            return jobRuntimes.runtimes.length > 1;
+        }).filter(function (entry) {
+            return entry.runtimes.length > 1;
         });
     };
 
@@ -41,7 +36,7 @@
 
         graph.loading();
 
-        dataSource.loadCSV('/pipelineruntime?from=' + fromTimestamp, function (data) {
+        dataSource.load('/pipelineruntime?from=' + fromTimestamp, function (data) {
             graph.loaded();
 
             runtimes.renderData(transformRuntimes(data), graph.svg);
