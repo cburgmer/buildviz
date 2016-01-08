@@ -36,6 +36,8 @@
         });
     };
 
+    var runtimePane = runtimes(graph.svg);
+
     timespanSelector.load(function (selectedTimespan) {
         var fromTimestamp = timespanSelection.startingFromTimestamp(selectedTimespan);
 
@@ -44,7 +46,7 @@
         dataSource.loadCSV('/jobruntime?from=' + fromTimestamp, function (data) {
             graph.loaded();
 
-            runtimes.renderData(transformRuntimes(data), graph.svg);
+            runtimePane.render(transformRuntimes(data));
         });
     });
 }(timespanSelection, graphFactory, runtimes, jobColors, dataSource));

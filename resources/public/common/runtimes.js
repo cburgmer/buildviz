@@ -41,40 +41,28 @@ var runtimes = (function (utils) {
         return axis;
     };
 
-    module.renderData = function (runtimes, svg) {
-        var axesPane,
-            getOrCreateAxesPane = function (svg) {
-                if (axesPane === undefined) {
-                    axesPane = svg
-                        .append("g")
-                        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    var createAxesPane = function (svg) {
+        var axesPane = svg
+                .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-                    axesPane.append("g")
-                        .attr("class", "x axis")
-                        .attr("transform", "translate(0," + height + ")");
+        axesPane.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + height + ")");
 
-                    axesPane.append("g")
-                        .attr("class", "y axis")
-                        .append("text")
-                        .attr("transform", "rotate(-90)")
-                        .attr("y", 6)
-                        .attr("dy", ".71em")
-                        .style("text-anchor", "end")
-                        .text("Runtime");
-                }
+        axesPane.append("g")
+            .attr("class", "y axis")
+            .append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 6)
+            .attr("dy", ".71em")
+            .style("text-anchor", "end")
+            .text("Runtime");
 
-                return axesPane;
-            },
-            removeAxesPane = function (svg) {
-                svg.select('g').remove();
-                axesPane = undefined;
-            };
+        return axesPane;
+    };
 
-        if (! runtimes.length) {
-            removeAxesPane(svg);
-            return;
-        }
-
+    var renderData = function (runtimes, svg, g) {
         svg.attr('class', 'runtimes');
 
         x.domain([
@@ -85,8 +73,6 @@ var runtimes = (function (utils) {
             0,
             d3.max(runtimes, function(c) { return d3.max(c.runtimes, function(r) { return r.runtime; }); })
         ]);
-
-        var g = getOrCreateAxesPane(svg);
 
         g.selectAll('.x.axis')
             .call(saneDayTicks(xAxis, x));
@@ -125,5 +111,31 @@ var runtimes = (function (utils) {
             });
     };
 
-    return module;
+    return function (svg) {
+        var axesPane,
+            getOrCreateAxesPane = function () {
+                if (axesPane === undefined) {
+                    axesPane = createAxesPane(svg);
+                }
+
+                return axesPane;
+            },
+            removeAxesPane = function () {
+                svg.select('g').remove();
+                axesPane = undefined;
+            };
+
+        return {
+            render: function (runtimes) {
+                if (! runtimes.length) {
+                    removeAxesPane(svg);
+                    return;
+                }
+
+                var g = getOrCreateAxesPane(svg);
+
+                renderData(runtimes, svg, g);
+            }
+        };
+    };
 }(utils));
