@@ -5,6 +5,8 @@ set -e
 TARGET_PORT=${PORT:=3000}
 
 TODAY=$(date +%s000)
+YESTERDAY=$(( TODAY - 1 * 24 * 60 * 60 * 1000 ))
+SOME_DAYS_AGO=$(( TODAY - 3 * 24 * 60 * 60 * 1000 ))
 A_WEEK_AGO=$(( TODAY - 7 * 24 * 60 * 60 * 1000 ))
 
 
@@ -18,7 +20,14 @@ function aBuild {
         fi
     fi
 
-    START=$2
+    TRIGGERED_BY_JOB=$2
+    TRIGGERED_BY_BUILD_ID=$3
+
+    if [ ! -z $TRIGGERED_BY_JOB ]; then
+        TRIGGERED_BY=', "triggeredBy": {"jobName": "'$TRIGGERED_BY_JOB'", "buildId":"'$TRIGGERED_BY_BUILD_ID'"}'
+    fi
+
+    START=$4
     if [ -z "$START" ]; then
         START=$(( TODAY - ( RANDOM * 10000 ) ))
     fi
@@ -26,13 +35,13 @@ function aBuild {
     DURATION=$(( RANDOM * 10 ))
     END=$(( START + DURATION ))
 
-    REVISION=$3
+    REVISION=$5
     if [ -z "$REVISION" ]; then
         REVISION=$(( RANDOM % 4 ))
     fi
 
     SOURCE_ID=42
-    echo '{"start": '$START', "end": '$END', "outcome": "'$OUTCOME'", "inputs": [{"revision": "'$REVISION'", "sourceId": "'$SOURCE_ID'"}]}'
+    echo '{"start": '$START', "end": '$END', "outcome": "'$OUTCOME'", "inputs": [{"revision": "'$REVISION'", "sourceId": "'$SOURCE_ID'"}]'$TRIGGERED_BY'}'
 }
 
 function send {
@@ -85,7 +94,7 @@ function anotherTestcase {
     if [ "$RESULT" == "fail" ]; then
         TESTCASE="<failure>Meh</failure>"
     else
-        TESTCASE=""
+        TESTCASE=''
     fi
 
     TESTNAME=$2
@@ -113,39 +122,39 @@ function sendTestResult {
     curl -X PUT -H "Content-type: text/xml" -d@- "http://localhost:${TARGET_PORT}/builds/${JOB}/${BUILD}/testresults"
 }
 
-for i in $(seq 1 3); do
-    aBuild "pass" | send "passingBuild" "$i"
-    passingTestCase | sendTestResult "passingBuild" "$i"
-done
-
 for i in $(seq 1 20); do
-    aBuild | send "anotherBuild" "$i"
+    aBuild '' '' '' $(( SOME_DAYS_AGO - ( RANDOM * 10000 ) )) | send "anotherBuild" "$i"
 done
 
 for i in $(seq 1 15); do
-    aBuild | send "yetAnotherBuild" "$i"
+    aBuild '' 'anotherBuild' "$i" $(( YESTERDAY - ( RANDOM * 10000 ) )) | send "yetAnotherBuild" "$i"
 done
 
 for i in $(seq 1 3); do
-    aBuild "fail" $[ $TODAY - $i * 5000000 ] | send "aBrokenBuild" "$i"
+    aBuild "pass" 'yetAnotherBuild' "$i" | send "passingBuild" "$i"
+    passingTestCase | sendTestResult "passingBuild" "$i"
+done
+
+for i in $(seq 1 3); do
+    aBuild "fail" '' '' $[ $TODAY - $i * 5000000 ] | send "aBrokenBuild" "$i"
 done
 failingTestCase | sendTestResult "aBrokenBuild" 1
 anotherTestcase "fail" | sendTestResult "aBrokenBuild" 2
 anotherTestcase "fail" | sendTestResult "aBrokenBuild" 3
 
-aBuild 'fail' $A_WEEK_AGO "abcd" | send "aFlakyBuild" 1
+aBuild 'fail' '' '' $A_WEEK_AGO "abcd" | send "aFlakyBuild" 1
 failingTestCase | sendTestResult "aFlakyBuild" 1
-aBuild 'pass' $(( A_WEEK_AGO + 8000000 )) "abcd" | send "aFlakyBuild" 2
+aBuild 'pass' '' '' $(( A_WEEK_AGO + 8000000 )) "abcd" | send "aFlakyBuild" 2
 passingTestCase | sendTestResult "aFlakyBuild" 2
-aBuild 'fail' '' "xyz" | send "aFlakyBuild" 3
+aBuild 'fail' '' '' '' "xyz" | send "aFlakyBuild" 3
 anotherTestcase "fail" | sendTestResult "aFlakyBuild" 3
-aBuild 'fail' '' "xyz" | send "aFlakyBuild" 4
+aBuild 'fail' '' '' '' "xyz" | send "aFlakyBuild" 4
 anotherTestcase "fail" | sendTestResult "aFlakyBuild" 4
-aBuild 'pass' '' "xyz" | send "aFlakyBuild" 5
+aBuild 'pass' '' '' '' "xyz" | send "aFlakyBuild" 5
 anotherTestcase "pass" | sendTestResult "aFlakyBuild" 5
-aBuild 'fail' '' "123" | send "aFlakyBuild" 6
+aBuild 'fail' '' '' '' "123" | send "aFlakyBuild" 6
 anotherTestcase "fail" "test" | sendTestResult "aFlakyBuild" 6
-aBuild 'pass' '' "123" | send "aFlakyBuild" 7
+aBuild 'pass' '' '' '' "123" | send "aFlakyBuild" 7
 anotherTestcase "pass" "test" | sendTestResult "aFlakyBuild" 7
 
 
