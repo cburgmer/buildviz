@@ -1,4 +1,4 @@
-var runtimes = (function (utils, jobColors) {
+var runtimes = (function (utils) {
     "use strict";
 
     var module = {};
@@ -41,7 +41,7 @@ var runtimes = (function (utils, jobColors) {
         return axis;
     };
 
-    module.renderData = function (data, svg) {
+    module.renderData = function (runtimes, svg) {
         var axesPane,
             getOrCreateAxesPane = function (svg) {
                 if (axesPane === undefined) {
@@ -70,39 +70,20 @@ var runtimes = (function (utils, jobColors) {
                 axesPane = undefined;
             };
 
-        if (data.length < 2) {
+        if (! runtimes.length) {
             removeAxesPane(svg);
             return;
         }
 
         svg.attr('class', 'runtimes');
 
-        var jobNames = d3.keys(data[0]).filter(function(key) { return key !== "date"; }),
-            color = jobColors.colors(jobNames);
-
-        data.forEach(function (d) {
-            d.date = new Date(d.date);
-        });
-
-        var runtimes = jobNames.map(function (jobName) {
-            return {
-                jobName: jobName,
-                values: data
-                    .map(function (d) {
-                        return {
-                            date: d.date,
-                            runtime: d[jobName] ? (new Number(d[jobName]) * 24 * 60 * 60) : undefined
-                        };
-                    }).filter(function (d) {
-                        return d.runtime !== undefined;
-                    })
-            };
-        });
-
-        x.domain(d3.extent(data, function(d) { return d.date; }));
+        x.domain([
+            d3.min(runtimes, function(c) { return d3.min(c.runtimes, function(r) { return r.date; }); }),
+            d3.max(runtimes, function(c) { return d3.max(c.runtimes, function(r) { return r.date; }); })
+        ]);
         y.domain([
             0,
-            d3.max(runtimes, function(c) { return d3.max(c.values, function(v) { return v.runtime; }); })
+            d3.max(runtimes, function(c) { return d3.max(c.runtimes, function(r) { return r.runtime; }); })
         ]);
 
         var g = getOrCreateAxesPane(svg);
@@ -116,7 +97,7 @@ var runtimes = (function (utils, jobColors) {
         var selection = g.selectAll(".entry")
             .data(runtimes,
                   function (d) {
-                      return d.jobName;
+                      return d.title;
                   });
 
         selection.exit()
@@ -126,23 +107,23 @@ var runtimes = (function (utils, jobColors) {
             .append("g")
             .attr("class", "entry")
             .attr('data-id', function (d) {
-                return 'jobname-' + d.jobName;
+                return 'jobname-' + d.title;
             })
             .append("path")
             .attr("class", "line")
             .style('stroke', function (d) {
-                return color(d.jobName);
+                return d.color;
             })
             .append('title')
             .text(function (d) {
-                return d.jobName;
+                return d.title;
             });
 
         selection.select('path')
             .attr("d", function (d) {
-                return line(d.values);
+                return line(d.runtimes);
             });
     };
 
     return module;
-}(utils, jobColors));
+}(utils));
