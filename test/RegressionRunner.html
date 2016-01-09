@@ -65,6 +65,17 @@
                     url: 'ui/jobRuntimeRatherEmpty.html',
                     width: 400
                 })
+                .component('Pipeline runtime')
+                .add({
+                    desc: 'should render pipeline runtime',
+                    url: 'ui/pipelineRuntime.html',
+                    width: 400
+                })
+                .add({
+                    desc: "should remain empty on only one day's worth of data",
+                    url: 'ui/pipelineRuntimeRatherEmpty.html',
+                    width: 400
+                })
                 .component('Slowest tests')
                 .add({
                     desc: 'should render slowest tests',
