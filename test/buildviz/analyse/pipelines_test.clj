@@ -64,6 +64,26 @@
                                            :triggered-by {:job-name "test"
                                                           :build-id "40"}}]))))
 
+  (testing "should ignore pipeline failing in last step"
+    (is (= {}
+           (sut/pipeline-runtimes-by-day [{:job "deploy"
+                                           :build-id "42"
+                                           :triggered-by {:job-name "test"
+                                                          :build-id "41"}
+                                           :outcome "fail"}
+                                          {:job "test"
+                                           :build-id "41"}]))))
+
+  (testing "should include pipeline successful in last step"
+    (is (= [["test" "deploy"]]
+           (keys (sut/pipeline-runtimes-by-day [{:job "deploy"
+                                                 :build-id "42"
+                                                 :triggered-by {:job-name "test"
+                                                                :build-id "41"}
+                                                 :outcome "pass"}
+                                                {:job "test"
+                                                 :build-id "41"}])))))
+
   (testing "should aggregate multiple instances of a pipeline run"
     (is (= {["test" "deploy"] {"1970-01-01" 600
                                "1970-01-02" 800}}

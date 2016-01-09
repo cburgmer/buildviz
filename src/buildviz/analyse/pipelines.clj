@@ -60,9 +60,16 @@
                       avg)]))
        (into {})))
 
+(defn- ignore-unsuccessful-pipeline-runs-to-remove-noise-of-interrupted-pipelines [pipeline-runs]
+  (remove (fn [pipeline-run]
+            (let [pipeline-end-build (last pipeline-run)]
+              (= "fail" (:outcome pipeline-end-build))))
+          pipeline-runs))
+
 (defn pipeline-runtimes-by-day [builds]
   (->> builds
        find-pipeline-runs
+       ignore-unsuccessful-pipeline-runs-to-remove-noise-of-interrupted-pipelines
        (group-by #(map :job %))
        (map (fn [[k pipeline-runs]]
               [k (total-pipeline-runtime-by-day pipeline-runs)]))
