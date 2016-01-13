@@ -3,8 +3,7 @@
         worstFailureRatio = 0.25;
 
     var failRatio = function (job) {
-        var failCount = job.failedCount || 0;
-        return failCount / job.totalCount;
+        return job.failedCount / job.totalCount;
     };
 
     var failedBuildsAsBubbles = function (jobEntries) {
@@ -13,13 +12,16 @@
                 return job.failedCount > 0;
             })
             .map(function (job) {
-                var failedCount = job.failedCount,
-                    ratio = failRatio(job);
+                var ratio = failRatio(job);
                 return {
                     name: job.jobName,
-                    title: job.jobName + '\n\n' + failedCount + ' failures\n' + (ratio * 100).toFixed(0) + '% of the time',
+                    title: [job.jobName,
+                            '',
+                            job.totalCount + ' runs',
+                            job.failedCount + ' failures',
+                            (ratio * 100).toFixed(0) + '% of the time'].join('\n'),
                     ratio: ratio,
-                    value: failedCount
+                    value: job.failedCount
                 };
             });
     };
@@ -28,7 +30,7 @@
         graph = graphFactory.create({
             id: 'failedBuilds',
             headline: "Top 5 failed builds",
-            description: "<h3>What needs most manual intervention? Where are the biggest quality issues? Where do we receive either not so valuable or actually very valuable feedback?</h3><i>Border color: failure ratio, inner color: job, diameter: number of failures</i>",
+            description: "<h3>What needs most manual intervention? Where are the biggest quality issues? Where do we receive either not so valuable or actually very valuable feedback?</h3><i>Border color: failure ratio (no. failures / no. runs), inner color: job, diameter: number of failures</i>",
             csvUrl: "/jobs.csv",
             noDataReason: "provided the <code>outcome</code> of your builds",
             widgets: [timespanSelector.widget]

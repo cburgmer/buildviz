@@ -1,10 +1,9 @@
 (function (timespanSelection, graphFactory, dataSource, badJobs) {
     var jobCount = 5,
-        worstFlakyRatio = 0.10;
+        worstFlakyRatio = 1/4; /* one out of four */
 
     var flakyRatio = function (job) {
-        var flakyCount = job.flakyCount || 0;
-        return flakyCount / job.totalCount;
+        return job.flakyCount / job.failedCount;
     };
 
     var flakyBuildsAsBubbles = function (jobEntries) {
@@ -13,13 +12,16 @@
                 return job.flakyCount > 0;
             })
             .map(function (job) {
-                var flakyCount = job.flakyCount,
-                    ratio = flakyRatio(job);
+                var ratio = flakyRatio(job);
                 return {
                     name: job.jobName,
-                    title: job.jobName + '\n\n' + flakyCount + ' flaky failures\n' + (ratio * 100).toFixed(0) + '% of the time',
+                    title: [job.jobName,
+                            '',
+                            job.failedCount + ' failures',
+                            job.flakyCount + ' flaky failures',
+                            (ratio * 100).toFixed(0) + '% of the time'].join('\n'),
                     ratio: ratio,
-                    value: flakyCount
+                    value: job.flakyCount
                 };
             });
     };
@@ -28,7 +30,7 @@
         graph = graphFactory.create({
             id: 'flakyBuilds',
             headline: "Top " + jobCount + " flaky builds",
-            description: "<h3>Where are implicit dependencies not made obvious? Which jobs will probably be trusted the least?</h3><i>Border color: flaky ratio, inner color: job, diameter: flaky count</i>",
+            description: "<h3>Where are implicit dependencies not made obvious? Which jobs will probably be trusted the least?</h3><i>Border color: flaky ratio (no. flaky failures / no. failures), inner color: job, diameter: flaky count</i>",
             csvUrl: "/jobs.csv",
             noDataReason: "provided the <code>outcome</code> and <code>inputs</code> for relevant builds",
             widgets: [timespanSelector.widget]
