@@ -1,58 +1,23 @@
 (function (timespanSelection, graphFactory, zoomableSunburst, dataSource, jobColors, utils) {
     var testCountPerJob = 5;
 
-    var concatIds = function (parentId, id) {
-        return parentId + '/' + id;
+    var concatIds = function (ids) {
+        return ids.join('/');
     };
 
     var title = function (entry) {
-        return entry.name + ' (' + utils.formatTimeInMs(entry.averageRuntime, {showMillis: true}) + ')';
+        return [entry.name + ' (' + utils.formatTimeInMs(entry.averageRuntime, {showMillis: true}) + ')',
+                entry.testClass,
+                entry.testSuite].join('\n');
     };
 
-    var hasOnlyOneChildThatIsNotLeaf = function (children) {
-        return children && children.length === 1 && children[0].children !== undefined;
-    };
-
-    var skipTestSuiteWithOnlyOneClassOrNestedSuite = function (testSuite) {
-        var testSuiteHasOnlyOneChild = hasOnlyOneChildThatIsNotLeaf(testSuite.children);
-
-        return testSuiteHasOnlyOneChild ? testSuite.children[0] : testSuite;
-    };
-
-    var skipOnlyTestSuite = function (children) {
-        var nonRemainderNodes = children.filter(function (c) {
-            return !c.remainder;
-        });
-        var hasOnlyOneTestSuite = hasOnlyOneChildThatIsNotLeaf(nonRemainderNodes);
-
-        if (hasOnlyOneTestSuite) {
-            return children[0].children
-                .concat(children.filter(function (c) {
-                    return c.remainder;
-                }));
-        } else {
-            return children;
-        }
-    };
-
-    var transformNode = function (node, parentId) {
-        var elem = skipTestSuiteWithOnlyOneClassOrNestedSuite(node),
-            id = concatIds(parentId, elem.name);
-
-        var e = {
-            name: elem.name,
-            id: id
+    var transformTestCase = function (testCase, parentId) {
+        return {
+            name: testCase.name,
+            size: testCase.averageRuntime,
+            title: title(testCase),
+            id: concatIds([parentId, testCase.testSuite, testCase.testClass, testCase.name])
         };
-
-        if (elem.children) {
-            e.children = elem.children.map(function (child) {
-                return transformNode(child, id);
-            });
-        } else {
-            e.size = elem.averageRuntime;
-            e.title = title(elem);
-        }
-        return e;
     };
 
     var flattenTests = function (testsuites) {
@@ -72,29 +37,7 @@
         }, []);
     };
 
-    var unflattenTests = function (tests) {
-        return d3.nest()
-            .key(function (d) {
-                return d.testSuite;
-            })
-            .key(function (d) {
-                return d.testClass;
-            })
-            .entries(tests)
-            .map(function (suite) {
-                return {
-                    name: suite.key,
-                    children: suite.values.map(function (testClass) {
-                        return {
-                            name: testClass.key,
-                            children: testClass.values
-                        };
-                    })
-                };
-            });
-    };
-
-    var filterNSlowestTests = function (testsuites, n) {
+    var slowestNTests = function (testsuites, n) {
         var tests = flattenTests(testsuites);
 
         tests.sort(function (a, b) {
@@ -106,17 +49,15 @@
                 return totalAverageRuntime + test.averageRuntime;
             }, 0);
 
-        var suites = unflattenTests(slowestTests);
-
         if (remaindingTotalAverageRuntime) {
-            suites.push({
+            slowestTests.push({
                 name: 'Remaining average',
                 averageRuntime: remaindingTotalAverageRuntime / (tests.length - n),
                 remainder: true
             });
         }
 
-        return suites;
+        return slowestTests;
     };
 
     var transformTestCases = function (testcasesByJob) {
@@ -127,14 +68,14 @@
 
         return testcasesByJob.map(function (jobEntry) {
             var jobName = jobEntry.jobName,
-                children = skipOnlyTestSuite(filterNSlowestTests(jobEntry.children, testCountPerJob));
+                children = slowestNTests(jobEntry.children, testCountPerJob);
 
             return {
                 name: jobName,
                 color: color(jobName),
                 id: 'jobname-' + jobName,
                 children: children.map(function (child) {
-                    return transformNode(child, jobName);
+                    return transformTestCase(child, jobName);
                 })
             };
         });
