@@ -19,7 +19,7 @@ var graphFactory = function (d3) {
 
     module.create = function (params) {
         var id = 'graph_' + params.id,
-            widget = d3.select("body")
+            widget = d3.select(document.currentScript.parentNode)
                 .append("section")
                 .attr("class", "graph " + params.id)
                 .attr('id', id);

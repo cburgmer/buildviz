@@ -22,16 +22,32 @@
             header {
                 width: 100%;
             }
-            section {
+            .graphGroup {
+                font-size: 0rem; /* work around 2x 50% containers not fitting in together */
+                margin-bottom: 20px;
+                width: 100%;
+                margin: 5px 0 15px;
+            }
+            .graphGroup > h1 {
+                display: block;
+                color: lightgray;
+                font-size: 0.8rem;
+                margin: 0 10px 2px 10px;
+                letter-spacing: 0.08em;
+                font-weight: normal;
+                border-bottom: 1px solid currentColor;
+            }
+            .graph {
                 width: 50%;
+                display: inline-block;
             }
             @media (min-width: 1400px) {
-                section {
+                .graph {
                     width: 33.33%;
                 }
             }
             @media (min-width: 1900px) {
-                section {
+                .graph {
                     width: 25%;
                 }
             }
@@ -53,18 +69,27 @@
 
         <script src="status.js"></script>
 
-        <script src="graphs/averageJobRuntime.js"></script>
-        <script src="graphs/jobRuntime.js"></script>
-        <script src="graphs/pipelineRuntime.js"></script>
-        <script src="graphs/averageTestRuntime.js"></script>
-        <script src="graphs/slowestTests.js"></script>
+        <section class="graphGroup">
+            <h1>Runtime</h1>
+            <script src="graphs/pipelineRuntime.js"></script>
+            <script src="graphs/jobRuntime.js"></script>
+            <script src="graphs/averageJobRuntime.js"></script>
+            <script src="graphs/averageTestRuntime.js"></script>
+            <script src="graphs/slowestTests.js"></script>
+        </section>
 
-        <script src="graphs/failedBuilds.js"></script>
-        <script src="graphs/failPhases.js"></script>
-        <script src="graphs/mostFrequentlyFailingTests.js"></script>
+        <section class="graphGroup">
+            <h1>Failures</h1>
+            <script src="graphs/failPhases.js"></script>
+            <script src="graphs/failedBuilds.js"></script>
+            <script src="graphs/mostFrequentlyFailingTests.js"></script>
+        </section>
 
-        <script src="graphs/flakyBuilds.js"></script>
-        <script src="graphs/flakyTests.js"></script>
+        <section class="graphGroup">
+            <h1>Stability</h1>
+            <script src="graphs/flakyBuilds.js"></script>
+            <script src="graphs/flakyTests.js"></script>
+        </section>
 
         <script>
             var findDataIdInAncestors = function (elem) {
