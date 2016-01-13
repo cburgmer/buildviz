@@ -152,7 +152,7 @@
     var timespanSelector = timespanSelection.create(timespanSelection.timespans.sevenDays),
         graph = graphFactory.create({
             id: 'mostFrequentlyFailingTests',
-            headline: "Most frequently failing tests",
+            headline: "Top 5 failed test cases by job",
             description: "<h3>What are the tests that provide either the most or the least feedback?</h3><i>Color: job/test suite, arc size: number of test failures</i>",
             csvUrl: "/testcases.csv",
             noDataReason: "uploaded test results",

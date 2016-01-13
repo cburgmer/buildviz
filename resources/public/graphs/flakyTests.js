@@ -96,7 +96,7 @@
     var timespanSelector = timespanSelection.create(timespanSelection.timespans.twoWeeks),
         graph = graphFactory.create({
             id: 'flakyTests',
-            headline: "Flaky tests",
+            headline: "Flaky tests cases",
             description: "<h3>Which tests provide questionable value and will probably be trusted the least?</h3><i>Color: age of last flaky failure, diameter: flaky count</i>",
             csvUrl: "/flakytestcases.csv",
             noDataReason: "provided the <code>inputs</code> for relevant builds and uploaded test results",

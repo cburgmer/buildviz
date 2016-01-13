@@ -143,7 +143,7 @@
     var timespanSelector = timespanSelection.create(timespanSelection.timespans.sevenDays),
         graph = graphFactory.create({
             id: 'slowestTests',
-            headline: "Slowest tests",
+            headline: "Top 5 slowest test cases by job",
             description: "<h3>What could be the first place to look at to improve test runtime?</h3><i>Color: job/test suite, arc size: test runtime</i>",
             csvUrl: "/testcases.csv",
             noDataReason: "uploaded test results",

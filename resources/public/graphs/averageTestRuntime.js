@@ -172,7 +172,7 @@
     var timespanSelector = timespanSelection.create(timespanSelection.timespans.sevenDays),
         graph = graphFactory.create({
             id: 'averageTestRuntime',
-            headline: "Average test runtime",
+            headline: "Average test class runtime",
             description: "<h3>Where is the time spent in testing?</h3><i>Color: job/test suite, arc size: duration</i>",
             csvUrl: "/testclasses.csv",
             noDataReason: "uploaded test results",

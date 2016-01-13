@@ -29,7 +29,7 @@
     var timespanSelector = timespanSelection.create(timespanSelection.timespans.twoWeeks),
         graph = graphFactory.create({
             id: 'flakyBuilds',
-            headline: "Top " + jobCount + " flaky builds",
+            headline: "Top " + jobCount + " flaky jobs",
             description: "<h3>Where are implicit dependencies not made obvious? Which jobs will probably be trusted the least?</h3><i>Border color: flaky ratio (no. flaky failures / no. failures), inner color: job, diameter: flaky count</i>",
             csvUrl: "/jobs.csv",
             noDataReason: "provided the <code>outcome</code> and <code>inputs</code> for relevant builds",
