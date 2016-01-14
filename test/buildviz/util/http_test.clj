@@ -14,6 +14,14 @@
               :body "something" }
              (http/not-modified-request handler date request)))))
 
+  (testing "should not apply Last-Modified header on 404"
+    (let [request {:request-method :get}
+          handler (fn [_] (hash-map :status 404 :headers {} :body "something"))]
+      (is (= {:status 404
+              :headers {}
+              :body "something" }
+             (http/not-modified-request handler date request)))))
+
   (testing "should return handler response if modified since date given in if-modified-since"
     (let [request {:request-method :get
                    :headers {"If-Modified-Since" "Mon, 13 Oct 1986 05:16:08 GMT"}}
@@ -28,7 +36,7 @@
                    :headers {"If-Modified-Since" "Wed, 15 Oct 1986 14:26:58 GMT"}}
           handler (fn [_] (hash-map :status 200 :headers {} :body "something"))]
       (is (= {:status 304
-              :headers {"Last-Modified" "Tue, 14 Oct 1986 04:03:27 GMT"}
+              :headers {}
               :body nil}
              (http/not-modified-request handler date request)))))
 
@@ -37,7 +45,7 @@
                    :headers {"If-Modified-Since" "Tue, 14 Oct 1986 04:03:27 GMT"}}
           handler (fn [_] (hash-map :status 200 :headers {} :body "something"))]
       (is (= {:status 304
-              :headers {"Last-Modified" "Tue, 14 Oct 1986 04:03:27 GMT"}
+              :headers {}
               :body nil}
              (http/not-modified-request handler date request))))))
 

@@ -76,7 +76,16 @@
         (resp/status 304))
     (handler req)))
 
+(defn- ok-response? [response]
+  (= (:status response) 200))
+
+(defn- apply-last-modified [response last-modified]
+  (if (ok-response? response)
+    (-> response
+        (resp/header "Last-Modified" (time/format-date (.toDate last-modified))))
+    response))
+
 (defn not-modified-request [handler last-modified request]
   (-> request
       (resolve-handler-if-modified handler last-modified)
-      (resp/header "Last-Modified" (time/format-date (.toDate last-modified)))))
+      (apply-last-modified last-modified)))
