@@ -1,4 +1,4 @@
-(function (timespanSelection, graphFactory, utils, jobColors, dataSource) {
+(function (timespanSelection, graphDescription, graphFactory, utils, jobColors, dataSource) {
     var buildEntries = function (jobEntries) {
         return jobEntries
             .filter(function (job) {
@@ -104,13 +104,17 @@
     };
 
     var timespanSelector = timespanSelection.create(timespanSelection.timespans.twoWeeks),
+        description = graphDescription.create({
+            description: "Average runtime by job for the selected interval. The job's runtime is calculated as time between start and end of its runs.",
+            answer: ['Where is most of the time spent?'],
+            legend: "Size: average runtime, color: job (similar colors for job group)"
+        }),
         graph = graphFactory.create({
             id: 'averageJobRuntime',
             headline: "Average job runtime",
-            description: "<h3>Where is most of the time spent?</h3><i>Size: average runtime, color: job (similar colors for job group)</i>",
             csvUrl: "/jobs.csv",
             noDataReason: "provided <code>start</code> and <code>end</code> times for your builds",
-            widgets: [timespanSelector.widget]
+            widgets: [timespanSelector.widget, description.widget]
         });
 
     timespanSelector.load(function (selectedTimespan) {
@@ -125,4 +129,4 @@
         });
     });
 
-}(timespanSelection, graphFactory, utils, jobColors, dataSource));
+}(timespanSelection, graphDescription, graphFactory, utils, jobColors, dataSource));

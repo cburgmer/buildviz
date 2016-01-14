@@ -1,4 +1,4 @@
-(function (timespanSelection, graphFactory, zoomableSunburst, utils, jobColors, dataSource) {
+(function (timespanSelection, graphDescription, graphFactory, zoomableSunburst, utils, jobColors, dataSource) {
     var title = function (entry) {
         return entry.name + ' (' + utils.formatTimeInMs(entry.averageRuntime, {showMillis: true}) + ')';
     };
@@ -170,13 +170,17 @@
     };
 
     var timespanSelector = timespanSelection.create(timespanSelection.timespans.sevenDays),
+        description = graphDescription.create({
+            description: "Average runtime of tests per class/file by job, for the selected interval. Runtimes of test cases are added up by test class/file and grouped by package hierarchy. Where unambiguous, test suites are omitted and package paths merged, to avoid unneccessary deep nesting.",
+            answer: ["Where is the time spent in testing?"],
+            legend: 'Color: job/test suite, arc size: duration'
+        }),
         graph = graphFactory.create({
             id: 'averageTestRuntime',
             headline: "Average test class runtime",
-            description: "<h3>Where is the time spent in testing?</h3><i>Color: job/test suite, arc size: duration</i>",
             csvUrl: "/testclasses.csv",
             noDataReason: "uploaded test results",
-            widgets: [timespanSelector.widget]
+            widgets: [timespanSelector.widget, description.widget]
         });
     var sunburst = zoomableSunburst(graph.svg, graphFactory.size);
 
@@ -196,4 +200,4 @@
             sunburst.render(data);
         });
     });
-}(timespanSelection, graphFactory, zoomableSunburst, utils, jobColors, dataSource));
+}(timespanSelection, graphDescription, graphFactory, zoomableSunburst, utils, jobColors, dataSource));

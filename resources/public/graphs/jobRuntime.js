@@ -1,12 +1,17 @@
-(function (timespanSelection, graphFactory, runtimes, jobColors, dataSource) {
+(function (timespanSelection, graphDescription, graphFactory, runtimes, jobColors, dataSource) {
     var timespanSelector = timespanSelection.create(timespanSelection.timespans.twoMonths),
+        description = graphDescription.create({
+            description: "Job runtime over time, average by day. The job's runtime is calculated as time between start and end of its runs.",
+            answer: ['Is the pipeline getting faster?',
+                     'Has a job gotten considerably slower?'],
+            legend: 'Color: job'
+        }),
         graph = graphFactory.create({
             id: 'jobRuntime',
             headline: "Job runtime",
-            description: "<h3>Is the pipeline getting faster? Has a job gotten considerably slower?</h3><i>Color: job</i>",
             csvUrl: "/jobruntime.csv",
             noDataReason: "provided <code>start</code> and <code>end</code> times for your builds over at least two consecutive days",
-            widgets: [timespanSelector.widget]
+            widgets: [timespanSelector.widget, description.widget]
         });
 
     var transformRuntimes = function (data) {
@@ -49,4 +54,4 @@
             runtimePane.render(transformRuntimes(data));
         });
     });
-}(timespanSelection, graphFactory, runtimes, jobColors, dataSource));
+}(timespanSelection, graphDescription, graphFactory, runtimes, jobColors, dataSource));

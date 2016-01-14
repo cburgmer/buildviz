@@ -52,7 +52,7 @@ var graphFactory = function (d3) {
         }
 
         if (params.widgets) {
-            params.widgets.forEach(function (widget) {
+            params.widgets.reverse().forEach(function (widget) {
                 header.node().appendChild(widget);
             }) ;
         }

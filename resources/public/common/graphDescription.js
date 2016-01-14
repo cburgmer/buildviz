@@ -1,6 +1,14 @@
 var graphDescription = function (d3) {
     var module = {};
 
+    var asUnsortedList = function (textList) {
+        var ul = d3.select(document.createElement('ul'));
+        textList.forEach(function (text) {
+            ul.append('li').text(text);
+        });
+        return ul.node();
+    };
+
     var createBlock = function (text, headline) {
         var block = d3.select(document.createElement('div'));
         if (headline) {
@@ -8,9 +16,13 @@ var graphDescription = function (d3) {
                 .append('h4')
                 .text(headline);
         }
-        block
-            .append('p')
-            .text(text);
+        if (typeof text === typeof '') {
+            block
+                .append('p')
+                .text(text);
+        } else {
+            block.node().appendChild(asUnsortedList(text));
+        }
         return block.node();
     };
 
