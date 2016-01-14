@@ -27,7 +27,9 @@
         pipeline))))
 
 (defn- find-pipeline-runs [builds]
-  (let [pipeline-end-candidates (filter #(is-pipeline-end? % builds) builds)]
+  (let [pipeline-end-candidates (->> builds
+                                     (filter :triggered-by)
+                                     (filter #(is-pipeline-end? % builds)))]
     (->> pipeline-end-candidates
          (map #(find-pipeline-ending-with % builds))
          (filter #(< 1 (count %))))))
