@@ -1,12 +1,16 @@
-(function (timespanSelection, graphFactory, runtimes, jobColors, dataSource) {
+(function (timespanSelection, graphDescription, graphFactory, runtimes, jobColors, dataSource) {
     var timespanSelector = timespanSelection.create(timespanSelection.timespans.twoMonths),
+        description = graphDescription.create({
+            description: "A pipeline is considered a simple chain of jobs, each triggering another until the pipeline finishes. The time between the start of the first build and the end of the last build makes up the runtime of a pipeline run.",
+            answer: "When are we getting final feedback on changes?",
+            legend: "Color: final job of pipeline"
+        }),
         graph = graphFactory.create({
             id: 'pipelineRuntime',
             headline: "Pipeline runtime",
-            description: "<h3>When are we getting final feedback on changes?</h3><i>Color: final job of pipeline</i>",
             csvUrl: "/pipelineruntime.csv",
             noDataReason: "provided <code>start</code>, <code>end</code> times and <code>triggeredBy</code> information for your builds over at least two consecutive days",
-            widgets: [timespanSelector.widget]
+            widgets: [description.widget, timespanSelector.widget]
         });
 
     var transformRuntimes = function (data) {
@@ -44,4 +48,4 @@
             runtimePane.render(transformRuntimes(data));
         });
     });
-}(timespanSelection, graphFactory, runtimes, jobColors, dataSource));
+}(timespanSelection, graphDescription, graphFactory, runtimes, jobColors, dataSource));

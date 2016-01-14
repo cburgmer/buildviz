@@ -81,7 +81,8 @@
 }
 
 .graph .timespan,
-.graph .description {
+.graph .description,
+.graph .graphDescription {
     float: right;
     position: relative;
     padding: 2px 2px 0;

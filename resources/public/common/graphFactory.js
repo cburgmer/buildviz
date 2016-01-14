@@ -42,12 +42,14 @@ var graphFactory = function (d3) {
             .attr('class', 'csv')
             .text("CSV");
 
-        header
-            .append('div')
-            .attr('class', 'description')
-            .text('?')
-            .append('section')
-            .html(params.description);
+        if (params.description) {
+            header
+                .append('div')
+                .attr('class', 'description')
+                .text('?')
+                .append('section')
+                .html(params.description);
+        }
 
         if (params.widgets) {
             params.widgets.forEach(function (widget) {
