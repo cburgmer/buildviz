@@ -1,5 +1,6 @@
 .graphDescription section {
     display: none;
+    z-index: 1;
     position: absolute;
     top: 18px;
     right: 0;
