@@ -1,0 +1,36 @@
+<!doctype html>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../resources/public/common/base.css">
+<link rel="stylesheet" href="../../resources/public/common/timespanSelection.css">
+<link rel="stylesheet" href="../../resources/public/common/graphDescription.css">
+<link rel="stylesheet" href="../../resources/public/common/graphFactory.css">
+<script>
+    var dataSource = {
+        loadCSV: function (_, callback) {
+            callback([{
+                "job": "aFlakyBuild",
+                "latestBuildId": "4",
+                "latestFailure": '2016-01-12 05:04:02',
+                "flakyCount": 2,
+                "name": "Another Test Case"
+            },{
+                "job": "aFlakyBuild",
+                "latestBuildId": "6",
+                "latestFailure": '2016-01-12 05:04:02',
+                "flakyCount": 1,
+                "name":"test"
+            }]);
+        }
+    };
+</script>
+<script src="../../resources/public/node_modules/d3/d3.min.js"></script>
+<script src="../../resources/public/common/graphFactory.js"></script>
+<script src="../../resources/public/common/timespanSelection.js"></script>
+<script src="../../resources/public/common/graphDescription.js"></script>
+<body>
+    <script src="../../resources/public/graphs/flakyTests.js"></script>
+    <script>
+        Date.now = function() { return Infinity; };
+        d3.timer.flush();
+    </script>
+</body>
