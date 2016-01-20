@@ -81,38 +81,11 @@
 }
 
 .graph .timespan,
-.graph .description,
 .graph .graphDescription {
     float: right;
     position: relative;
     padding: 2px 2px 0;
     color: gray;
-}
-.graph .description section {
-    display: none;
-    position: absolute;
-    top: 18px;
-    right: 0;
-
-    text-align: right;
-    background: #eee;
-    color: black;
-    padding: 5px 10px 15px;
-    font-size: 80%;
-    width: 30%;
-    min-width: 300px;
-    word-wrap: break-word;
-    border-radius: 2px 0px 2px 2px;
-}
-
-.graph .description:hover {
-    cursor: default;
-    background: #eee;
-    border-radius: 2px 2px 0px 0px;
-}
-.graph .description:hover section,
-.graph .description section:hover {
-    display: block;
 }
 
 .graph .nodata {

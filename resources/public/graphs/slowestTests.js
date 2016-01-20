@@ -1,4 +1,4 @@
-(function (timespanSelection, graphFactory, zoomableSunburst, dataSource, jobColors, utils) {
+(function (timespanSelection, graphDescription, graphFactory, zoomableSunburst, dataSource, jobColors, utils) {
     var testCountPerJob = 5;
 
     var concatIds = function (ids) {
@@ -82,13 +82,17 @@
     };
 
     var timespanSelector = timespanSelection.create(timespanSelection.timespans.sevenDays),
+        description = graphDescription.create({
+            description: 'Average runtime of the 5 slowest test cases by job. Multiple test cases with the same name have their runtimes added up.',
+            answer: ['What could be the first place to look at to improve test runtime?'],
+            legend: 'Color: job/test suite, arc size: avarage test case runtime'
+        }),
         graph = graphFactory.create({
             id: 'slowestTests',
             headline: "Top 5 slowest test cases by job",
-            description: "<h3>What could be the first place to look at to improve test runtime?</h3><i>Color: job/test suite, arc size: test runtime</i>",
             csvUrl: "/testcases.csv",
             noDataReason: "uploaded test results",
-            widgets: [timespanSelector.widget]
+            widgets: [timespanSelector.widget, description.widget]
         });
     var sunburst = zoomableSunburst(graph.svg, graphFactory.size);
 
@@ -109,4 +113,4 @@
         });
     });
 
-}(timespanSelection, graphFactory, zoomableSunburst, dataSource, jobColors, utils));
+}(timespanSelection, graphDescription, graphFactory, zoomableSunburst, dataSource, jobColors, utils));

@@ -42,15 +42,6 @@ var graphFactory = function (d3) {
             .attr('class', 'csv')
             .text("CSV");
 
-        if (params.description) {
-            header
-                .append('div')
-                .attr('class', 'description')
-                .text('?')
-                .append('section')
-                .html(params.description);
-        }
-
         if (params.widgets) {
             params.widgets.reverse().forEach(function (widget) {
                 header.node().appendChild(widget);

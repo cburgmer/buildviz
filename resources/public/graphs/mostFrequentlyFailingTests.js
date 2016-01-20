@@ -1,4 +1,4 @@
-(function (timespanSelection, graphFactory, zoomableSunburst, dataSource, jobColors) {
+(function (timespanSelection, graphDescription, graphFactory, zoomableSunburst, dataSource, jobColors) {
     var testCountPerJob = 5;
 
     var concatIds = function (ids) {
@@ -91,13 +91,17 @@
     };
 
     var timespanSelector = timespanSelection.create(timespanSelection.timespans.sevenDays),
+        description = graphDescription.create({
+            description: "The 5 test cases with the most failures by job. Multiple test cases with the same name have their failures added up.",
+            answer: ["What are the tests that provide either the most or the least feedback?"],
+            legend: "Color: job/test suite, arc size: number of test failures"
+        }),
         graph = graphFactory.create({
             id: 'mostFrequentlyFailingTests',
             headline: "Top 5 failed test cases by job",
-            description: "<h3>What are the tests that provide either the most or the least feedback?</h3><i>Color: job/test suite, arc size: number of test failures</i>",
             csvUrl: "/testcases.csv",
             noDataReason: "uploaded test results",
-            widgets: [timespanSelector.widget]
+            widgets: [timespanSelector.widget, description.widget]
         });
     var sunburst = zoomableSunburst(graph.svg, graphFactory.size);
 
@@ -118,4 +122,4 @@
         });
     });
 
-}(timespanSelection, graphFactory, zoomableSunburst, dataSource, jobColors));
+}(timespanSelection, graphDescription, graphFactory, zoomableSunburst, dataSource, jobColors));

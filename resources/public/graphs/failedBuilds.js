@@ -1,4 +1,4 @@
-(function (timespanSelection, graphFactory, dataSource, badJobs) {
+(function (timespanSelection, graphDescription, graphFactory, dataSource, badJobs) {
     var jobCount = 5,
         worstFailureRatio = 0.25;
 
@@ -27,13 +27,19 @@
     };
 
     var timespanSelector = timespanSelection.create(timespanSelection.timespans.twoWeeks),
+        description = graphDescription.create({
+            description: "The 5 jobs with the most failed builds. The size of each job's circle follows its total failed build count. The border color shows the failure rate, calculated by total build failures relative to total build count. This graph will prefer jobs with many failures over jobs with a high failure rate.",
+            answer: ["What needs most manual intervention?",
+                     "Where are the biggest quality issues?",
+                     "Where do we receive either not so valuable or actually very valuable feedback?"],
+            legend: "Border color: failure ratio (no. failures / no. runs), inner color: job, diameter: number of failures"
+        }),
         graph = graphFactory.create({
             id: 'failedBuilds',
             headline: "Top 5 failed jobs",
-            description: "<h3>What needs most manual intervention? Where are the biggest quality issues? Where do we receive either not so valuable or actually very valuable feedback?</h3><i>Border color: failure ratio (no. failures / no. runs), inner color: job, diameter: number of failures</i>",
             csvUrl: "/jobs.csv",
             noDataReason: "provided the <code>outcome</code> of your builds",
-            widgets: [timespanSelector.widget]
+            widgets: [timespanSelector.widget, description.widget]
         });
 
     timespanSelector.load(function (selectedTimespan) {
@@ -50,4 +56,4 @@
         });
     });
 
-}(timespanSelection, graphFactory, dataSource, badJobs));
+}(timespanSelection, graphDescription, graphFactory, dataSource, badJobs));

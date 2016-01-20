@@ -1,4 +1,4 @@
-(function (timespanSelection, graphFactory, dataSource) {
+(function (timespanSelection, graphDescription, graphFactory, dataSource) {
     var flakyTestsAsBubbles = function (testCase) {
         return {
             id: [testCase.job, testCase.classname, testCase.name].join("\\"),
@@ -94,13 +94,17 @@
     };
 
     var timespanSelector = timespanSelection.create(timespanSelection.timespans.twoWeeks),
+        description = graphDescription.create({
+            description: "All flaky test cases. A test case is considered flaky if it failed in one build, but passed in another, given that both builds were run with the same inputs. Multiple test cases with the same name have their flaky failure counts added up.",
+            answer: ["Which tests provide questionable value and will probably be trusted the least?"],
+            legend: "Color: age of last flaky failure, diameter: flaky count"
+        }),
         graph = graphFactory.create({
             id: 'flakyTests',
             headline: "Flaky tests cases",
-            description: "<h3>Which tests provide questionable value and will probably be trusted the least?</h3><i>Color: age of last flaky failure, diameter: flaky count</i>",
             csvUrl: "/flakytestcases.csv",
             noDataReason: "provided the <code>inputs</code> for relevant builds and uploaded test results",
-            widgets: [timespanSelector.widget]
+            widgets: [timespanSelector.widget, description.widget]
         });
 
     timespanSelector.load(function (selectedTimespan) {
@@ -115,4 +119,4 @@
         });
     });
 
-}(timespanSelection, graphFactory, dataSource));
+}(timespanSelection, graphDescription, graphFactory, dataSource));

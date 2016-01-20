@@ -1,4 +1,4 @@
-(function (timespanSelection , graphFactory, utils, dataSource) {
+(function (timespanSelection, graphDescription, graphFactory, utils, dataSource) {
     var margin = {top: 10, right: 0, bottom: 30, left: 35},
         width = graphFactory.size - margin.left - margin.right,
         height = graphFactory.size - margin.top - margin.bottom;
@@ -245,13 +245,19 @@
     };
 
     var timespanSelector = timespanSelection.create(timespanSelection.timespans.twoMonths),
+        description = graphDescription.create({
+            description: 'A failing phase starts when one job fails on an otherwise green pipeline and ends when the job is re-run with a now good outcome. The failing phase continues when another job starts to fail in between and only ends when that job also passes again. Weekends are blured out.',
+            answer: ["What is the general health of the build system?",
+                     "How much are we stopping the pipeline?",
+                     "How quickly can we resume the pipeline after failure?"],
+            legend: "Color: healthy/broken state"
+        }),
         graph = graphFactory.create({
             id: 'failPhases',
             headline: "Fail phases",
-            description: "<h3>What is the general health of the build system? How much are we stopping the pipeline? How quickly can we resume the pipeline after failure?</h3><i>Color: healthy/broken state, length: duration of phase<i>",
             csvUrl: "/failphases.csv",
             noDataReason: "provided <code>start</code>, <code>end</code> times and the <code>outcome</code> of your builds",
-            widgets: [timespanSelector.widget]
+            widgets: [timespanSelector.widget, description.widget]
         });
 
     timespanSelector.load(function (selectedTimespan) {
@@ -266,4 +272,4 @@
         });
     });
 
-}(timespanSelection, graphFactory, utils, dataSource));
+}(timespanSelection, graphDescription, graphFactory, utils, dataSource));
