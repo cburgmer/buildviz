@@ -105,7 +105,7 @@
 
     var timespanSelector = timespanSelection.create(timespanSelection.timespans.twoWeeks),
         description = graphDescription.create({
-            description: "Average runtime by job for the selected interval. The job's runtime is calculated as time between start and end of its runs.",
+            description: "Average runtime by job for the selected interval. The job's runtime is calculated as time between start and end of its builds.",
             answer: ['Where is most of the time spent?'],
             legend: "Size: average runtime, color: job (similar colors for job group)"
         }),

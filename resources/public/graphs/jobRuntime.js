@@ -1,9 +1,10 @@
 (function (timespanSelection, graphDescription, graphFactory, runtimes, jobColors, dataSource) {
     var timespanSelector = timespanSelection.create(timespanSelection.timespans.twoMonths),
         description = graphDescription.create({
-            description: "Job runtime over time, average by day. The job's runtime is calculated as time between start and end of its runs.",
-            answer: ['Is the pipeline getting faster?',
-                     'Has a job gotten considerably slower?'],
+            description: "Job runtime over time, average by day. The job's runtime is calculated as time between start and end of its builds.",
+            answer: ['Has a job gotten considerably slower?',
+                     'Are optimizations showing?',
+                     'Has a job gotten suspiciously fast?'],
             legend: 'Color: job'
         }),
         graph = graphFactory.create({
