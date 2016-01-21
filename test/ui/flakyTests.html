@@ -17,32 +17,40 @@
 
     var aFlakyTest = function (name, flakyCount, countDaysAgoOfLatestFailure) {
         return {
-            "job": "aFlakyBuild",
-            "latestBuildId": "4",
-            "latestFailure": toCsvDate(dateDaysAgo(countDaysAgoOfLatestFailure)),
-            "flakyCount": flakyCount,
-            "name": name
+            latestBuildId: "4",
+            latestFailure: toCsvDate(dateDaysAgo(countDaysAgoOfLatestFailure)),
+            flakyCount: flakyCount,
+            name: name
         };
+    };
+
+    var forJob = function (jobName, tests) {
+        return tests.map(function (test) {
+            test.job = jobName;
+            return test;
+        });
     };
 
     var dataSource = {
         loadCSV: function (_, callback) {
-            callback([aFlakyTest("Another Test Case", 2, 0),
-                      aFlakyTest("A Test", 3, 0),
-                      aFlakyTest("Some Test", 1, 0),
-                      aFlakyTest("An older test", 1, 1),
-                      aFlakyTest("Another older test", 2, 1),
-                      aFlakyTest("Yet another older test", 1, 1),
-                      aFlakyTest("Even older test", 1, 2),
-                      aFlakyTest("Week old test", 1, 7),
-                      aFlakyTest("More than a week old test", 2, 8),
-                      aFlakyTest("Even another test", 1, 9),
-                      aFlakyTest("Older test", 1, 10)]);
+            callback(
+                [forJob("aFlakyBuild", [aFlakyTest("Another Test Case", 80, 0),
+                                        aFlakyTest("Week old test", 40, 7),
+                                        aFlakyTest("More than a week old test", 40, 8),
+                                        aFlakyTest("An older test", 40, 1),
+                                        aFlakyTest("Another older test", 80, 1)]),
+                 forJob("anotherBuild", [aFlakyTest("Yet another older test", 40, 1),
+                                         aFlakyTest("A Test", 120, 0),
+                                         aFlakyTest("Some Test", 1, 0),
+                                         aFlakyTest("Even older test", 40, 2),
+                                         aFlakyTest("Even another test", 40, 9),
+                                         aFlakyTest("Older test", 40, 10)])].reduce(function (arr, tests) { return arr.concat(tests); }, []));
         }
     };
 </script>
 <script src="../../resources/public/node_modules/d3/d3.min.js"></script>
 <script src="../../resources/public/common/graphFactory.js"></script>
+<script src="../../resources/public/common/jobColors.js"></script>
 <script src="../../resources/public/common/timespanSelection.js"></script>
 <script src="../../resources/public/common/graphDescription.js"></script>
 <body>

@@ -1,8 +1,11 @@
-(function (timespanSelection, graphDescription, graphFactory, dataSource) {
+(function (timespanSelection, graphDescription, jobColors, graphFactory, dataSource) {
+    var borderWidthInPx = 12;
+
     var flakyTestsAsBubbles = function (testCase) {
         return {
             id: [testCase.job, testCase.classname, testCase.name].join("\\"),
             name: testCase.name,
+            job: testCase.job,
             title: [testCase.name,
                     testCase.classname,
                     '',
@@ -26,10 +29,10 @@
         return bubbleNodes.filter(function(d) { return d.depth > 0; });
     };
 
-    var colorScale = function (minDomain, maxDomain) {
+    var ageColorScale = function (minDomain, maxDomain) {
         return d3.scale.linear()
             .domain([minDomain, maxDomain])
-            .range([d3.rgb(255, 200, 200), d3.rgb("red").darker()])
+            .range([d3.rgb('white').darker(0.3), d3.rgb('black')])
             .interpolate(d3.interpolateLab);
     };
 
@@ -52,8 +55,13 @@
     var renderData = function (data, svg) {
         var flakyTests = data.map(flakyTestsAsBubbles);
 
-        var color = colorScale(d3.min(flakyTests, function (d) { return d.lastTime; }),
-                               Date.now());
+        var jobNames = d3.set(flakyTests.map(function (test) {
+            return test.job;
+        })).values();
+        var jobColor = jobColors.colors(jobNames);
+
+        var ageColor = ageColorScale(d3.min(flakyTests, function (d) { return d.lastTime; }),
+                                  Date.now());
 
         var selection = svg.selectAll("g")
                 .data(noGrouping(bubble.nodes({children: flakyTests})),
@@ -81,8 +89,20 @@
             .text(function(d) { return d.title; });
 
         selection.select("circle")
-            .attr("r", function (d) { return d.r; })
-            .style("fill", function(d) { return color(d.lastTime); });
+            .attr("r", function (d) {
+                // Discount for stroke taking up part of the circle. Half of the stroke grows inside, half outside.
+                var radius = d.r - borderWidthInPx / 2;
+                return Math.max(radius, d.r / 2);
+            })
+            .style('stroke', function (d) {
+                return ageColor(d.lastTime);
+            })
+            .style('stroke-width', function (d) {
+                return Math.min(borderWidthInPx, d.r);
+            })
+            .style('fill', function (d) {
+                return jobColor(d.job);
+            });
 
         selection.select('text')
             .selectAll('*')
@@ -97,7 +117,7 @@
         description = graphDescription.create({
             description: "All flaky test cases. A test case is considered flaky if it failed in one build, but passed in another, given that both builds were run with the same inputs. Multiple test cases with the same name have their flaky failure counts added up.",
             answer: ["Which tests provide questionable value and will probably be trusted the least?"],
-            legend: "Color: age of last flaky failure, diameter: flaky count"
+            legend: "Border color: age of last flaky failure, inner color: job, diameter: flaky count"
         }),
         graph = graphFactory.create({
             id: 'flakyTests',
@@ -119,4 +139,4 @@
         });
     });
 
-}(timespanSelection, graphDescription, graphFactory, dataSource));
+}(timespanSelection, graphDescription, jobColors, graphFactory, dataSource));
