@@ -5,21 +5,39 @@
 <link rel="stylesheet" href="../../resources/public/common/graphDescription.css">
 <link rel="stylesheet" href="../../resources/public/common/graphFactory.css">
 <script>
+    var toCsvDate = function (date) {
+        return date.toISOString().replace('T', ' ');
+    };
+
+    var dateDaysAgo = function (daysAgo) {
+        var d = new Date();
+        d.setDate(d.getDate() - daysAgo);
+        return d;
+    };
+
+    var aFlakyTest = function (name, flakyCount, countDaysAgoOfLatestFailure) {
+        return {
+            "job": "aFlakyBuild",
+            "latestBuildId": "4",
+            "latestFailure": toCsvDate(dateDaysAgo(countDaysAgoOfLatestFailure)),
+            "flakyCount": flakyCount,
+            "name": name
+        };
+    };
+
     var dataSource = {
         loadCSV: function (_, callback) {
-            callback([{
-                "job": "aFlakyBuild",
-                "latestBuildId": "4",
-                "latestFailure": '2016-01-12 05:04:02',
-                "flakyCount": 2,
-                "name": "Another Test Case"
-            },{
-                "job": "aFlakyBuild",
-                "latestBuildId": "6",
-                "latestFailure": '2016-01-12 05:04:02',
-                "flakyCount": 1,
-                "name":"test"
-            }]);
+            callback([aFlakyTest("Another Test Case", 2, 0),
+                      aFlakyTest("A Test", 3, 0),
+                      aFlakyTest("Some Test", 1, 0),
+                      aFlakyTest("An older test", 1, 1),
+                      aFlakyTest("Another older test", 2, 1),
+                      aFlakyTest("Yet another older test", 1, 1),
+                      aFlakyTest("Even older test", 1, 2),
+                      aFlakyTest("Week old test", 1, 7),
+                      aFlakyTest("More than a week old test", 2, 8),
+                      aFlakyTest("Even another test", 1, 9),
+                      aFlakyTest("Older test", 1, 10)]);
         }
     };
 </script>
