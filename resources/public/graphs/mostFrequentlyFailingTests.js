@@ -94,12 +94,12 @@
         description = graphDescription.create({
             description: "The 5 test cases with the most failures by job. Multiple test cases with the same name have their failures added up.",
             answer: ["What are the tests that provide either the most or the least feedback?"],
-            legend: "Color: job/test suite, arc size: number of test failures"
+            legend: "Color: job/test suite, arc size: number of test failures",
+            csvSource: "/testcases.csv"
         }),
         graph = graphFactory.create({
             id: 'mostFrequentlyFailingTests',
             headline: "Top 5 failed test cases by job",
-            csvUrl: "/testcases.csv",
             noDataReason: "uploaded test results",
             widgets: [timespanSelector.widget, description.widget]
         });

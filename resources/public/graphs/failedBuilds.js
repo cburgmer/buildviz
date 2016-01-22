@@ -32,12 +32,12 @@
             answer: ["What needs most manual intervention?",
                      "Where are the biggest quality issues?",
                      "Where do we receive either not so valuable or actually very valuable feedback?"],
-            legend: "Border color: failure ratio (no. failures / no. runs), inner color: job, diameter: number of failures"
+            legend: "Border color: failure ratio (no. failures / no. runs), inner color: job, diameter: number of failures",
+            csvSource: "/jobs.csv"
         }),
         graph = graphFactory.create({
             id: 'failedBuilds',
             headline: "Top 5 failed jobs",
-            csvUrl: "/jobs.csv",
             noDataReason: "provided the <code>outcome</code> of your builds",
             widgets: [timespanSelector.widget, description.widget]
         });

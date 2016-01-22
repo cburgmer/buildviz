@@ -37,11 +37,6 @@ var graphFactory = function (d3) {
         header.append("h1")
             .text(params.headline);
 
-        header.append("a")
-            .attr("href", params.csvUrl)
-            .attr('class', 'csv')
-            .text("CSV");
-
         if (params.widgets) {
             params.widgets.reverse().forEach(function (widget) {
                 header.node().appendChild(widget);

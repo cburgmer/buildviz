@@ -5,12 +5,13 @@
             answer: ['Has a job gotten considerably slower?',
                      'Are optimizations showing?',
                      'Has a job gotten suspiciously fast?'],
-            legend: 'Color: job'
+            legend: 'Color: job',
+            csvSource: "/jobruntime.csv"
+
         }),
         graph = graphFactory.create({
             id: 'jobRuntime',
             headline: "Job runtime",
-            csvUrl: "/jobruntime.csv",
             noDataReason: "provided <code>start</code> and <code>end</code> times for your builds over at least two consecutive days",
             widgets: [timespanSelector.widget, description.widget]
         });

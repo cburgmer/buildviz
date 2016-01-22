@@ -10,11 +10,6 @@
 .graph header > * {
     display: inline-block;
 }
-.graph .csv {
-    margin-left: 1em;
-    font-size: 70%;
-    text-decoration: underline;
-}
 .graph a {
     text-decoration: none;
     color: inherit;

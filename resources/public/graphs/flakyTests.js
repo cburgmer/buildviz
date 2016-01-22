@@ -117,12 +117,12 @@
         description = graphDescription.create({
             description: "All flaky test cases. A test case is considered flaky if it failed in one build, but passed in another, given that both builds were run with the same inputs. Multiple test cases with the same name have their flaky failure counts added up.",
             answer: ["Which tests provide questionable value and will probably be trusted the least?"],
-            legend: "Border color: age of last flaky failure, inner color: job, diameter: flaky count"
+            legend: "Border color: age of last flaky failure, inner color: job, diameter: flaky count",
+            csvSource: "/flakytestcases.csv"
         }),
         graph = graphFactory.create({
             id: 'flakyTests',
             headline: "Flaky tests cases",
-            csvUrl: "/flakytestcases.csv",
             noDataReason: "provided the <code>inputs</code> for relevant builds and uploaded test results",
             widgets: [timespanSelector.widget, description.widget]
         });

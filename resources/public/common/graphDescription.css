@@ -25,6 +25,10 @@
     margin: 5px 0 0;
 }
 
+.graphDescription section a {
+    text-decoration: underline;
+}
+
 .graphDescription:hover {
     cursor: default;
     background: #eee;

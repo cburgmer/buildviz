@@ -107,12 +107,12 @@
         description = graphDescription.create({
             description: "Average runtime by job for the selected interval. The job's runtime is calculated as time between start and end of its builds.",
             answer: ['Where is most of the time spent?'],
-            legend: "Size: average runtime, color: job (similar colors for job group)"
+            legend: "Size: average runtime, color: job (similar colors for job group)",
+            csvSource: "/jobs.csv"
         }),
         graph = graphFactory.create({
             id: 'averageJobRuntime',
             headline: "Average job runtime",
-            csvUrl: "/jobs.csv",
             noDataReason: "provided <code>start</code> and <code>end</code> times for your builds",
             widgets: [timespanSelector.widget, description.widget]
         });

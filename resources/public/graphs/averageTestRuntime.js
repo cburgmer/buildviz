@@ -173,12 +173,12 @@
         description = graphDescription.create({
             description: "Average runtime of tests per class/file by job. Runtimes of test cases are added up by test class/file and grouped by package hierarchy. Where unambiguous, test suites are omitted and package paths merged, to avoid unneccessary deep nesting.",
             answer: ["Where is the time spent in testing?"],
-            legend: 'Color: job/test suite, arc size: average runtime of tests per class/file'
+            legend: 'Color: job/test suite, arc size: average runtime of tests per class/file',
+            csvSource: "/testclasses.csv"
         }),
         graph = graphFactory.create({
             id: 'averageTestRuntime',
             headline: "Average test class runtime",
-            csvUrl: "/testclasses.csv",
             noDataReason: "uploaded test results",
             widgets: [timespanSelector.widget, description.widget]
         });

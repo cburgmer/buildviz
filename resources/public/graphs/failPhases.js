@@ -250,12 +250,12 @@
             answer: ["What is the general health of the build system?",
                      "How much are we stopping the pipeline?",
                      "How quickly can we resume the pipeline after failure?"],
-            legend: "Color: healthy/broken state"
+            legend: "Color: healthy/broken state",
+            csvSource: "/failphases.csv"
         }),
         graph = graphFactory.create({
             id: 'failPhases',
             headline: "Fail phases",
-            csvUrl: "/failphases.csv",
             noDataReason: "provided <code>start</code>, <code>end</code> times and the <code>outcome</code> of your builds",
             widgets: [timespanSelector.widget, description.widget]
         });
