@@ -49,7 +49,42 @@
               :body nil}
              (http/not-modified-request handler date request))))))
 
+
 (deftest test-respond-with-json
   (testing "should translate dash-keywords to JSON camel-case"
     (is (= "{\"camelCase\":\"a-value\"}"
            (:body (http/respond-with-json {:camel-case "a-value"}))))))
+
+
+(deftest test-wrap-resource-format
+  (testing "should set map request for matching format"
+    (let [request {:uri "/the_url.json"
+                   :headers {"accept" "*"}}
+          fake-handler identity]
+      (is (= {:uri "/the_url"
+              :headers {"accept" "application/json"}}
+             ((http/wrap-resource-format fake-handler {:json "application/json"}) request)))))
+
+  (testing "should not touch request for unknown format"
+    (let [request {:uri "/the_url.xml"
+                   :headers {"accept" "*"}}
+          fake-handler identity]
+      (is (= {:uri "/the_url.xml"
+              :headers {"accept" "*"}}
+             ((http/wrap-resource-format fake-handler {:json "application/json"}) request)))))
+
+  (testing "should not touch request without format"
+    (let [request {:uri "/the_url"
+                   :headers {"accept" "*"}}
+          fake-handler identity]
+      (is (= {:uri "/the_url"
+              :headers {"accept" "*"}}
+             ((http/wrap-resource-format fake-handler {:json "application/json"}) request)))))
+
+  (testing "should ignore nil as key"
+    (let [request {:uri "/the_url"
+                   :headers {"accept" "*"}}
+          fake-handler identity]
+      (is (= {:uri "/the_url"
+              :headers {"accept" "*"}}
+             ((http/wrap-resource-format fake-handler {nil "application/json"}) request))))))

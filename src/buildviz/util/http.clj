@@ -89,3 +89,24 @@
   (-> request
       (resolve-handler-if-modified handler last-modified)
       (apply-last-modified last-modified)))
+
+
+(defn- extract-format [{uri :uri}]
+  (when-let [match (re-matches #"(.+)\.(\w+)" uri)]
+    {:base-uri (nth match 1)
+     :format (keyword (nth match 2))}))
+
+(defn- rewrite-resource-uri-with-format [request format-mime-map]
+  (let [{base-uri :base-uri
+         format :format} (extract-format request)]
+    (if (and format
+             (contains? format-mime-map format))
+      (let [mime-type (get format-mime-map format)]
+        (-> request
+          (assoc :uri base-uri)
+          (assoc-in [:headers "accept"] mime-type)))
+      request)))
+
+(defn wrap-resource-format [handler format-mime-map]
+  (fn [request]
+    (handler (rewrite-resource-uri-with-format request format-mime-map))))

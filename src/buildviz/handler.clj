@@ -19,7 +19,7 @@
              [content-type :as content-type]
              [not-modified :as not-modified]
              [params :as params]
-             [resource :as resources]]
+             [resource :as resource]]
             [ring.util.response :as response]))
 
 (defn- from-timestamp [{from "from"}]
@@ -37,19 +37,12 @@
 
    (GET "/status" {} (get-status build-results pipeline-name))
    (GET "/jobs" {accept :accept query :query-params} (get-jobs build-results accept (from-timestamp query)))
-   (GET "/jobs.csv" {query :query-params} (get-jobs build-results {:mime :csv} (from-timestamp query)))
    (GET "/jobruntime" {query :query-params} (get-job-runtime build-results (from-timestamp query)))
-   (GET "/jobruntime.csv" {query :query-params} (get-job-runtime build-results (from-timestamp query)))
    (GET "/pipelineruntime" {accept :accept query :query-params} (get-pipeline-runtime build-results accept (from-timestamp query)))
-   (GET "/pipelineruntime.csv" {query :query-params} (get-pipeline-runtime build-results {:mime :csv} (from-timestamp query)))
    (GET "/failphases" {accept :accept query :query-params} (get-fail-phases build-results accept (from-timestamp query)))
-   (GET "/failphases.csv" {query :query-params} (get-fail-phases build-results {:mime :csv} (from-timestamp query)))
    (GET "/testcases" {accept :accept query :query-params} (get-testcases build-results accept (from-timestamp query)))
-   (GET "/testcases.csv" {query :query-params} (get-testcases build-results {:mime :csv} (from-timestamp query)))
    (GET "/testclasses" {accept :accept query :query-params} (get-testclasses build-results accept (from-timestamp query)))
-   (GET "/testclasses.csv" {query :query-params} (get-testclasses build-results {:mime :csv} (from-timestamp query)))
-   (GET "/flakytestcases" {accept :accept query :query-params} (get-flaky-testclasses build-results accept (from-timestamp query)))
-   (GET "/flakytestcases.csv" {query :query-params} (get-flaky-testclasses build-results {:mime :csv} (from-timestamp query)))))
+   (GET "/flakytestcases" {accept :accept query :query-params} (get-flaky-testclasses build-results accept (from-timestamp query)))))
 
 (defn- wrap-build-results-not-modified [handler build-results]
   (fn [request]
@@ -63,6 +56,9 @@
       (accept/wrap-accept {:mime ["application/json" :as :json,
                                   "application/xml" "text/xml" :as :xml
                                   "text/plain" :as :plain]})
-      (resources/wrap-resource "public")
+      (http/wrap-resource-format {:json "application/json"
+                                  :csv "text/plain"
+                                  :xml "application/xml"})
+      (resource/wrap-resource "public")
       content-type/wrap-content-type
       not-modified/wrap-not-modified))
