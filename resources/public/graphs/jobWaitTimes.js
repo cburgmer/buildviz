@@ -1,4 +1,4 @@
-(function (timespanSelection, graphDescription, graphFactory, runtimes, jobColors, dataSource) {
+(function (timespanSelection, graphDescription, graphFactory, durationsByDay, jobColors, dataSource) {
     var timespanSelector = timespanSelection.create(timespanSelection.timespans.twoMonths),
         description = graphDescription.create({
             description: "Average job wait times by day. Wait times are calculated from the delay between the build starting and the end of the previous triggering build. This delay may be caused by the job itself already running from a previous build consequently blocking a new execution, manual execution, or build scheduler congestion. This graph can help find bottlenecks in a build pipeline, and show where changes are just sitting idly, waiting to be verified.",
@@ -14,7 +14,7 @@
             widgets: [timespanSelector.widget, description.widget]
         });
 
-    var transformRuntimes = function (data) {
+    var transformWaitTimes = function (data) {
         var jobNames = data.map(function (entry) {
             return entry.job;
         });
@@ -24,19 +24,19 @@
             return {
                 title: entry.job,
                 color: color(entry.job),
-                runtimes: entry.waitTimes.map(function (day) {
+                durations: entry.waitTimes.map(function (day) {
                     return {
                         date: new Date(day.date),
-                        runtime: day.waitTime / 1000
+                        duration: day.waitTime / 1000
                     };
                 })
             };
         }).filter(function (entry) {
-            return entry.runtimes.length > 1;
+            return entry.durations.length > 1;
         });
     };
 
-    var runtimePane = runtimes(graph.svg);
+    var waitTimesPane = durationsByDay(graph.svg, 'Average wait time');
 
     timespanSelector.load(function (selectedTimespan) {
         var fromTimestamp = timespanSelection.startingFromTimestamp(selectedTimespan);
@@ -46,7 +46,7 @@
         dataSource.load('/waittimes?from=' + fromTimestamp, function (data) {
             graph.loaded();
 
-            runtimePane.render(transformRuntimes(data));
+            waitTimesPane.render(transformWaitTimes(data));
         });
     });
-}(timespanSelection, graphDescription, graphFactory, runtimes, jobColors, dataSource));
+}(timespanSelection, graphDescription, graphFactory, durationsByDay, jobColors, dataSource));

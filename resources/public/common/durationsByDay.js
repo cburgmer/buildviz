@@ -1,4 +1,4 @@
-var runtimes = (function (utils) {
+var durationsByDay = (function (utils) {
     "use strict";
 
     var module = {};
@@ -29,7 +29,7 @@ var runtimes = (function (utils) {
     var line = d3.svg.line()
             .interpolate("basis")
             .x(function(d) { return x(d.date); })
-            .y(function(d) { return y(d.runtime); });
+            .y(function(d) { return y(d.duration); });
 
     var saneDayTicks = function (axis, scale) {
         var dayCount = (x.domain()[1] - x.domain()[0]) / (24 * 60 * 60 * 1000);
@@ -41,7 +41,7 @@ var runtimes = (function (utils) {
         return axis;
     };
 
-    var createAxesPane = function (svg) {
+    var createAxesPane = function (svg, durationCaption) {
         var axesPane = svg
                 .append("g")
                 .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -57,21 +57,21 @@ var runtimes = (function (utils) {
             .attr("y", 6)
             .attr("dy", ".71em")
             .style("text-anchor", "end")
-            .text("Runtime");
+            .text(durationCaption);
 
         return axesPane;
     };
 
-    var renderData = function (runtimes, svg, g) {
+    var renderData = function (durationsByDay, svg, g) {
         svg.attr('class', 'runtimes');
 
         x.domain([
-            d3.min(runtimes, function(c) { return d3.min(c.runtimes, function(r) { return r.date; }); }),
-            d3.max(runtimes, function(c) { return d3.max(c.runtimes, function(r) { return r.date; }); })
+            d3.min(durationsByDay, function(c) { return d3.min(c.durations, function(r) { return r.date; }); }),
+            d3.max(durationsByDay, function(c) { return d3.max(c.durations, function(r) { return r.date; }); })
         ]);
         y.domain([
             0,
-            d3.max(runtimes, function(c) { return d3.max(c.runtimes, function(r) { return r.runtime; }); })
+            d3.max(durationsByDay, function(c) { return d3.max(c.durations, function(r) { return r.duration; }); })
         ]);
 
         g.selectAll('.x.axis')
@@ -81,7 +81,7 @@ var runtimes = (function (utils) {
             .call(yAxis);
 
         var selection = g.selectAll(".entry")
-            .data(runtimes,
+            .data(durationsByDay,
                   function (d) {
                       return d.title;
                   });
@@ -107,15 +107,15 @@ var runtimes = (function (utils) {
 
         selection.select('path')
             .attr("d", function (d) {
-                return line(d.runtimes);
+                return line(d.durations);
             });
     };
 
-    return function (svg) {
+    return function (svg, durationCaption) {
         var axesPane,
             getOrCreateAxesPane = function () {
                 if (axesPane === undefined) {
-                    axesPane = createAxesPane(svg);
+                    axesPane = createAxesPane(svg, durationCaption);
                 }
 
                 return axesPane;
@@ -126,15 +126,15 @@ var runtimes = (function (utils) {
             };
 
         return {
-            render: function (runtimes) {
-                if (! runtimes.length) {
+            render: function (durationsByDay) {
+                if (! durationsByDay.length) {
                     removeAxesPane(svg);
                     return;
                 }
 
-                var g = getOrCreateAxesPane(svg);
+                var g = getOrCreateAxesPane();
 
-                renderData(runtimes, svg, g);
+                renderData(durationsByDay, svg, g);
             }
         };
     };

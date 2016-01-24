@@ -1,4 +1,4 @@
-(function (timespanSelection, graphDescription, graphFactory, runtimes, jobColors, dataSource) {
+(function (timespanSelection, graphDescription, graphFactory, durationsByDay, jobColors, dataSource) {
     var timespanSelector = timespanSelection.create(timespanSelection.timespans.twoMonths),
         description = graphDescription.create({
             description: "Runtime over time for all pipelines identified for the given interval, average by day. A pipeline is considered a simple chain of jobs, each triggering another until the pipeline finishes. The time between the start of the first build and the end of the last build makes up the runtime of a pipeline run.",
@@ -23,19 +23,19 @@
             return {
                 title: entry.pipeline.join(', '),
                 color: color(entry.pipeline[entry.pipeline.length - 1]),
-                runtimes: entry.runtimes.map(function (day) {
+                durations: entry.runtimes.map(function (day) {
                     return {
                         date: new Date(day.date),
-                        runtime: day.runtime / 1000
+                        duration: day.runtime / 1000
                     };
                 })
             };
         }).filter(function (entry) {
-            return entry.runtimes.length > 1;
+            return entry.durations.length > 1;
         });
     };
 
-    var runtimePane = runtimes(graph.svg);
+    var runtimePane = durationsByDay(graph.svg, 'Average runtime');
 
     timespanSelector.load(function (selectedTimespan) {
         var fromTimestamp = timespanSelection.startingFromTimestamp(selectedTimespan);
@@ -48,4 +48,4 @@
             runtimePane.render(transformRuntimes(data));
         });
     });
-}(timespanSelection, graphDescription, graphFactory, runtimes, jobColors, dataSource));
+}(timespanSelection, graphDescription, graphFactory, durationsByDay, jobColors, dataSource));

@@ -1,4 +1,4 @@
-(function (timespanSelection, graphDescription, graphFactory, runtimes, jobColors, dataSource) {
+(function (timespanSelection, graphDescription, graphFactory, durationsByDay, jobColors, dataSource) {
     var timespanSelector = timespanSelection.create(timespanSelection.timespans.twoMonths),
         description = graphDescription.create({
             description: "Job runtime over time, average by day. The job's runtime is calculated as time between start and end of its builds.",
@@ -28,22 +28,22 @@
             return {
                 title: jobName,
                 color: color(jobName),
-                runtimes: data
+                durations: data
                     .map(function (d) {
                         return {
                             date: d.date,
-                            runtime: d[jobName] ? (new Number(d[jobName]) * 24 * 60 * 60) : undefined
+                            duration: d[jobName] ? (new Number(d[jobName]) * 24 * 60 * 60) : undefined
                         };
                     }).filter(function (d) {
-                        return d.runtime !== undefined;
+                        return d.duration !== undefined;
                     })
             };
         }).filter(function (jobRuntimes) {
-            return jobRuntimes.runtimes.length > 1;
+            return jobRuntimes.durations.length > 1;
         });
     };
 
-    var runtimePane = runtimes(graph.svg);
+    var runtimePane = durationsByDay(graph.svg, 'Average runtime');
 
     timespanSelector.load(function (selectedTimespan) {
         var fromTimestamp = timespanSelection.startingFromTimestamp(selectedTimespan);
@@ -56,4 +56,4 @@
             runtimePane.render(transformRuntimes(data));
         });
     });
-}(timespanSelection, graphDescription, graphFactory, runtimes, jobColors, dataSource));
+}(timespanSelection, graphDescription, graphFactory, durationsByDay, jobColors, dataSource));
