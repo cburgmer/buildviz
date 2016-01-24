@@ -1,16 +1,9 @@
 (ns buildviz.controllers.job-runtime
-  (:require [buildviz.analyse.builds :refer [average-runtime-by-day]]
+  (:require [buildviz.analyse.builds :refer [job-runtimes-by-day]]
             [buildviz.data.results :as results]
             [buildviz.util
              [csv :as csv]
              [http :as http]]))
-
-(defn- runtimes-by-day [build-results from-timestamp]
-  (let [job-names (results/job-names build-results)]
-    (->> (map #(average-runtime-by-day (results/builds build-results % from-timestamp))
-              job-names)
-         (zipmap job-names)
-         (filter #(not-empty (second %))))))
 
 (defn- remap-date-first [[job runtimes-by-day]]
   (map (fn [[day avg-runtime]]
@@ -34,7 +27,7 @@
        runtimes))
 
 (defn get-job-runtime [build-results from-timestamp]
-  (let [runtimes-by-day (runtimes-by-day build-results from-timestamp)
+  (let [runtimes-by-day (job-runtimes-by-day (results/all-builds build-results from-timestamp))
         job-names (keys runtimes-by-day)]
 
     (http/respond-with-csv (csv/export-table (cons "date" job-names)

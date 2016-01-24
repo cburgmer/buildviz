@@ -53,24 +53,24 @@
      (is (= 2 (average-runtime [{:start 1 :end 2} {:start 3 :end 5}])))
      (is (= 42 (average-runtime [{:start 0 :end 42}, {:outcome "pass"}])))))
 
-(deftest test-average-runtime-by-day
-  (testing "average-runtime-by-day"
-     (is (= {} (average-runtime-by-day [])))
-     (is (= {} (average-runtime-by-day [{:start 0}])))
-     (is (= {"1986-10-14" 1000}
-            (average-runtime-by-day [{:start sometime-on-1986-10-14 :end (+ sometime-on-1986-10-14 1000)}])))
-     (is (= {"1986-10-15" (* 24 60 60 1000)}
-            (average-runtime-by-day [{:start sometime-on-1986-10-14 :end (+ sometime-on-1986-10-14 (* 24 60 60 1000))}])))
-     (is (= {"1986-10-14" 2001}
-            (average-runtime-by-day [{:start sometime-on-1986-10-14 :end (+ sometime-on-1986-10-14 1000)}
-                                     {:start sometime-on-1986-10-14 :end (+ sometime-on-1986-10-14 3001)}])))
-     (is (= {"1986-10-14" 1000
-             "1988-01-01" 3001}
-            (average-runtime-by-day [{:start sometime-on-1986-10-14 :end (+ sometime-on-1986-10-14 1000)}
-                                     {:start sometime-on-1988-1-1 :end (+ sometime-on-1988-1-1 3001)}]))))
+(deftest test-job-runtimes-by-day
+  (testing "job-runtimes-by-day"
+     (is (= {} (job-runtimes-by-day [])))
+     (is (= {} (job-runtimes-by-day [{:start 0 :job "name"}])))
+     (is (= {"name" {"1986-10-14" 1000}}
+            (job-runtimes-by-day [{:start sometime-on-1986-10-14 :end (+ sometime-on-1986-10-14 1000) :job "name"}])))
+     (is (= {"name" {"1986-10-15" (* 24 60 60 1000)}}
+            (job-runtimes-by-day [{:start sometime-on-1986-10-14 :end (+ sometime-on-1986-10-14 (* 24 60 60 1000)) :job "name"}])))
+     (is (= {"name" {"1986-10-14" 2001}}
+            (job-runtimes-by-day [{:start sometime-on-1986-10-14 :end (+ sometime-on-1986-10-14 1000) :job "name"}
+                                  {:start sometime-on-1986-10-14 :end (+ sometime-on-1986-10-14 3001) :job "name"}])))
+     (is (= {"name" {"1986-10-14" 1000
+                     "1988-01-01" 3001}}
+            (job-runtimes-by-day [{:start sometime-on-1986-10-14 :end (+ sometime-on-1986-10-14 1000) :job "name"}
+                                  {:start sometime-on-1988-1-1 :end (+ sometime-on-1988-1-1 3001) :job "name"}]))))
   (testing "should handle integers"
-    (is (= {"1970-01-01" 0}
-           (average-runtime-by-day [{:start (int 0) :end (int 0)}])))))
+    (is (= {"name" {"1970-01-01" 0}}
+           (job-runtimes-by-day [{:start (int 0) :end (int 0) :job "name"}])))))
 
 (deftest test-fail-count
   (testing "fail-count"
