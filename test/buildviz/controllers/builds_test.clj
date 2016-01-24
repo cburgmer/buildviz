@@ -70,14 +70,12 @@
            (:status (get-request (the-app) "/builds/unknownBuild/10"))))
 
     ;; GET should return 404 if build not found
-    (let [app (the-app)]
-      (a-build app "anExistingBuild" 1, {:start 42 :end 43})
+    (let [app (the-app {"anExistingBuild" {1 {:start 42 :end 43}}} {})]
       (is (= 404
              (:status (get-request app "/builds/anExistingBuild/2")))))
 
     ;; Different jobs should not interfere with each other
-    (let [app (the-app)]
-      (a-build app "someBuild" 1, {:start 42 :end 43})
+    (let [app (the-app {"someBuild" {1 {:start 42 :end 43}}} {})]
       (is (= 404
              (:status (get-request app "/builds/totallyUnrelatedBuild/1")))))))
 

@@ -58,10 +58,3 @@
 
 (defn json-body [response]
   (json/parse-string (:body response)))
-
-;; test fixtures
-
-(defn a-build [app job-name build-nr content]
-  (json-put-request app
-                    (format "/builds/%s/%s" job-name build-nr)
-                    content))
