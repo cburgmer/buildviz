@@ -29,7 +29,8 @@
                        [moment "2.10.6"]
                        [moment-duration-format "1.3.0"]]
         :root "resources/public"}
-  :ring {:handler buildviz.main/app}
+  :ring {:handler buildviz.main/app
+         :init buildviz.main/help}
   :aot [buildviz.go.sync
         buildviz.jenkins.sync]
   :profiles {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]

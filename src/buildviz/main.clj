@@ -1,15 +1,20 @@
 (ns buildviz.main
-  (:require [buildviz
+  (:require [buildviz.data.results :as results]
+            [buildviz
              [handler :as handler]
              [storage :as storage]]
-            [buildviz.data.results :as results]
-            [buildviz.util.http :as http]))
+            [buildviz.util.http :as http]
+            [clojure.string :as str]))
 
 (def data-dir (if-let [data-dir (System/getenv "BUILDVIZ_DATA_DIR")]
                 data-dir
-                "data"))
+                "data/"))
 
 (def pipeline-name (System/getenv "BUILDVIZ_PIPELINE_NAME"))
+
+(defn help []
+  (println "Available environment variables:" (str/join ", " ["PORT" "BUILDVIZ_DATA_DIR" "BUILDVIZ_PIPELINE_NAME"]))
+  (println "Storing builds in" data-dir))
 
 (def app
   (let [builds (storage/load-builds data-dir)]
