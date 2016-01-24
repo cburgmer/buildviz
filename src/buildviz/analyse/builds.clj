@@ -1,10 +1,7 @@
 (ns buildviz.analyse.builds
-  (:require [buildviz.data.build-schema :refer [build-with-outcome? failed-build?]]
-            [buildviz.util.math :as math]
-            [clj-time
-             [coerce :as tc]
-             [core :as t]
-             [format :as tf]]))
+  (:require [buildviz.analyse.duration :as duration]
+            [buildviz.data.build-schema :refer [build-with-outcome? failed-build?]]
+            [buildviz.util.math :as math]))
 
 (defn builds-with-outcome [builds]
   (filter build-with-outcome? builds))
@@ -43,30 +40,6 @@
     (math/avg runtimes)))
 
 
-(def date-only-formatter (tf/formatter "yyyy-MM-dd" (t/default-time-zone)))
-
-(defn- date-for [timestamp]
-  (when timestamp
-    (tf/unparse date-only-formatter (tc/from-long (long timestamp)))))
-
-(defn- average-duration [builds]
-  (math/avg (map :duration builds)))
-
-(defn- average-duration-by-day [duration-entries]
-  (->> duration-entries
-       (group-by #(date-for (:end %)))
-       (filter first)
-       (map (fn [[date builds]]
-              [date (average-duration builds)]))
-       (into {})))
-
-(defn- average-by-day [duration-entries]
-  (->> duration-entries
-       (group-by :name)
-       (map (fn [[name duration-entries]]
-              [name (average-duration-by-day duration-entries)]))
-       (into {})))
-
 (defn job-runtimes-by-day [builds]
   (->> builds
        (filter :end)
@@ -74,7 +47,7 @@
               {:name (:job build)
                :end (:end build)
                :duration (runtime-for build)}))
-       average-by-day))
+       duration/average-by-day))
 
 ;; error count
 

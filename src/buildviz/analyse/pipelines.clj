@@ -1,10 +1,6 @@
 (ns buildviz.analyse.pipelines
-  (:require [buildviz.data.build-schema :refer [was-triggered-by?]]
-            [buildviz.util.math :refer [avg]]
-            [clj-time
-             [coerce :as tc]
-             [core :as t]
-             [format :as tf]]))
+  (:require [buildviz.analyse.duration :as duration]
+            [buildviz.data.build-schema :refer [was-triggered-by?]]))
 
 (defn- find-build [{:keys [job-name build-id]} builds]
   (when job-name
@@ -33,30 +29,6 @@
     (->> pipeline-end-candidates
          (map #(find-pipeline-ending-with % builds))
          (filter #(< 1 (count %))))))
-
-
-(def ^:private date-only-formatter (tf/formatter "yyyy-MM-dd" (t/default-time-zone)))
-
-(defn- date-for [timestamp]
-  (tf/unparse date-only-formatter (tc/from-long (long timestamp))))
-
-(defn- average-duration [builds]
-  (avg (map :duration builds)))
-
-(defn- average-duration-by-day [duration-entries]
-  (->> duration-entries
-       (group-by #(date-for (:end %)))
-       (filter first)
-       (map (fn [[date builds]]
-              [date (average-duration builds)]))
-       (into {})))
-
-(defn- average-by-day [duration-entries]
-  (->> duration-entries
-       (group-by :name)
-       (map (fn [[name duration-entries]]
-              [name (average-duration-by-day duration-entries)]))
-       (into {})))
 
 
 (defn- pipeline-run-end [builds-of-pipeline-run]
@@ -88,4 +60,4 @@
        ignore-unsuccessful-pipeline-runs-to-remove-noise-of-interrupted-pipelines
        (filter pipeline-run-end)
        (map pipeline-run->duration)
-       average-by-day))
+       duration/average-by-day))

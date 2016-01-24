@@ -1,9 +1,5 @@
 (ns buildviz.analyse.wait-times
-  (:require [buildviz.util.math :refer [avg]]
-            [clj-time
-             [coerce :as tc]
-             [core :as t]
-             [format :as tf]]))
+  (:require [buildviz.analyse.duration :as duration]))
 
 (defn- find-build [{:keys [job-name build-id]} builds]
   (when job-name
@@ -16,9 +12,9 @@
   (when-let [triggering-build-end (:end (find-build triggered-by builds))]
     (let [wait-time (- start
                        triggering-build-end)]
-      {:job job
+      {:name job
        :end end
-       :wait-time wait-time})))
+       :duration wait-time})))
 
 (defn- wait-times [builds]
   (->> builds
@@ -28,25 +24,7 @@
        (remove nil?)))
 
 
-(def ^:private date-only-formatter (tf/formatter "yyyy-MM-dd" (t/default-time-zone)))
-
-(defn- date-for [timestamp]
-  (tf/unparse date-only-formatter (tc/from-long (long timestamp))))
-
-(defn- average-wait-time [builds]
-  (avg (map :wait-time builds)))
-
-(defn- average-by-day [build-wait-times]
-  (->> build-wait-times
-       (group-by #(date-for (:end %)))
-       (map (fn [[date builds]]
-              [date (average-wait-time builds)]))
-       (into {})))
-
 (defn wait-times-by-day [builds]
   (->> builds
        wait-times
-       (group-by :job)
-       (map (fn [[job builds]]
-              [job (average-by-day builds)]))
-       (into {})))
+       (duration/average-by-day)))
