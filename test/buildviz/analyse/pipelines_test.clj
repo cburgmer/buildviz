@@ -8,16 +8,17 @@
   (testing "should find a chain of two builds"
     (is (= [["test" "deploy"]]
            (keys (sut/pipeline-runtimes-by-day [{:job "deploy"
-                                                 :build-id "42"
+                                                 :end 10
                                                  :triggered-by {:job-name "test"
                                                                 :build-id "41"}}
                                                 {:job "test"
-                                                 :build-id "41"}])))))
+                                                 :build-id "41"
+                                                 :start 0}])))))
 
   (testing "should find chain of 3 builds"
     (is (= [["test" "deploy-staging" "deploy-live"]]
            (keys (sut/pipeline-runtimes-by-day [{:job "deploy-live"
-                                                 :build-id "42"
+                                                 :end 10
                                                  :triggered-by {:job-name "deploy-staging"
                                                                 :build-id "42"}}
                                                 {:job "deploy-staging"
@@ -25,28 +26,33 @@
                                                  :triggered-by {:job-name "test"
                                                                 :build-id "41"}}
                                                 {:job "test"
-                                                 :build-id "41"}])))))
+                                                 :build-id "41"
+                                                 :start 0}])))))
 
   (testing "should handle shared chain"
     (is (= [["test" "deploy-qa"]
             ["test" "deploy-uat"]]
            (keys (sut/pipeline-runtimes-by-day [{:job "test"
-                                                 :build-id 41}
+                                                 :build-id 41
+                                                 :start 0}
                                                 {:job "deploy-qa"
+                                                 :end 10
                                                  :triggered-by {:job-name "test"
                                                                 :build-id 41}}
                                                 {:job "deploy-uat"
+                                                 :end 10
                                                  :triggered-by {:job-name "test"
                                                                 :build-id 41}}])))))
 
   (testing "should handle missing triggering build"
     (is (= [["deploy-staging" "deploy-live"]]
            (keys (sut/pipeline-runtimes-by-day [{:job "deploy-live"
-                                                 :build-id "42"
+                                                 :end 10
                                                  :triggered-by {:job-name "deploy-staging"
                                                                 :build-id "42"}}
                                                 {:job "deploy-staging"
                                                  :build-id "42"
+                                                 :start 0
                                                  :triggered-by {:job-name "test"
                                                                 :build-id "41"}}])))))
 
@@ -77,18 +83,18 @@
   (testing "should include pipeline successful in last step"
     (is (= [["test" "deploy"]]
            (keys (sut/pipeline-runtimes-by-day [{:job "deploy"
-                                                 :build-id "42"
+                                                 :end 10
                                                  :triggered-by {:job-name "test"
                                                                 :build-id "41"}
                                                  :outcome "pass"}
                                                 {:job "test"
-                                                 :build-id "41"}])))))
+                                                 :build-id "41"
+                                                 :start 0}])))))
 
   (testing "should aggregate multiple instances of a pipeline run"
     (is (= {["test" "deploy"] {"1970-01-01" 600
                                "1970-01-02" 800}}
            (sut/pipeline-runtimes-by-day [{:job "deploy"
-                                           :build-id "42"
                                            :triggered-by {:job-name "test"
                                                           :build-id "41"}
                                            :end (+ 1000 a-day)}
@@ -96,7 +102,6 @@
                                            :build-id "41"
                                            :start (+ 200 a-day)}
                                           {:job "deploy"
-                                           :build-id "41"
                                            :triggered-by {:job-name "test"
                                                           :build-id "40"}
                                            :end 1000}

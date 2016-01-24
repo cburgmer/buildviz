@@ -31,8 +31,7 @@
 (def ^:private date-only-formatter (tf/formatter "yyyy-MM-dd" (t/default-time-zone)))
 
 (defn- date-for [timestamp]
-  (when timestamp
-    (tf/unparse date-only-formatter (tc/from-long (long timestamp)))))
+  (tf/unparse date-only-formatter (tc/from-long (long timestamp))))
 
 (defn- average-wait-time [builds]
   (avg (map :wait-time builds)))

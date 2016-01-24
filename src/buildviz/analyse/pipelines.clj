@@ -38,8 +38,7 @@
 (def ^:private date-only-formatter (tf/formatter "yyyy-MM-dd" (t/default-time-zone)))
 
 (defn- date-for [timestamp]
-  (when timestamp
-    (tf/unparse date-only-formatter (tc/from-long (long timestamp)))))
+  (tf/unparse date-only-formatter (tc/from-long (long timestamp))))
 
 (defn- average-duration [builds]
   (avg (map :duration builds)))
@@ -72,22 +71,21 @@
 (defn- pipeline-run-name [builds-of-pipeline-run]
   (map :job builds-of-pipeline-run))
 
-(defn- total-runtime [builds-of-pipeline-run]
-  (when-let [end (pipeline-run-end builds-of-pipeline-run)]
-    (- end
-       (pipeline-run-start builds-of-pipeline-run))))
-
 (defn- ignore-unsuccessful-pipeline-runs-to-remove-noise-of-interrupted-pipelines [pipeline-runs]
   (remove (fn [pipeline-run]
             (= "fail" (pipeline-run-outcome pipeline-run)))
           pipeline-runs))
 
+(defn- pipeline-run->duration [pipeline-run]
+  {:name (pipeline-run-name pipeline-run)
+   :end (pipeline-run-end pipeline-run)
+   :duration (- (pipeline-run-end pipeline-run)
+                (pipeline-run-start pipeline-run))})
+
 (defn pipeline-runtimes-by-day [builds]
   (->> builds
        find-pipeline-runs
        ignore-unsuccessful-pipeline-runs-to-remove-noise-of-interrupted-pipelines
-       (map (fn [pipeline-run]
-              {:name (pipeline-run-name pipeline-run)
-               :end (pipeline-run-end pipeline-run)
-               :duration (total-runtime pipeline-run)}))
+       (filter pipeline-run-end)
+       (map pipeline-run->duration)
        average-by-day))
