@@ -1,13 +1,15 @@
 (ns buildviz.data.build-schema
   (:require [closchema.core :as schema]))
 
+(def minimum-13-digit-timestamp (Math/pow 10 12)) ; Sun, 09 Sep 2001 01:46:40 GMT
+
 (defn- build-schema [start-value]
   {:type "object"
    :properties {:start {:type "integer"
-                        :minimum 0}
+                        :minimum minimum-13-digit-timestamp}
                 :end {:type "integer"
                       :minimum (or start-value
-                                   0)}
+                                   minimum-13-digit-timestamp)}
                 :outcome {:enum ["pass" "fail"]}
                 :inputs {:type "array"
                          :items {:type "object"

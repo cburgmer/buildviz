@@ -30,9 +30,9 @@
            (json-body (json-get-request (the-app) "/jobs"))))
 
     ;; GET should return job summary
-    (let [app (the-app)]
-      (a-build app "someBuild" 1, {:start 42 :end 43})
-      (a-build app "anotherBuild" 1, {:start 10 :end 12})
+    (let [app (the-app {"someBuild" {1 {:start 42 :end 43}}
+                        "anotherBuild" {1 {:start 10 :end 12}}}
+                       {})]
       (is (= [{"jobName" "someBuild"
                "averageRuntime" 1
                "totalCount" 1}

@@ -23,7 +23,7 @@
   (testing "PUT to /builds/:job/:build"
     ;; PUT should return 200
     (is (= 200
-           (:status (json-put-request (the-app) "/builds/abuild/1" {:start 42}))))
+           (:status (json-put-request (the-app) "/builds/abuild/1" {:start 1453646247759}))))
 
     ;; PUT should return 400 for unknown parameters
     (is (= 400
@@ -34,36 +34,34 @@
            (:status (json-put-request (the-app) "/builds/abuild/1" {:outcome "banana"}))))
 
     ;; PUT should return content
-    (let [response (json-put-request (the-app) "/builds/abuild/1" {:start 42 :end 43})
+    (let [response (json-put-request (the-app) "/builds/abuild/1" {:start 1453646247759 :end 1453646247760})
           resp-data (json-body response)]
-      (is (= {"start" 42 "end" 43}
+      (is (= {"start" 1453646247759 "end" 1453646247760}
              resp-data))))
 
   (testing "should store build"
     (let [builds (atom {})
           app (the-app-with-builds builds)]
-      (json-put-request app "/builds/abuild/1" {:start 42})
-      (is (= {:start 42}
+      (json-put-request app "/builds/abuild/1" {:start 1453646247759})
+      (is (= {:start 1453646247759}
              (get-in @builds ["abuild" "1"])))))
 
   (testing "should convert from camel-case"
     (let [builds (atom {})
           app (the-app-with-builds builds)]
-      (json-put-request app "/builds/abuild/1" {:start 42 :inputs [{:revision "xyz" :sourceId 21}]})
+      (json-put-request app "/builds/abuild/1" {:start 1453646247759 :inputs [{:revision "xyz" :sourceId 21}]})
       (is (= {:revision "xyz" :source-id 21}
              (first (:inputs (get-in @builds ["abuild" "1"]))))))))
 
 (deftest test-get-build
   (testing "GET to /builds/:job/:build"
     ;; GET should return 200
-    (let [app (the-app)]
-      (a-build app "anotherBuild" 1 {:start 42 :end 43})
+    (let [app (the-app {"anotherBuild" {"1" {:start 42 :end 43}}} {})]
       (is (= 200
              (:status (get-request app "/builds/anotherBuild/1")))))
 
     ;; GET should return content stored by PUT
-    (let [app (the-app)]
-      (a-build app "yetAnotherBuild" 1, {:start 42 :end 43})
+    (let [app (the-app {"yetAnotherBuild" {"1" {:start 42 :end 43}}} {})]
       (is (= {"start" 42 "end" 43}
              (json-body (get-request app "/builds/yetAnotherBuild/1")))))
 

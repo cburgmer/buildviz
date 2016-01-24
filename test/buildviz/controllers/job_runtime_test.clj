@@ -21,12 +21,12 @@
            (:body (get-request (the-app) "/jobruntime"))))
 
     ;; GET should return the average runtime for each job as well as total
-    (let [app (the-app)]
-      (a-build app "aBuild" 1, {:start a-timestamp :end (+ a-timestamp 1000)})
-      (a-build app "aBuild" 2, {:start (+ a-timestamp 2000) :end (+ a-timestamp 4001)})
-      (a-build app "aBuild" 3, {:start (+ a-timestamp a-day) :end (+ a-timestamp a-day 4000)})
-      (a-build app "anotherBuild" 1, {:start a-timestamp :end (+ a-timestamp 4000)})
-      (a-build app "buildWithoutTimestamps" 1, {:outcome "pass"})
+    (let [app (the-app {"aBuild" {1 {:start a-timestamp :end (+ a-timestamp 1000)}
+                                  2 {:start (+ a-timestamp 2000) :end (+ a-timestamp 4001)}
+                                  3 {:start (+ a-timestamp a-day) :end (+ a-timestamp a-day 4000)}}
+                        "anotherBuild" {1 {:start a-timestamp :end (+ a-timestamp 4000)}}
+                        "buildWithoutTimestamps" {1 {:outcome "pass" :start a-timestamp}}}
+                       {})]
       (is (= (str/join "\n" ["date,aBuild,anotherBuild"
                          (format "1986-10-14,%.8f,%.8f" 0.00001737 0.00004630)
                          (format "1986-10-15,%.8f," 0.00004630)

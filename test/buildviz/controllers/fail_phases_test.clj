@@ -38,10 +38,10 @@
              (json-body (json-get-request app "/failphases"))))))
 
   (testing "should respect 'from' filter"
-    (let [app (the-app)]
-      (a-build app "badBuild" 1, {:start 20 :end 42 :outcome "fail"})
-      (a-build app "badBuild" 2, {:start 70 :end 80 :outcome "pass"})
-      (a-build app "badBuild" 3, {:start 90 :end 100 :outcome "fail"})
-      (a-build app "badBuild" 4, {:start 190 :end 200 :outcome "pass"})
+    (let [app (the-app {"badBuild" {1 {:start 20 :end 42 :outcome "fail"}
+                                    2 {:start 70 :end 80 :outcome "pass"}
+                                    3 {:start 90 :end 100 :outcome "fail"}
+                                    4 {:start 190 :end 200 :outcome "pass"}}}
+                       {})]
       (is (= [{"start" 100 "end" 200 "culprits" ["badBuild"]}]
            (json-body (json-get-request app "/failphases" {"from" 60})))))))
