@@ -38,7 +38,7 @@
 
    (GET "/status" {} (get-status build-results pipeline-name))
    (GET "/jobs" {accept :accept query :query-params} (get-jobs build-results accept (from-timestamp query)))
-   (GET "/jobruntime" {query :query-params} (get-job-runtime build-results (from-timestamp query)))
+   (GET "/jobruntime" {accept :accept query :query-params} (get-job-runtime build-results accept (from-timestamp query)))
    (GET "/pipelineruntime" {accept :accept query :query-params} (get-pipeline-runtime build-results accept (from-timestamp query)))
    (GET "/waittimes" {accept :accept query :query-params} (get-wait-times build-results accept (from-timestamp query)))
    (GET "/failphases" {accept :accept query :query-params} (get-fail-phases build-results accept (from-timestamp query)))
