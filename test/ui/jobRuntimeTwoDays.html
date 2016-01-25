@@ -7,15 +7,25 @@
 <link rel="stylesheet" href="../../resources/public/common/runtimes.css">
 <script>
     var dataSource = {
-        loadCSV: function (_, callback) {
+        load: function (_, callback) {
             callback([{
-                date: '2015-10-14',
-                someJob: 0.017,
-                anotherJob: 0.051
+                job: "someJob",
+                runtimes: [{
+                    date: '2015-10-14',
+                    runtime: 1468800
+                }, {
+                    date: '2015-10-15',
+                    runtime: 1728000
+                }]
             }, {
-                date: '2015-10-15',
-                someJob: 0.02,
-                anotherJob: 0.051
+                job: "anotherJob",
+                runtimes: [{
+                    date: '2015-10-14',
+                    runtime: 4406400
+                }, {
+                    date: '2015-10-15',
+                    runtime: 4406400
+                }]
             }]);
         }
     };

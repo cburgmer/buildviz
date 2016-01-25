@@ -16,27 +16,22 @@
             widgets: [timespanSelector.widget, description.widget]
         });
 
-    var transformRuntimes = function (data) {
-        var jobNames = d3.keys(data[0]).filter(function(key) { return key !== "date"; }),
-            color = jobColors.colors(jobNames);
-
-        data.forEach(function (d) {
-            d.date = new Date(d.date);
+    var transformRuntimes = function (jobRuntimes) {
+        var jobNames = jobRuntimes.map(function (jobEntry) {
+            return jobEntry.job;
         });
+        var color = jobColors.colors(jobNames);
 
-        return jobNames.map(function (jobName) {
+        return jobRuntimes.map(function (jobEntry) {
             return {
-                title: jobName,
-                color: color(jobName),
-                durations: data
-                    .map(function (d) {
-                        return {
-                            date: d.date,
-                            duration: d[jobName] ? (new Number(d[jobName]) * 24 * 60 * 60) : undefined
-                        };
-                    }).filter(function (d) {
-                        return d.duration !== undefined;
-                    })
+                title: jobEntry.job,
+                color: color(jobEntry.job),
+                durations: jobEntry.runtimes.map(function (runtimeEntry) {
+                    return {
+                        date: new Date(runtimeEntry.date),
+                        duration: runtimeEntry.runtime / 1000
+                    };
+                })
             };
         }).filter(function (jobRuntimes) {
             return jobRuntimes.durations.length > 1;
@@ -50,7 +45,7 @@
 
         graph.loading();
 
-        dataSource.loadCSV('/jobruntime?from=' + fromTimestamp, function (data) {
+        dataSource.load('/jobruntime?from=' + fromTimestamp, function (data) {
             graph.loaded();
 
             runtimePane.render(transformRuntimes(data));
