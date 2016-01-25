@@ -8,19 +8,18 @@ Transparency for your build pipeline's results and runtime.
 > > Your build pipeline can.
 > > - Anonymous
 
-## Concepts
+## The What
 
-buildviz provides various graphs detailing your build pipeline's behaviour. So far it cares about
+Buildviz provides graphs detailing runtime behaviour, failures and stability of the pipeline, answering a 
+[multitude of questions](https://github.com/cburgmer/buildviz/wiki/Questions) in the hopes of improving your pipeline.
 
-* **jobs**, a job is part of the pipeline and executes some meaningful action,
-* **builds**, a build is an instance of the job being triggered, it has a unique **id**, a **start** and **end time**, an **outcome** and possibly one or more **inputs** with a given **revision**,
-* **test results**, a list of tests with **runtime** and **status**.
+All it needs is your build history including start and end time, outcome, build inputs, job dependencies and test results.
 
 ## Example
 
 ![Screenshot](https://github.com/cburgmer/buildviz/raw/master/examples/data/screenshot.png)
 
-#### Seed dummy data for a quick impression
+Seed dummy data for a quick impression
 
     $ ./examples/runSeedDataExample.sh
 
