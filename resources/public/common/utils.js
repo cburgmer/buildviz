@@ -1,6 +1,20 @@
 var utils = (function () {
     var module = {};
 
+    module.breakJobName = function (jobName) {
+        return jobName
+            .split(/([ _\-])/)
+            .filter(function removeWhiteSpace(token) {
+                return token !== ' ';
+            })
+            .reduce(function (tokens, currentToken) {
+                if (['-', '_'].indexOf(currentToken) >= 0 && tokens.length) {
+                    return tokens.slice(0, -1).concat(tokens.pop() + currentToken);
+                }
+                return tokens.concat(currentToken);
+            }, []);
+    };
+
     var padZero = function (value, padToLength) {
         var paddedValue = String(value);
         while (paddedValue.length < padToLength) {

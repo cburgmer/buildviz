@@ -98,7 +98,7 @@
             .attr("transform", function(d) { return "translate(" + (d.dx / 2) + "," + (d.dy / 2) + ")"; })
             .each(function (d) {
                 if (d.dx > 90 && d.dy > 50) {
-                    graphFactory.textWithLineBreaks(this, d.name.split(' '));
+                    graphFactory.textWithLineBreaks(this, utils.breakJobName(d.name));
                 }
             });
     };

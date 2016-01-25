@@ -1,4 +1,4 @@
-var badJobs = function (jobColors) {
+var badJobs = function (jobColors, utils) {
     "use strict";
 
     var module = {};
@@ -58,7 +58,7 @@ var badJobs = function (jobColors) {
         node.append('text')
             .style("text-anchor", "middle")
             .each(function (d) {
-                graphFactory.textWithLineBreaks(this, d.name.split(' '));
+                graphFactory.textWithLineBreaks(this, utils.breakJobName(d.name));
             });
 
         selection
@@ -75,4 +75,4 @@ var badJobs = function (jobColors) {
     };
 
     return module;
-}(jobColors);
+}(jobColors, utils);
