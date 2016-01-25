@@ -1,37 +1,46 @@
 var graphDescription = function (d3) {
     var module = {};
 
-    var asUnsortedList = function (textList) {
+    var githubWikiLink = function (question) {
+        var baseUrl = 'https://github.com/cburgmer/buildviz/wiki/Questions';
+
+        return baseUrl + '#' + question.replace(/ /g, '-').replace(/\?/g, '').toLowerCase()
+    };
+
+    var answerToListWidget = function (answersTo) {
         var ul = d3.select(document.createElement('ul'));
-        textList.forEach(function (text) {
-            ul.append('li').text(text);
+        answersTo.forEach(function (answerTo) {
+            ul.append('li')
+                .append('a')
+                .attr('href', githubWikiLink(answerTo))
+                .text(answerTo);
         });
         return ul.node();
     };
 
-    var createBlock = function (text, headline) {
+    var textWidget = function (text) {
+        var p = d3.select(document.createElement('p'));
+        p.text(text);
+        return p.node();
+    };
+
+    var csvLinkWidget = function (link) {
+        var h4 = d3.select(document.createElement('h4'));
+        h4.append('a')
+            .attr('href', link)
+            .text('Source as CSV');
+        return h4.node();
+    };
+
+    var createBlock = function (content, widget, headline) {
         var block = d3.select(document.createElement('div'));
         if (headline) {
             block
                 .append('h4')
                 .text(headline);
         }
-        if (typeof text === typeof '') {
-            block
-                .append('p')
-                .text(text);
-        } else {
-            block.node().appendChild(asUnsortedList(text));
-        }
+        block.node().appendChild(widget(content));
         return block.node();
-    };
-
-    var createLink = function (text, link) {
-        var h4 = d3.select(document.createElement('h4'));
-        h4.append('a')
-            .attr('href', link)
-            .text(text);
-        return h4.node();
     };
 
     module.create = function (params) {
@@ -41,17 +50,16 @@ var graphDescription = function (d3) {
             section = container
                 .append('section');
 
-        [{text: params.description},
-         {headline: 'Answer to', text: params.answer},
-         {headline: 'Legend', text: params.legend}].forEach(function (block) {
-             if (block.text) {
-                 section.node().appendChild(createBlock(block.text, block.headline));
+        [
+            {content: params.description, widget: textWidget},
+            {headline: 'Answer to', content: params.answer, widget: answerToListWidget},
+            {headline: 'Legend', content: params.legend, widget: textWidget},
+            {content: params.csvSource, widget: csvLinkWidget}
+        ].forEach(function (block) {
+             if (block.content) {
+                 section.node().appendChild(createBlock(block.content, block.widget, block.headline));
              }
          });
-
-        if (params.csvSource) {
-            section.node().appendChild(createLink('Source as CSV', params.csvSource));
-        }
 
         return {
             widget: container.node()
