@@ -15,12 +15,12 @@
                                 1 {:start 100}}
                         "deploy" {2 {:start (+ 2500 a-day)
                                      :end (+ 2800 a-day)
-                                     :triggered-by {:job-name "test"
-                                                    :build-id 2}}
+                                     :triggered-by [{:job-name "test"
+                                                     :build-id 2}]}
                                   1 {:start 200
                                      :end 700
-                                     :triggered-by {:job-name "test"
-                                                    :build-id 1}}}}
+                                     :triggered-by [{:job-name "test"
+                                                     :build-id 1}]}}}
                        {})]
       (is (= [{"pipeline" ["test" "deploy"]
                "runtimes" [{"date" "1970-01-01"
@@ -34,12 +34,12 @@
                                 2 {:start (+ 2000 a-day)}}
                         "deploy" {1 {:start 200
                                      :end 700
-                                     :triggered-by {:job-name "test"
-                                                    :build-id 1}}
+                                     :triggered-by [{:job-name "test"
+                                                     :build-id 1}]}
                                   2 {:start (+ 2500 a-day)
                                      :end (+ 2800 a-day)
-                                     :triggered-by {:job-name "test"
-                                                    :build-id 2}}}}
+                                     :triggered-by [{:job-name "test"
+                                                     :build-id 2}]}}}
                        {})]
       (is (= [{"pipeline" ["test" "deploy"]
                "runtimes" [{"date" "1970-01-02"
@@ -51,12 +51,12 @@
                                 2 {:start (+ 2000 a-day)}}
                         "deploy-staging" {1 {:start 200
                                              :end 700
-                                             :triggered-by {:job-name "test"
-                                                            :build-id 1}}}
+                                             :triggered-by [{:job-name "test"
+                                                             :build-id 1}]}}
                         "deploy-uat" {2 {:start (+ 2500 a-day)
                                          :end (+ 2800 a-day)
-                                         :triggered-by {:job-name "test"
-                                                        :build-id 2}}}}
+                                         :triggered-by [{:job-name "test"
+                                                         :build-id 2}]}}}
                        {})]
       (is (= (str/join "\n" ["date,test|deploy-staging,test|deploy-uat"
                              (format "1970-01-01,%.8f," (float (/ 600 a-day)))

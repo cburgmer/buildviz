@@ -17,11 +17,14 @@
                                               :source_id {:type ["string" "integer"]}
                                               :source-id {:type ["string" "integer"]}}
                                  :additionalProperties false}}
-                :triggered-by {:type "object"
-                               :properties {:job-name {:type "string" :required true}
-                                            :build-id {:type "string" :required true}}
-                               ;; :required [:jobName :buildId] # Not correctly implemented in closchema
-                               :additionalProperties false}}
+                :triggered-by {:type ["array" "object"]}
+                ;; TODO for compatibility reasons we handle a list *and* a single entry for 'triggeredBy', but closchema doesn't support 'oneOf' validations
+                ;; {:type "object"
+                ;;  :properties {:job-name {:type "string" :required true}
+                ;;               :build-id {:type "string" :required true}}
+                ;;  ;; :required [:jobName :buildId] # Not correctly implemented in closchema
+                ;;  :additionalProperties false}
+                }
    :required [:start]
    :additionalProperties false})
 
@@ -39,7 +42,9 @@
   (and (build-with-outcome? build)
        (not (passed-build? build))))
 
-(defn was-triggered-by? [{{this-job-name :job-name this-build-id :build-id} :triggered-by}
-                          {that-job-name :job that-build-id :build-id}]
-  (and (= this-job-name that-job-name)
-       (= this-build-id that-build-id)))
+(defn was-triggered-by? [{triggered-by :triggered-by}
+                         {that-job-name :job that-build-id :build-id}]
+  (some (fn [{this-job-name :job-name this-build-id :build-id}]
+          (and (= this-job-name that-job-name)
+               (= this-build-id that-build-id)))
+        triggered-by))

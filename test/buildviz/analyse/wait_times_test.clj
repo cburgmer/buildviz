@@ -18,8 +18,8 @@
     :build-id build-id
     :start start
     :end (+ start 1000)
-    :triggered-by {:job-name triggering-job
-                   :build-id triggering-build-id}}))
+    :triggered-by [{:job-name triggering-job
+                    :build-id triggering-build-id}]}))
 
 (deftest test-wait-times-by-day
   (testing "should calculate wait time for triggered build"

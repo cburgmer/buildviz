@@ -14,10 +14,13 @@
        (filter #(was-triggered-by? % candidate-build))
        empty?))
 
+(defn- for-now-lets-ignore-a-build-can-be-triggered-by-multiple-builds [triggered-by]
+  (first triggered-by))
+
 (defn- find-pipeline-ending-with [pipeline-end-build builds]
   (loop [pipeline [pipeline-end-build]]
     (let [current-start (first pipeline)]
-      (if-let [triggering-build (find-build (:triggered-by current-start)
+      (if-let [triggering-build (find-build (for-now-lets-ignore-a-build-can-be-triggered-by-multiple-builds (:triggered-by current-start))
                                             builds)]
         (recur (cons triggering-build pipeline))
         pipeline))))

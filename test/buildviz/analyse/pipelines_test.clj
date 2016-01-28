@@ -17,8 +17,8 @@
     :build-id build-id
     :start 0
     :end 10
-    :triggered-by {:job-name triggering-job
-                   :build-id triggering-build-id}}))
+    :triggered-by [{:job-name triggering-job
+                    :build-id triggering-build-id}]}))
 
 (deftest test-build-pipelines
   (testing "should find a chain of two builds"
@@ -75,15 +75,15 @@
     (is (= {["test" "deploy"] {"1970-01-01" 600
                                "1970-01-02" 800}}
            (sut/pipeline-runtimes-by-day [{:job "deploy"
-                                           :triggered-by {:job-name "test"
-                                                          :build-id "41"}
+                                           :triggered-by [{:job-name "test"
+                                                           :build-id "41"}]
                                            :end (+ 1000 a-day)}
                                           {:job "test"
                                            :build-id "41"
                                            :start (+ 200 a-day)}
                                           {:job "deploy"
-                                           :triggered-by {:job-name "test"
-                                                          :build-id "40"}
+                                           :triggered-by [{:job-name "test"
+                                                           :build-id "40"}]
                                            :end 1000}
                                           {:job "test"
                                            :build-id "40"
@@ -93,16 +93,16 @@
     (is (= {["test" "deploy"] {"1970-01-01" 700}}
            (sut/pipeline-runtimes-by-day [{:job "deploy"
                                            :build-id "42"
-                                           :triggered-by {:job-name "test"
-                                                          :build-id "41"}
+                                           :triggered-by [{:job-name "test"
+                                                           :build-id "41"}]
                                            :end 1000}
                                           {:job "test"
                                            :build-id "41"
                                            :start 200}
                                           {:job "deploy"
                                            :build-id "41"
-                                           :triggered-by {:job-name "test"
-                                                          :build-id "40"}
+                                           :triggered-by [{:job-name "test"
+                                                           :build-id "40"}]
                                            :end 1000}
                                           {:job "test"
                                            :build-id "40"
