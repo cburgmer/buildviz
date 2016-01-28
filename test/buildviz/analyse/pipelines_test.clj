@@ -40,9 +40,9 @@
                                                 (a-triggered-build "deploy-uat" "test" "41")])))))
 
   (testing "should handle missing triggering build"
-    (is (= [["deploy-staging" "deploy-live"]]
-           (keys (sut/pipeline-runtimes-by-day [(a-triggered-build "deploy-live" "deploy-staging" "42")
-                                                (a-triggered-build "deploy-staging" "42" "test" "41")])))))
+    (is (= {}
+           (sut/pipeline-runtimes-by-day [(a-triggered-build "deploy-live" "deploy-staging" "42")
+                                          (a-triggered-build "deploy-staging" "42" "test" "41")]))))
 
   (testing "should ignore 'stand-alone' builds"
     (is (= {}
@@ -106,4 +106,20 @@
                                            :end 1000}
                                           {:job "test"
                                            :build-id "40"
-                                           :start 400}])))))
+                                           :start 400}]))))
+
+  (testing "should handle build triggered by two over two days"
+    (is (= {["test" "deploy"] {"1970-01-02" (/ a-day 2)}}
+           (sut/pipeline-runtimes-by-day [{:job "deploy"
+                                           :build-id "42"
+                                           :triggered-by [{:job-name "test"
+                                                           :build-id "41"}
+                                                          {:job-name "test"
+                                                           :build-id "40"}]
+                                           :end a-day}
+                                          {:job "test"
+                                           :build-id "41"
+                                           :start a-day}
+                                          {:job "test"
+                                           :build-id "40"
+                                           :start 0}])))))

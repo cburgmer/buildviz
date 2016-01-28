@@ -14,23 +14,29 @@
        (filter #(was-triggered-by? % candidate-build))
        empty?))
 
-(defn- for-now-lets-ignore-a-build-can-be-triggered-by-multiple-builds [triggered-by]
-  (first triggered-by))
+(defn- triggering-builds [{triggered-by :triggered-by} builds]
+  (->> triggered-by
+       (map #(find-build % builds))
+       (remove nil?)))
 
-(defn- find-pipeline-ending-with [pipeline-end-build builds]
-  (loop [pipeline [pipeline-end-build]]
-    (let [current-start (first pipeline)]
-      (if-let [triggering-build (find-build (for-now-lets-ignore-a-build-can-be-triggered-by-multiple-builds (:triggered-by current-start))
-                                            builds)]
-        (recur (cons triggering-build pipeline))
-        pipeline))))
+(defn- recur-pipeline-ending-with [pipeline builds]
+  (let [current-start (first pipeline)]
+    (if (contains? current-start :triggered-by)
+      (->> (triggering-builds current-start builds)
+           (map #(cons % pipeline))
+           (mapcat #(recur-pipeline-ending-with % builds)))
+      [pipeline])))
+
+(defn- find-pipelines-ending-with [pipeline-end-build builds]
+  (let [pipeline [pipeline-end-build]]
+    (recur-pipeline-ending-with pipeline builds)))
 
 (defn- find-pipeline-runs [builds]
   (let [pipeline-end-candidates (->> builds
                                      (filter :triggered-by)
                                      (filter #(is-pipeline-end? % builds)))]
     (->> pipeline-end-candidates
-         (map #(find-pipeline-ending-with % builds))
+         (mapcat #(find-pipelines-ending-with % builds))
          (filter #(< 1 (count %))))))
 
 
