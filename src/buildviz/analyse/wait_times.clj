@@ -18,7 +18,6 @@
 (defn- build-wait-times [build all-builds]
   (->> (:triggered-by build)
        (map #(find-build % all-builds))
-       (remove nil?)
        (map #(build-wait-time build %))))
 
 (defn- wait-times [builds]
