@@ -24,7 +24,7 @@ function aBuild {
     TRIGGERED_BY_BUILD_ID=$3
 
     if [ ! -z $TRIGGERED_BY_JOB ]; then
-        TRIGGERED_BY=', "triggeredBy": {"jobName": "'$TRIGGERED_BY_JOB'", "buildId":"'$TRIGGERED_BY_BUILD_ID'"}'
+        TRIGGERED_BY=', "triggeredBy": [{"jobName": "'$TRIGGERED_BY_JOB'", "buildId":"'$TRIGGERED_BY_BUILD_ID'"}]'
     fi
 
     START=$4
