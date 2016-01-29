@@ -10,7 +10,7 @@ Transparency for your build pipeline's results and runtime.
 
 ## The What
 
-Buildviz provides graphs detailing runtime behaviour, failures and stability of the pipeline, answering a 
+Buildviz provides graphs detailing runtime behaviour, failures and stability of the pipeline, answering a
 [multitude of questions](https://github.com/cburgmer/buildviz/wiki/Questions) in the hopes of improving your pipeline.
 
 All it needs is your build history including start and end time, outcome, build inputs, job dependencies and test results.
@@ -45,10 +45,10 @@ For every build `PUT` JSON data to `http://localhost:3000/builds/$JOB_NAME/$BUIL
     "revision": "1eadcdd4d35f9a",
     "sourceId": "git@github.com:cburgmer/buildviz.git"
   }],
-  "triggeredBy": {
+  "triggeredBy": [{
     "jobName": "Test",
     "buildId": "42"
-  }
+  }]
 }
 ```
 
