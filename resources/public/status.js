@@ -44,7 +44,7 @@
         }
     };
 
-    dataSource.load("/status", function (status) {
+    dataSource.load("status", function (status) {
         if (status.pipelineName) {
             pipelineNameSpan.text(status.pipelineName + ' - ');
 
