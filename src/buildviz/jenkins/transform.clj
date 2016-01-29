@@ -46,7 +46,7 @@
 
 (defn- with-triggered-by [map jenkins-build]
   (if-let [triggered-by (triggered-by-from jenkins-build)]
-    (assoc map :triggered-by triggered-by)
+    (assoc map :triggered-by [triggered-by])
     map))
 
 (defn- convert-build [{:keys [timestamp duration result] :as build}]
