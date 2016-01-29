@@ -5,6 +5,7 @@
             [clojure.tools.logging :as log]))
 
 (defn- get-json [jenkins-url relative-url]
+  (log/info (format "Retrieving %s" relative-url))
   (j/parse-string (:body (client/get (string/join [jenkins-url relative-url]))) true))
 
 (defn get-jobs [jenkins-url]
