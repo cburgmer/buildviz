@@ -38,15 +38,15 @@
     map))
 
 (defn- triggered-by-from [{actions :actions}]
-  (when-let [upstream-cause (->> (some :causes actions)
-                                 (filter :upstreamProject)
-                                 first)]
-    {:job-name (:upstreamProject upstream-cause)
-     :build-id (.toString (:upstreamBuild upstream-cause))}))
+  (->> (some :causes actions)
+       (filter :upstreamProject)
+       (map (fn [cause]
+              {:job-name (:upstreamProject cause)
+               :build-id (.toString (:upstreamBuild cause))}))))
 
 (defn- with-triggered-by [map jenkins-build]
-  (if-let [triggered-by (triggered-by-from jenkins-build)]
-    (assoc map :triggered-by [triggered-by])
+  (if-let [triggered-by (seq (triggered-by-from jenkins-build))]
+    (assoc map :triggered-by triggered-by)
     map))
 
 (defn- convert-build [{:keys [timestamp duration result] :as build}]

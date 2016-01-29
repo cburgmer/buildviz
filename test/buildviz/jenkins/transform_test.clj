@@ -58,6 +58,17 @@
                                                                         (assoc :actions [{:causes [{:upstreamProject "build_name"
                                                                                                     :upstreamBuild 42}]}]))))))))
 
+  (testing "should handle multiple triggering builds"
+    (is (= [{:job-name "build_name"
+             :build-id "42"}
+            {:job-name "build_name"
+             :build-id "41"}]
+           (:triggered-by (:build (sut/jenkins-build->buildviz-build (-> a-jenkins-build
+                                                                         (assoc :actions [{:causes [{:upstreamProject "build_name"
+                                                                                                     :upstreamBuild 42}
+                                                                                                    {:upstreamProject "build_name"
+                                                                                                     :upstreamBuild 41}]}]))))))))
+
   (testing "should convert test results"
     (is (= [{:name "a test suite"
              :children [{:classname "the class"
