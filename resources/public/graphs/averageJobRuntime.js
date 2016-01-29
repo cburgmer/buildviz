@@ -108,7 +108,7 @@
             description: "Average runtime by job for the selected interval. The job's runtime is calculated as time between start and end of its builds.",
             answer: ['Where is most of the time spent?'],
             legend: "Size: average runtime, color: job (similar colors for job group)",
-            csvSource: "/jobs.csv"
+            csvSource: "jobs.csv"
         }),
         graph = graphFactory.create({
             id: 'averageJobRuntime',
@@ -122,7 +122,7 @@
 
         graph.loading();
 
-        dataSource.load('/jobs?from=' + fromTimestamp, function (data) {
+        dataSource.load('jobs?from=' + fromTimestamp, function (data) {
             graph.loaded();
 
             renderGraph(data, graph.svg);

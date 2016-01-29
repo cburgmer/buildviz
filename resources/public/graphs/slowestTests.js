@@ -86,7 +86,7 @@
             description: 'Average runtime of the 5 slowest test cases by job. Multiple test cases with the same name have their runtimes added up.',
             answer: ['What could be the first place to look at to improve test runtime?'],
             legend: 'Color: job/test suite, arc size: avarage test case runtime',
-            csvSource: "/testcases.csv"
+            csvSource: "testcases.csv"
         }),
         graph = graphFactory.create({
             id: 'slowestTests',
@@ -100,7 +100,7 @@
         var fromTimestamp = timespanSelection.startingFromTimestamp(selectedTimespan);
         graph.loading();
 
-        dataSource.load('/testcases?from='+ fromTimestamp, function (testCases) {
+        dataSource.load('testcases?from='+ fromTimestamp, function (testCases) {
             graph.loaded();
 
             var data = {

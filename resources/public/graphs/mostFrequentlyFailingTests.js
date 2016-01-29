@@ -95,7 +95,7 @@
             description: "The 5 test cases with the most failures by job. Multiple test cases with the same name have their failures added up.",
             answer: ["What are the tests that provide either the most or the least feedback?"],
             legend: "Color: job/test suite, arc size: number of test failures",
-            csvSource: "/testcases.csv"
+            csvSource: "testcases.csv"
         }),
         graph = graphFactory.create({
             id: 'mostFrequentlyFailingTests',
@@ -109,7 +109,7 @@
         var fromTimestamp = timespanSelection.startingFromTimestamp(selectedTimespan);
         graph.loading();
 
-        dataSource.load('/testcases?from='+ fromTimestamp, function (failures) {
+        dataSource.load('testcases?from='+ fromTimestamp, function (failures) {
             graph.loaded();
 
             var data = {

@@ -32,7 +32,7 @@
             answer: ["Where are implicit dependencies not made obvious?",
                      "Which jobs will probably be trusted the least?"],
             legend: "Border color: flaky ratio (no. flaky failures / no. failures), inner color: job, diameter: count of flaky builds",
-            csvSource: "/jobs.csv"
+            csvSource: "jobs.csv"
         }),
         graph = graphFactory.create({
             id: 'flakyBuilds',
@@ -46,7 +46,7 @@
 
         graph.loading();
 
-        dataSource.load('/jobs?from=' + fromTimestamp, function (data) {
+        dataSource.load('jobs?from=' + fromTimestamp, function (data) {
             graph.loaded();
 
             var flakyJobs = flakyBuildsAsBubbles(data);

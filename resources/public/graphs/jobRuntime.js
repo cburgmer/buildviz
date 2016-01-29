@@ -6,7 +6,7 @@
                      'Are optimizations showing?',
                      'Has a job gotten suspiciously fast?'],
             legend: 'Color: job',
-            csvSource: "/jobruntime.csv"
+            csvSource: "jobruntime.csv"
 
         }),
         graph = graphFactory.create({
@@ -45,7 +45,7 @@
 
         graph.loading();
 
-        dataSource.load('/jobruntime?from=' + fromTimestamp, function (data) {
+        dataSource.load('jobruntime?from=' + fromTimestamp, function (data) {
             graph.loaded();
 
             runtimePane.render(transformRuntimes(data));

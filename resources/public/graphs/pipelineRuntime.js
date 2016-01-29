@@ -4,7 +4,7 @@
             description: "Runtime over time for all pipelines identified for the given interval, average by day. A pipeline is considered a simple chain of jobs, each triggering another until the pipeline finishes. The time between the start of the first build and the end of the last build makes up the runtime of a pipeline run.",
             answer: ["When are we getting final feedback on changes?"],
             legend: "Color: final job of pipeline",
-            csvSource: "/pipelineruntime.csv"
+            csvSource: "pipelineruntime.csv"
         }),
         graph = graphFactory.create({
             id: 'pipelineRuntime',
@@ -42,7 +42,7 @@
 
         graph.loading();
 
-        dataSource.load('/pipelineruntime?from=' + fromTimestamp, function (data) {
+        dataSource.load('pipelineruntime?from=' + fromTimestamp, function (data) {
             graph.loaded();
 
             runtimePane.render(transformRuntimes(data));

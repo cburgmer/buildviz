@@ -174,7 +174,7 @@
             description: "Average runtime of tests per class/file by job. Runtimes of test cases are added up by test class/file and grouped by package hierarchy. Where unambiguous, test suites are omitted and package paths merged, to avoid unneccessary deep nesting.",
             answer: ["Where is the time spent in testing?"],
             legend: 'Color: job/test suite, arc size: average runtime of tests per class/file',
-            csvSource: "/testclasses.csv"
+            csvSource: "testclasses.csv"
         }),
         graph = graphFactory.create({
             id: 'averageTestRuntime',
@@ -188,7 +188,7 @@
         var fromTimestamp = timespanSelection.startingFromTimestamp(selectedTimespan);
         graph.loading();
 
-        dataSource.load('/testclasses?from='+ fromTimestamp, function (testsuites) {
+        dataSource.load('testclasses?from='+ fromTimestamp, function (testsuites) {
             graph.loaded();
 
             var data = {

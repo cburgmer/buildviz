@@ -118,7 +118,7 @@
             description: "All flaky test cases. A test case is considered flaky if it failed in one build, but passed in another, given that both builds were run with the same inputs. Multiple test cases with the same name have their flaky failure counts added up.",
             answer: ["Which tests provide questionable value and will probably be trusted the least?"],
             legend: "Border color: age of last flaky failure, inner color: job, diameter: flaky count",
-            csvSource: "/flakytestcases.csv"
+            csvSource: "flakytestcases.csv"
         }),
         graph = graphFactory.create({
             id: 'flakyTests',
@@ -132,7 +132,7 @@
 
         graph.loading();
 
-        dataSource.loadCSV('/flakytestcases?from='+ fromTimestamp, function (data) {
+        dataSource.loadCSV('flakytestcases?from='+ fromTimestamp, function (data) {
             graph.loaded();
 
             renderData(data, graph.svg);

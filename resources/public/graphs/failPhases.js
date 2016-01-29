@@ -251,7 +251,7 @@
                      "How much are we stopping the pipeline?",
                      "How quickly can we resume the pipeline after failure?"],
             legend: "Color: healthy/broken state",
-            csvSource: "/failphases.csv"
+            csvSource: "failphases.csv"
         }),
         graph = graphFactory.create({
             id: 'failPhases',
@@ -265,7 +265,7 @@
 
         graph.loading();
 
-        dataSource.load('/failphases?from=' + fromTimestamp, function (data) {
+        dataSource.load('failphases?from=' + fromTimestamp, function (data) {
             graph.loaded();
 
             renderData(data, graph.svg);

@@ -33,7 +33,7 @@
                      "Where are the biggest quality issues?",
                      "Where do we receive either not so valuable or actually very valuable feedback?"],
             legend: "Border color: failure ratio (no. failures / no. runs), inner color: job, diameter: number of failures",
-            csvSource: "/jobs.csv"
+            csvSource: "jobs.csv"
         }),
         graph = graphFactory.create({
             id: 'failedBuilds',
@@ -47,7 +47,7 @@
 
         graph.loading();
 
-        dataSource.load('/jobs?from=' + fromTimestamp, function (data) {
+        dataSource.load('jobs?from=' + fromTimestamp, function (data) {
             graph.loaded();
 
             var failedJobs = failedBuildsAsBubbles(data);

@@ -5,7 +5,7 @@
             answer: ["Where is time wasted in the pipeline?",
                      "Where are multiple changes possibly queuing up for processing?"],
             legend: "Color: job",
-            csvSource: "/waittimes.csv"
+            csvSource: "waittimes.csv"
         }),
         graph = graphFactory.create({
             id: 'waitTimes',
@@ -43,7 +43,7 @@
 
         graph.loading();
 
-        dataSource.load('/waittimes?from=' + fromTimestamp, function (data) {
+        dataSource.load('waittimes?from=' + fromTimestamp, function (data) {
             graph.loaded();
 
             waitTimesPane.render(transformWaitTimes(data));
