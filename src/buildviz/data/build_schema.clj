@@ -17,14 +17,13 @@
                                               :source_id {:type ["string" "integer"]}
                                               :source-id {:type ["string" "integer"]}}
                                  :additionalProperties false}}
-                :triggered-by {:type ["array" "object"]}
-                ;; TODO for compatibility reasons we handle a list *and* a single entry for 'triggeredBy', but closchema doesn't support 'oneOf' validations
-                ;; {:type "object"
-                ;;  :properties {:job-name {:type "string" :required true}
-                ;;               :build-id {:type "string" :required true}}
-                ;;  ;; :required [:jobName :buildId] # Not correctly implemented in closchema
-                ;;  :additionalProperties false}
-                }
+                :triggered-by {:type "array"
+                               :minItems 1
+                               :items {:type "object"
+                                       :properties {:job-name {:type "string" :required true}
+                                                    :build-id {:type "string" :required true}}
+                                       ;; :required [:jobName :buildId] # Not correctly implemented in closchema
+                                       :additionalProperties false}}}
    :required [:start]
    :additionalProperties false})
 

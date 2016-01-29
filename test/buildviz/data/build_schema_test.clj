@@ -41,17 +41,20 @@
   ;;          (:path (first (schema/build-validation-errors {:start 1453646247759
   ;;                                                              :inputs [{:revision "abcd"}]}))))))
 
-  ;; TODO for compatibility reasons we handle a list *and* a single entry for 'triggeredBy', but closchema doesn't support 'oneOf' validations
-  ;; (testing "should fail on missing jobName for triggeredBy"
-  ;;   (is (= [:triggered-by :job-name]
-  ;;          (:path (first (schema/build-validation-errors {:start 1453646247759
-  ;;                                                         :triggered-by {:build-id "42"}}))))))
-  ;;
-  ;; (testing "should fail on missing buildId for triggeredBy"
-  ;;   (is (= [:triggered-by :build-id]
-  ;;          (:path (first (schema/build-validation-errors {:start 1453646247759
-  ;;                                                         :triggered-by {:job-name "the_job"}}))))))
-  )
+  (testing "should fail on missing jobName for triggeredBy"
+    (is (= [:triggered-by 0 :job-name]
+           (:path (first (schema/build-validation-errors {:start 1453646247759
+                                                          :triggered-by [{:build-id "42"}]}))))))
+
+  (testing "should fail on missing buildId for triggeredBy"
+    (is (= [:triggered-by 0 :build-id]
+           (:path (first (schema/build-validation-errors {:start 1453646247759
+                                                          :triggered-by [{:job-name "the_job"}]}))))))
+
+  (testing "should fail on empty triggeredBy list"
+    (is (= [:triggered-by]
+           (:path (first (schema/build-validation-errors {:start 1453646247759
+                                                          :triggered-by []})))))))
 
 (deftest test-was-triggered-by?
   (testing "should find triggering build"
