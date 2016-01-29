@@ -1,0 +1,3 @@
+.averageJobRuntime .highlightedElement:not(:hover) text {
+    font-weight: bold;
+}

@@ -1,0 +1,28 @@
+.failPhases .axis path,
+.failPhases .axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+}
+
+.failPhases .axis text {
+    font-size: 0.6rem;
+}
+.failPhases .x.axis path {
+    display: none;
+}
+.failPhases rect {
+    opacity: 0.8;
+}
+.failPhases rect.red {
+    fill: #B42B2B;
+}
+.failPhases rect.green {
+    fill: #2AB228;
+}
+.failPhases rect.weekend.red {
+    fill: #C95E5E;
+}
+.failPhases rect.weekend.green {
+    fill: #519E55;
+}

@@ -1,0 +1,40 @@
+.graphDescription section {
+    display: none;
+    z-index: 1;
+    position: absolute;
+    top: 18px;
+    right: 0;
+
+    background: #eee;
+    color: black;
+    padding: 5px 10px 15px;
+    font-size: 80%;
+    width: 30%;
+    min-width: 300px;
+    word-wrap: break-word;
+    border-radius: 2px 0px 2px 2px;
+}
+
+.graphDescription section h4 {
+    font-size: 100%;
+    font-weight: normal;
+    margin: 15px 0 0;
+}
+
+.graphDescription section p {
+    margin: 5px 0 0;
+}
+
+.graphDescription section a {
+    text-decoration: underline;
+}
+
+.graphDescription:hover {
+    cursor: default;
+    background: #eee;
+    border-radius: 2px 2px 0px 0px;
+}
+.graphDescription:hover section,
+.graphDescription section:hover {
+    display: block;
+}

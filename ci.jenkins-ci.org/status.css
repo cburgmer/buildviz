@@ -1,0 +1,29 @@
+.status {
+    letter-spacing: 0.08em;
+    color: #444;
+    margin: 10px;
+}
+
+.status h1 {
+    font-weight: normal;
+    font-size: 110%;
+    margin: 0 10px 0 0;
+    display: inline-block;
+}
+.status h1 a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.status .details {
+    font-size: 80%;
+}
+
+.status .help {
+    background-color: #eee;
+    padding: 10px;
+}
+
+.status .help pre {
+    letter-spacing: normal;
+}

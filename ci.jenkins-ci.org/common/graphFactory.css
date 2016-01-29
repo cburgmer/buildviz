@@ -1,0 +1,138 @@
+.graph header {
+    margin-top: 5px;
+}
+.graph h1 {
+    margin: 0;
+    font-weight: normal;
+    font-size: 100%;
+    letter-spacing: 0.08em;
+}
+.graph header > * {
+    display: inline-block;
+}
+.graph a {
+    text-decoration: none;
+    color: inherit;
+}
+.graph {
+    font-size: 1rem;
+    box-sizing: border-box;
+    padding: 10px;
+    position: relative;
+    z-index: 0;
+}
+.graph:hover:not(:target) {
+    background-color: #f7f7f7;
+}
+.graph .enlarge {
+    height: 100%;
+    display: flex;
+    flex-flow: column;
+}
+.graph svg {
+    flex: 2;
+    overflow: auto;
+}
+.graph:target {
+    position: fixed;
+    width: calc(100vmin - 1em - 5px); /* Substract header size to receive perfectly square box */
+    height: 100vmin;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+    z-index: 1;
+}
+.graph:target::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0.95;
+    background-color: white;
+    z-index: -1;
+}
+
+.graph .close {
+    display: none;
+}
+.graph:target .close {
+    display: block;
+    position: absolute;
+    top: 5px; right: -40px;
+    font-size: 2rem;
+    content: '╳';
+    color: #777
+}
+.graph:target .close:hover {
+    color: #000;
+}
+
+.graph .timespan {
+    margin-right: 10px;
+}
+
+.graph .timespan,
+.graph .graphDescription {
+    float: right;
+    position: relative;
+    padding: 2px 2px 0;
+    color: gray;
+}
+
+.graph .nodata {
+    display: none;
+    text-align: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateY(-50%) translateX(-50%);
+    color: grey;
+}
+.graph .nodata p {
+    font-size: 75%;
+}
+.graph svg:empty + .nodata {
+    display: block;
+}
+.graph svg text {
+    font-size: 0.8rem;
+}
+
+.graph.loading svg:empty + .nodata {
+    display: none;
+}
+
+.graph.loading .loader {
+    display: block;
+    position: absolute;
+    top: calc(50% - 20px);
+    left: calc(50% - 20px);
+
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: lightgray;
+
+    -webkit-animation: loading 2.0s infinite ease-in-out;
+    animation: loading 2.0s infinite ease-in-out;
+}
+
+@-webkit-keyframes loading {
+    50% { -webkit-transform: scale(0.2) }
+    0%, 100% { -webkit-transform: scale(1.0) }
+}
+
+@keyframes loading {
+    50% {
+        transform: scale(0.2);
+        -webkit-transform: scale(0.2);
+    }
+    0%, 100% {
+        transform: scale(1.0);
+        -webkit-transform: scale(1.0);
+    }
+}
