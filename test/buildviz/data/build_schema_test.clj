@@ -35,11 +35,10 @@
            (:path (first (schema/build-validation-errors {:start 1453646247759
                                                           :inputs [{:source-id "43"}]}))))))
 
-  ;; TODO we should validate, once "source_id" is gone
-  ;; (testing "should fail on missing sourceId for inputs"
-  ;;   (is (= [:inputs 0 :sourceId]
-  ;;          (:path (first (schema/build-validation-errors {:start 1453646247759
-  ;;                                                              :inputs [{:revision "abcd"}]}))))))
+  (testing "should fail on missing sourceId for inputs"
+    (is (= [:inputs 0 :source-id]
+           (:path (first (schema/build-validation-errors {:start 1453646247759
+                                                          :inputs [{:revision "abcd"}]}))))))
 
   (testing "should fail on missing jobName for triggeredBy"
     (is (= [:triggered-by 0 :job-name]
