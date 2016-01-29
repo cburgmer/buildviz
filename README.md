@@ -15,15 +15,11 @@ Buildviz provides graphs detailing runtime behaviour, failures and stability of 
 
 All it needs is your build history including start and end time, outcome, build inputs, job dependencies and test results.
 
-## Example
-
 ![Screenshot](https://github.com/cburgmer/buildviz/raw/master/examples/data/screenshot.png)
 
-Seed dummy data for a quick impression
+## Example
 
-    $ ./examples/runSeedDataExample.sh
-
-Also see the other examples under [examples/](https://github.com/cburgmer/buildviz/tree/master/examples).
+Here's [buildviz's look at ci.jenkins-ci.org](http://cburgmer.github.io/buildviz/ci.jenkins-ci.org/), the Jenkins project's own build server instance.
 
 ## Usage
 
