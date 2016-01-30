@@ -23,8 +23,8 @@ Here's [buildviz's look at ci.jenkins-ci.org](http://cburgmer.github.io/buildviz
 
 ## Usage
 
-    $ curl -OL https://github.com/cburgmer/buildviz/releases/download/0.8.0/buildviz-0.8.0-standalone.jar
-    $ java -jar buildviz-0.8.0-standalone.jar
+    $ curl -OL https://github.com/cburgmer/buildviz/releases/download/0.9.0/buildviz-0.9.0-standalone.jar
+    $ java -jar buildviz-0.9.0-standalone.jar
 
 Now, buildviz takes in new build results via `PUT` to `/builds`. Some suggestions how to set it up:
 
@@ -56,13 +56,13 @@ JUnit XML ([or JSON](https://github.com/cburgmer/buildviz/wiki#help-my-tests-don
 
 Sync existing history (see `--help` for details):
 
-    $ java -cp buildviz-0.8.0-standalone.jar buildviz.go.sync http://$USER:$PW@localhost:8153/go
+    $ java -cp buildviz-0.9.0-standalone.jar buildviz.go.sync http://$USER:$PW@localhost:8153/go
 
 #### Sync from [Jenkins](http://jenkins-ci.org)
 
 There is experimental support for syncing all Jenkins builds (see `--help` for details):
 
-    $ java -cp buildviz-0.8.0-standalone.jar buildviz.jenkins.sync http://$USER:$PW@localhost:8080
+    $ java -cp buildviz-0.9.0-standalone.jar buildviz.jenkins.sync http://$USER:$PW@localhost:8080
 
 ## More
 
