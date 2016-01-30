@@ -6,15 +6,25 @@
             [buildviz.util.http :as http]
             [clojure.string :as str]))
 
-(def data-dir (if-let [data-dir (System/getenv "BUILDVIZ_DATA_DIR")]
+(def ^:private data-dir (if-let [data-dir (System/getenv "BUILDVIZ_DATA_DIR")]
                 data-dir
                 "data/"))
 
-(def pipeline-name (System/getenv "BUILDVIZ_PIPELINE_NAME"))
+(def ^:private pipeline-name (System/getenv "BUILDVIZ_PIPELINE_NAME"))
+
+(def ^:private config-params [["BUILDVIZ_DATA_DIR" data-dir]
+                              ["BUILDVIZ_PIPELINE_NAME" (or pipeline-name
+                                                            "")]
+                              ["PORT" (or (System/getenv "PORT")
+                                          3000)]])
 
 (defn help []
-  (println "Available environment variables:" (str/join ", " ["PORT" "BUILDVIZ_DATA_DIR" "BUILDVIZ_PIPELINE_NAME"]))
-  (println "Storing builds in" data-dir))
+  (println "Starting buildviz with config")
+  (->> config-params
+       (map (fn [[env-var value]]
+              (format "  %s: '%s'" env-var value)))
+       (map println)
+       doall))
 
 (def app
   (let [builds (storage/load-builds data-dir)]
