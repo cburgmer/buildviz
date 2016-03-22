@@ -37,7 +37,8 @@
                 ""
                 "Usage: buildviz.jenkins.sync [OPTIONS] JENKINS_URL"
                 ""
-                "JENKINS_URL            The URL of the Jenkins installation"
+                "JENKINS_URL            The URL of the Jenkins installation. Provide the URL of"
+                "                       a view to limit the sync to respective jobs."
                 ""
                 "Options"
                 options-summary]))
