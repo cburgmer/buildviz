@@ -1,0 +1,38 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure(2) do |config|
+  config.vm.box = "hashicorp/precise32"
+
+  config.vm.network :forwarded_port, guest: 8111, host: 8080
+  config.vm.synced_folder "import/", "/mnt/import"
+
+  config.vm.provision "shell", inline: <<-SHELL
+    SYNCED_IMPORT_DIR="/mnt/import"
+    sudo apt-get update
+    sudo apt-get -qy install curl openjdk-7-jre
+
+    TEAMCITY_DIR=`pwd`/TeamCity
+    if [ ! -d "$TEAMCITY_DIR" ]; then
+        echo "Downloading TeamCity..."
+        curl --silent http://download-cf.jetbrains.com/teamcity/TeamCity-9.1.6.tar.gz -o TeamCity.tar.gz
+        tar -zxf TeamCity.tar.gz
+    fi
+
+    echo "Setting up startup..."
+    START_UP_SCRIPT="/etc/init.d/teamcity"
+    sudo sh -c "echo $TEAMCITY_DIR/bin/runAll.sh \\$\\@ > $START_UP_SCRIPT"
+    sudo chmod a+x "$START_UP_SCRIPT"
+
+    sudo update-rc.d teamcity defaults
+
+    echo "Setting up project..."
+    PROJECT_CONFIG_DIR="/root/.BuildServer/config/projects"
+    if [ ! -d "$PROJECT_CONFIG_DIR" ]; then
+        mkdir -p "$PROJECT_CONFIG_DIR"
+        sudo cp -R "$SYNCED_IMPORT_DIR/SimpleSetup" "$PROJECT_CONFIG_DIR"
+    fi
+
+    sudo service teamcity start
+  SHELL
+end

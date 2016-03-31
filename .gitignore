@@ -9,7 +9,6 @@ pom.xml.asc
 /.nrepl-port
 /resources/public/node_modules/
 /test/node_modules/
-/examples/go/.vagrant/
-/examples/jenkins/.vagrant/
+.vagrant/
 /data/
 /log/

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<build-type xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" uuid="63d80e16-e4e4-496b-9779-f0adc4dd237b" xsi:noNamespaceSchemaLocation="http://www.jetbrains.com/teamcity/schemas/9.0/project-config.xsd">
+  <name>Deploy</name>
+  <description />
+  <settings>
+    <parameters />
+    <build-runners>
+      <runner id="RUNNER_2" name="Deploy" type="simpleRunner">
+        <parameters>
+          <param name="script.content"><![CDATA[#!/bin/bash
+echo "HELLO"
+touch "test.txt"
+RUNTIME=$(( $RANDOM % 20 ))
+echo "RUNTIME $RUNTIME"
+sleep $RUNTIME
+if [ $(( $RANDOM % 5 )) -eq 0 ]; then
+  exit 1
+fi]]></param>
+          <param name="teamcity.step.mode" value="default" />
+          <param name="use.custom.script" value="true" />
+        </parameters>
+      </runner>
+    </build-runners>
+    <vcs-settings />
+    <requirements />
+    <build-triggers />
+    <cleanup />
+  </settings>
+</build-type>
+
