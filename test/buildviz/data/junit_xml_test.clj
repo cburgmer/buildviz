@@ -136,11 +136,4 @@
   (testing "should deal with empty testsuite"
     (is (= "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"The Suite\"></testsuite></testsuites>"
            (junit-xml/serialize-testsuites [{:name "The Suite"
-                                             :children []}]))))
-
-  (testing "should deal with missing classname"
-    (is (= "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"The Suite\"><testcase name=\"The Test\" time=\"0.042\"></testcase></testsuite></testsuites>"
-           (junit-xml/serialize-testsuites [{:name "The Suite"
-                                             :children [{:name "The Test"
-                                                         :runtime 42
-                                                         :status "pass"}]}])))))
+                                             :children []}])))))

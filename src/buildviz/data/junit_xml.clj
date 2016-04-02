@@ -97,12 +97,11 @@
     "skipped" (xml/element "skipped")
     nil))
 
-(defn- testcase->node [{:keys [:name :classname :runtime :status]}]
+(defn- testcase->node [{:keys [name classname runtime status]}]
   (let [status-element (testcase-status->node status)
-        mandatory-testcase-attributes {:name name :time (format-runtime-in-millis runtime)}
-        testcase-attributes (if classname
-                              (assoc mandatory-testcase-attributes :classname classname)
-                              mandatory-testcase-attributes)]
+        testcase-attributes {:name name
+                             :time (format-runtime-in-millis runtime)
+                             :classname classname}]
     (apply xml/element (list* :testcase
                               testcase-attributes
                               (list status-element)))))

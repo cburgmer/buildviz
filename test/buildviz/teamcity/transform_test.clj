@@ -41,9 +41,10 @@
   (testing "should return tests"
     (is (= [{:name "suite"
              :children [{:name "the test"
+                         :classname "class"
                          :status "pass"
                          :runtime 42}]}]
-           (:test-results (sut/teamcity-build->buildviz-build (a-teamcity-build-with-test {:name "suite: the test"
+           (:test-results (sut/teamcity-build->buildviz-build (a-teamcity-build-with-test {:name "suite: class.the test"
                                                                                            :status "SUCCESS"
                                                                                            :duration 42}))))))
   (testing "should return failing test"

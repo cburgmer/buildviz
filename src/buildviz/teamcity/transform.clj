@@ -23,8 +23,8 @@
         classname (nth match 2)
         test-name (nth match 3)]
     (-> {:suite suites
-         :name test-name}
-        (cond-> classname (assoc :classname classname)))))
+         :name test-name
+         :classname classname})))
 
 (defn- convert-status [ignored status]
   (if ignored
