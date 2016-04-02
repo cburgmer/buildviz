@@ -18,5 +18,10 @@
 
 (defn get-builds [teamcity-url job-id]
   (let [response (get-json teamcity-url
-                           (format "/httpAuth/app/rest/buildTypes/id:%s/builds/?fields=build(number,status,startDate,finishDate)" job-id))]
+                           (format "/httpAuth/app/rest/buildTypes/id:%s/builds/?fields=build(id,number,status,startDate,finishDate)" job-id))]
     (get response :build)))
+
+(defn get-test-report [teamcity-url build-id]
+  (let [response (get-json teamcity-url
+                           (format "/httpAuth/app/rest/testOccurrences?locator=build:(id:%s)" build-id))]
+    (get response :testOccurrence)))

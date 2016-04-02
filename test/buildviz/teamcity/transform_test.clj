@@ -10,6 +10,13 @@
                   :finishDate "20160401T003707+0000"}
                  build)})
 
+(defn- a-teamcity-build-with-test [test]
+  (-> (a-teamcity-build {})
+      (assoc :tests [(merge {:name "a test suite: the.class.the test"
+                             :status "SUCCESS"
+                             :duration 42}
+                            test)])))
+
 (deftest test-teamcity-build->buildviz-build
   (testing "should return job name"
     (is (= "some_job"
@@ -18,6 +25,7 @@
   (testing "should return build id"
     (is (= "21"
            (:build-id (sut/teamcity-build->buildviz-build (a-teamcity-build {:number "21"}))))))
+
   (testing "should return successful status"
     (is (= "pass"
            (:outcome (:build (sut/teamcity-build->buildviz-build (a-teamcity-build {:status "SUCCESS"})))))))
@@ -29,4 +37,43 @@
            (:start (:build (sut/teamcity-build->buildviz-build (a-teamcity-build {:startDate "20160402T082352+0000"})))))))
   (testing "should return end timestamp"
     (is (= 1459585450000
-           (:end (:build (sut/teamcity-build->buildviz-build (a-teamcity-build {:finishDate "20160402T082410+0000"}))))))))
+           (:end (:build (sut/teamcity-build->buildviz-build (a-teamcity-build {:finishDate "20160402T082410+0000"})))))))
+
+  (testing "should return tests"
+    (is (= [{:name "suite"
+             :children [{:name "the test"
+                         :status "pass"
+                         :runtime 42}]}]
+           (:test-results (sut/teamcity-build->buildviz-build (a-teamcity-build-with-test {:name "suite: the test"
+                                                                                           :status "SUCCESS"
+                                                                                           :duration 42}))))))
+  (testing "should return failing test"
+    (is (= "fail"
+           (-> (sut/teamcity-build->buildviz-build (a-teamcity-build-with-test {:status "FAILURE"}))
+               :test-results
+               first
+               :children
+               first
+               :status))))
+  (testing "should return runtime"
+    (is (= 21
+           (-> (sut/teamcity-build->buildviz-build (a-teamcity-build-with-test {:duration 21}))
+               :test-results
+               first
+               :children
+               first
+               :runtime))))
+  (testing "should extract classname"
+    (is (= "the.class"
+           (-> (sut/teamcity-build->buildviz-build (a-teamcity-build-with-test {:name "suite: the.class.the test"}))
+               :test-results
+               first
+               :children
+               first
+               :classname))))
+  (testing "should for now not care for nested suites"
+    (is (= "suite: nested suite"
+           (-> (sut/teamcity-build->buildviz-build (a-teamcity-build-with-test {:name "suite: nested suite: the.class.the test"}))
+               :test-results
+               first
+               :name)))))
