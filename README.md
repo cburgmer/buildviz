@@ -52,17 +52,13 @@ The build's `start` is required, all other values are optional.
 
 JUnit XML ([or JSON](https://github.com/cburgmer/buildviz/wiki#help-my-tests-dont-generate-junit-xml)) formatted test results can be `PUT` to `http://localhost:3000/builds/$JOB_NAME/$BUILD_ID/testresults`
 
-#### Sync from [Go.cd](http://www.go.cd)
+#### Sync from supported build servers
 
-Sync existing history (see `--help` for details):
+E.g. sync existing history from Go.cd (see `--help` for details):
 
     $ java -cp buildviz-0.9.0-standalone.jar buildviz.go.sync http://$USER:$PW@localhost:8153/go
 
-#### Sync from [Jenkins](http://jenkins-ci.org)
-
-There is experimental support for syncing all Jenkins builds (see `--help` for details):
-
-    $ java -cp buildviz-0.9.0-standalone.jar buildviz.jenkins.sync http://$USER:$PW@localhost:8080
+There's support for [Jenkins, Go.cd and TeamCity](https://github.com/cburgmer/buildviz/wiki/CI-tool-integration).
 
 ## More
 
