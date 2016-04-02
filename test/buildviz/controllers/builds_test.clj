@@ -89,6 +89,7 @@
   (testing "PUT with JSON"
     (is (= 204 (:status (json-put-request (the-app) "/builds/somebuild/42/testresults" [{:name "Some Testsuite"
                                                                                          :children [{:name "A Test"
+                                                                                                     :classname "The Class"
                                                                                                      :runtime 21
                                                                                                      :status "pass"}]}]))))
     (testing "should store as JUnit XML"
