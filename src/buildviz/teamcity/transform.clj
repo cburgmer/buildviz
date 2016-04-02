@@ -26,12 +26,17 @@
          :name test-name}
         (cond-> classname (assoc :classname classname)))))
 
-(defn- convert-test [{:keys [name status duration]}]
-  (merge (parse-teamcity-test-name name)
-         {:status (if (= status "SUCCESS")
-                    "pass"
-                    "fail")
-          :runtime duration}))
+(defn- convert-status [ignored status]
+  (if ignored
+    "skipped"
+    (if (= status "SUCCESS")
+      "pass"
+      "fail")))
+
+(defn- convert-test [{:keys [name status ignored duration]}]
+  (-> (parse-teamcity-test-name name)
+      (assoc :status (convert-status ignored status))
+      (assoc :runtime (or duration 0)))) ; force duration, as buildviz currently can't handle a missing value
 
 (defn- convert-test-results [tests]
   (->> tests

@@ -13,8 +13,7 @@
 (defn- a-teamcity-build-with-test [test]
   (-> (a-teamcity-build {})
       (assoc :tests [(merge {:name "a test suite: the.class.the test"
-                             :status "SUCCESS"
-                             :duration 42}
+                             :status "SUCCESS"}
                             test)])))
 
 (deftest test-teamcity-build->buildviz-build
@@ -55,6 +54,15 @@
                :children
                first
                :status))))
+  (testing "should return skipped test"
+    (is (= "skipped"
+           (-> (sut/teamcity-build->buildviz-build (a-teamcity-build-with-test {:status "UNKNOWN"
+                                                                                :ignored true}))
+               :test-results
+               first
+               :children
+               first
+               :status))))
   (testing "should return runtime"
     (is (= 21
            (-> (sut/teamcity-build->buildviz-build (a-teamcity-build-with-test {:duration 21}))
@@ -63,6 +71,22 @@
                :children
                first
                :runtime))))
+  (testing "should handle missing runtime"
+    (is (= 0
+         (-> (sut/teamcity-build->buildviz-build (a-teamcity-build-with-test {}))
+                        :test-results
+                        first
+                        :children
+                        first
+                        :runtime)))
+    ;; (is (not
+    ;;      (contains? (-> (sut/teamcity-build->buildviz-build (a-teamcity-build-with-test {}))
+    ;;                     :test-results
+    ;;                     first
+    ;;                     :children
+    ;;                     first)
+    ;;                 :runtime)))
+    )
   (testing "should extract classname"
     (is (= "the.class"
            (-> (sut/teamcity-build->buildviz-build (a-teamcity-build-with-test {:name "suite: the.class.the test"}))
