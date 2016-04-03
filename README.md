@@ -13,7 +13,7 @@ Transparency for your build pipeline's results and runtime.
 Buildviz provides graphs detailing runtime behaviour, failures and stability of the pipeline, answering a
 [multitude of questions](https://github.com/cburgmer/buildviz/wiki/Questions) in the hopes of improving your pipeline.
 
-All it needs is your build history including start and end time, outcome, build inputs, job dependencies and test results.
+All it needs is your build history including test results.
 
 ![Screenshot](https://github.com/cburgmer/buildviz/raw/master/examples/data/screenshot.png)
 
