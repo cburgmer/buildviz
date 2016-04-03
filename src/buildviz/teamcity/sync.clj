@@ -29,7 +29,9 @@
                 ""
                 "Usage: buildviz.teamcity.sync [OPTIONS] TEAMCITY_URL"
                 ""
-                "TEAMCITY_URL           The URL of the TeamCity installation."
+                "TEAMCITY_URL           The URL of the TeamCity installation. You will most probably"
+                "                       need some form of credentials. If 'guest user login' is"
+                "                       enabled, you can try e.g. 'http://guest@localhost:8111'."
                 ""
                 "Options"
                 options-summary]))
@@ -73,15 +75,22 @@
        dorun
        (progress/done)))
 
+(defn- assert-parameter [assert-func msg]
+  (when (not (assert-func))
+    (println msg)
+    (System/exit 1)))
+
 (defn -main [& c-args]
   (let [args (parse-opts c-args cli-options)]
-    (when (or (:help (:options args))
-              (empty? (:arguments args)))
+    (when (:help (:options args))
       (println (usage (:summary args)))
       (System/exit 0))
 
     (let [teamcity-url (first (:arguments args))
           buildviz-url (:buildviz-url (:options args))
           projects (:projects (:options args))]
+
+      (assert-parameter #(some? teamcity-url) "The URL of TeamCity is required. Try --help.")
+      (assert-parameter #(not (empty? projects)) "At least one project is required. Try --help.")
 
       (sync-jobs teamcity-url buildviz-url projects))))

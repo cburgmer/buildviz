@@ -19,7 +19,7 @@
                  [clj-time "0.9.0"]
                  [cheshire "5.4.0"]
                  [org.clojure/data.xml "0.0.8"]
-                 [org.clojure/tools.cli "0.3.1"]
+                 [org.clojure/tools.cli "0.3.3"]
                  [intervox/clj-progress "0.2.1"]
                  [wharf "0.2.0-20141115.032457-2"]]
   :plugins [[lein-ring "0.9.3"]
