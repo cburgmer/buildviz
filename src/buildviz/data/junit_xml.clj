@@ -87,8 +87,7 @@
 (declare element->node)
 
 (defn format-runtime-in-millis [duration]
-  (when-not (nil? duration)
-    (format "%.3f" (float (/ duration 1000)))))
+  (format "%.3f" (float (/ duration 1000))))
 
 (defn- testcase-status->node [status]
   (case status
@@ -99,9 +98,9 @@
 
 (defn- testcase->node [{:keys [name classname runtime status]}]
   (let [status-element (testcase-status->node status)
-        testcase-attributes {:name name
-                             :time (format-runtime-in-millis runtime)
-                             :classname classname}]
+        testcase-attributes (cond-> {:name name
+                                     :classname classname}
+                              runtime (assoc :time (format-runtime-in-millis runtime)))]
     (apply xml/element (list* :testcase
                               testcase-attributes
                               (list status-element)))))

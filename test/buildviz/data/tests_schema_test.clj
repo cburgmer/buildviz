@@ -25,6 +25,7 @@
                                                                   :classname "Class"
                                                                   :runtime 101
                                                                   :status "pass"}])])))
+    (is (empty? (tests-schema/tests-validation-errors [(a-suite [(dissoc (a-testcase) :runtime)])])))
     (is (empty? (tests-schema/tests-validation-errors [(a-suite [(a-testcase {:status "fail"})])])))
     (is (empty? (tests-schema/tests-validation-errors [(a-suite [(a-testcase {:status "error"})])])))
     (is (empty? (tests-schema/tests-validation-errors [(a-suite [(a-testcase {:status "skipped"})])]))))
@@ -33,7 +34,6 @@
     (is (not (empty? (tests-schema/tests-validation-errors [(a-suite [(dissoc (a-testcase) :name)])]))))
     (is (not (empty? (tests-schema/tests-validation-errors [(a-suite [(dissoc (a-testcase) :status)])]))))
     (is (not (empty? (tests-schema/tests-validation-errors [(a-suite [(dissoc (a-testcase) :classname)])]))))
-    (is (not (empty? (tests-schema/tests-validation-errors [(a-suite [(dissoc (a-testcase) :runtime)])]))))
     (is (not (empty? (tests-schema/tests-validation-errors [(a-suite [(a-testcase {:status "failure"})])]))))
     (is (not (empty? (tests-schema/tests-validation-errors [(a-suite [(a-testcase {:runtime "101"})])])))))
   )

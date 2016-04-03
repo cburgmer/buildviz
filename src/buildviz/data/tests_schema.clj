@@ -11,7 +11,7 @@
                                                                         :classname "string"
                                                                         :runtime "integer"
                                                                         :status {:enum ["pass" "fail" "skipped" "error"]}}
-                                                           :required [:name :classname :runtime :status]}}}
+                                                           :required [:name :classname :status]}}}
                            :required [:name :children]}
                    })
 

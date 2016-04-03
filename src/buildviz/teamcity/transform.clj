@@ -36,7 +36,8 @@
 (defn- convert-test [{:keys [name status ignored duration]}]
   (-> (parse-teamcity-test-name name)
       (assoc :status (convert-status ignored status))
-      (assoc :runtime (or duration 0)))) ; force duration, as buildviz currently can't handle a missing value
+      (cond-> duration
+        (assoc :runtime duration))))
 
 (defn- convert-test-results [tests]
   (->> tests

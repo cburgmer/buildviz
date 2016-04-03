@@ -100,7 +100,7 @@
                                                                                :classname "A Class"
                                                                                :runtime 21
                                                                                :status "fail"}]}])
-        (is (= "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"Some Testsuite\"><testcase name=\"A Test\" time=\"0.021\" classname=\"A Class\"><failure></failure></testcase></testsuite></testsuites>"
+        (is (= "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"Some Testsuite\"><testcase name=\"A Test\" classname=\"A Class\" time=\"0.021\"><failure></failure></testcase></testsuite></testsuites>"
                (get-in @test-results ["somebuild" "42"])))))
 
     (testing "should fail on invalid testsuite"

@@ -89,7 +89,7 @@ function failingTestCase {
 EOF
 }
 
-function anotherTestcase {
+function anotherTestCase {
     RESULT=$1
     if [ "$RESULT" == "fail" ]; then
         TESTCASE="<failure>Meh</failure>"
@@ -111,6 +111,18 @@ function anotherTestcase {
         $TESTCASE
       </testcase>
     </testsuite>
+  </testsuite>
+</testsuites>
+EOF
+}
+
+function aTestCaseWithoutRuntime {
+    cat <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="Test Suite">
+    <testcase classname="a.class" name="a_test">
+    </testcase>
   </testsuite>
 </testsuites>
 EOF
@@ -139,23 +151,26 @@ for i in $(seq 1 3); do
     aBuild "fail" '' '' $[ $TODAY - $i * 5000000 ] | send "aBrokenBuild" "$i"
 done
 failingTestCase | sendTestResult "aBrokenBuild" 1
-anotherTestcase "fail" | sendTestResult "aBrokenBuild" 2
-anotherTestcase "fail" | sendTestResult "aBrokenBuild" 3
+anotherTestCase "fail" | sendTestResult "aBrokenBuild" 2
+anotherTestCase "fail" | sendTestResult "aBrokenBuild" 3
 
 aBuild 'fail' '' '' $A_WEEK_AGO "abcd" | send "aFlakyBuild" 1
 failingTestCase | sendTestResult "aFlakyBuild" 1
 aBuild 'pass' '' '' $(( A_WEEK_AGO + 8000000 )) "abcd" | send "aFlakyBuild" 2
 passingTestCase | sendTestResult "aFlakyBuild" 2
 aBuild 'fail' '' '' '' "xyz" | send "aFlakyBuild" 3
-anotherTestcase "fail" | sendTestResult "aFlakyBuild" 3
+anotherTestCase "fail" | sendTestResult "aFlakyBuild" 3
 aBuild 'fail' '' '' '' "xyz" | send "aFlakyBuild" 4
-anotherTestcase "fail" | sendTestResult "aFlakyBuild" 4
+anotherTestCase "fail" | sendTestResult "aFlakyBuild" 4
 aBuild 'pass' '' '' '' "xyz" | send "aFlakyBuild" 5
-anotherTestcase "pass" | sendTestResult "aFlakyBuild" 5
+anotherTestCase "pass" | sendTestResult "aFlakyBuild" 5
 aBuild 'fail' '' '' '' "123" | send "aFlakyBuild" 6
-anotherTestcase "fail" "test" | sendTestResult "aFlakyBuild" 6
+anotherTestCase "fail" "test" | sendTestResult "aFlakyBuild" 6
 aBuild 'pass' '' '' '' "123" | send "aFlakyBuild" 7
-anotherTestcase "pass" "test" | sendTestResult "aFlakyBuild" 7
+anotherTestCase "pass" "test" | sendTestResult "aFlakyBuild" 7
 
 
 echo "{\"start\": $TODAY}" | send "buildWithoutInfo" "1"
+
+echo "{\"start\": $TODAY}" | send "buildWithTestWithoutRuntime" "1"
+aTestCaseWithoutRuntime | sendTestResult "buildWithTestWithoutRuntime" "1"

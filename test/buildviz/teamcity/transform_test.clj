@@ -73,21 +73,13 @@
                first
                :runtime))))
   (testing "should handle missing runtime"
-    (is (= 0
-         (-> (sut/teamcity-build->buildviz-build (a-teamcity-build-with-test {}))
+    (is (not
+         (contains? (-> (sut/teamcity-build->buildviz-build (a-teamcity-build-with-test {}))
                         :test-results
                         first
                         :children
-                        first
-                        :runtime)))
-    ;; (is (not
-    ;;      (contains? (-> (sut/teamcity-build->buildviz-build (a-teamcity-build-with-test {}))
-    ;;                     :test-results
-    ;;                     first
-    ;;                     :children
-    ;;                     first)
-    ;;                 :runtime)))
-    )
+                        first)
+                    :runtime))))
   (testing "should extract classname"
     (is (= "the.class"
            (-> (sut/teamcity-build->buildviz-build (a-teamcity-build-with-test {:name "suite: the.class.the test"}))
