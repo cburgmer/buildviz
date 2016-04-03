@@ -18,7 +18,7 @@
 
 
 (defn- parse-teamcity-test-name [full-name]
-  (let [match (re-matches #"^(?:(.+): )?(?:([^:]+)\.)?([^:\.]+)$" full-name)
+  (let [match (re-matches #"^(.+): ([^:]+)\.([^:\.]+)$" full-name)
         suites (nth match 1)
         classname (nth match 2)
         test-name (nth match 3)]
