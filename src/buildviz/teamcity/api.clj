@@ -1,12 +1,14 @@
 (ns buildviz.teamcity.api
-  (:require [cheshire.core :as j]
+  (:require [buildviz.util.url :as url]
+            [cheshire.core :as j]
             [clj-http.client :as client]
             [clojure.string :as string]
             [clojure.tools.logging :as log]))
 
 (defn- get-json [teamcity-url relative-url]
   (log/info (format "Retrieving %s" relative-url))
-  (j/parse-string (:body (client/get (string/join [teamcity-url relative-url])
+  (j/parse-string (:body (client/get (string/join [(url/with-plain-text-password teamcity-url)
+                                                   relative-url])
                                      {:accept "application/json"})) true))
 
 (defn get-jobs [teamcity-url project-name]

@@ -3,7 +3,9 @@
   (:require [buildviz.teamcity
              [api :as api]
              [transform :as transform]]
-            [buildviz.util.json :as json]
+            [buildviz.util
+             [json :as json]
+             [url :as url]]
             [cheshire.core :as j]
             [clj-http.client :as client]
             [clj-progress.core :as progress]
@@ -47,12 +49,12 @@
   (assoc build :tests (api/get-test-report teamcity-url (:id (:build build)))))
 
 (defn- put-build [buildviz-url job-name build-id build]
-  (client/put (string/join [buildviz-url (format "/builds/%s/%s" job-name build-id)])
+  (client/put (string/join [(url/with-plain-text-password buildviz-url) (format "/builds/%s/%s" job-name build-id)])
               {:content-type :json
                :body (json/to-string build)}))
 
 (defn put-test-results [buildviz-url job-name build-id test-results]
-  (client/put (string/join [buildviz-url (format "/builds/%s/%s/testresults" job-name build-id)])
+  (client/put (string/join [(url/with-plain-text-password buildviz-url) (format "/builds/%s/%s/testresults" job-name build-id)])
               {:content-type :json
                :body (j/generate-string test-results)}))
 
@@ -63,7 +65,7 @@
     (put-test-results buildviz-url job-name build-id test-results)))
 
 (defn- sync-jobs [teamcity-url buildviz-url projects]
-  (println "TeamCity" teamcity-url projects "-> buildviz" buildviz-url)
+  (println "TeamCity" (str teamcity-url) projects "-> buildviz" (str buildviz-url))
   (->> projects
        (mapcat #(api/get-jobs teamcity-url %))
        (mapcat #(all-builds-for-job teamcity-url %))
@@ -86,8 +88,8 @@
       (println (usage (:summary args)))
       (System/exit 0))
 
-    (let [teamcity-url (first (:arguments args))
-          buildviz-url (:buildviz-url (:options args))
+    (let [teamcity-url (url/url (first (:arguments args)))
+          buildviz-url (url/url (:buildviz-url (:options args)))
           projects (:projects (:options args))]
 
       (assert-parameter #(some? teamcity-url) "The URL of TeamCity is required. Try --help.")
