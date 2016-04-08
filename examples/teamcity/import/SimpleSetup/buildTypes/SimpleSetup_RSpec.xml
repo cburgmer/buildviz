@@ -30,8 +30,8 @@ EOF
 mkdir -p spec
 rspecTest > spec/example_spec.rb
 
-gem install rake -v 10.5.0
-gem install rspec-core]]></param>
+gem install rake
+gem install rspec -v 3.1.0]]></param>
           <param name="teamcity.step.mode" value="default" />
           <param name="use.custom.script" value="true" />
         </parameters>
@@ -41,7 +41,6 @@ gem install rspec-core]]></param>
           <param name="build-file"><![CDATA[require 'rspec/core/rake_task'
 RSpec::Core::RakeTask.new(:spec)]]></param>
           <param name="teamcity.step.mode" value="default" />
-          <param name="ui.rakeRunner.bunlder.exec.enabled" value="true" />
           <param name="ui.rakeRunner.config.version" value="2" />
           <param name="ui.rakeRunner.frameworks.rspec.enabled" value="true" />
           <param name="ui.rakeRunner.rake.tasks.names" value="spec" />
@@ -56,4 +55,3 @@ RSpec::Core::RakeTask.new(:spec)]]></param>
     <cleanup />
   </settings>
 </build-type>
-
