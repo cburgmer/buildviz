@@ -2,21 +2,31 @@
 # vi: set ft=ruby :
 
 Vagrant.configure(2) do |config|
-  config.vm.box = "hashicorp/precise32"
+  config.vm.box = "ubuntu/trusty32"
 
   config.vm.network :forwarded_port, guest: 8111, host: 8111
   config.vm.synced_folder "import/", "/mnt/import"
+  config.vm.synced_folder "cache/", "/mnt/cache"
+
+  config.vm.provider "virtualbox" do |v|
+    v.memory = 2048
+  end
 
   config.vm.provision "shell", inline: <<-SHELL
     SYNCED_IMPORT_DIR="/mnt/import"
+    SYNCED_CACHE_DIR="/mnt/cache"
+
     sudo apt-get update
     sudo apt-get -qy install curl openjdk-7-jre
 
     TEAMCITY_DIR=`pwd`/TeamCity
     if [ ! -d "$TEAMCITY_DIR" ]; then
-        echo "Downloading TeamCity..."
-        curl --silent http://download-cf.jetbrains.com/teamcity/TeamCity-9.1.6.tar.gz -o TeamCity.tar.gz
-        tar -zxf TeamCity.tar.gz
+        TEAMCITY_DOWNLOAD="$SYNCED_CACHE_DIR/TeamCity.tar.gz"
+        if [ ! -f "$TEAMCITY_DOWNLOAD" ]; then
+            echo "Downloading TeamCity..."
+            curl --silent http://download-cf.jetbrains.com/teamcity/TeamCity-9.1.6.tar.gz -o "$TEAMCITY_DOWNLOAD"
+        fi
+        tar -zxf "$TEAMCITY_DOWNLOAD"
     fi
 
     echo "Setting up startup..."
