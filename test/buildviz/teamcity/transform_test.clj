@@ -80,7 +80,7 @@
                         :children
                         first)
                     :runtime))))
-  (testing "should extract classname"
+  (testing "should extract classname for JUnit origin"
     (is (= "the.class"
            (-> (sut/teamcity-build->buildviz-build (a-teamcity-build-with-test {:name "suite: the.class.the test"}))
                :test-results
@@ -88,9 +88,31 @@
                :children
                first
                :classname))))
-  (testing "should for now not care for nested suites"
+  (testing "should for now not care for nested suites for JUnit origin"
     (is (= "suite: nested suite"
            (-> (sut/teamcity-build->buildviz-build (a-teamcity-build-with-test {:name "suite: nested suite: the.class.the test"}))
                :test-results
                first
-               :name)))))
+               :name))))
+  (testing "should extract classname for non-JUnit orgin"
+    (is (= {:name "<empty>"
+            :children [{:classname "The Class: Sub section"
+                        :name "Test description"
+                        :status "pass"}]}
+           (-> (sut/teamcity-build->buildviz-build (a-teamcity-build-with-test {:name "The Class: Sub section: Test description"}))
+               :test-results
+               first))))
+  (testing "should fallback to RSpec style test name pattern if at least one of the tests does not match JUnit pattern"
+    ;; This crude logic should save us from implementing either
+    ;; - a configuration item for the user to specify which format is correct
+    ;; - parsing the job's configuration and guessing what underlying reporter was used to generate the test report
+    (is (= {:classname "The Subject"
+            :name "test.description.with.dots"
+            :status "pass"}
+           (-> (sut/teamcity-build->buildviz-build (-> (a-teamcity-build {})
+                                                       (assoc :tests [{:name "The Subject: test.description.with.dots" :status "SUCCESS"}
+                                                                      {:name "The Class: Sub section: Test description" :status "SUCCESS"}])))
+               :test-results
+               first
+               :children
+               first)))))
