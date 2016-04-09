@@ -131,11 +131,6 @@
     (is (= []
            (average-testclass-runtime [])))
     (is (= [{:name "suite"
-             :children [{:name "a class"}]}]
-           (average-testclass-runtime [[(a-testsuite "suite"
-                                                     (a-testcase "a class" "a case" :fail)
-                                                     (a-testcase-with-runtime "a class" "another case" 10))]])))
-    (is (= [{:name "suite"
              :children [{:name "a class"
                          :average-runtime 40}]}]
            (average-testclass-runtime [[(a-testsuite "suite" (a-testcase-with-runtime "a class" "a case" 40))]])))
@@ -168,7 +163,26 @@
              :children [{:name "a class"
                          :average-runtime 60}]}]
            (average-testclass-runtime [[(a-testsuite "suite" (a-testcase-with-runtime "a class" "a case" 20))
-                                        (a-testsuite "suite" (a-testcase-with-runtime "a class" "another case" 40))]])))))
+                                        (a-testsuite "suite" (a-testcase-with-runtime "a class" "another case" 40))]]))))
+  (testing "should ignore skipped test if runtime is missing"
+    (is (= [{:name "suite"
+             :children [{:name "a class"
+                         :average-runtime 10}]}]
+           (average-testclass-runtime [[(a-testsuite "suite"
+                                                     (a-testcase "a class" "a case" :skipped)
+                                                     (a-testcase-with-runtime "a class" "another case" 10))]]))))
+  (testing "should not calculate average if runtime is partially missing"
+    (is (= [{:name "suite"
+             :children [{:name "a class"}]}]
+           (average-testclass-runtime [[(a-testsuite "suite"
+                                                     (a-testcase "a class" "a case" :pass)
+                                                     (a-testcase-with-runtime "a class" "another case" 10))]]))))
+  (testing "should handle optional runtime"
+    (is (= [{:name "suite"
+             :children [{:name "a class"
+                         :average-runtime 20}]}]
+           (average-testclass-runtime [[(a-testsuite "suite" (a-testcase-with-runtime "a class" "a case" 20))]
+                                       [(a-testsuite "suite" (a-testcase "a class" "a case" :pass))]])))))
 
 (deftest test-average-testclass-runtime-as-list
   (testing "average-testclass-runtime-as-list"
@@ -208,7 +222,7 @@
   (a-testsuite "some suite"
                (a-testcase "some class" "another testcase" status)))
 
-(deftest test-flakt-testcases
+(deftest test-flaky-testcases
   (testing "should return empty results"
     (is (= []
            (flaky-testcases {} (dummy-test-lookup {})))))

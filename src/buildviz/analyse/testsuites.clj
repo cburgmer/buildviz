@@ -44,9 +44,15 @@
        (map (transform/testcase-with-data
              (fn [testcase-group] (average-runtime testcase-group))))))
 
+(defn- skipped-missing-runtime? [testcase]
+  (and (nil? (:runtime testcase))
+       (tests-schema/is-skipped? testcase)))
+
 (defn- accumulated-runtime [testcases]
-  (let [runtimes (map :runtime testcases)]
-    (when (every? number? runtimes)
+  (let [runtimes (->> testcases
+                      (remove skipped-missing-runtime?)
+                      (map :runtime))]
+    (when (not-any? nil? runtimes)
       (apply + runtimes))))
 
 (defn- accumulate-runtime-by-class-for-testcases [testcases]

@@ -21,3 +21,6 @@
 
 (defn is-ok? [{status :status}]
   (contains? #{:pass :skipped} status))
+
+(defn is-skipped? [{status :status}]
+  (= status :skipped))
