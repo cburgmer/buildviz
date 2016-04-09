@@ -3,7 +3,8 @@
             [clojure.test :refer :all]))
 
 (defn- a-teamcity-build [build]
-  {:job-id "a_job"
+  {:job-name "a_job"
+   :project-name "a_project"
    :build (merge {:number "42"
                   :status "SUCCESS"
                   :startDate "20160401T003701+0000"
@@ -18,9 +19,10 @@
 
 (deftest test-teamcity-build->buildviz-build
   (testing "should return job name"
-    (is (= "some_job"
+    (is (= "some_project some_job"
            (:job-name (sut/teamcity-build->buildviz-build (-> (a-teamcity-build {})
-                                                              (assoc :job-id "some_job")))))))
+                                                              (assoc :job-name "some_job"
+                                                                     :project-name "some_project")))))))
   (testing "should return build id"
     (is (= "21"
            (:build-id (sut/teamcity-build->buildviz-build (a-teamcity-build {:number "21"}))))))

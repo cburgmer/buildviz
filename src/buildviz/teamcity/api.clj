@@ -14,9 +14,9 @@
 
 (defn get-jobs [teamcity-url project-name]
   (let [response (get-json teamcity-url "/httpAuth/app/rest/projects/%s" project-name)]
-    (map :id (-> response
-                 (get :buildTypes)
-                 (get :buildType)))))
+    (-> response
+        (get :buildTypes)
+        (get :buildType))))
 
 (defn get-builds [teamcity-url job-id]
   (let [response (get-json teamcity-url

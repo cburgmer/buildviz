@@ -70,9 +70,11 @@
                  :children (map #(dissoc % :suite) tests)}))
          seq)))
 
+(defn- job-name [{:keys [project-name job-name]}]
+  (format "%s %s" project-name job-name))
 
-(defn teamcity-build->buildviz-build [{:keys [job-id build tests]}]
-  {:job-name job-id
+(defn teamcity-build->buildviz-build [{:keys [build tests] :as build-info}]
+  {:job-name (job-name build-info)
    :build-id (:number build)
    :build (convert-build build)
    :test-results (convert-test-results tests)})

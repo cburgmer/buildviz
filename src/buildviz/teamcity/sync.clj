@@ -39,11 +39,12 @@
                 options-summary]))
 
 
-(defn- all-builds-for-job [teamcity-url job-id]
+(defn- all-builds-for-job [teamcity-url {:keys [id projectName name]}]
   (map (fn [build]
          {:build build
-          :job-id job-id})
-       (api/get-builds teamcity-url job-id)))
+          :project-name projectName
+          :job-name name})
+       (api/get-builds teamcity-url id)))
 
 (defn add-test-results [teamcity-url build]
   (assoc build :tests (api/get-test-report teamcity-url (:id (:build build)))))
