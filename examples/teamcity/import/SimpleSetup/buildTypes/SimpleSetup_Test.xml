@@ -44,9 +44,27 @@ function aTestcase {
 EOF
 }
 
+function manyTestcases {
+    cat <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="A Test Suite">
+EOF
+
+    for i in $(seq 0 100); do
+        echo "<testcase classname=class' name='Some Test $i' time='0.0001'></testcase>"
+    done
+
+    cat <<EOF
+  </testsuite>
+</testsuites>
+EOF
+}
+
 OUTCOME=$(( $RANDOM % 3 ))
 
 aTestcase $OUTCOME > results.xml
+manyTestcases > manyResults.xml
 
 if [ "$OUTCOME" -eq 0 ]; then
   exit 1
@@ -72,4 +90,3 @@ fi]]></param>
     <cleanup />
   </settings>
 </build-type>
-
