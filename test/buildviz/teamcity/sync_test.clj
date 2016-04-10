@@ -5,25 +5,26 @@
             [clj-http.fake :as fake]
             [clojure.test :refer :all]))
 
+(defn- successful-json-response [body]
+  (fn [_] {:status 200
+           :body (j/generate-string body)}))
+
 (deftest test-main
   (testing "should sync a build"
     (let [build-puts (atom {})]
       (fake/with-fake-routes {"http://teamcity:8000/httpAuth/app/rest/projects/the_project"
-                              (fn [_] {:status 200
-                                       :body (j/generate-string {:buildTypes {:buildType [{:id "theId"
-                                                                                           :projectName "theProject"
-                                                                                           :name "theJob"}]}})})
+                              (successful-json-response {:buildTypes {:buildType [{:id "theId"
+                                                                                   :projectName "theProject"
+                                                                                   :name "theJob"}]}})
                               "http://teamcity:8000/httpAuth/app/rest/buildTypes/id:theId/builds/?fields=build(id,number,status,startDate,finishDate,revisions(revision(version,vcs-root-instance)))"
-                              (fn [_] {:status 200
-                                       :body (j/generate-string {:build [{:id 42
-                                                                          :number 2
-                                                                          :status "SUCCESS"
-                                                                          :startDate "20160410T041049+0000"
-                                                                          :finishDate "20160410T041100+0000"
-                                                                          :revisions []}]})})
+                              (successful-json-response {:build [{:id 42
+                                                                  :number 2
+                                                                  :status "SUCCESS"
+                                                                  :startDate "20160410T041049+0000"
+                                                                  :finishDate "20160410T041100+0000"
+                                                                  :revisions []}]})
                               "http://teamcity:8000/httpAuth/app/rest/testOccurrences?locator=count:100,start:0,build:(id:42)"
-                              (fn [_] {:status 200
-                                       :body (j/generate-string {:testOccurrences []})})
+                              (successful-json-response {:testOccurrences []})
                               #"http://buildviz:8010/builds/(.+)/(.+)"
                               (fn [req]
                                 (swap! build-puts #(assoc % (:uri req) (j/parse-string (slurp (:body req)) true)))
