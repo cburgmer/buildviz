@@ -65,7 +65,7 @@
   (when test-results
     (put-test-results buildviz-url job-name build-id test-results)))
 
-(defn- sync-jobs [teamcity-url buildviz-url projects]
+(defn sync-jobs [teamcity-url buildviz-url projects]
   (println "TeamCity" (str teamcity-url) projects "-> buildviz" (str buildviz-url))
   (->> projects
        (mapcat #(api/get-jobs teamcity-url %))

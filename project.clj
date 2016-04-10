@@ -35,4 +35,5 @@
         buildviz.jenkins.sync]
   :profiles {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
                                   [cheshire "5.4.0"]
-                                  [ring-mock "0.1.5"]]}})
+                                  [ring-mock "0.1.5"]
+                                  [clj-http-fake "1.0.2"]]}})
