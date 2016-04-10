@@ -117,4 +117,13 @@
                :test-results
                first
                :children
-               first)))))
+               first))))
+
+  (testing "should extract inputs"
+    (is (= [{:source-id "https://github.com/cburgmer/buildviz.git"
+             :revision "49b2c70535fa0ed936697c9b352495c6a835f90b"}]
+           (-> (sut/teamcity-build->buildviz-build
+                (a-teamcity-build {:revisions {:revision [{:version "49b2c70535fa0ed936697c9b352495c6a835f90b"
+                                                           :vcs-root-instance {:name "https://github.com/cburgmer/buildviz.git"}}]}}))
+               :build
+               :inputs)))))

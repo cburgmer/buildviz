@@ -9,12 +9,21 @@
        tc/to-epoch
        (* 1000)))
 
-(defn- convert-build [{:keys [status startDate finishDate]}]
-  {:outcome (if (= status "SUCCESS")
-             "pass"
-             "fail")
-   :start (date-str->timestamp startDate)
-   :end (date-str->timestamp finishDate)})
+(defn- vcs-inputs [{revision :revision}]
+  (map (fn [{version :version
+             {name :name} :vcs-root-instance}]
+         {:revision version
+          :source-id name})
+       revision))
+
+(defn- convert-build [{:keys [status startDate finishDate revisions]}]
+  (let [inputs (vcs-inputs revisions)]
+    (cond-> {:outcome (if (= status "SUCCESS")
+                        "pass"
+                        "fail")
+             :start (date-str->timestamp startDate)
+             :end (date-str->timestamp finishDate)}
+      inputs (assoc :inputs inputs))))
 
 (def ^:private junit-derived-name-pattern #"^(.+): ([^:]+)\.([^:\.]+)$")
 (def ^:private rspec-derived-name-pattern #"^(.+): ([^:]+)$")

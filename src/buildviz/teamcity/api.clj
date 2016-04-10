@@ -20,7 +20,7 @@
 
 (defn get-builds [teamcity-url job-id]
   (let [response (get-json teamcity-url
-                           "/httpAuth/app/rest/buildTypes/id:%s/builds/?fields=build(id,number,status,startDate,finishDate)"
+                           "/httpAuth/app/rest/buildTypes/id:%s/builds/?fields=build(id,number,status,startDate,finishDate,revisions(revision(version,vcs-root-instance)))"
                            job-id)]
     (get response :build)))
 
