@@ -17,7 +17,7 @@
        revision))
 
 (defn- convert-build [{:keys [status startDate finishDate revisions]}]
-  (let [inputs (vcs-inputs revisions)]
+  (let [inputs (seq (vcs-inputs revisions))]
     (cond-> {:outcome (if (= status "SUCCESS")
                         "pass"
                         "fail")

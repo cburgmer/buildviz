@@ -126,4 +126,7 @@
                 (a-teamcity-build {:revisions {:revision [{:version "49b2c70535fa0ed936697c9b352495c6a835f90b"
                                                            :vcs-root-instance {:name "https://github.com/cburgmer/buildviz.git"}}]}}))
                :build
-               :inputs)))))
+               :inputs))))
+  (testing "should handle optional inputs"
+    (is (not (contains? (:build (sut/teamcity-build->buildviz-build (a-teamcity-build-with-test {})))
+                        :inputs)))))
