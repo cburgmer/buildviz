@@ -35,7 +35,7 @@
       test-occurrences
       (let [next-offset (+ offset test-occurrence-paging-count)]
         (concat test-occurrences
-                (lazy-seq (get-test-report-from teamcity-url build-id next-offset)))))))
+                (get-test-report-from teamcity-url build-id next-offset))))))
 
 (defn get-test-report [teamcity-url build-id]
   (get-test-report-from teamcity-url build-id 0))

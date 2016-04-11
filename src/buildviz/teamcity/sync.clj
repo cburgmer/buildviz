@@ -47,7 +47,7 @@
        (api/get-builds teamcity-url id)))
 
 (defn add-test-results [teamcity-url build]
-  (assoc build :tests (api/get-test-report teamcity-url (:id (:build build)))))
+  (assoc build :tests (lazy-seq (api/get-test-report teamcity-url (:id (:build build))))))
 
 (defn- put-build [buildviz-url job-name build-id build]
   (client/put (string/join [(url/with-plain-text-password buildviz-url) (format "/builds/%s/%s" job-name build-id)])
