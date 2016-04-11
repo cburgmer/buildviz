@@ -32,6 +32,5 @@
         (with-out-str (sut/sync-jobs (url/url "http://teamcity:8000") (url/url "http://buildviz:8010") ["the_project"]))
         (is (= {:start 1460261449000
                 :end 1460261460000
-                :outcome "pass"
-                :inputs []}
+                :outcome "pass"}
                (get @build-puts "/builds/theProject%20theJob/2")))))))
