@@ -62,7 +62,7 @@
 (defn- put-to-buildviz [buildviz-url {:keys [job-name build-id build test-results]}]
   (log/info (format "Syncing %s %s: build" job-name build-id))
   (put-build buildviz-url job-name build-id build)
-  (when test-results
+  (when-not (empty? test-results)
     (put-test-results buildviz-url job-name build-id test-results)))
 
 (defn sync-jobs [teamcity-url buildviz-url projects]
