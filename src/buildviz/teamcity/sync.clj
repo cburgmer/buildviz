@@ -65,12 +65,16 @@
   (when-not (empty? test-results)
     (put-test-results buildviz-url job-name build-id test-results)))
 
+(defn- sync-oldest-first-to-deal-with-cancellation [builds]
+  (sort-by #(get-in % [:build :finishDate]) builds))
+
 (defn sync-jobs [teamcity-url buildviz-url projects]
   (println "TeamCity" (str teamcity-url) projects "-> buildviz" (str buildviz-url))
   (->> projects
        (mapcat #(api/get-jobs teamcity-url %))
        (mapcat #(all-builds-for-job teamcity-url %))
        (progress/init "Syncing")
+       sync-oldest-first-to-deal-with-cancellation
        (map (partial add-test-results teamcity-url))
        (map transform/teamcity-build->buildviz-build)
        (map (partial put-to-buildviz buildviz-url))
