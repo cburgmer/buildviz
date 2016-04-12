@@ -47,7 +47,7 @@
        (api/get-builds teamcity-url id)))
 
 (defn add-test-results [teamcity-url build]
-  (assoc build :tests (lazy-seq (api/get-test-report teamcity-url (:id (:build build))))))
+  (assoc build :tests (api/get-test-report teamcity-url (:id (:build build)))))
 
 (defn- put-build [buildviz-url job-name build-id build]
   (client/put (string/join [(url/with-plain-text-password buildviz-url) (format "/builds/%s/%s" job-name build-id)])
@@ -75,10 +75,10 @@
        (mapcat #(all-builds-for-job teamcity-url %))
        (progress/init "Syncing")
        sync-oldest-first-to-deal-with-cancellation
-       (map (partial add-test-results teamcity-url))
-       (map transform/teamcity-build->buildviz-build)
-       (map (partial put-to-buildviz buildviz-url))
-       (map progress/tick)
+       (map (comp progress/tick
+                  (partial put-to-buildviz buildviz-url)
+                  transform/teamcity-build->buildviz-build
+                  (partial add-test-results teamcity-url)))
        dorun
        (progress/done)))
 

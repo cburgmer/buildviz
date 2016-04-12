@@ -86,4 +86,4 @@
   {:job-name (job-name build-info)
    :build-id (:number build)
    :build (convert-build build)
-   :test-results (lazy-seq (convert-test-results tests))})
+   :test-results (convert-test-results tests)})
