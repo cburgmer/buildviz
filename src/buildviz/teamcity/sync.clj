@@ -68,6 +68,12 @@
 (defn- sync-oldest-first-to-deal-with-cancellation [builds]
   (sort-by #(get-in % [:build :finishDate]) builds))
 
+(defn- ignore-ongoing-builds [builds]
+  (filter :result builds))
+
+(defn- stop-at-first-non-finished-so-we-can-resume-later [builds]
+  (take-while #(= "finished" (get-in % [:build :state])) builds))
+
 (defn sync-jobs [teamcity-url buildviz-url projects]
   (println "TeamCity" (str teamcity-url) projects "-> buildviz" (str buildviz-url))
   (->> projects
@@ -75,6 +81,7 @@
        (mapcat #(all-builds-for-job teamcity-url %))
        (progress/init "Syncing")
        sync-oldest-first-to-deal-with-cancellation
+       stop-at-first-non-finished-so-we-can-resume-later
        (map (comp progress/tick
                   (partial put-to-buildviz buildviz-url)
                   transform/teamcity-build->buildviz-build
