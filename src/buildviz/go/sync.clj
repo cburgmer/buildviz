@@ -200,6 +200,9 @@
               (empty? (:arguments args)))
       (println (usage (:summary args)))
       (System/exit 0))
+    (when (:errors args)
+      (println (string/join "\n" (:errors args)))
+      (System/exit 1))
 
     (let [go-url (first (:arguments args))
           buildviz-url (:buildviz-url (:options args))

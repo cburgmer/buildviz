@@ -131,6 +131,9 @@
     (when (:help (:options args))
       (println (usage (:summary args)))
       (System/exit 0))
+    (when (:errors args)
+      (println (string/join "\n" (:errors args)))
+      (System/exit 1))
 
     (let [teamcity-url (url/url (first (:arguments args)))
           buildviz-url (url/url (:buildviz-url (:options args)))
