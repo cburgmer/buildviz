@@ -61,7 +61,7 @@
                                                                                    :startDate "20160410T041049+0000"
                                                                                    :finishDate "20160410T041100+0000"})
                                                     (provide-buildviz-and-capture-puts beginning-of-2016 stored))
-        (with-out-str (sut/sync-jobs (url/url "http://teamcity:8000") (url/url "http://buildviz:8010") ["the_project"] beginning-of-2016))
+        (with-out-str (sut/sync-jobs (url/url "http://teamcity:8000") (url/url "http://buildviz:8010") ["the_project"] beginning-of-2016 nil))
         (is (= [["/builds/theProject%20theJob/2" {:start 1460261449000
                                                   :end 1460261460000
                                                   :outcome "pass"}]]
@@ -86,7 +86,7 @@
                                                                                  :startDate "20160410T000100+0000"
                                                                                  :finishDate "20160410T000200+0000"})
                                                     (provide-buildviz-and-capture-puts beginning-of-2016 stored))
-        (with-out-str (sut/sync-jobs (url/url "http://teamcity:8000") (url/url "http://buildviz:8010") ["the_project"] beginning-of-2016))
+        (with-out-str (sut/sync-jobs (url/url "http://teamcity:8000") (url/url "http://buildviz:8010") ["the_project"] beginning-of-2016 nil))
         (is (= ["/builds/theProject%20job1/10"
                 "/builds/theProject%20job2/42"
                 "/builds/theProject%20job1/11"]
@@ -113,12 +113,12 @@
                                                                         :startDate "20160410T000000+0000"
                                                                         :finishDate "20160410T000100+0000"})
                                                     (provide-buildviz-and-capture-puts beginning-of-2016 stored))
-        (with-out-str (sut/sync-jobs (url/url "http://teamcity:8000") (url/url "http://buildviz:8010") ["the_project"] beginning-of-2016))
+        (with-out-str (sut/sync-jobs (url/url "http://teamcity:8000") (url/url "http://buildviz:8010") ["the_project"] beginning-of-2016 nil))
         (is (= ["/builds/theProject%20job1/10"]
                (map first @stored))))))
 
   (testing "should resume where left off"
-    (let [latest-build-start (tc/to-long (t/from-time-zone (t/date-time 2016 4 10 0 2 0) t/utc))
+    (let [latest-build-start (t/from-time-zone (t/date-time 2016 4 10 0 2 0) t/utc)
           stored (atom [])]
       (fake/with-fake-routes-in-isolation (serve-up (a-project "the_project"
                                                                (a-job "jobId1" "theProject" "job1"))
@@ -139,7 +139,7 @@
                                                                         :startDate "20160410T000000+0000"
                                                                         :finishDate "20160410T000100+0000"})
                                                     (provide-buildviz-and-capture-puts latest-build-start stored))
-        (with-out-str (sut/sync-jobs (url/url "http://teamcity:8000") (url/url "http://buildviz:8010") ["the_project"] beginning-of-2016))
+        (with-out-str (sut/sync-jobs (url/url "http://teamcity:8000") (url/url "http://buildviz:8010") ["the_project"] beginning-of-2016 nil))
         (is (= ["/builds/theProject%20job1/11"
                 "/builds/theProject%20job1/12"]
                (map first @stored))))))
@@ -156,6 +156,33 @@
                                                                         :startDate "20160410T000000+0000"
                                                                         :finishDate "20160410T000100+0000"})
                                                     (provide-buildviz-and-capture-puts latest-build-start stored))
-        (with-out-str (sut/sync-jobs (url/url "http://teamcity:8000") (url/url "http://buildviz:8010") ["the_project"] beginning-of-2016))
+        (with-out-str (sut/sync-jobs (url/url "http://teamcity:8000") (url/url "http://buildviz:8010") ["the_project"] beginning-of-2016 nil))
         (is (= ["/builds/theProject%20job1/10"]
+               (map first @stored))))))
+
+  (testing "should sync from given start date"
+    (let [build-start (t/from-time-zone (t/date-time 2016 4 10 0 2 0) t/utc)
+          stored (atom [])]
+      (fake/with-fake-routes-in-isolation (serve-up (a-project "the_project"
+                                                               (a-job "jobId1" "theProject" "job1"))
+                                                    (a-job-with-builds "jobId1"
+                                                                       {:id 12
+                                                                        :number 12
+                                                                        :state "finished"
+                                                                        :startDate "20160410T000400+0000"
+                                                                        :finishDate "20160410T000500+0000"}
+                                                                       {:id 11
+                                                                        :number 11
+                                                                        :state "finished"
+                                                                        :startDate "20160410T000200+0000"
+                                                                        :finishDate "20160410T000300+0000"}
+                                                                       {:id 10
+                                                                        :number 10
+                                                                        :state "finished"
+                                                                        :startDate "20160410T000000+0000"
+                                                                        :finishDate "20160410T000100+0000"})
+                                                    (provide-buildviz-and-capture-puts beginning-of-2016 stored))
+        (with-out-str (sut/sync-jobs (url/url "http://teamcity:8000") (url/url "http://buildviz:8010") ["the_project"] beginning-of-2016 build-start))
+        (is (= ["/builds/theProject%20job1/11"
+                "/builds/theProject%20job1/12"]
                (map first @stored)))))))

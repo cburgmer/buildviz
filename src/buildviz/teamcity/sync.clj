@@ -19,6 +19,11 @@
              [cli :refer [parse-opts]]
              [logging :as log]]))
 
+
+(def tz (t/default-time-zone))
+
+(def date-formatter (tf/formatter tz "YYYY-MM-dd" "YYYY/MM/dd" "YYYYMMdd" "dd.MM.YYYY"))
+
 (def cli-options
   [["-b" "--buildviz URL" "URL pointing to a running buildviz instance"
     :id :buildviz-url
@@ -27,6 +32,9 @@
     :id :projects
     :default []
     :assoc-fn (fn [previous key val] (assoc previous key (conj (get previous key) val)))]
+   ["-f" "--from DATE" "Date from which on builds are loaded, if not specified tries to pick up where the last run finished"
+    :id :sync-start-time
+    :parse-fn #(tf/parse date-formatter %)]
    ["-h" "--help"]])
 
 (defn usage [options-summary]
@@ -87,13 +95,15 @@
     (when-let [latest-build-start (:latestBuildStart buildviz-status)]
       (tc/from-long latest-build-start))))
 
-(defn- sync-start [buildviz-url default-sync-start]
+(defn- sync-start [buildviz-url default-sync-start user-sync-start]
   (let [last-sync-date (get-latest-synced-build-start buildviz-url)]
-    (or last-sync-date default-sync-start)))
+    (or user-sync-start
+        last-sync-date
+        default-sync-start)))
 
-(defn sync-jobs [teamcity-url buildviz-url projects default-sync-start]
+(defn sync-jobs [teamcity-url buildviz-url projects default-sync-start user-sync-start]
   (println "TeamCity" (str teamcity-url) projects "-> buildviz" (str buildviz-url))
-  (let [sync-start-time (sync-start buildviz-url default-sync-start)]
+  (let [sync-start-time (sync-start buildviz-url default-sync-start user-sync-start)]
     (println (format "Finding all builds for syncing (starting from %s)..."
                      (tf/unparse (:date-time tf/formatters) sync-start-time)))
     (->> projects
@@ -124,9 +134,10 @@
 
     (let [teamcity-url (url/url (first (:arguments args)))
           buildviz-url (url/url (:buildviz-url (:options args)))
-          projects (:projects (:options args))]
+          projects (:projects (:options args))
+          user-sync-start (:sync-start-time (:options args))]
 
       (assert-parameter #(some? teamcity-url) "The URL of TeamCity is required. Try --help.")
       (assert-parameter #(not (empty? projects)) "At least one project is required. Try --help.")
 
-      (sync-jobs teamcity-url buildviz-url projects last-week))))
+      (sync-jobs teamcity-url buildviz-url projects last-week user-sync-start))))
