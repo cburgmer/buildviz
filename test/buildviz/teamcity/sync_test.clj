@@ -22,7 +22,7 @@
     (successful-json-response {:buildTypes {:buildType jobs}})]])
 
 (defn- a-job-with-builds [job-id & builds]
-  (let [job-builds [(format "http://teamcity:8000/httpAuth/app/rest/buildTypes/id:%s/builds/?fields=build(id,number,status,startDate,finishDate,revisions(revision(version,vcs-root-instance)))"
+  (let [job-builds [(format "http://teamcity:8000/httpAuth/app/rest/buildTypes/id:%s/builds/?fields=build(id,number,status,startDate,finishDate,state,revisions(revision(version,vcs-root-instance)))"
                             job-id)
                     (successful-json-response {:build (map #(merge {:revisions []
                                                                     :status "SUCCESS"
