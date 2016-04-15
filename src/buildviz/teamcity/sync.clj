@@ -44,9 +44,6 @@
                 options-summary]))
 
 
-(defn- parse-date [date-str]
-  (tf/parse (tf/formatters :basic-date-time-no-ms) date-str))
-
 (defn- all-builds-for-job [teamcity-url sync-start-time {:keys [id projectName name]}]
   (let [safe-build-start-time (t/minus sync-start-time (t/millis 1))]
     (->> (api/get-builds teamcity-url id)
@@ -54,7 +51,7 @@
                 {:build build
                  :project-name projectName
                  :job-name name}))
-         (take-while #(t/after? (parse-date (get-in % [:build :startDate])) safe-build-start-time)))))
+         (take-while #(t/after? (transform/parse-build-date (get-in % [:build :startDate])) safe-build-start-time)))))
 
 (defn add-test-results [teamcity-url build]
   (assoc build :tests (api/get-test-report teamcity-url (:id (:build build)))))

@@ -3,9 +3,12 @@
              [coerce :as tc]
              [format :as tf]]))
 
+(defn parse-build-date [date-str]
+  (tf/parse (tf/formatters :basic-date-time-no-ms)
+            date-str))
+
 (defn- date-str->timestamp [date-str]
-  (->> date-str
-       (tf/parse (tf/formatters :basic-date-time-no-ms))
+  (->> (parse-build-date date-str)
        tc/to-epoch
        (* 1000)))
 
