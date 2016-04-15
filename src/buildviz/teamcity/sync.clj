@@ -9,6 +9,10 @@
             [cheshire.core :as j]
             [clj-http.client :as client]
             [clj-progress.core :as progress]
+            [clj-time
+             [coerce :as tc]
+             [core :as t]
+             [format :as tf]]
             [clojure.string :as string]
             [clojure.tools
              [cli :refer [parse-opts]]
@@ -39,12 +43,17 @@
                 options-summary]))
 
 
-(defn- all-builds-for-job [teamcity-url {:keys [id projectName name]}]
-  (map (fn [build]
-         {:build build
-          :project-name projectName
-          :job-name name})
-       (api/get-builds teamcity-url id)))
+(defn- parse-date [date-str]
+  (tf/parse (tf/formatters :basic-date-time-no-ms) date-str))
+
+(defn- all-builds-for-job [teamcity-url sync-start-time {:keys [id projectName name]}]
+  (let [safe-build-start-time (t/minus sync-start-time (t/millis 1))]
+    (->> (api/get-builds teamcity-url id)
+         (map (fn [build]
+                {:build build
+                 :project-name projectName
+                 :job-name name}))
+         (take-while #(t/after? (parse-date (get-in % [:build :startDate])) safe-build-start-time)))))
 
 (defn add-test-results [teamcity-url build]
   (assoc build :tests (api/get-test-report teamcity-url (:id (:build build)))))
@@ -74,20 +83,29 @@
 (defn- stop-at-first-non-finished-so-we-can-resume-later [builds]
   (take-while #(= "finished" (get-in % [:build :state])) builds))
 
+(defn- get-latest-synced-build-start [buildviz-url]
+  (let [response (client/get (format "%s/status" buildviz-url))
+        buildviz-status (j/parse-string (:body response) true)]
+    (when-let [latest-build-start (:latestBuildStart buildviz-status)]
+      (tc/from-long latest-build-start))))
+
 (defn sync-jobs [teamcity-url buildviz-url projects]
   (println "TeamCity" (str teamcity-url) projects "-> buildviz" (str buildviz-url))
-  (->> projects
-       (mapcat #(api/get-jobs teamcity-url %))
-       (mapcat #(all-builds-for-job teamcity-url %))
-       (progress/init "Syncing")
-       sync-oldest-first-to-deal-with-cancellation
-       stop-at-first-non-finished-so-we-can-resume-later
-       (map (comp progress/tick
-                  (partial put-to-buildviz buildviz-url)
-                  transform/teamcity-build->buildviz-build
-                  (partial add-test-results teamcity-url)))
-       dorun
-       (progress/done)))
+  (let [sync-start-time (get-latest-synced-build-start buildviz-url)]
+    (println (format "Finding all builds for syncing (starting from %s)..."
+                     (tf/unparse (:date-time tf/formatters) sync-start-time)))
+    (->> projects
+         (mapcat #(api/get-jobs teamcity-url %))
+         (mapcat #(all-builds-for-job teamcity-url sync-start-time %))
+         (progress/init "Syncing")
+         sync-oldest-first-to-deal-with-cancellation
+         stop-at-first-non-finished-so-we-can-resume-later
+         (map (comp progress/tick
+                    (partial put-to-buildviz buildviz-url)
+                    transform/teamcity-build->buildviz-build
+                    (partial add-test-results teamcity-url)))
+         dorun
+         (progress/done))))
 
 (defn- assert-parameter [assert-func msg]
   (when (not (assert-func))
