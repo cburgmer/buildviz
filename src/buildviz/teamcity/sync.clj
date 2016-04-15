@@ -12,7 +12,8 @@
             [clj-time
              [coerce :as tc]
              [core :as t]
-             [format :as tf]]
+             [format :as tf]
+             [local :as l]]
             [clojure.string :as string]
             [clojure.tools
              [cli :refer [parse-opts]]
@@ -89,9 +90,13 @@
     (when-let [latest-build-start (:latestBuildStart buildviz-status)]
       (tc/from-long latest-build-start))))
 
-(defn sync-jobs [teamcity-url buildviz-url projects]
+(defn- sync-start [buildviz-url default-sync-start]
+  (let [last-sync-date (get-latest-synced-build-start buildviz-url)]
+    (or last-sync-date default-sync-start)))
+
+(defn sync-jobs [teamcity-url buildviz-url projects default-sync-start]
   (println "TeamCity" (str teamcity-url) projects "-> buildviz" (str buildviz-url))
-  (let [sync-start-time (get-latest-synced-build-start buildviz-url)]
+  (let [sync-start-time (sync-start buildviz-url default-sync-start)]
     (println (format "Finding all builds for syncing (starting from %s)..."
                      (tf/unparse (:date-time tf/formatters) sync-start-time)))
     (->> projects
@@ -106,6 +111,8 @@
                     (partial add-test-results teamcity-url)))
          dorun
          (progress/done))))
+
+(def last-week (t/minus (.withTimeAtStartOfDay (l/local-now)) (t/weeks 1)))
 
 (defn- assert-parameter [assert-func msg]
   (when (not (assert-func))
@@ -125,4 +132,4 @@
       (assert-parameter #(some? teamcity-url) "The URL of TeamCity is required. Try --help.")
       (assert-parameter #(not (empty? projects)) "At least one project is required. Try --help.")
 
-      (sync-jobs teamcity-url buildviz-url projects))))
+      (sync-jobs teamcity-url buildviz-url projects last-week))))
