@@ -18,15 +18,27 @@
         (get :buildTypes)
         (get :buildType))))
 
-(defn get-builds [teamcity-url job-id]
+
+(def ^:private builds-paging-count 100)
+
+(defn- get-builds-from [teamcity-url job-id offset]
   (let [response (get-json teamcity-url
-                           "/httpAuth/app/rest/buildTypes/id:%s/builds/?fields=build(id,number,status,startDate,finishDate,state,revisions(revision(version,vcs-root-instance)))"
-                           job-id)]
-    (get response :build)))
+                           "/httpAuth/app/rest/buildTypes/id:%s/builds/?locator=count:%s,start:%s&fields=build(id,number,status,startDate,finishDate,state,revisions(revision(version,vcs-root-instance)))"
+                           job-id builds-paging-count offset)
+        builds (get response :build)]
+    (if (< (count builds) builds-paging-count)
+      builds
+      (let [next-offset (+ offset builds-paging-count)]
+        (concat builds
+                (get-builds-from teamcity-url job-id next-offset))))))
+
+(defn get-builds [teamcity-url job-id]
+  (get-builds-from teamcity-url job-id 0))
+
 
 (def ^:private test-occurrence-paging-count 100)
 
-(defn get-test-report-from [teamcity-url build-id offset]
+(defn- get-test-report-from [teamcity-url build-id offset]
   (let [response (get-json teamcity-url
                            "/httpAuth/app/rest/testOccurrences?locator=count:%s,start:%s,build:(id:%s)"
                            test-occurrence-paging-count offset build-id)

@@ -22,7 +22,7 @@
     (successful-json-response {:buildTypes {:buildType jobs}})]])
 
 (defn- a-job-with-builds [job-id & builds]
-  (let [job-builds [(format "http://teamcity:8000/httpAuth/app/rest/buildTypes/id:%s/builds/?fields=build(id,number,status,startDate,finishDate,state,revisions(revision(version,vcs-root-instance)))"
+  (let [job-builds [(format "http://teamcity:8000/httpAuth/app/rest/buildTypes/id:%s/builds/?locator=count:100,start:0&fields=build(id,number,status,startDate,finishDate,state,revisions(revision(version,vcs-root-instance)))"
                             job-id)
                     (successful-json-response {:build (map #(merge {:revisions []
                                                                     :status "SUCCESS"
@@ -152,7 +152,6 @@
                                                     (a-job-with-builds "jobId1"
                                                                        {:id 10
                                                                         :number 10
-                                                                        :state "finished"
                                                                         :startDate "20160410T000000+0000"
                                                                         :finishDate "20160410T000100+0000"})
                                                     (provide-buildviz-and-capture-puts latest-build-start stored))
@@ -168,17 +167,14 @@
                                                     (a-job-with-builds "jobId1"
                                                                        {:id 12
                                                                         :number 12
-                                                                        :state "finished"
                                                                         :startDate "20160410T000400+0000"
                                                                         :finishDate "20160410T000500+0000"}
                                                                        {:id 11
                                                                         :number 11
-                                                                        :state "finished"
                                                                         :startDate "20160410T000200+0000"
                                                                         :finishDate "20160410T000300+0000"}
                                                                        {:id 10
                                                                         :number 10
-                                                                        :state "finished"
                                                                         :startDate "20160410T000000+0000"
                                                                         :finishDate "20160410T000100+0000"})
                                                     (provide-buildviz-and-capture-puts beginning-of-2016 stored))
