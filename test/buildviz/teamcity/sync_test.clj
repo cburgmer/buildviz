@@ -29,7 +29,7 @@
                                                                     :state "finished"}
                                                                    %) builds)})]
         testresults (map (fn [build]
-                           [(format "http://teamcity:8000/httpAuth/app/rest/testOccurrences?locator=count:100,start:0,build:(id:%s)"
+                           [(format "http://teamcity:8000/httpAuth/app/rest/testOccurrences?locator=count:10000,start:0,build:(id:%s)"
                                     (:id build))
                             (successful-json-response {:testOccurrences []})]) builds)]
     (cons job-builds testresults)))

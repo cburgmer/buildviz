@@ -36,7 +36,7 @@
   (get-builds-from teamcity-url job-id 0))
 
 
-(def ^:private test-occurrence-paging-count 100)
+(def ^:private test-occurrence-paging-count 10000)
 
 (defn- get-test-report-from [teamcity-url build-id offset]
   (let [response (get-json teamcity-url
