@@ -1,5 +1,5 @@
-(ns buildviz.teamcity.sync-test
-  (:require [buildviz.teamcity.sync :as sut]
+(ns buildviz.teamcity.sync-jobs-test
+  (:require [buildviz.teamcity.sync-jobs :as sut]
             [buildviz.util.url :as url]
             [cheshire.core :as j]
             [clj-http.fake :as fake]
