@@ -69,11 +69,13 @@
       "pass"
       "fail")))
 
+(defn- test-duration [duration]
+  (or duration 0)) ; Work around https://youtrack.jetbrains.com/issue/TW-45065
+
 (defn- convert-test [parse-teamcity-test-name {:keys [name status ignored duration]}]
   (-> (parse-teamcity-test-name name)
       (assoc :status (convert-status ignored status))
-      (cond-> duration
-        (assoc :runtime duration))))
+      (assoc :runtime (test-duration duration))))
 
 (defn- convert-test-results [tests]
   (let [parse-teamcity-test-name (guess-test-name-pattern tests)]

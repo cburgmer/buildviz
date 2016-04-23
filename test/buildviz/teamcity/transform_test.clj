@@ -74,14 +74,14 @@
                :children
                first
                :runtime))))
-  (testing "should handle missing runtime"
-    (is (not
-         (contains? (-> (sut/teamcity-build->buildviz-build (a-teamcity-build-with-test {}))
+  (testing "should return runtime 0 if duration is missing to work around https://youtrack.jetbrains.com/issue/TW-45065"
+    (is (= 0
+         (-> (sut/teamcity-build->buildviz-build (a-teamcity-build-with-test {}))
                         :test-results
                         first
                         :children
-                        first)
-                    :runtime))))
+                        first
+                        :runtime))))
   (testing "should extract classname for JUnit origin"
     (is (= "the.class"
            (-> (sut/teamcity-build->buildviz-build (a-teamcity-build-with-test {:name "suite: the.class.the test"}))
@@ -100,7 +100,8 @@
     (is (= {:name "<empty>"
             :children [{:classname "The Class: Sub section"
                         :name "Test description"
-                        :status "pass"}]}
+                        :status "pass"
+                        :runtime 0}]}
            (-> (sut/teamcity-build->buildviz-build (a-teamcity-build-with-test {:name "The Class: Sub section: Test description"}))
                :test-results
                first))))
@@ -110,7 +111,8 @@
     ;; - parsing the job's configuration and guessing what underlying reporter was used to generate the test report
     (is (= {:classname "The Subject"
             :name "test.description.with.dots"
-            :status "pass"}
+            :status "pass"
+            :runtime 0}
            (-> (sut/teamcity-build->buildviz-build (-> (a-teamcity-build {})
                                                        (assoc :tests [{:name "The Subject: test.description.with.dots" :status "SUCCESS"}
                                                                       {:name "The Class: Sub section: Test description" :status "SUCCESS"}])))
