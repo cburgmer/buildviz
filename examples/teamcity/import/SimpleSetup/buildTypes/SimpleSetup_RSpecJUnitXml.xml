@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<build-type xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" uuid="4ae27d1f-c6e3-4e84-b113-9ace8fca46ae" xsi:noNamespaceSchemaLocation="http://www.jetbrains.com/teamcity/schemas/9.0/project-config.xsd">
+  <name>RSpec JUnit XML</name>
+  <description />
+  <settings>
+    <options>
+      <option name="artifactRules" value="*.xml" />
+    </options>
+    <parameters />
+    <build-runners>
+      <runner id="RUNNER_5" name="" type="simpleRunner">
+        <parameters>
+          <param name="script.content"><![CDATA[#!/bin/bash
+
+function rspecTest {
+    cat <<EOF
+describe Hash do
+  before do
+    @hash = Hash.new({:hello => 'world'})
+  end
+
+  it "should return a blank instance" do
+    Hash.new.should == {}
+  end
+
+  it "hash the correct information in a key" do
+    @hash[:hello].should == 'world'
+  end
+end
+EOF
+}
+
+function anotherRspecTest {
+    cat <<EOF
+describe 'calculation' do
+  it "should compute 1+1" do
+    expect(1+1).to eq(2)
+  end
+end
+EOF
+}
+
+mkdir -p spec
+rspecTest > spec/example_spec.rb
+anotherRspecTest > spec/another_spec.rb
+
+gem install rake
+gem install rspec -v 3.1.0
+gem install rspec_junit_formatter]]></param>
+          <param name="teamcity.step.mode" value="default" />
+          <param name="use.custom.script" value="true" />
+        </parameters>
+      </runner>
+      <runner id="RUNNER_6" name="" type="rake-runner">
+        <parameters>
+          <param name="build-file"><![CDATA[require 'rspec/core/rake_task'
+
+RSpec::Core::RakeTask.new(:spec) do |t|
+    t.rspec_opts = "--format RspecJunitFormatter --out rspec.xml"
+end]]></param>
+          <param name="teamcity.step.mode" value="default" />
+          <param name="ui.rakeRunner.config.version" value="2" />
+          <param name="ui.rakeRunner.rake.tasks.names" value="spec" />
+          <param name="ui.rakeRunner.ruby.use.mode" value="default" />
+          <param name="use-custom-build-file" value="true" />
+        </parameters>
+      </runner>
+    </build-runners>
+    <vcs-settings />
+    <requirements />
+    <build-triggers />
+    <build-extensions>
+      <extension id="BUILD_EXT_2" type="xml-report-plugin">
+        <parameters>
+          <param name="xmlReportParsing.reportDirs" value="*.xml" />
+          <param name="xmlReportParsing.reportType" value="junit" />
+        </parameters>
+      </extension>
+    </build-extensions>
+    <cleanup />
+  </settings>
+</build-type>
+

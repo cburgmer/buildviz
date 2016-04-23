@@ -40,6 +40,7 @@
            :name test-name
            :classname classname}))))
 
+;; RSpec reporter is missing some information https://youtrack.jetbrains.com/issue/TW-45063
 (defn- extract-rspec-style-name [full-name]
   (let [match (re-matches rspec-derived-name-pattern full-name)
         classname (nth match 1)
@@ -54,6 +55,8 @@
                         (re-matches junit-derived-name-pattern name))
                       tests)))
 
+;; REST API doesn't separate test suite, package name and short test name
+;; https://youtrack.jetbrains.com/issue/TW-40309, https://youtrack.jetbrains.com/issue/TW-42683
 (defn- guess-test-name-pattern [tests]
   (if (test-names-from-junit-source? tests)
     extract-junit-style-name
