@@ -23,7 +23,6 @@
                  [intervox/clj-progress "0.2.1"]
                  [wharf "0.2.0-20141115.032457-2"]]
   :plugins [[lein-ring "0.9.3"]
-            [lein-exec "0.3.4"]
             [lein-npm "0.6.1"]]
   :npm {:dependencies [[d3 "3.5.5"]
                        [moment "2.10.6"]
@@ -32,8 +31,8 @@
   :ring {:handler buildviz.main/app
          :init buildviz.main/help}
   :aot [buildviz.go.sync
-        buildviz.jenkins.sync]
+        buildviz.jenkins.sync
+        buildviz.teamcity.sync]
   :profiles {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
-                                  [cheshire "5.4.0"]
                                   [ring-mock "0.1.5"]
                                   [clj-http-fake "1.0.2"]]}})
