@@ -1,6 +1,10 @@
 (function (timespanSelection, graphDescription, graphFactory, zoomableSunburst, utils, jobColors, dataSource) {
     var title = function (entry) {
-        return entry.name + ' (' + utils.formatTimeInMs(entry.averageRuntime, {showMillis: true}) + ')';
+        var runtime = '';
+        if (entry.averageRuntime !== undefined) {
+            runtime = ' (' + utils.formatTimeInMs(entry.averageRuntime, {showMillis: true}) + ')';
+        }
+        return entry.name + runtime;
     };
 
     var hasOnlyOneChild = function (children) {
@@ -75,6 +79,8 @@
     var addAccumulatedApproximateRuntime = function (elem) {
         if (elem.children) {
             elem.children = elem.children.map(addAccumulatedApproximateRuntime);
+        }
+        if (elem.children && elem.children.every(function (child) { return child.averageRuntime !== undefined; })) {
             elem.averageRuntime = elem.children.reduce(function (acc, child) {
                 return acc + child.averageRuntime;
             }, 0);
