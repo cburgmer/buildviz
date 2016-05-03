@@ -183,15 +183,15 @@
         x.domain([d3.min(phasesByDay, function(d) { return d.startOfDay; }),
                   d3.max(phasesByDay, function(d) { return d.endOfDay; })]);
 
-        var g = getOrCreateAxesPane(svg);
+        var pane = getOrCreateAxesPane(svg);
 
-        g.selectAll('.x.axis')
+        pane.selectAll('.x.axis')
             .call(saneDayTicks(xAxis, x));
 
-        g.selectAll('.y.axis')
+        pane.selectAll('.y.axis')
             .call(yAxis);
 
-        var selection = g.selectAll('rect')
+        var selection = pane.selectAll('rect')
             .data(phasesByDay,
                   function (d) {
                       return d.start;
@@ -200,9 +200,11 @@
         selection.exit()
             .remove();
 
-        selection
-            .enter()
-            .append('rect')
+        var g = selection
+                .enter()
+                .append('g');
+
+        g.append('rect')
             .attr('class', function (d) {
                 var classNames = [];
                 if (isWeekend(d.start)) {
@@ -211,8 +213,9 @@
                 classNames.push(d.color);
 
                 return classNames.join(' ');
-            })
-            .attr('title', function (d) {
+            });
+        g.append('title')
+            .text(function (d) {
                 var duration = utils.formatTimeInMs(d.duration),
                     lines = [];
 
@@ -230,6 +233,7 @@
             });
 
         selection
+            .select('rect')
             .attr('x', function (d) {
                 return x(startOfDay(d.start));
             })
