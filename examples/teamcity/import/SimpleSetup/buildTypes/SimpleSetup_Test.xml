@@ -52,7 +52,7 @@ function manyTestcases {
 EOF
 
     for i in $(seq 0 100); do
-        echo "<testcase classname=class' name='Some Test $i' time='0.0001'></testcase>"
+        echo "<testcase classname='class' name='Some Test $i' time='0.0001'></testcase>"
     done
 
     cat <<EOF
