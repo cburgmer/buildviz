@@ -38,9 +38,7 @@
 
     var waitTimesPane = durationsByDay(graph.svg, 'Average wait time');
 
-    timespanSelector.load(function (selectedTimespan) {
-        var fromTimestamp = timespanSelection.startingFromTimestamp(selectedTimespan);
-
+    timespanSelector.load(function (fromTimestamp) {
         graph.loading();
 
         dataSource.load('waittimes?from=' + fromTimestamp, function (data) {

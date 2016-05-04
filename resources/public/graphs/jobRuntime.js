@@ -40,9 +40,7 @@
 
     var runtimePane = durationsByDay(graph.svg, 'Average runtime');
 
-    timespanSelector.load(function (selectedTimespan) {
-        var fromTimestamp = timespanSelection.startingFromTimestamp(selectedTimespan);
-
+    timespanSelector.load(function (fromTimestamp) {
         graph.loading();
 
         dataSource.load('jobruntime?from=' + fromTimestamp, function (data) {

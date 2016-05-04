@@ -264,9 +264,7 @@
             widgets: [timespanSelector.widget, description.widget]
         });
 
-    timespanSelector.load(function (selectedTimespan) {
-        var fromTimestamp = timespanSelection.startingFromTimestamp(selectedTimespan);
-
+    timespanSelector.load(function (fromTimestamp) {
         graph.loading();
 
         dataSource.load('failphases?from=' + fromTimestamp, function (data) {

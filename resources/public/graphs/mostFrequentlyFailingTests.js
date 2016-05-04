@@ -105,8 +105,7 @@
         });
     var sunburst = zoomableSunburst(graph.svg, graphFactory.size);
 
-    timespanSelector.load(function (selectedTimespan) {
-        var fromTimestamp = timespanSelection.startingFromTimestamp(selectedTimespan);
+    timespanSelector.load(function (fromTimestamp) {
         graph.loading();
 
         dataSource.load('testcases?from='+ fromTimestamp, function (failures) {

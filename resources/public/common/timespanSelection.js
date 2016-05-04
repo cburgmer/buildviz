@@ -42,8 +42,8 @@ var timespanSelection = function (d3) {
         }
     };
 
-    module.startingFromTimestamp = function (span) {
-        return span.timestamp.call();
+    var notifyTimespanSelected = function (onTimespanSelected, span) {
+        onTimespanSelected(span.timestamp.call());
     };
 
     module.create = function (selectedSpan) {
@@ -90,7 +90,7 @@ var timespanSelection = function (d3) {
             .on('click', function (span) {
                 selectedSpan = span;
                 updateSelection();
-                onTimespanSelected(span);
+                notifyTimespanSelected(onTimespanSelected, selectedSpan);
                 d3.event.preventDefault();
             });
 
@@ -101,7 +101,7 @@ var timespanSelection = function (d3) {
             load: function (onTimespanSelectedFunction) {
                 onTimespanSelected = onTimespanSelectedFunction;
 
-                onTimespanSelected(selectedSpan);
+                notifyTimespanSelected(onTimespanSelected, selectedSpan);
             }
         };
     };
