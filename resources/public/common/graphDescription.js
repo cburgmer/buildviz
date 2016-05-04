@@ -4,7 +4,7 @@ var graphDescription = function (d3) {
     var githubWikiLink = function (question) {
         var baseUrl = 'https://github.com/cburgmer/buildviz/wiki/Questions';
 
-        return baseUrl + '#' + question.replace(/ /g, '-').replace(/\?/g, '').toLowerCase()
+        return baseUrl + '#' + question.replace(/ /g, '-').replace(/\?/g, '').toLowerCase();
     };
 
     var answerToListWidget = function (answersTo) {

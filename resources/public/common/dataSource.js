@@ -1,3 +1,4 @@
+// Simple debouncing so we save requests on start-up for same URLs
 var dataSource = function () {
     var module = {};
 
@@ -8,12 +9,25 @@ var dataSource = function () {
         return loadHandlersByType[type];
     };
 
-    var load = function (type, url, handler) {
+    var queueHandler = function (type, url, handler) {
         var handlers = loadHandlers(type)[url] || [];
         handlers.push(handler);
         loadHandlers(type)[url] = handlers;
+        return handlers;
+    };
 
-        if (handlers.length === 1) {
+    var unqueueHandlers = function (type, url) {
+        var handlers = loadHandlers(type)[url];
+        loadHandlers(type)[url] = undefined;
+
+        return handlers;
+    };
+
+    var load = function (type, url, handler) {
+        var handlers = queueHandler(type, url, handler),
+            isFirstHandler = handlers.length === 1;
+
+        if (isFirstHandler) {
             if (type === 'json') {
                 d3.json(url, function (error, data) {
                     callbackHandlers(type, url, error, data);
@@ -27,8 +41,7 @@ var dataSource = function () {
     };
 
     var callbackHandlers = function (type, url, error, data) {
-        var handlers = loadHandlers(type)[url];
-        loadHandlers(type)[url] = undefined;
+        var handlers = unqueueHandlers(type, url);
 
         if (error) {
             console.warn(error);
