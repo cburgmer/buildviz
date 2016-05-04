@@ -28,7 +28,12 @@
 
     var timespanSelector = timespanSelection.create(timespanSelection.timespans.twoWeeks),
         description = graphDescription.create({
-            description: "The 5 jobs with the most flaky failing builds. A failing build is considered flaky, if another build that was given the same inputs passes. The size of each job's circle follows its total flaky build count. The border color shows the rate of flaky failures, calculated by total flaky build failures relative to total failing build count. This graph will prefer jobs with many flaky failures over jobs with a high rate of flaky failures.",
+            description: ["The 5 jobs with the most flaky failing builds.",
+                          "A failing build is considered flaky, if another build that was given the same inputs passes.",
+                          "The size of each job's circle follows its total flaky build count.",
+                          "The border color shows the rate of flaky failures,",
+                          "calculated by total flaky build failures relative to total failing build count.",
+                          "This graph will prefer jobs with many flaky failures over jobs with a high rate of flaky failures."].join(' '),
             answer: ["Where are implicit dependencies not made obvious?",
                      "Which jobs will probably be trusted the least?"],
             legend: "Border color: flaky ratio (no. flaky failures / no. failures), inner color: job, diameter: count of flaky builds",

@@ -28,7 +28,9 @@
 
     var timespanSelector = timespanSelection.create(timespanSelection.timespans.twoWeeks),
         description = graphDescription.create({
-            description: "The 5 jobs with the most failed builds. The size of each job's circle follows its total failed build count. The border color shows the failure rate, calculated by total build failures relative to total build count. This graph will prefer jobs with many failures over jobs with a high failure rate.",
+            description: ["The 5 jobs with the most failed builds. The size of each job's circle follows its total failed build count.",
+                          "The border color shows the failure rate, calculated by total build failures relative to total build count.",
+                          "This graph will prefer jobs with many failures over jobs with a high failure rate."].join(' '),
             answer: ["What needs most manual intervention?",
                      "Where are the biggest quality issues?",
                      "Where do we receive either not so valuable or actually very valuable feedback?"],

@@ -1,7 +1,12 @@
 (function (timespanSelection, graphDescription, graphFactory, durationsByDay, jobColors, dataSource) {
     var timespanSelector = timespanSelection.create(timespanSelection.timespans.twoMonths),
         description = graphDescription.create({
-            description: "Average job wait times by day. Wait times are calculated from the delay between the build starting and the end of the previous triggering build. This delay may be caused by the job itself already running from a previous build consequently blocking a new execution, manual execution, or build scheduler congestion. This graph can help find bottlenecks in a build pipeline, and show where changes are just sitting idly, waiting to be verified.",
+            description: ["Average job wait times by day.",
+                          "Wait times are calculated from the delay between the build starting and the end of the previous triggering build.",
+                          "This delay may be caused by the job itself already running from a previous build consequently blocking a new execution,",
+                          "manual execution, or build scheduler congestion.",
+                          "This graph can help find bottlenecks in a build pipeline,",
+                          "and show where changes are just sitting idly, waiting to be verified."].join(' '),
             answer: ["Where is time wasted in the pipeline?",
                      "Where are multiple changes possibly queuing up for processing?"],
             legend: "Color: job",

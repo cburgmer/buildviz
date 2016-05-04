@@ -250,7 +250,11 @@
 
     var timespanSelector = timespanSelection.create(timespanSelection.timespans.twoMonths),
         description = graphDescription.create({
-            description: 'A failing phase starts when one job fails on an otherwise green pipeline and ends when the job is re-run with a now good outcome. The failing phase continues when another job starts to fail in between and only ends when that job also passes again. Weekends are blured out. This graphs assumes that failures are generally not tolerated to persist over a long interval for any job, otherwise the graph will not provide much value for those periods.',
+            description: ['A failing phase starts when one job fails on an otherwise green pipeline and ends when the job is re-run with a now good outcome.',
+                          'The failing phase continues when another job starts to fail in between and only ends when that job also passes again.',
+                          'Weekends are blurred out.',
+                          'This graphs assumes that failures are generally not tolerated to persist over a long interval for any job,',
+                          'otherwise the graph will not provide much value for those periods.'].join(' '),
             answer: ["What is the general health of the build system?",
                      "How much are we stopping the pipeline?",
                      "How quickly can we resume the pipeline after failure?"],
