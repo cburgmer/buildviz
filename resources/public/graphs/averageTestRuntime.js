@@ -47,7 +47,7 @@
 
         classEntries.forEach(function (entry) {
             var packageClassName = entry.name,
-                components = packageClassName.split('.'),
+                components = packageClassName.split(/[\.:]/),
                 packagePath = components.slice(0, -1),
                 className = components.pop();
 
