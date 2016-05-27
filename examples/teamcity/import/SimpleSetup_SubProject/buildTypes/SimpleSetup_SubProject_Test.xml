@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<build-type xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" uuid="6af8d117-cb6e-40a5-b9e2-50d87aef81d9" xsi:noNamespaceSchemaLocation="http://www.jetbrains.com/teamcity/schemas/9.0/project-config.xsd">
+  <name>Test</name>
+  <description />
+  <settings>
+    <parameters />
+    <build-runners>
+      <runner id="RUNNER_9" name="" type="simpleRunner">
+        <parameters>
+          <param name="script.content"><![CDATA[#!/bin/bash
+
+function aTestsuite {
+    cat <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="Another Test Suite">
+    <testsuite name="Nested Test Suite">
+      <testcase classname="some.class" name="A Test" time="0.0021">
+      </testcase>
+      <testcase classname="some.class" name="Skipped Test" time="0.004">
+          <skipped/>
+      </testcase>
+    </testsuite>
+  </testsuite>
+</testsuites>
+EOF
+}
+
+aTestsuite > results.xml]]></param>
+          <param name="teamcity.step.mode" value="default" />
+          <param name="use.custom.script" value="true" />
+        </parameters>
+      </runner>
+    </build-runners>
+    <vcs-settings />
+    <requirements />
+    <build-triggers />
+    <build-extensions>
+      <extension id="BUILD_EXT_4" type="xml-report-plugin">
+        <parameters>
+          <param name="xmlReportParsing.reportDirs" value="*.xml" />
+          <param name="xmlReportParsing.reportType" value="junit" />
+        </parameters>
+      </extension>
+    </build-extensions>
+    <cleanup />
+  </settings>
+</build-type>
+

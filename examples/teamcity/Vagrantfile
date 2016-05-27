@@ -38,10 +38,12 @@ Vagrant.configure(2) do |config|
 
     echo "Setting up project..."
     PROJECT_CONFIG_DIR="/root/.BuildServer/config/projects"
-    if [ ! -d "$PROJECT_CONFIG_DIR" ]; then
-        mkdir -p "$PROJECT_CONFIG_DIR"
-        sudo cp -R "$SYNCED_IMPORT_DIR/SimpleSetup" "$PROJECT_CONFIG_DIR"
-    fi
+    mkdir -p "$PROJECT_CONFIG_DIR"
+    cd "$SYNCED_IMPORT_DIR"
+    for PROJECT in *; do
+        sudo cp -R "$SYNCED_IMPORT_DIR/$PROJECT" "$PROJECT_CONFIG_DIR"
+    done
+    cd -
 
     sudo service teamcity start
   SHELL
