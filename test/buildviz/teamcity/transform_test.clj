@@ -40,6 +40,13 @@
     (is (= 1459585450000
            (:end (:build (sut/teamcity-build->buildviz-build (a-teamcity-build {:finishDate "20160402T082410+0000"})))))))
 
+  (testing "should return triggeredBy information"
+    (is (= [{:job-name "project job_name"
+             :build-id 42}]
+           (:triggered-by (:build (sut/teamcity-build->buildviz-build (a-teamcity-build {:snapshot-dependencies {:build [{:buildType {:name "job_name"
+                                                                                                                                      :projectName "project"}
+                                                                                                                          :number 42}]}})))))))
+
   (testing "should return tests"
     (is (= [{:name "suite"
              :children [{:name "the test"

@@ -3,6 +3,10 @@
              [coerce :as tc]
              [format :as tf]]))
 
+(defn- job-name [{:keys [project-name job-name]}]
+  (format "%s %s" project-name job-name))
+
+
 (defn parse-build-date [date-str]
   (tf/parse (tf/formatters :basic-date-time-no-ms)
             date-str))
@@ -19,14 +23,24 @@
           :source-id name})
        revision))
 
-(defn- convert-build [{:keys [status startDate finishDate revisions]}]
-  (let [inputs (seq (vcs-inputs revisions))]
+(defn- triggered-by-snapshot-deps [{build :build}]
+  (map (fn [{number :number {name :name projectName :projectName} :buildType}]
+         {:job-name (job-name {:project-name projectName
+                               :job-name name})
+          :build-id number})
+       build))
+
+(defn- convert-build [{:keys [status startDate finishDate revisions snapshot-dependencies]}]
+  (let [inputs (seq (vcs-inputs revisions))
+        triggered-by (seq (triggered-by-snapshot-deps snapshot-dependencies))]
     (cond-> {:outcome (if (= status "SUCCESS")
                         "pass"
                         "fail")
              :start (date-str->timestamp startDate)
              :end (date-str->timestamp finishDate)}
-      inputs (assoc :inputs inputs))))
+      inputs (assoc :inputs inputs)
+      triggered-by (assoc :triggered-by triggered-by))))
+
 
 (def ^:private junit-derived-name-pattern #"^(.+): ([^:]+)\.([^:\.]+)$")
 (def ^:private rspec-derived-name-pattern #"^(.+): ([^:]+)$")
@@ -36,18 +50,18 @@
     (let [suites (nth match 1)
           classname (nth match 2)
           test-name (nth match 3)]
-      (-> {:suite suites
-           :name test-name
-           :classname classname}))))
+      {:suite suites
+       :name test-name
+       :classname classname})))
 
 ;; RSpec reporter is missing some information https://youtrack.jetbrains.com/issue/TW-45063
 (defn- extract-rspec-style-name [full-name]
   (let [match (re-matches rspec-derived-name-pattern full-name)
         classname (nth match 1)
         test-name (nth match 2)]
-    (-> {:suite "<empty>"
-         :name test-name
-         :classname classname})))
+    {:suite "<empty>"
+     :name test-name
+     :classname classname}))
 
 
 (defn- test-names-from-junit-source? [tests]
@@ -86,9 +100,6 @@
                 {:name suite
                  :children (map #(dissoc % :suite) tests)}))
          seq)))
-
-(defn- job-name [{:keys [project-name job-name]}]
-  (format "%s %s" project-name job-name))
 
 (defn teamcity-build->buildviz-build [{:keys [build tests] :as build-info}]
   {:job-name (job-name build-info)

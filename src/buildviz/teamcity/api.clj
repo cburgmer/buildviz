@@ -21,10 +21,14 @@
 
 (def ^:private builds-paging-count 100)
 
+(def ^:private build-fields ["id" "number" "status" "startDate" "finishDate"
+                             "state" "revisions(revision(version,vcs-root-instance))"
+                             "snapshot-dependencies(build(number,buildType(name,projectName)))"])
+
 (defn- get-builds-from [teamcity-url job-id offset]
   (let [response (get-json teamcity-url
-                           "/httpAuth/app/rest/buildTypes/id:%s/builds/?locator=count:%s,start:%s&fields=build(id,number,status,startDate,finishDate,state,revisions(revision(version,vcs-root-instance)))"
-                           job-id builds-paging-count offset)
+                           "/httpAuth/app/rest/buildTypes/id:%s/builds/?locator=count:%s,start:%s&fields=build(%s)"
+                           job-id builds-paging-count offset (string/join "," build-fields))
         builds (get response :build)]
     (if (< (count builds) builds-paging-count)
       builds
