@@ -43,9 +43,22 @@
   (testing "should return triggeredBy information"
     (is (= [{:job-name "project job_name"
              :build-id 42}]
-           (:triggered-by (:build (sut/teamcity-build->buildviz-build (a-teamcity-build {:snapshot-dependencies {:build [{:buildType {:name "job_name"
-                                                                                                                                      :projectName "project"}
-                                                                                                                          :number 42}]}})))))))
+           (->> (a-teamcity-build {:snapshot-dependencies {:build [{:buildType {:name "job_name"
+                                                                                :projectName "project"}
+                                                                    :number 42}]}
+                                   :triggered {:type "unknown"}})
+                sut/teamcity-build->buildviz-build
+                :build
+                :triggered-by))))
+
+  (testing "should omit build trigger if triggered by user due to temporal disconnect"
+    (is (not (contains? (:build (sut/teamcity-build->buildviz-build
+                                 (a-teamcity-build
+                                  {:snapshot-dependencies {:build [{:buildType {:name "job_name"
+                                                                                :projectName "project"}
+                                                                    :number 42}]}
+                                   :triggered {:type "user"}})))
+                        :triggered-by))))
 
   (testing "should return tests"
     (is (= [{:name "suite"

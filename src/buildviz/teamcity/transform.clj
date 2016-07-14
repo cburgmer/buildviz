@@ -24,15 +24,18 @@
           :source-id name})
        revision))
 
-(defn- triggered-by-snapshot-deps [{build :build}]
-  (map (fn [{number :number {name :name projectName :projectName} :buildType}]
-         {:job-name (full-job-name projectName name)
-          :build-id number})
-       build))
+(defn- triggered-by-snapshot-deps [{build :build} {type :type}]
+  (when (= type "unknown")
+    (map (fn [{number :number {name :name projectName :projectName} :buildType}]
+           {:job-name (full-job-name projectName name)
+            :build-id number})
+         build)))
 
-(defn- convert-build [{:keys [status startDate finishDate revisions snapshot-dependencies]}]
+(defn- convert-build [{:keys [status startDate finishDate revisions
+                              snapshot-dependencies triggered]}]
   (let [inputs (seq (vcs-inputs revisions))
-        triggered-by (seq (triggered-by-snapshot-deps snapshot-dependencies))]
+        triggered-by (seq (triggered-by-snapshot-deps snapshot-dependencies
+                                                      triggered))]
     (cond-> {:outcome (if (= status "SUCCESS")
                         "pass"
                         "fail")

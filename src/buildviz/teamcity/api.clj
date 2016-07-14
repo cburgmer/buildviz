@@ -23,7 +23,8 @@
 
 (def ^:private build-fields ["id" "number" "status" "startDate" "finishDate"
                              "state" "revisions(revision(version,vcs-root-instance))"
-                             "snapshot-dependencies(build(number,buildType(name,projectName)))"])
+                             "snapshot-dependencies(build(number,buildType(name,projectName)))"
+                             "triggered"])
 
 (defn- get-builds-from [teamcity-url job-id offset]
   (let [response (get-json teamcity-url

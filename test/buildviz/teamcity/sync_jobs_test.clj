@@ -22,7 +22,7 @@
     (successful-json-response {:buildTypes {:buildType jobs}})]])
 
 (defn- a-job-with-builds [job-id & builds]
-  (let [job-builds [(format "http://teamcity:8000/httpAuth/app/rest/buildTypes/id:%s/builds/?locator=count:100,start:0&fields=build(id,number,status,startDate,finishDate,state,revisions(revision(version,vcs-root-instance)),snapshot-dependencies(build(number,buildType(name,projectName))))"
+  (let [job-builds [(format "http://teamcity:8000/httpAuth/app/rest/buildTypes/id:%s/builds/?locator=count:100,start:0&fields=build(id,number,status,startDate,finishDate,state,revisions(revision(version,vcs-root-instance)),snapshot-dependencies(build(number,buildType(name,projectName))),triggered)"
                             job-id)
                     (successful-json-response {:build (map #(merge {:revisions []
                                                                     :status "SUCCESS"
