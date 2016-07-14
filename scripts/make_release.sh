@@ -1,7 +1,7 @@
 #!/bin/bash
 
 NEW_VERSION=$1
-OLD_VERSION=$(git tag | tail -1)
+OLD_VERSION=$(git tag --sort=-version:refname | head -1)
 
 if [ -z "$NEW_VERSION" ]; then
     echo "Provide a new version number"
