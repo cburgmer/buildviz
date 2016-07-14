@@ -3,7 +3,7 @@
              [coerce :as tc]
              [format :as tf]]))
 
-(defn- job-name [{:keys [project-name job-name]}]
+(defn- full-job-name [project-name job-name]
   (format "%s %s" project-name job-name))
 
 
@@ -25,8 +25,7 @@
 
 (defn- triggered-by-snapshot-deps [{build :build}]
   (map (fn [{number :number {name :name projectName :projectName} :buildType}]
-         {:job-name (job-name {:project-name projectName
-                               :job-name name})
+         {:job-name (full-job-name projectName name)
           :build-id number})
        build))
 
@@ -101,8 +100,8 @@
                  :children (map #(dissoc % :suite) tests)}))
          seq)))
 
-(defn teamcity-build->buildviz-build [{:keys [build tests] :as build-info}]
-  {:job-name (job-name build-info)
+(defn teamcity-build->buildviz-build [{:keys [build tests project-name job-name]}]
+  {:job-name (full-job-name project-name job-name)
    :build-id (:number build)
    :build (convert-build build)
    :test-results (convert-test-results tests)})
