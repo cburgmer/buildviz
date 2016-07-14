@@ -1,3 +1,14 @@
 language: clojure
 script:
-  - "./scripts/go"
+- ./scripts/go
+before_deploy:
+- lein ring uberjar
+deploy:
+  provider: releases
+  file: target/buildviz-*-standalone.jar
+  file_glob: true
+  skip_cleanup: true
+  on:
+    tags: true
+  api_key:
+    secure: Lrijnz5yW0D5yGfbQs465si+4X+t9DZw3kxptR6L9WDnJsyrKot4VcA/7ZzI5f+i0zMpgLlw8AOxZ1RJ1AO57eirFK7+fvZECidSAEq/sqsCWnfQPncolCiqXWnne/Ch63cvLwyGQASh7Kd4SNqiSPkhb0gbIrB4AKJewoK7y/n1uyLJQwxJ+z7+IidfeIy/2qLCCK07sgSU/gQiY4i3rs2LWIgK8BKwCo7cUJLi0zVZZhg/W5o8B5J83qyMmAlktCzT7xC4n3sduxwS1/xj3/i5Ef6AW6CT5QFvJv7gOqA7QgyTWK9pt0WHihpJV6mSVxbthwPEcBws3VuPmH2cLA4BccWw0X/sxnP5LLZZ7hYWZj/1O+X8eD5h9QnnkPKygrCh6DwkLM58l6hRfBGEsqlOYayTveZp84R/RPue4v+2PProf+6fk/MHQtjEcOan0g4696FMti1FrApUbsWz6kH3ymViEitxBuuii/VdERLa5X7E88nTcqHD1HgisvzGtn4LZytKZEdAqk4rr4htqpcTXTRNwxRpZ21KGF3WjsSEuzQMk8jp75vSI9ofi9wci1sCiXdwUQsHjSEf77SlTBPrCf0z45ygv2DRAnvs6qlDDME/BdIr1jfiHXqMhy0U94ecrRWrnVYyquujsbqHp6MKxjLjehXqi40TEfejEOM=
