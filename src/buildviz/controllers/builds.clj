@@ -11,8 +11,12 @@
   (if-some [errors (seq (schema/build-validation-errors build))]
     {:status 400
      :body errors}
-    (do (results/set-build! build-results job-name build-id build)
-        (http/respond-with-json build))))
+    (try
+      (results/set-build! build-results job-name build-id build)
+      (http/respond-with-json build)
+      (catch IllegalArgumentException e
+        {:status 400
+         :body (.getMessage e)}))))
 
 (defn get-build [build-results job-name build-id]
   (if-some [build (results/build build-results job-name build-id)]
@@ -43,13 +47,20 @@
     (if errors
       {:status 400
        :body errors}
-      (do
+      (try
         (results/set-tests! build-results job-name build-id test-results)
-        {:status 204}))))
+        {:status 204}
+        (catch IllegalArgumentException e
+          {:status 400
+           :body (.getMessage e)})))))
 
 (defn get-test-results [build-results job-name build-id accept]
-  (if-some [content (results/tests build-results job-name build-id)]
-    (if (= (:mime accept) :json)
-      (http/respond-with-json (junit-xml/parse-testsuites content))
-      (http/respond-with-xml content))
-    {:status 404}))
+  (try
+    (if-some [content (results/tests build-results job-name build-id)]
+      (if (= (:mime accept) :json)
+        (http/respond-with-json (junit-xml/parse-testsuites content))
+        (http/respond-with-xml content))
+      {:status 404})
+    (catch IllegalArgumentException e
+      {:status 400
+       :body (.getMessage e)})))
