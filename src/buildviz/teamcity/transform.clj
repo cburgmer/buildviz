@@ -2,11 +2,14 @@
   (:require [clj-time
              [coerce :as tc]
              [format :as tf]]
-            [buildviz.teamcity.transform-tests :refer [convert-test-results]]))
+            [buildviz.teamcity.transform-tests :refer [convert-test-results]]
+            [clojure.string :as str]))
+
+(defn- sanitize-id [id]
+  (str/replace id #"[\.\\/:]" "\\$"))
 
 (defn- full-job-name [project-name job-name]
-  (format "%s %s" project-name job-name))
-
+  (sanitize-id (format "%s %s" project-name job-name)))
 
 (defn parse-build-date [date-str]
   (tf/parse (tf/formatters :basic-date-time-no-ms)
@@ -47,6 +50,6 @@
 
 (defn teamcity-build->buildviz-build [{:keys [build tests project-name job-name]}]
   {:job-name (full-job-name project-name job-name)
-   :build-id (:number build)
+   :build-id (sanitize-id (:number build))
    :build (convert-build build)
    :test-results (convert-test-results tests)})

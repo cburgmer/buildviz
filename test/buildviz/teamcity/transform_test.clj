@@ -23,9 +23,22 @@
            (:job-name (sut/teamcity-build->buildviz-build (-> (a-teamcity-build {})
                                                               (assoc :job-name "some_job"
                                                                      :project-name "some_project")))))))
+  (testing "should escape invalid chars in job name"
+    (is (= "some_project$$ some_job$"
+           (:job-name (sut/teamcity-build->buildviz-build (-> (a-teamcity-build {})
+                                                              (assoc :job-name "some_job."
+                                                                     :project-name "some_project/\\")))))))
+  (testing "should handle :: in names"
+    (is (= "some_project $$ sub_project some_job$"
+           (:job-name (sut/teamcity-build->buildviz-build (-> (a-teamcity-build {})
+                                                              (assoc :job-name "some_job."
+                                                                     :project-name "some_project :: sub_project")))))))
   (testing "should return build id"
     (is (= "21"
            (:build-id (sut/teamcity-build->buildviz-build (a-teamcity-build {:number "21"}))))))
+  (testing "should escape invalid chars in build id"
+    (is (= "21$42"
+           (:build-id (sut/teamcity-build->buildviz-build (a-teamcity-build {:number "21.42"}))))))
 
   (testing "should return successful status"
     (is (= "pass"
