@@ -23,7 +23,7 @@
            (:job-name (sut/teamcity-build->buildviz-build (-> (a-teamcity-build {})
                                                               (assoc :job-name "some_job"
                                                                      :project-name "some_project")))))))
-  (testing "should escape invalid chars in job name"
+  (testing "should replace invalid chars in job name"
     (is (= "some_project$$ some_job$"
            (:job-name (sut/teamcity-build->buildviz-build (-> (a-teamcity-build {})
                                                               (assoc :job-name "some_job."
@@ -36,7 +36,7 @@
   (testing "should return build id"
     (is (= "21"
            (:build-id (sut/teamcity-build->buildviz-build (a-teamcity-build {:number "21"}))))))
-  (testing "should escape invalid chars in build id"
+  (testing "should replace invalid chars in build id"
     (is (= "21$42"
            (:build-id (sut/teamcity-build->buildviz-build (a-teamcity-build {:number "21.42"}))))))
 
@@ -55,14 +55,25 @@
 
   (testing "should return triggeredBy information"
     (is (= [{:job-name "project job_name"
-             :build-id 42}]
+             :build-id "42"}]
            (->> (a-teamcity-build {:snapshot-dependencies {:build [{:buildType {:name "job_name"
                                                                                 :projectName "project"}
-                                                                    :number 42}]}
+                                                                    :number "42"}]}
                                    :triggered {:type "unknown"}})
                 sut/teamcity-build->buildviz-build
                 :build
                 :triggered-by))))
+  (testing "should replace invalid characters in build id"
+    (is (= "42$12"
+           (->> (a-teamcity-build {:snapshot-dependencies {:build [{:buildType {:name "job_name"
+                                                                                :projectName "project"}
+                                                                    :number "42/12"}]}
+                                   :triggered {:type "unknown"}})
+                sut/teamcity-build->buildviz-build
+                :build
+                :triggered-by
+                first
+                :build-id))))
 
   (testing "should omit build trigger if triggered by user due to temporal disconnect"
     (is (not (contains? (:build (sut/teamcity-build->buildviz-build
