@@ -140,7 +140,7 @@
                :test-results
                first
                :name))))
-  (testing "should extract classname for non-JUnit orgin"
+  (testing "should extract classname for non-JUnit origin"
     (is (= {:name "<empty>"
             :children [{:classname "The Class: Sub section"
                         :name "Test description"
@@ -148,6 +148,16 @@
                         :runtime 0}]}
            (-> (sut/teamcity-build->buildviz-build (a-teamcity-build-with-test {:name "The Class: Sub section: Test description"}))
                :test-results
+               first))))
+  (testing "should handle colons in test name for non-JUnit origin"
+    (is (= {:classname "The Class: Sub section"
+            :name "Test:description"
+            :status "pass"
+            :runtime 0}
+           (-> (sut/teamcity-build->buildviz-build (a-teamcity-build-with-test {:name "The Class: Sub section: Test:description"}))
+               :test-results
+               first
+               :children
                first))))
   (testing "should fallback to RSpec style test name pattern if at least one of the tests does not match JUnit pattern"
     ;; This crude logic should save us from implementing either

@@ -4,7 +4,7 @@
              [format :as tf]]))
 
 (def ^:private junit-derived-name-pattern #"^(.+): ([^:]+)\.([^:\.]+)$")
-(def ^:private rspec-derived-name-pattern #"^(.+): ([^:]+)$")
+(def ^:private rspec-derived-name-pattern #"^(.+): (.+)$")
 
 (defn- extract-junit-style-name [full-name]
   (when-let [match (re-matches junit-derived-name-pattern full-name)]
