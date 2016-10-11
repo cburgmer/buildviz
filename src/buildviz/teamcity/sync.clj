@@ -41,7 +41,7 @@
                 options-summary]))
 
 
-(def last-week (t/minus (.withTimeAtStartOfDay (l/local-now)) (t/weeks 1)))
+(def two-months-ago (t/minus (.withTimeAtStartOfDay (l/local-now)) (t/months 2)))
 
 (defn- assert-parameter [assert-func msg]
   (when (not (assert-func))
@@ -65,4 +65,4 @@
       (assert-parameter #(some? teamcity-url) "The URL of TeamCity is required. Try --help.")
       (assert-parameter #(not (empty? projects)) "At least one project is required. Try --help.")
 
-      (sync-jobs/sync-jobs teamcity-url buildviz-url projects last-week user-sync-start))))
+      (sync-jobs/sync-jobs teamcity-url buildviz-url projects two-months-ago user-sync-start))))

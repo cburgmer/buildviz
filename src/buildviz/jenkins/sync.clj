@@ -95,7 +95,7 @@
        (progress/done)))
 
 
-(def last-week (t/minus (.withTimeAtStartOfDay (l/local-now)) (t/weeks 1)))
+(def two-months-ago (t/minus (.withTimeAtStartOfDay (l/local-now)) (t/months 2)))
 
 (defn- get-latest-synced-build-start [buildviz-url]
   (let [response (client/get (format "%s/status" buildviz-url))
@@ -108,7 +108,7 @@
     date-from-config
     (if-let [latest-sync-build-start (get-latest-synced-build-start buildviz-url)]
       latest-sync-build-start
-      last-week)))
+      two-months-ago)))
 
 
 (defn -main [& c-args]
