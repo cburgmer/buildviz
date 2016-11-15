@@ -171,7 +171,7 @@
             axesPane = undefined;
         };
 
-    var renderData = function (data, svg) {
+    var renderData = function (data, startTimestamp, svg) {
         var phasesByDay = annotateDateAndTime(calculatePhasesByDay(data));
 
         if (!phasesByDay.length) {
@@ -180,7 +180,9 @@
             return;
         }
 
-        x.domain([d3.min(phasesByDay, function(d) { return d.startOfDay; }),
+        var xMin = startTimestamp > 0 ? startTimestamp : d3.min(phasesByDay, function(d) { return d.startOfDay; });
+
+        x.domain([xMin,
                   d3.max(phasesByDay, function(d) { return d.endOfDay; })]);
 
         var pane = getOrCreateAxesPane(svg);
@@ -274,7 +276,7 @@
         dataSource.load('failphases?from=' + fromTimestamp, function (data) {
             graph.loaded();
 
-            renderData(data, graph.svg);
+            renderData(data, fromTimestamp, graph.svg);
         });
     });
 
