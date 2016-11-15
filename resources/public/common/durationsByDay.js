@@ -62,11 +62,13 @@ var durationsByDay = (function (utils) {
         return axesPane;
     };
 
-    var renderData = function (durationsByDay, svg, g) {
+    var renderData = function (durationsByDay, startTimestamp, svg, g) {
         svg.attr('class', 'runtimes');
 
+        var xMin = startTimestamp > 0 ? startTimestamp : d3.min(durationsByDay, function(c) { return d3.min(c.durations, function(r) { return r.date; }); });
+
         x.domain([
-            d3.min(durationsByDay, function(c) { return d3.min(c.durations, function(r) { return r.date; }); }),
+            xMin,
             d3.max(durationsByDay, function(c) { return d3.max(c.durations, function(r) { return r.date; }); })
         ]);
         y.domain([
@@ -126,7 +128,7 @@ var durationsByDay = (function (utils) {
             };
 
         return {
-            render: function (durationsByDay) {
+            render: function (durationsByDay, startTimestamp) {
                 if (! durationsByDay.length) {
                     removeAxesPane(svg);
                     return;
@@ -134,7 +136,7 @@ var durationsByDay = (function (utils) {
 
                 var g = getOrCreateAxesPane();
 
-                renderData(durationsByDay, svg, g);
+                renderData(durationsByDay, startTimestamp, svg, g);
             }
         };
     };

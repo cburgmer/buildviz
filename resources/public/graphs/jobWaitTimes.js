@@ -49,7 +49,7 @@
         dataSource.load('waittimes?from=' + fromTimestamp, function (data) {
             graph.loaded();
 
-            waitTimesPane.render(transformWaitTimes(data));
+            waitTimesPane.render(transformWaitTimes(data), fromTimestamp);
         });
     });
 }(timespanSelection, graphDescription, graphFactory, durationsByDay, jobColors, dataSource));

@@ -46,7 +46,7 @@
         dataSource.load('jobruntime?from=' + fromTimestamp, function (data) {
             graph.loaded();
 
-            runtimePane.render(transformRuntimes(data));
+            runtimePane.render(transformRuntimes(data), fromTimestamp);
         });
     });
 }(timespanSelection, graphDescription, graphFactory, durationsByDay, jobColors, dataSource));

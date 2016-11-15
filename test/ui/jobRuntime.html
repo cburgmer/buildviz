@@ -11,13 +11,13 @@
             callback([{
                 job: 'someJob',
                 runtimes: [{
-                    date: '2015-10-14',
+                    date: '2015-09-01',
                     runtime: 1468800
                 }, {
-                    date: '2015-10-15',
+                    date: '2015-09-15',
                     runtime: 1728000
                 }, {
-                    date: '2015-10-16',
+                    date: '2015-10-01',
                     runtime: 1296000
                 }, {
                     date: '2015-10-17',
@@ -29,13 +29,13 @@
             }, {
                 job: 'anotherJob',
                 runtimes: [{
-                    date: '2015-10-14',
+                    date: '2015-09-01',
                     runtime: 4406400
                 }, {
-                    date: '2015-10-15',
+                    date: '2015-09-15',
                     runtime: 4406400
                 }, {
-                    date: '2015-10-16',
+                    date: '2015-10-01',
                     runtime: 4752000
                 }, {
                     date: '2015-10-17',
@@ -55,6 +55,10 @@
 <script src="../../resources/public/common/utils.js"></script>
 <script src="../../resources/public/common/jobColors.js"></script>
 <script src="../../resources/public/common/durationsByDay.js"></script>
+<script src="testHelpers.js"></script>
 <body>
+    <script>
+        testHelpers.mockDateToday('2015-10-18');
+    </script>
     <script src="../../resources/public/graphs/jobRuntime.js"></script>
 </body>

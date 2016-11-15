@@ -4,8 +4,9 @@ var timespanSelection = function (d3) {
     var fromDaysAgo = function (days) {
         return function () {
             var today = new Date(),
-                twoWeeksAgo = new Date(today.getFullYear(), today.getMonth(), today.getDate() - days);
-            return +twoWeeksAgo;
+                daysAgo = new Date(today.getFullYear(), today.getMonth(), today.getDate() - days);
+
+            return +daysAgo;
         };
     };
 
