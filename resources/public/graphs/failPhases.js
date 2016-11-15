@@ -193,7 +193,7 @@
         pane.selectAll('.y.axis')
             .call(yAxis);
 
-        var selection = pane.selectAll('rect')
+        var selection = pane.selectAll('.entry')
             .data(phasesByDay,
                   function (d) {
                       return d.start;
@@ -204,7 +204,8 @@
 
         var g = selection
                 .enter()
-                .append('g');
+                .append('g')
+                .attr("class", "entry");
 
         g.append('rect')
             .attr('class', function (d) {
