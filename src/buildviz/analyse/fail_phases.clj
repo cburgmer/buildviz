@@ -43,7 +43,8 @@
 
 (defn pipeline-phases [builds]
   (->> builds
-       (remove #(nil? (:end %)))
+       (remove #(or (nil? (:end %))
+                    (nil? (:outcome %))))
        (reduce accumulate-phases [])
        (remove #(nil? (:end %)))))
 

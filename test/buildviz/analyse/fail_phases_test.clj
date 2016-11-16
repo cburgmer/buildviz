@@ -16,6 +16,9 @@
     (is (= []
            (pipeline-phases [{:outcome "pass" :job "a job"}
                              {:end 40 :outcome "pass" :job "a job"}])))
+    (is (= []
+           (pipeline-phases [{:end 20 :job "a job"}
+                             {:end 40 :outcome "pass" :job "a job"}])))
     (is (= [{:start 20 :end 40 :status "fail" :culprits #{"a job"} :ongoing-culprits #{}}]
            (pipeline-phases [{:end 20 :outcome "fail" :job "a job"}
                              {:end 40 :outcome "pass" :job "a job"}])))
