@@ -14,7 +14,7 @@
            (:status (get-request (the-app) "/failphases"))))
 
     ;; GET should return empty list by default
-    (is (= "start,end,culprits\n"
+    (is (= "start,end,status,culprits,ongoing_culprits\n"
            (:body (get-request (the-app) "/failphases"))))
 
     ;; GET should return fail phases
@@ -23,7 +23,7 @@
                         "anotherBuild" {1 {:start 0 :end (+ a-timestamp 10000) :outcome "fail"}
                                         2 {:start 0 :end (+ a-timestamp 20000) :outcome "pass"}}}
                        {})]
-      (is (= "start,end,culprits\n1986-10-14 04:03:27,1986-10-14 04:03:57,anotherBuild|badBuild\n"
+      (is (= "start,end,status,culprits,ongoing_culprits\n1986-10-14 04:03:27,1986-10-14 04:03:57,fail,anotherBuild|badBuild,\n"
              (:body (get-request app "/failphases")))))
 
     ;; GET should return empty list by default as JSON

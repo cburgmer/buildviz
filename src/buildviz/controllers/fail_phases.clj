@@ -14,9 +14,12 @@
     (if (= (:mime accept) :json)
       (http/respond-with-json fail-phases)
       (http/respond-with-csv
-       (csv/export-table ["start" "end" "culprits"]
-                         (map (fn [{start :start end :end culprits :culprits}]
-                                [(csv/format-timestamp start)
-                                 (csv/format-timestamp end)
-                                 (str/join "|" culprits)])
-                              fail-phases))))))
+       (csv/export-table ["start" "end" "status" "culprits" "ongoing_culprits"]
+                         (->> (all-builds-in-order build-results from-timestamp)
+                              pipelineinfo/pipeline-phases
+                              (map (fn [{start :start end :end status :status culprits :culprits ongoing-culprits :ongoing-culprits}]
+                                     [(csv/format-timestamp start)
+                                      (csv/format-timestamp end)
+                                      status
+                                      (str/join "|" culprits)
+                                      (str/join "|" ongoing-culprits)]))))))))
