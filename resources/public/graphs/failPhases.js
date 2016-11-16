@@ -78,7 +78,11 @@
     var calculatePhasesByDay = function (data) {
         var lastEntry;
 
-        return flatten(data.map(function (entry) {
+        return flatten(data
+                       .filter(function (entry) {
+                           return entry["status"] !== "pass";
+                       })
+                       .map(function (entry) {
             var greenPhases = [],
                 start = entry.start;
 

@@ -34,7 +34,7 @@
     (let [app (the-app {"badBuild" {1 {:start 0 :end 42 :outcome "fail"}
                                     2 {:start 70 :end 80 :outcome "pass"}}}
                        {})]
-      (is (= [{"start" 42 "end" 80 "culprits" ["badBuild"]}]
+      (is (= [{"start" 42 "end" 80 "status" "fail" "culprits" ["badBuild"] "ongoingCulprits" []}]
              (json-body (json-get-request app "/failphases"))))))
 
   (testing "should respect 'from' filter"
@@ -43,5 +43,6 @@
                                     3 {:start 90 :end 100 :outcome "fail"}
                                     4 {:start 190 :end 200 :outcome "pass"}}}
                        {})]
-      (is (= [{"start" 100 "end" 200 "culprits" ["badBuild"]}]
+      (is (= [{"start" 80 "end" 100 "status" "pass"}
+              {"start" 100 "end" 200 "status" "fail" "culprits" ["badBuild"] "ongoingCulprits" []}]
            (json-body (json-get-request app "/failphases" {"from" 60})))))))
