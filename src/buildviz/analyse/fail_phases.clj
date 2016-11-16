@@ -42,8 +42,10 @@
                 (extend-phase phases updated-phase build))))))))
 
 (defn pipeline-phases [builds]
-  (remove #(nil? (:end %))
-          (reduce accumulate-phases [] builds)))
+  (->> builds
+       (remove #(nil? (:end %)))
+       (reduce accumulate-phases [])
+       (remove #(nil? (:end %)))))
 
 ;; legacy
 (defn pipeline-fail-phases [builds]
