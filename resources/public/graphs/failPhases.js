@@ -78,38 +78,16 @@
     var calculatePhasesByDay = function (data) {
         var lastEntry;
 
-        return flatten(data
-                       .filter(function (entry) {
-                           return entry["status"] !== "pass";
-                       })
-                       .map(function (entry) {
-            var greenPhases = [],
-                start = entry.start;
-
-            if (lastEntry) {
-                greenPhases = phasesByDay(lastEntry.end + 1, entry.start - 1).map(function (phase) {
-                    phase.color = 'green';
-                    phase.duration = entry.start - lastEntry.end;
-                    phase.phaseStart = new Date(lastEntry.end);
-                    phase.phaseEnd = new Date(entry.start);
+        return flatten(data.map(function (entry) {
+            return phasesByDay(entry.start, entry.end)
+                .map(function (phase) {
+                    phase.color = entry.status === 'pass' ? 'green' : 'red';
+                    phase.culprits = entry.culprits;
+                    phase.duration = entry.end - entry.start;
+                    phase.phaseStart = new Date(entry.start);
+                    phase.phaseEnd = new Date(entry.end);
                     return phase;
                 });
-            }
-
-            lastEntry = entry;
-
-            var redPhases = phasesByDay(entry.start, entry.end).filter(function (phase) {
-                return phase.end !== undefined;
-            }).map(function (phase) {
-                phase.color = 'red';
-                phase.culprits = entry.culprits;
-                phase.duration = entry.end - entry.start;
-                phase.phaseStart = new Date(entry.start);
-                phase.phaseEnd = new Date(entry.end);
-                return phase;
-            });
-
-            return greenPhases.concat(redPhases);
         }));
     };
 

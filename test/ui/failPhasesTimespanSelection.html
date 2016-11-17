@@ -11,18 +11,34 @@
             callback([{
                 start: 1445080343000,
                 end: 1445081343000,
+                status: 'fail',
                 culprits: ['failingJob']
+            }, {
+                start: 1445081343000,
+                end: 1445084343000,
+                status: 'pass'
             }, {
                 start: 1445084343000,
                 end: 1445098343000,
+                status: 'fail',
                 culprits: ['anotherFailingJob']
+            }, {
+                start: 1445098343000,
+                end: 1445124343000,
+                status: 'pass'
             }, {
                 start: 1445124343000,
                 end: 1445158343000,
+                status: 'fail',
                 culprits: ['failingJob']
+            }, {
+                start: 1445158343000,
+                end: 1445178343000,
+                status: 'pass'
             }, {
                 start: 1445178343000,
                 end: 1445182343000,
+                status: 'fail',
                 culprits: ['failingJob']
             }]);
         }
