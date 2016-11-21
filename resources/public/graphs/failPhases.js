@@ -207,7 +207,9 @@
 
                 lines.push(d.start.toLocaleDateString());
                 lines.push('start ' + shortTimeString(d.phaseStart, d.start));
-                lines.push('end ' + shortTimeString(d.phaseEnd, d.end));
+                if (!d.ongoingCulprits || d.ongoingCulprits.length === 0) {
+                    lines.push('end ' + shortTimeString(d.phaseEnd, d.end));
+                }
                 lines.push('');
                 lines.push('for ' + duration);
 
