@@ -47,10 +47,3 @@
                     (nil? (:outcome %))))
        (reduce accumulate-phases [])
        (remove #(nil? (:end %)))))
-
-;; legacy
-(defn pipeline-fail-phases [builds]
-  (->> builds
-       pipeline-phases
-       (filter #(= "fail" (:status %)))
-       (map #(dissoc % :ongoing-culprits :status))))

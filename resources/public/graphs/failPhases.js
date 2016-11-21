@@ -83,6 +83,7 @@
                 .map(function (phase) {
                     phase.color = entry.status === 'pass' ? 'green' : 'red';
                     phase.culprits = entry.culprits;
+                    phase.ongoingCulprits = entry.ongoingCulprits || [];
                     phase.duration = entry.end - entry.start;
                     phase.phaseStart = new Date(entry.start);
                     phase.phaseEnd = new Date(entry.end);
@@ -212,7 +213,13 @@
 
                 if (d.color === 'red') {
                     lines.push('');
-                    lines = lines.concat(d.culprits);
+                    lines = lines.concat(d.culprits.map(function (culprit) {
+                        if (d.ongoingCulprits.indexOf(culprit) >= 0) {
+                            return culprit + ' (ongoing)';
+                        } else {
+                            return culprit;
+                        }
+                    }));
                 }
                 return lines.join('\n');
             });
