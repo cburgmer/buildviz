@@ -48,15 +48,4 @@
                                   pipeline-name)
           body (json-body (json-get-request (the-app) "/status"))]
       (is (= pipeline-name
-             (get body "pipelineName")))))
-
-  (testing "should return names of recent jobs"
-    (let [today (tc/to-long (t/now))
-          app (the-app {"aBuild" {"1" {:start today}
-                                  "2" {:start (- today (* 60 a-day))}}
-                        "anotherBuild" {"3" {:start (- today (* 60 a-day))}}}
-                       {})]
-      (is (= ["aBuild"]
-             (-> (json-get-request app "/status")
-                 json-body
-                 (get "recentJobNames")))))))
+             (get body "pipelineName"))))))
