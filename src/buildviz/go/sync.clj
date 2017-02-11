@@ -13,7 +13,8 @@
             [clojure.string :as string]
             [clojure.tools
              [cli :refer [parse-opts]]
-             [logging :as log]])
+             [logging :as log]]
+            [uritemplate-clj.core :as templ])
   (:gen-class))
 
 (def tz (t/default-time-zone))
@@ -123,13 +124,13 @@
 (defn buildviz-build-base-url [buildviz-url job-name build-no]
   (format "%s/builds/%s/%s" buildviz-url job-name build-no))
 
-(defn put-build [buildviz-url job-name build-no build]
-  (client/put (buildviz-build-base-url buildviz-url job-name build-no)
+(defn- put-build [buildviz-url job-name build-no build]
+  (client/put (string/join [buildviz-url (templ/uritemplate "/builds{/job}{/build}" {"job" job-name "build" build-no})])
               {:content-type :json
                :body (j/generate-string build)}))
 
-(defn put-junit-xml [buildviz-url job-name build-no xml-content]
-  (client/put (clojure.string/join [(buildviz-build-base-url buildviz-url job-name build-no) "/testresults"])
+(defn- put-junit-xml [buildviz-url job-name build-no xml-content]
+  (client/put (string/join [buildviz-url (templ/uritemplate "/builds{/job}{/build}/testresults" {"job" job-name "build" build-no})])
               {:body xml-content}))
 
 (defn put-to-buildviz [buildviz-url {job-name :job-name build-no :build-id build :build junit-xml :junit-xml}]

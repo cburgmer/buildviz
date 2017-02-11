@@ -14,7 +14,8 @@
             [clojure.string :as string]
             [clojure.tools
              [cli :refer [parse-opts]]
-             [logging :as log]])
+             [logging :as log]]
+            [uritemplate-clj.core :as templ])
   (:gen-class))
 
 (def tz (t/default-time-zone))
@@ -47,13 +48,13 @@
   (assoc build :test-report (api/get-test-report jenkins-url job-name number)))
 
 
-(defn put-build [buildviz-url job-name build-id build]
-  (client/put (string/join [buildviz-url (format "/builds/%s/%s" job-name build-id)])
+(defn- put-build [buildviz-url job-name build-id build]
+  (client/put (string/join [buildviz-url (templ/uritemplate "/builds{/job}{/build}" {"job" job-name "build" build-id})])
               {:content-type :json
                :body (json/to-string build)}))
 
-(defn put-test-results [buildviz-url job-name build-id test-results]
-  (client/put (string/join [buildviz-url (format "/builds/%s/%s/testresults" job-name build-id)])
+(defn- put-test-results [buildviz-url job-name build-id test-results]
+  (client/put (string/join [buildviz-url (templ/uritemplate "/builds{/job}{/build}/testresults" {"job" job-name "build" build-id})])
               {:content-type :json
                :body (j/generate-string test-results)}))
 
@@ -98,7 +99,7 @@
 (def two-months-ago (t/minus (.withTimeAtStartOfDay (l/local-now)) (t/months 2)))
 
 (defn- get-latest-synced-build-start [buildviz-url]
-  (let [response (client/get (format "%s/status" buildviz-url))
+  (let [response (client/get (string/join [buildviz-url "/status"]))
         buildviz-status (j/parse-string (:body response) true)]
     (when-let [latest-build-start (:latestBuildStart buildviz-status)]
       (tc/from-long latest-build-start))))
