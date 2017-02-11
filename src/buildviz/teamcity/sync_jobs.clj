@@ -13,7 +13,8 @@
              [core :as t]
              [format :as tf]]
             [clojure.string :as string]
-            [clojure.tools.logging :as log]))
+            [clojure.tools.logging :as log]
+            [uritemplate-clj.core :as templ]))
 
 (defn- all-builds-for-job [teamcity-url sync-start-time {:keys [id projectName name]}]
   (let [safe-build-start-time (t/minus sync-start-time (t/millis 1))]
@@ -29,12 +30,12 @@
 
 
 (defn- put-build [buildviz-url job-name build-id build]
-  (client/put (string/join [(url/with-plain-text-password buildviz-url) (format "/builds/%s/%s" job-name build-id)])
+  (client/put (string/join [(url/with-plain-text-password buildviz-url) (templ/uritemplate "/builds{/job}{/build}" {"job" job-name "build" build-id})])
               {:content-type :json
                :body (json/to-string build)}))
 
 (defn- put-test-results [buildviz-url job-name build-id test-results]
-  (client/put (string/join [(url/with-plain-text-password buildviz-url) (format "/builds/%s/%s/testresults" job-name build-id)])
+  (client/put (string/join [(url/with-plain-text-password buildviz-url) (templ/uritemplate "/builds{/job}{/build}/testresults" {"job" job-name "build" build-id})])
               {:content-type :json
                :body (j/generate-string test-results)}))
 

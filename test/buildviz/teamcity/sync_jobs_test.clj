@@ -54,7 +54,7 @@
 (deftest test-main
   (testing "should sync a build"
     (let [stored (atom [])]
-      (fake/with-fake-routes-in-isolation (serve-up (a-project "the_project" (a-job "theJobId" "theProject" "theJob"))
+      (fake/with-fake-routes-in-isolation (serve-up (a-project "the_project" (a-job "theJobId" "theProject" "theJob #1"))
                                                     (a-job-with-builds "theJobId" {:id 42
                                                                                    :number 2
                                                                                    :status "SUCCESS"
@@ -62,7 +62,7 @@
                                                                                    :finishDate "20160410T041100+0000"})
                                                     (provide-buildviz-and-capture-puts beginning-of-2016 stored))
         (with-out-str (sut/sync-jobs (url/url "http://teamcity:8000") (url/url "http://buildviz:8010") ["the_project"] beginning-of-2016 nil))
-        (is (= [["/builds/theProject%20theJob/2" {:start 1460261449000
+        (is (= [["/builds/theProject%20theJob%20%231/2" {:start 1460261449000
                                                   :end 1460261460000
                                                   :outcome "pass"}]]
                @stored)))))

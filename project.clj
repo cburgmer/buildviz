@@ -21,6 +21,7 @@
                  [org.clojure/data.xml "0.0.8"]
                  [org.clojure/tools.cli "0.3.3"]
                  [intervox/clj-progress "0.2.1"]
+                 [uritemplate-clj "1.1.1"]
                  [wharf "0.2.0-20141115.032457-2"]]
   :plugins [[lein-ring "0.9.3"]
             [lein-npm "0.6.1"]]
