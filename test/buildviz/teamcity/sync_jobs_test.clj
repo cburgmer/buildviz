@@ -63,8 +63,8 @@
                                                     (provide-buildviz-and-capture-puts beginning-of-2016 stored))
         (with-out-str (sut/sync-jobs (url/url "http://teamcity:8000") (url/url "http://buildviz:8010") ["the_project"] beginning-of-2016 nil))
         (is (= [["/builds/theProject%20theJob%20%231/2" {:start 1460261449000
-                                                  :end 1460261460000
-                                                  :outcome "pass"}]]
+                                                         :end 1460261460000
+                                                         :outcome "pass"}]]
                @stored)))))
 
   (testing "should sync in ascending order by date"
