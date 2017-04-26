@@ -80,7 +80,7 @@
 (defn- sync-oldest-first-to-deal-with-cancellation [builds]
   (sort-by :timestamp builds))
 
-(defn- sync-jobs [jenkins-url buildviz-url sync-start-time]
+(defn sync-jobs [jenkins-url buildviz-url sync-start-time]
   (println "Jenkins" jenkins-url "-> buildviz" buildviz-url)
   (println (format "Finding all builds for syncing (starting from %s)..."
                  (tf/unparse (:date-time tf/formatters) sync-start-time)))
