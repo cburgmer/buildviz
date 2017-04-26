@@ -37,12 +37,17 @@
     (assoc map :inputs inputs)
     map))
 
+(defn- manually-started-by-user? [causes]
+  (some :userId causes))
+
 (defn- triggered-by-from [{actions :actions}]
-  (->> (some :causes actions)
-       (filter :upstreamProject)
-       (map (fn [cause]
-              {:job-name (:upstreamProject cause)
-               :build-id (.toString (:upstreamBuild cause))}))))
+  (let [causes (some :causes actions)]
+    (when-not (manually-started-by-user? causes)
+      (->> causes
+           (filter :upstreamProject)
+           (map (fn [cause]
+                  {:job-name (:upstreamProject cause)
+                   :build-id (.toString (:upstreamBuild cause))}))))))
 
 (defn- with-triggered-by [map jenkins-build]
   (if-let [triggered-by (seq (triggered-by-from jenkins-build))]

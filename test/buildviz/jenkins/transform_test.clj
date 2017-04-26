@@ -58,6 +58,13 @@
                                                                         (assoc :actions [{:causes [{:upstreamProject "build_name"
                                                                                                     :upstreamBuild 42}]}]))))))))
 
+  (testing "should omit build trigger if triggered by user due to temporal disconnect"
+    (is (not (contains? (:build (sut/jenkins-build->buildviz-build (-> a-jenkins-build
+                                                                       (assoc :actions [{:causes [{:userId "aUser"}
+                                                                                                  {:upstreamProject "build_name"
+                                                                                                   :upstreamBuild 42}]}]))))
+                        :triggered-by))))
+
   (testing "should handle multiple triggering builds"
     (is (= [{:job-name "build_name"
              :build-id "42"}

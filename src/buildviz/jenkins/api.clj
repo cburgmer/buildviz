@@ -21,7 +21,7 @@
 
 (defn- get-builds-starting-from [jenkins-url job-name offset]
   (let [offset-end (+ offset pagination-size)
-        response (get-json jenkins-url (format "/job/%s/api/json?tree=allBuilds[number,timestamp,duration,result,actions[lastBuiltRevision[SHA1],remoteUrls,parameters[name,value],causes[upstreamProject,upstreamBuild]]]{%s,%s}" job-name offset offset-end))
+        response (get-json jenkins-url (format "/job/%s/api/json?tree=allBuilds[number,timestamp,duration,result,actions[lastBuiltRevision[SHA1],remoteUrls,parameters[name,value],causes[upstreamProject,upstreamBuild,userId]]]{%s,%s}" job-name offset offset-end))
         builds (builds-response->builds response job-name)]
     (if (> pagination-size (count builds))
       builds

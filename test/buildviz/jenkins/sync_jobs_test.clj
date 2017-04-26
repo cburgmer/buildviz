@@ -20,7 +20,7 @@
     (successful-json-response {:jobs jobs})]])
 
 (defn- a-job-with-builds [job-name & builds]
-  (let [job-builds [(format "http://jenkins:4321/job/%s/api/json?tree=allBuilds%%5Bnumber,timestamp,duration,result,actions%%5BlastBuiltRevision%%5BSHA1%%5D,remoteUrls,parameters%%5Bname,value%%5D,causes%%5BupstreamProject,upstreamBuild%%5D%%5D%%5D%%7B0,10%%7D"
+  (let [job-builds [(format "http://jenkins:4321/job/%s/api/json?tree=allBuilds%%5Bnumber,timestamp,duration,result,actions%%5BlastBuiltRevision%%5BSHA1%%5D,remoteUrls,parameters%%5Bname,value%%5D,causes%%5BupstreamProject,upstreamBuild,userId%%5D%%5D%%5D%%7B0,10%%7D"
                             job-name)
                     (successful-json-response {:allBuilds builds})]
         test-results (map (fn [build]
@@ -74,4 +74,19 @@
       (is (= [["/builds/some_job/21" {:start 1493201298062
                                       :end 1493201308262
                                       :outcome "pass"}]]
-             @store)))))
+             @store))))
+
+  (testing "should omit build trigger if triggered by user due to temporal disconnect"
+    (let [store (atom [])]
+      (fake/with-fake-routes-in-isolation (serve-up (a-view (a-job "some_job"))
+                                                    (a-job-with-builds "some_job" {:number "21"
+                                                                                   :timestamp 1493201298062
+                                                                                   :duration 10200
+                                                                                   :result "SUCCESS"
+                                                                                   :actions [{:causes [{:upstreamProject "the_upstream"
+                                                                                                        :upstreamBuild "33"}
+                                                                                                       {:userId "the_user"}]}]})
+                                                    (provide-buildviz-and-capture-puts beginning-of-2016 store))
+        (with-out-str (sut/sync-jobs (url/url "http://jenkins:4321") (url/url "http://buildviz:8010") beginning-of-2016)))
+      (is (nil? (get (first (map last @store))
+                     :triggeredBy))))))
