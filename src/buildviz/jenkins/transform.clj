@@ -41,7 +41,7 @@
   (some :userId causes))
 
 (defn- triggered-by-from [{actions :actions}]
-  (let [causes (some :causes actions)]
+  (let [causes (mapcat :causes (filter :causes actions))]
     (when-not (manually-started-by-user? causes)
       (->> causes
            (filter :upstreamProject)

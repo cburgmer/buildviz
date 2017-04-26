@@ -84,8 +84,8 @@
                                                                                    :duration 10200
                                                                                    :result "SUCCESS"
                                                                                    :actions [{:causes [{:upstreamProject "the_upstream"
-                                                                                                        :upstreamBuild "33"}
-                                                                                                       {:userId "the_user"}]}]})
+                                                                                                        :upstreamBuild "33"}]}
+                                                                                             {:causes [{:userId "the_user"}]}]})
                                                     (provide-buildviz-and-capture-puts beginning-of-2016 store))
         (with-out-str (sut/sync-jobs (url/url "http://jenkins:4321") (url/url "http://buildviz:8010") beginning-of-2016)))
       (is (nil? (get (first (map last @store))
