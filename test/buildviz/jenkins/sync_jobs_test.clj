@@ -17,6 +17,13 @@
   [["http://jenkins:4321/api/json"
     (successful-json-response {:jobs jobs})]])
 
+(defn- a-job-with-builds [job-name & builds]
+  (let [job-builds [(format "http://jenkins:4321/job/%s/api/json?tree=allBuilds%%5Bnumber,timestamp,duration,result,actions%%5BlastBuiltRevision%%5BSHA1%%5D,remoteUrls,parameters%%5Bname,value%%5D,causes%%5BupstreamProject,upstreamBuild%%5D%%5D%%5D%%7B0,10%%7D"
+                            job-name)
+                    (successful-json-response {:allBuilds []})]]
+    [job-builds]))
+
+
 (defn- serve-up [& routes]
   (->> routes
        (mapcat identity)
@@ -26,9 +33,17 @@
 
 
 (deftest test-sync-jobs
-  (testing "should handle empty jobs"
+  (testing "should handle no jobs "
     (let [store (atom [])]
       (fake/with-fake-routes-in-isolation (serve-up (a-view))
+        (with-out-str (sut/sync-jobs (url/url "http://jenkins:4321") (url/url "http://buildviz:8010") beginning-of-2016)))
+      (is (= []
+             @store))))
+
+  (testing "should handle no builds"
+    (let [store (atom [])]
+      (fake/with-fake-routes-in-isolation (serve-up (a-view (a-job "some_job"))
+                                                    (a-job-with-builds "some_job"))
         (with-out-str (sut/sync-jobs (url/url "http://jenkins:4321") (url/url "http://buildviz:8010") beginning-of-2016)))
       (is (= []
              @store)))))
