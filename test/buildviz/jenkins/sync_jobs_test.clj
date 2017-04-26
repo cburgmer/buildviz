@@ -3,7 +3,9 @@
             [buildviz.util.url :as url]
             [cheshire.core :as j]
             [clj-http.fake :as fake]
-            [clj-time.core :as t]
+            [clj-time
+             [coerce :as tc]
+             [core :as t]]
             [clojure.test :refer :all]))
 
 (defn- successful-json-response [body]
@@ -20,9 +22,21 @@
 (defn- a-job-with-builds [job-name & builds]
   (let [job-builds [(format "http://jenkins:4321/job/%s/api/json?tree=allBuilds%%5Bnumber,timestamp,duration,result,actions%%5BlastBuiltRevision%%5BSHA1%%5D,remoteUrls,parameters%%5Bname,value%%5D,causes%%5BupstreamProject,upstreamBuild%%5D%%5D%%5D%%7B0,10%%7D"
                             job-name)
-                    (successful-json-response {:allBuilds []})]]
-    [job-builds]))
+                    (successful-json-response {:allBuilds builds})]
+        test-results (map (fn [build]
+                            [(format "http://jenkins:4321/job/%s/%s/testReport/api/json" job-name (:number build))
+                             (fn [_] {:status 404 :body ""})]) builds)]
+    (cons job-builds test-results)))
 
+(defn- provide-buildviz-and-capture-puts [latest-build-start map-ref]
+  [[#"http://buildviz:8010/builds/(.+)/(.+)"
+    (fn [req]
+      (swap! map-ref #(conj % [(:uri req)
+                               (j/parse-string (slurp (:body req)) true)]))
+      {:status 200 :body ""})]
+   ["http://buildviz:8010/status"
+    (successful-json-response (cond-> {}
+                                latest-build-start (assoc :latestBuildStart (tc/to-long latest-build-start))))]])
 
 (defn- serve-up [& routes]
   (->> routes
@@ -46,4 +60,18 @@
                                                     (a-job-with-builds "some_job"))
         (with-out-str (sut/sync-jobs (url/url "http://jenkins:4321") (url/url "http://buildviz:8010") beginning-of-2016)))
       (is (= []
+             @store))))
+
+  (testing "should sync a simple build"
+    (let [store (atom [])]
+      (fake/with-fake-routes-in-isolation (serve-up (a-view (a-job "some_job"))
+                                                    (a-job-with-builds "some_job" {:number "21"
+                                                                                   :timestamp 1493201298062
+                                                                                   :duration 10200
+                                                                                   :result "SUCCESS"})
+                                                    (provide-buildviz-and-capture-puts beginning-of-2016 store))
+        (with-out-str (sut/sync-jobs (url/url "http://jenkins:4321") (url/url "http://buildviz:8010") beginning-of-2016)))
+      (is (= [["/builds/some_job/21" {:start 1493201298062
+                                      :end 1493201308262
+                                      :outcome "pass"}]]
              @store)))))
