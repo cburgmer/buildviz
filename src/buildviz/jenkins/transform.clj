@@ -38,7 +38,7 @@
     map))
 
 (defn- manually-started-by-user? [causes]
-  (some :userId causes))
+  (some #(contains? % :userId) causes))
 
 (defn- triggered-by-from [{actions :actions}]
   (let [causes (mapcat :causes (filter :causes actions))]
