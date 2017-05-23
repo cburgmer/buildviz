@@ -3,6 +3,7 @@
              [api :as api]
              [transform :as transform]]
             [buildviz.util.json :as json]
+            [buildviz.util.url :as url]
             [cheshire.core :as j]
             [clj-http.client :as client]
             [clj-progress.core :as progress]
@@ -19,12 +20,12 @@
 
 
 (defn- put-build [buildviz-url job-name build-id build]
-  (client/put (string/join [buildviz-url (templ/uritemplate "/builds{/job}{/build}" {"job" job-name "build" build-id})])
+  (client/put (string/join [(url/with-plain-text-password buildviz-url) (templ/uritemplate "/builds{/job}{/build}" {"job" job-name "build" build-id})])
               {:content-type :json
                :body (json/to-string build)}))
 
 (defn- put-test-results [buildviz-url job-name build-id test-results]
-  (client/put (string/join [buildviz-url (templ/uritemplate "/builds{/job}{/build}/testresults" {"job" job-name "build" build-id})])
+  (client/put (string/join [(url/with-plain-text-password buildviz-url) (templ/uritemplate "/builds{/job}{/build}/testresults" {"job" job-name "build" build-id})])
               {:content-type :json
                :body (j/generate-string test-results)}))
 
@@ -51,7 +52,7 @@
   (sort-by :timestamp builds))
 
 (defn sync-jobs [jenkins-url buildviz-url sync-start-time]
-  (println "Jenkins" jenkins-url "-> buildviz" buildviz-url)
+  (println "Jenkins" (str jenkins-url) "-> buildviz" (str buildviz-url))
   (println (format "Finding all builds for syncing (starting from %s)..."
                  (tf/unparse (:date-time tf/formatters) sync-start-time)))
   (->> (api/get-jobs jenkins-url)

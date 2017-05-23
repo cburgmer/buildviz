@@ -1,12 +1,13 @@
 (ns buildviz.jenkins.api
   (:require [cheshire.core :as j]
+            [buildviz.util.url :as url]
             [clj-http.client :as client]
             [clojure.string :as string]
             [clojure.tools.logging :as log]))
 
 (defn- get-json [jenkins-url relative-url]
   (log/info (format "Retrieving %s" relative-url))
-  (j/parse-string (:body (client/get (string/join [jenkins-url relative-url]))) true))
+  (j/parse-string (:body (client/get (string/join [(url/with-plain-text-password jenkins-url) relative-url]))) true))
 
 (defn get-jobs [jenkins-url]
   (let [response (get-json jenkins-url "/api/json")]

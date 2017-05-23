@@ -1,6 +1,7 @@
 (ns buildviz.jenkins.sync
   (:gen-class)
   (:require [buildviz.jenkins.sync-jobs :as sync-jobs]
+            [buildviz.util.url :as url]
             [cheshire.core :as j]
             [clj-http.client :as client]
             [clj-time
@@ -64,8 +65,8 @@
       (println (string/join "\n" (:errors args)))
       (System/exit 1))
 
-    (let [jenkins-url (first (:arguments args))
-          buildviz-url (:buildviz-url (:options args))
+    (let [jenkins-url (url/url (first (:arguments args)))
+          buildviz-url (url/url (:buildviz-url (:options args)))
           sync-start-time (get-start-date buildviz-url (:sync-start-time (:options args)))]
 
       (sync-jobs/sync-jobs jenkins-url buildviz-url sync-start-time))))
