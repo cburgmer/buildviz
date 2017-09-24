@@ -28,8 +28,10 @@ echo "Waiting for Jenkins to come up"
 until $(curl --output /dev/null --silent --head --fail http://localhost:8080); do sleep 1; done
 
 echo "Installing plugins"
-# Need to fetch our plugins first, Jenkins fails with 'No update center data is retrieved yet from: https://updates.jenkins.io/update-center.json' if we don't do this manually
-curl -s -L http://updates.jenkins-ci.org/update-center.json | sed '1d;$d' | curl -s -X POST -H 'Accept: application/json' -d @- http://localhost:8080/updateCenter/byId/default/postBack
+# Need to fetch plugin list first, Jenkins fails with 'No update center data is retrieved yet from: https://updates.jenkins.io/update-center.json' if we don't do this manually
+CRUMB=$(curl -s 'http://localhost:8080/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,":",//crumb)')
+curl --silent -X POST -H "$CRUMB" http://localhost:8080/pluginManager/checkUpdatesServer > /dev/null
+
 for PLUGIN in git promoted-builds git-client parameterized-trigger build-pipeline-plugin dashboard-view; do
     sudo java -jar /var/cache/jenkins/war/WEB-INF/jenkins-cli.jar -s http://localhost:8080/ install-plugin "${PLUGIN}"
 done
