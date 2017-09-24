@@ -41,7 +41,7 @@ LOGGING_PATH="${TMP_DIR}/buildviz.log"
 mkdir -p "$TMP_DIR"
 
 echo "Starting buildviz... (sending stdout to $LOGGING_PATH)"
-BUILDVIZ_DATA_DIR=$TMP_DIR BUILDVIZ_PIPELINE_NAME="Jenkins example" ./lein do deps, ring server-headless $PORT > "$LOGGING_PATH" &
+BUILDVIZ_DATA_DIR=$TMP_DIR BUILDVIZ_PIPELINE_NAME="Jenkins example" "${SCRIPT_DIR}/../lein" do deps, ring server-headless $PORT > "$LOGGING_PATH" &
 SERVER_PID=$!
 
 function clean_up() {
@@ -64,7 +64,7 @@ wait_for_server "${BUILDVIZ_PATH}"
 
 # Sync buildviz with the Jenkins builds
 echo "Syncing job history..."
-./lein run -m buildviz.jenkins.sync http://localhost:8080 --buildviz="${BUILDVIZ_PATH}"
+"${SCRIPT_DIR}/../lein" run -m buildviz.jenkins.sync http://localhost:8080 --buildviz="${BUILDVIZ_PATH}"
 
 echo "Done..."
 echo
