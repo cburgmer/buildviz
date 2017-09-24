@@ -10,14 +10,8 @@ sudo apt-get -qy install curl git
 
 sudo apt-get -qy install jenkins xmlstarlet
 
-# Install dependencies and their dependencies, don't know how to have Jenkins resolve that for us :(
-for PLUGIN in git scm-api token-macro promoted-builds git-client parameterized-trigger build-pipeline-plugin jquery dashboard-view workflow-scm-step credentials conditional-buildstep matrix-project script-security workflow-job workflow-step-api workflow-api workflow-support ssh-credentials structs maven-plugin javadoc junit mailer display-url-api run-condition; do
-    curl --silent --location http://updates.jenkins-ci.org/latest/${PLUGIN}.hpi -o /var/lib/jenkins/plugins/${PLUGIN}.hpi > /dev/null
-    chown jenkins:jenkins /var/lib/jenkins/plugins/${PLUGIN}.hpi
-done
-
+echo "Disabling Jenkins security"
 while [ ! -s /var/lib/jenkins/secrets/initialAdminPassword ]; do sleep 1; done
-
 sudo service jenkins stop
 
 # disable security, see https://jenkins.io/doc/book/operating/security/#disabling-security
@@ -31,13 +25,24 @@ cp -p /var/lib/jenkins/jenkins.install.UpgradeWizard.state /var/lib/jenkins/jenk
 sudo service jenkins start
 
 echo "Waiting for Jenkins to come up"
-until $(curl --output /dev/null --silent --head --fail http://localhost:8080); do
-    sleep 1
+until $(curl --output /dev/null --silent --head --fail http://localhost:8080); do sleep 1; done
+
+echo "Installing plugins"
+# Need to fetch our plugins first, Jenkins fails with 'No update center data is retrieved yet from: https://updates.jenkins.io/update-center.json' if we don't do this manually
+curl -s -L http://updates.jenkins-ci.org/update-center.json | sed '1d;$d' | curl -s -X POST -H 'Accept: application/json' -d @- http://localhost:8080/updateCenter/byId/default/postBack
+for PLUGIN in git promoted-builds git-client parameterized-trigger build-pipeline-plugin dashboard-view; do
+    sudo java -jar /var/cache/jenkins/war/WEB-INF/jenkins-cli.jar -s http://localhost:8080/ install-plugin "${PLUGIN}"
 done
+
+sudo service jenkins restart
+
+echo "Waiting for Jenkins to come up"
+until $(curl --output /dev/null --silent --head --fail http://localhost:8080); do sleep 1; done
 
 CRUMB=$(curl -s 'http://localhost:8080/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,":",//crumb)')
 
 # Create or Update
+echo "Configuring pipeline"
 pushd .
 cd /mnt/jobs
 for JOB_CONFIG in *; do
