@@ -5,95 +5,95 @@
 <link rel="stylesheet" href="../../resources/public/common/graphDescription.css">
 <link rel="stylesheet" href="../../resources/public/common/timespanSelection.css">
 <link rel="stylesheet" href="../../resources/public/common/zoomableSunburst.css">
-<script>
-    var dataSource = {
-        load: function (_, callback) {
-            callback([{
-                jobName: 'aGoodBuild',
-                children: [{
-                    name: "test suite",
+<body>
+    <script>
+        var dataSource = {
+            load: function (_, callback) {
+                callback([{
+                    jobName: 'aGoodBuild',
                     children: [{
-                        name: "package",
+                        name: "test suite",
                         children: [{
-                            name: 'test',
-                            failedCount: 0
-                        }]
-                    }]
-                }]
-            }, {
-                jobName: 'aBuild',
-                children: [{
-                    name: "test suite",
-                    children: [{
-                        name: "package.sub.classname",
-                        children: [{
-                            name: 'a test',
-                            failedCount: 4
+                            name: "package",
+                            children: [{
+                                name: 'test',
+                                failedCount: 0
+                            }]
                         }]
                     }]
                 }, {
-                    name: "another suite",
+                    jobName: 'aBuild',
                     children: [{
-                        name: "package.classname",
+                        name: "test suite",
                         children: [{
-                            name: 'a test',
-                            failedCount: 3
+                            name: "package.sub.classname",
+                            children: [{
+                                name: 'a test',
+                                failedCount: 4
+                            }]
+                        }]
+                    }, {
+                        name: "another suite",
+                        children: [{
+                            name: "package.classname",
+                            children: [{
+                                name: 'a test',
+                                failedCount: 3
+                            }]
                         }]
                     }]
-                }]
-            }, {
-                jobName: 'anotherBuild',
-                children: [{
-                    name: "some suite",
+                }, {
+                    jobName: 'anotherBuild',
                     children: [{
-                        name: "com.example.and.more.class.doge",
+                        name: "some suite",
                         children: [{
-                            name: 'a test',
-                            failedCount: 10
-                        }]
-                    }, {
-                        name: "com.example.bee",
-                        children: [{
-                            name: 'a test',
-                            failedCount: 12
-                        }]
-                    }, {
-                        name: "com.example.zen.some",
-                        children: [{
-                            name: 'a test',
-                            failedCount: 8
-                        }]
-                    }, {
-                        name: "com.example.zen.nested",
-                        children: [{
-                            name: 'a test',
-                            failedCount: 2
+                            name: "com.example.and.more.class.doge",
+                            children: [{
+                                name: 'a test',
+                                failedCount: 10
+                            }]
                         }, {
-                            name: 'another test',
-                            failedCount: 1
+                            name: "com.example.bee",
+                            children: [{
+                                name: 'a test',
+                                failedCount: 12
+                            }]
                         }, {
-                            name: 'yet another test',
-                            failedCount: 3
+                            name: "com.example.zen.some",
+                            children: [{
+                                name: 'a test',
+                                failedCount: 8
+                            }]
+                        }, {
+                            name: "com.example.zen.nested",
+                            children: [{
+                                name: 'a test',
+                                failedCount: 2
+                            }, {
+                                name: 'another test',
+                                failedCount: 1
+                            }, {
+                                name: 'yet another test',
+                                failedCount: 3
+                            }]
+                        }, {
+                            name: 'good.test',
+                            children: [{
+                                name: 'test',
+                                failedCount: 0
+                            }]
                         }]
-                    }, {
-                        name: 'good.test',
-                        children: [{
-                            name: 'test',
-                            failedCount: 0
-                        }]
-                    }]
-                }]}]);
-        }
-    };
-</script>
-<script src="../../resources/public/node_modules/d3/d3.min.js"></script>
-<script src="../../resources/public/common/graphFactory.js"></script>
-<script src="../../resources/public/common/timespanSelection.js"></script>
-<script src="../../resources/public/common/graphDescription.js"></script>
-<script src="../../resources/public/common/utils.js"></script>
-<script src="../../resources/public/common/zoomableSunburst.js"></script>
-<script src="../../resources/public/common/jobColors.js"></script>
-<body>
+                    }]}]);
+            }
+        };
+    </script>
+    <script src="../../resources/public/node_modules/d3/d3.min.js"></script>
+    <script src="../../resources/public/common/graphFactory.js"></script>
+    <script src="../../resources/public/common/timespanSelection.js"></script>
+    <script src="../../resources/public/common/graphDescription.js"></script>
+    <script src="../../resources/public/common/utils.js"></script>
+    <script src="../../resources/public/common/zoomableSunburst.js"></script>
+    <script src="../../resources/public/common/jobColors.js"></script>
     <script src="../../resources/public/graphs/mostFrequentlyFailingTests.js"></script>
     <script>
         d3.timer.flush();
