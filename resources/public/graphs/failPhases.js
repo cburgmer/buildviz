@@ -1,4 +1,4 @@
-(function (timespanSelection, graphDescription, graphFactory, utils, dataSource) {
+(function (timespanSelection, graphDescription, graphFactory, utils, tooltip, dataSource) {
     var margin = {top: 10, right: 0, bottom: 30, left: 35},
         width = graphFactory.size - margin.left - margin.right,
         height = graphFactory.size - margin.top - margin.bottom;
@@ -111,7 +111,7 @@
         if (startOfDay(date).valueOf() === startOfDay(referenceDate).valueOf()) {
             return date.toLocaleTimeString();
         } else {
-            return date.toLocaleTimeString() + ' (' + date.toLocaleDateString() + ')';
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
         }
     };
 
@@ -200,31 +200,6 @@
 
                 return classNames.join(' ');
             });
-        g.append('title')
-            .text(function (d) {
-                var duration = utils.formatTimeInMs(d.duration),
-                    lines = [];
-
-                lines.push(d.start.toLocaleDateString());
-                lines.push('start ' + shortTimeString(d.phaseStart, d.start));
-                if (!d.ongoingCulprits || d.ongoingCulprits.length === 0) {
-                    lines.push('end ' + shortTimeString(d.phaseEnd, d.end));
-                }
-                lines.push('');
-                lines.push('for ' + duration);
-
-                if (d.color === 'red') {
-                    lines.push('');
-                    lines = lines.concat(d.culprits.map(function (culprit) {
-                        if (d.ongoingCulprits.indexOf(culprit) >= 0) {
-                            return culprit + ' (ongoing)';
-                        } else {
-                            return culprit;
-                        }
-                    }));
-                }
-                return lines.join('\n');
-            });
 
         selection
             .select('rect')
@@ -240,7 +215,32 @@
             .attr('height', function (d) {
                 return y(d.startTime) - y(d.endTime);
             });
-    };
+
+        var tooltipText = function (d) {
+            var duration = utils.formatTimeInMs(d.duration),
+                lines = [];
+
+            lines.push('<span class="label">' + d.start.toLocaleDateString() + '</span>');
+            lines.push('<span class="label">from</span> ' + shortTimeString(d.phaseStart, d.start));
+            if (!d.ongoingCulprits || d.ongoingCulprits.length === 0) {
+                lines.push('<span class="label">to</span> ' + shortTimeString(d.phaseEnd, d.end));
+            }
+            lines.push('');
+            lines.push('<span class="label">total</span> ' + duration);
+
+            if (d.color === 'red') {
+                lines.push('');
+                lines = lines.concat(d.culprits.map(function (culprit) {
+                    var isOngoing = d.ongoingCulprits.indexOf(culprit) >= 0;
+                    return '<span class="culprit">' + culprit + '</span>' +
+                        (isOngoing ? ' <span class="ongoing">(ongoing)</span>' : '');
+                }));
+            }
+            return '<div class="failPhasesTooltip">' + lines.join('<br>') + '</div>';
+        };
+
+        tooltip.register(g, tooltipText);
+};
 
     var timespanSelector = timespanSelection.create(timespanSelection.timespans.twoMonths),
         description = graphDescription.create({
@@ -272,4 +272,4 @@
         });
     });
 
-}(timespanSelection, graphDescription, graphFactory, utils, dataSource));
+}(timespanSelection, graphDescription, graphFactory, utils, tooltip, dataSource));

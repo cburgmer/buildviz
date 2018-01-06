@@ -26,3 +26,13 @@
 .failPhases rect.weekend.green {
     fill: #519E55;
 }
+
+.failPhasesTooltip .label {
+    color: #333;
+}
+.failPhasesTooltip .culprit {
+    color: #C95E5E;
+}
+.failPhasesTooltip .ongoing {
+    font-weight: bold;
+}
