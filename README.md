@@ -64,6 +64,6 @@ There's support for [Jenkins, Go.cd and TeamCity](https://github.com/cburgmer/bu
 
 [FAQ](https://github.com/cburgmer/buildviz/wiki)
 
-You might also like [Kuona - Delivery Dashboard Generator](https://github.com/kuona/kuona), [Test Trend Analyzer](https://github.com/anandbagmar/tta) or [TRT](https://github.com/thetestpeople/trt).
+You might also like [Kuona project for IT Analytics](https://github.com/kuona/kuona-project), [Test Trend Analyzer](https://github.com/anandbagmar/tta) or [TRT](https://github.com/thetestpeople/trt).
 
 Reach out to [@cburgmer](https://twitter.com/cburgmer) for feedback and ideas.
