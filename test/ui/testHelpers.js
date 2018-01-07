@@ -16,6 +16,11 @@ var testHelpers = (function () {
         };
     };
 
+    module.hoverOver = function (element) {
+        var event = new Event('mouseover', {"bubbles":true, "cancelable":false});
+        element.dispatchEvent(event);
+    };
+
     module.selectTimespan = function (buttonText) {
         var button = Array.prototype.find.call(document.querySelectorAll('button'), function (element) {
             return element.innerText == buttonText;
