@@ -1,4 +1,4 @@
-var durationsByDay = (function (utils) {
+var durationsByDay = (function (utils, tooltip) {
     "use strict";
 
     var module = {};
@@ -101,16 +101,18 @@ var durationsByDay = (function (utils) {
             .attr("class", "line")
             .style('stroke', function (d) {
                 return d.color;
-            })
-            .append('title')
-            .text(function (d) {
-                return d.title;
             });
 
         selection.select('path')
             .attr("d", function (d) {
                 return line(d.durations);
             });
+
+        var tooltipHtml = function (d) {
+            return d.tooltip || d.title;
+        };
+
+        tooltip.register(selection, tooltipHtml);
     };
 
     return function (svg, durationCaption) {
@@ -140,4 +142,4 @@ var durationsByDay = (function (utils) {
             }
         };
     };
-}(utils));
+}(utils, tooltip));

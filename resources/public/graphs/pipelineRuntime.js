@@ -24,6 +24,7 @@
         return data.map(function (entry) {
             return {
                 title: entry.pipeline.join(', '),
+                tooltip: entry.pipeline.join('<br>→ '),
                 color: color(entry.pipeline[entry.pipeline.length - 1]),
                 durations: entry.runtimes.map(function (day) {
                     return {
