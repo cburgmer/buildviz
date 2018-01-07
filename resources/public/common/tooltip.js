@@ -14,15 +14,15 @@ var tooltip = function () {
         tooltip
             .style("display", "inline")
             .html(html)
-            .style("top", (window.scrollY + targetRect.top + (targetRect.height / 2)) + "px");
+            .style("top", (d3.event.pageY + 20) + "px");
         if (pointerIsOnLeftSideOfScreen()) {
             tooltip
-                .style("left", (window.scrollX + targetRect.right) + "px")
+                .style("left", (d3.event.pageX + 10) + "px")
                 .style("right", "");
         } else {
             tooltip
                 .style("left", "")
-                .style("right", (windowRect.width - window.scrollX - targetRect.left) + "px");
+                .style("right", (windowRect.width - d3.event.pageX + 10) + "px");
         }
     };
 

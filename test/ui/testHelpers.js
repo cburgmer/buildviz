@@ -17,8 +17,14 @@ var testHelpers = (function () {
     };
 
     module.hoverOver = function (element) {
-        var event = new Event('mouseover', {"bubbles":true, "cancelable":false});
-        element.dispatchEvent(event);
+        var elementRect = element.getBoundingClientRect();
+        var event = new MouseEvent('mouseover', {
+            "bubbles": true,
+            "cancelable": false,
+            "clientX": elementRect.left,
+            "clientY": elementRect.top
+        });
+        setTimeout(function () { element.dispatchEvent(event); }, 0);
     };
 
     module.selectTimespan = function (buttonText) {
