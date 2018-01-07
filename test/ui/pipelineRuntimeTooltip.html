@@ -1,0 +1,83 @@
+<!doctype html>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../resources/public/common/base.css">
+<link rel="stylesheet" href="../../resources/public/common/tooltip.css">
+<link rel="stylesheet" href="../../resources/public/common/timespanSelection.css">
+<link rel="stylesheet" href="../../resources/public/common/graphDescription.css">
+<link rel="stylesheet" href="../../resources/public/common/graphFactory.css">
+<link rel="stylesheet" href="../../resources/public/common/runtimes.css">
+<body>
+    <script>
+        var dataSource = {
+            load: function (_, callback) {
+                callback([
+                    {
+                        "pipeline": [
+                            "Some_Build",
+                            "Other_Build"
+                        ],
+                        "runtimes": [
+                            {
+                                "date": "2016-01-03",
+                                "runtime": 28358
+                            },
+                            {
+                                "date": "2016-01-04",
+                                "runtime": 63776
+                            },
+                            {
+                                "date": "2016-01-05",
+                                "runtime": 29444
+                            },
+                            {
+                                "date": "2016-01-07",
+                                "runtime": 29505
+                            },
+                            {
+                                "date": "2016-01-08",
+                                "runtime": 29508
+                            }
+                        ]
+                    },
+                    {
+                        "pipeline": [
+                            "Test",
+                            "Deploy",
+                            "SmokeTest"
+                        ],
+                        "runtimes": [
+                            {
+                                "date": "2016-01-07",
+                                "runtime": 29505
+                            },
+                            {
+                                "date": "2016-01-08",
+                                "runtime": 47112
+                            },
+                            {
+                                "date": "2016-01-09",
+                                "runtime": 37747
+                            }
+                        ]
+                    }
+                ]);
+            }
+        };
+    </script>
+    <script src="../../resources/public/node_modules/d3/d3.min.js"></script>
+    <script src="../../resources/public/common/tooltip.js"></script>
+    <script src="../../resources/public/common/graphFactory.js"></script>
+    <script src="../../resources/public/common/timespanSelection.js"></script>
+    <script src="../../resources/public/common/graphDescription.js"></script>
+    <script src="../../resources/public/common/utils.js"></script>
+    <script src="../../resources/public/common/jobColors.js"></script>
+    <script src="../../resources/public/common/durationsByDay.js"></script>
+    <script src="testHelpers.js"></script>
+    <script>
+        testHelpers.mockDateToday('2016-01-09');
+    </script>
+    <script src="../../resources/public/graphs/pipelineRuntime.js"></script>
+    <script>
+        testHelpers.hoverOver(document.querySelector('.entry'));
+    </script>
+</body>
