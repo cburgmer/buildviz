@@ -13,7 +13,7 @@
                 :outcome {:enum ["pass" "fail"]}
                 :inputs {:type "array"
                          :items {:type "object"
-                                 :properties {:revision {:type ["string" "integer"] :required true}
+                                 :properties {:revision {:type ["string" "integer" "boolean"] :required true}
                                               :source-id {:type ["string" "integer"] :required true}}
                                  :additionalProperties false}}
                 :triggered-by {:type "array"

@@ -53,7 +53,11 @@
   (testing "should fail on empty triggeredBy list"
     (is (= [:triggered-by]
            (:path (first (schema/build-validation-errors {:start 1453646247759
-                                                          :triggered-by []})))))))
+                                                          :triggered-by []}))))))
+
+  (testing "should allow boolean revision for inputs"
+    (is (empty? (schema/build-validation-errors {:start 1453646247759
+                                                 :inputs [{:revision true :source-id "something"}]})))))
 
 (deftest test-was-triggered-by?
   (testing "should find triggering build"
