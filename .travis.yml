@@ -1,6 +1,6 @@
 language: clojure
 script:
-- ./scripts/go
+- ./go
 before_deploy:
 - lein ring uberjar
 deploy:
