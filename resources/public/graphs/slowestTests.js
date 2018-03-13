@@ -105,6 +105,7 @@
             var data = {
                 name: "Tests",
                 id: '__tests__',
+                color: 'transparent',
                 children: transformTestCases(testCases)
             };
 

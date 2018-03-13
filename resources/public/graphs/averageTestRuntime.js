@@ -200,8 +200,9 @@
             graph.loaded();
 
             var data = {
-                name: "Testsuites",
+                name: "Test suites",
                 id: '__testsuites__',
+                color: 'transparent',
                 children: transformTestsuites(testsuites)
             };
 

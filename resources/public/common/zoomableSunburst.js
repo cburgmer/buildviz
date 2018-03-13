@@ -17,8 +17,7 @@ var zoomableSunburst = function (svg, diameter) {
 
     svg.attr('class', 'zoomableSunburst');
 
-    var radius = diameter / 2,
-        color = d3.scale.category20c();
+    var radius = diameter / 2;
 
     var x = d3.scale.linear()
             .range([0, 2 * Math.PI]);
@@ -44,19 +43,6 @@ var zoomableSunburst = function (svg, diameter) {
             .innerRadius(function(d) { return Math.max(0, y(d.y)); })
             .outerRadius(function(d) { return Math.max(0, y(d.y + d.dy)); });
 
-    var inheritDirectParentColorForLeafs = function(d) {
-        var key;
-        if (d.children) {
-            key = d.name;
-        } else if (d.depth > 1) {
-            key = d.parent.name;
-        } else {
-            key = d.name;
-        }
-
-        return color(key);
-    };
-
     var computeTextRotation = function (d) {
         return (x(d.x + d.dx / 2) - Math.PI / 2) / Math.PI * 180;
     };
@@ -78,6 +64,36 @@ var zoomableSunburst = function (svg, diameter) {
                 };
             }
         };
+    };
+
+    var nodeLuminance = function (d, l) {
+        if (!d.value) {
+            return 50;
+        }
+        var luminance = d3.scale.sqrt()
+                .domain([0, 1e6])
+                .range([90, 40]);
+
+        return luminance(d.value);
+    };
+
+    var closestAncestorWithColor = function (d) {
+        var parent = d;
+        while (!parent.color && parent.parent) {
+            parent = parent.parent;
+        }
+        return parent;
+    };
+
+    var nodeColorWithFallbackToParentColor = function (d) {
+        var color = d.color;
+        var ancestor;
+        if (! color) {
+            ancestor = closestAncestorWithColor(d);
+            color = d3.lab(ancestor.color);
+            color.l = nodeLuminance(d, color.l);
+        }
+        return color;
     };
 
     // poor man's text clipping
@@ -152,13 +168,7 @@ var zoomableSunburst = function (svg, diameter) {
         });
 
         g.append("path")
-            .style("fill", function (d) {
-                if (d.depth) {
-                    return d.color || inheritDirectParentColorForLeafs(d);
-                } else {
-                    return 'transparent';
-                }
-            });
+            .style("fill", nodeColorWithFallbackToParentColor);
 
         g.append("text")
             .attr("dx", "6") // margin

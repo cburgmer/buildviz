@@ -114,6 +114,7 @@
             var data = {
                 name: "Most frequently failing tests",
                 id: '__most_frequently_failing_tests__',
+                color: 'transparent',
                 children: transformFailingTests(failures)
             };
 
