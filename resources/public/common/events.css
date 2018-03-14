@@ -1,0 +1,41 @@
+.events .axis path,
+.events .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.events .x.axis path {
+  display: none;
+}
+
+.events .eventGroup circle {
+    stroke: black;
+    stroke-width: 0;
+    shape-rendering: crispEdges;
+}
+
+.events .eventGroup circle.highlighted {
+    stroke-dasharray: 0.9;
+}
+
+.events:hover .eventGroup circle {
+    opacity: 0.4;
+}
+.events:hover .eventGroup:hover circle,
+.events:hover .eventGroup.highlightedElement circle {
+    opacity: 1;
+    stroke-width: 1px;
+}
+
+.events .eventGroup path {
+    stroke-width: 3px;
+    fill: none;
+
+    visibility: hidden;
+}
+
+.events .eventGroup:hover path,
+.events .eventGroup.highlightedElement path {
+    visibility: visible;
+}
