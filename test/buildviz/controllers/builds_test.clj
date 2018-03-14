@@ -182,10 +182,10 @@
 
   (testing "should return CSV"
     (let [app (the-app {"someBuild" {"42" {:start a-timestamp :end (+ a-timestamp half-an-hour) :outcome "fail"}}
-                        "anotherBuild" {1 {:start 1}}}
+                        "anotherBuild" {1 {:start (- a-timestamp half-an-hour)}}}
                        {})]
       (is (= (str/join "\n" ["job,buildId,start,end,outcome"
-                             "anotherBuild,1,1970-01-01 01:00:00,,"
+                             "anotherBuild,1,1986-10-14 03:33:27,,"
                              "someBuild,42,1986-10-14 04:03:27,1986-10-14 04:33:27,fail"
                              ""])
              (:body (get-request app "/builds")))))))
