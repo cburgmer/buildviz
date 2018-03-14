@@ -2,7 +2,7 @@
   (:require [buildviz.controllers
              [builds
               :refer
-              [get-build get-test-results store-build! store-test-results!]]
+              [get-build get-test-results store-build! store-test-results! get-builds]]
              [fail-phases :refer [get-fail-phases]]
              [flaky-testcases :refer [get-flaky-testclasses]]
              [job-runtime :refer [get-job-runtime]]
@@ -36,6 +36,7 @@
    (PUT "/builds/:job/:build/testresults" [job build :as {body :body content-type :content-type}] (store-test-results! build-results job build body content-type))
    (GET "/builds/:job/:build/testresults" [job build :as {accept :accept}] (get-test-results build-results job build accept))
 
+   (GET "/builds" {accept :accept query :query-params} (get-builds build-results accept (from-timestamp query)))
    (GET "/status" {} (get-status build-results pipeline-name))
    (GET "/jobs" {accept :accept query :query-params} (get-jobs build-results accept (from-timestamp query)))
    (GET "/jobruntime" {accept :accept query :query-params} (get-job-runtime build-results accept (from-timestamp query)))

@@ -2,8 +2,16 @@
   (:require [buildviz
              [handler :as handler]
              [test-utils :refer :all]]
+            [clj-time
+             [coerce :as tc]
+             [core :as t]]
             [buildviz.data.results :as results]
+            [clojure.string :as str]
             [clojure.test :refer :all]))
+
+(def a-timestamp (tc/to-long (t/from-time-zone (t/date-time 1986 10 14 4 3 27 456) (t/default-time-zone))))
+(def a-day (* 24 60 60 1000))
+(def half-an-hour (* 30 60 1000))
 
 (defn some-test-results [app job-name build-no content]
   (xml-put-request app
@@ -139,3 +147,45 @@
                             "classname" "the class"
                             "status" "pass"}]}]
              (json-body (json-get-request app "/builds/job/1/testresults")))))))
+
+(deftest test-get-builds
+  (testing "should get all builds sorted by start"
+    (let [app (the-app {"someBuild" {"1" {:start 42 :end 43 :outcome "pass"}
+                                     "42" {:start 110 :end 200}}
+                        "anotherBuild" {"1" {:start 100 :end 201}}}
+                       {})]
+      (is (= '({"start" 42 "end" 43 "job" "someBuild" "buildId" "1" "outcome" "pass"}
+               {"start" 100 "end" 201 "job" "anotherBuild" "buildId" "1"}
+               {"start" 110 "end" 200 "job" "someBuild" "buildId" "42"})
+             (json-body (json-get-request app "/builds"))))))
+
+  (testing "should return 200"
+    (let [app (the-app {"someBuild" {"1" {:start 42 :end 43}}}
+                       {})]
+      (is (= 200
+             (:status (json-get-request app "/builds"))))))
+
+  (testing "should strip out other build information for speed"
+    (let [app (the-app {"someBuild" {"1" {:start 1
+                                          :triggered-by {:job-name "otherJob" :build-id 42}
+                                          :inputs '({:revision "bla" :source-id "some-id"})}}}
+                       {})]
+      (is (= '({"job" "someBuild" "buildId" "1" "start" 1})
+             (json-body (json-get-request app "/builds"))))))
+
+  (testing "should respect 'from' filter"
+    (let [app (the-app {"aBuild" {1 {:start (- a-timestamp a-day)}}
+                        "anotherBuild" {1 {:start a-timestamp}}}
+                       {})]
+      (is (= (list {"job" "anotherBuild" "buildId" 1 "start" a-timestamp})
+             (json-body (json-get-request app "/builds" {"from" a-timestamp}))))))
+
+  (testing "should return CSV"
+    (let [app (the-app {"someBuild" {"42" {:start a-timestamp :end (+ a-timestamp half-an-hour) :outcome "fail"}}
+                        "anotherBuild" {1 {:start 1}}}
+                       {})]
+      (is (= (str/join "\n" ["job,buildId,start,end,outcome"
+                             "anotherBuild,1,1970-01-01 01:00:00,,"
+                             "someBuild,42,1986-10-14 04:03:27,1986-10-14 04:33:27,fail"
+                             ""])
+             (:body (get-request app "/builds")))))))

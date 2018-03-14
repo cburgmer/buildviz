@@ -4,7 +4,9 @@
              [junit-xml :as junit-xml]
              [results :as results]
              [tests-schema :as tests-schema]]
-            [buildviz.util.http :as http]
+            [buildviz.util
+             [csv :as csv]
+             [http :as http]]
             [clojure.walk :as walk]))
 
 (defn store-build! [build-results job-name build-id build]
@@ -64,3 +66,19 @@
     (catch IllegalArgumentException e
       {:status 400
        :body (.getMessage e)})))
+
+(defn get-builds [build-results accept from-timestamp]
+  (let [builds (->> (results/all-builds build-results from-timestamp)
+                    (map #(select-keys % [:job :build-id :start :end :outcome]))
+                    (sort-by :start))]
+    (if (= (:mime accept) :json)
+      (http/respond-with-json builds)
+      (http/respond-with-csv
+       (csv/export-table ["job" "buildId" "start" "end" "outcome"]
+                         (->> builds
+                              (map (fn [{start :start end :end outcome :outcome job :job build-id :build-id}]
+                                     [job
+                                      build-id
+                                      (csv/format-timestamp start)
+                                      (csv/format-timestamp end)
+                                      outcome]))))))))
