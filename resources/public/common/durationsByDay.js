@@ -63,7 +63,7 @@ var durationsByDay = (function (utils, tooltip) {
     };
 
     var renderData = function (durationsByDay, startTimestamp, svg, g) {
-        svg.attr('class', 'runtimes');
+        svg.attr('class', 'durationsByDay');
 
         var xMin = startTimestamp > 0 ? startTimestamp : d3.min(durationsByDay, function(c) { return d3.min(c.durations, function(r) { return r.date; }); });
 

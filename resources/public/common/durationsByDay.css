@@ -1,0 +1,19 @@
+.durationsByDay .axis path,
+.durationsByDay .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.durationsByDay .x.axis path {
+  display: none;
+}
+
+.durationsByDay .line {
+  fill: none;
+  stroke-width: 2px;
+}
+.durationsByDay .entry.highlightedElement .line,
+.durationsByDay .entry:hover .line {
+  stroke-width: 5px;
+}
