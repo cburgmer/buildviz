@@ -40,15 +40,6 @@
     (math/avg runtimes)))
 
 
-(defn job-runtimes-by-day [builds]
-  (->> builds
-       (filter :end)
-       (map (fn [build]
-              {:name (:job build)
-               :end (:end build)
-               :duration (runtime-for build)}))
-       duration/average-by-day))
-
 ;; error count
 
 (defn fail-count [builds]

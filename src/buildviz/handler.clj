@@ -5,7 +5,6 @@
               [get-build get-test-results store-build! store-test-results! get-builds]]
              [fail-phases :refer [get-fail-phases]]
              [flaky-testcases :refer [get-flaky-testclasses]]
-             [job-runtime :refer [get-job-runtime]]
              [wait-times :refer [get-wait-times]]
              [jobs :refer [get-jobs]]
              [pipeline-runtime :refer [get-pipeline-runtime]]
@@ -39,7 +38,6 @@
    (GET "/builds" {accept :accept query :query-params} (get-builds build-results accept (from-timestamp query)))
    (GET "/status" {} (get-status build-results pipeline-name))
    (GET "/jobs" {accept :accept query :query-params} (get-jobs build-results accept (from-timestamp query)))
-   (GET "/jobruntime" {accept :accept query :query-params} (get-job-runtime build-results accept (from-timestamp query)))
    (GET "/pipelineruntime" {accept :accept query :query-params} (get-pipeline-runtime build-results accept (from-timestamp query)))
    (GET "/waittimes" {accept :accept query :query-params} (get-wait-times build-results accept (from-timestamp query)))
    (GET "/failphases" {accept :accept query :query-params} (get-fail-phases build-results accept (from-timestamp query)))
