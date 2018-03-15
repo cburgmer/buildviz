@@ -6,7 +6,7 @@ Just a few pointers if you want to make changes to buildviz:
 
 ## Run the tests
 
-    $ ./scripts/go
+    $ ./go
 
 ## UI regression tests
 
