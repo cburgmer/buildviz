@@ -20,3 +20,7 @@ Just a few pointers if you want to make changes to buildviz:
 ## Generate the standalone jar
 
     $ ./lein ring uberjar
+
+## Make a new release
+
+    $ ./scripts/make_release.sh 1.2.3
