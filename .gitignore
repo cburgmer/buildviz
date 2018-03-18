@@ -9,6 +9,7 @@ pom.xml.asc
 /.nrepl-port
 /resources/public/node_modules/
 /test/node_modules/
+/test/package-lock.json
 .vagrant/
 /examples/teamcity/cache/
 /examples/jenkins/ubuntu-xenial-16.04-cloudimg-console.log
