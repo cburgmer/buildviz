@@ -1,5 +1,6 @@
 (ns buildviz.go.api
-  (:require [cheshire.core :as j]
+  (:require [buildviz.util.url :as url]
+            [cheshire.core :as j]
             [clj-http.client :as client]
             [clj-time
              [coerce :as tc]
@@ -14,7 +15,7 @@
 
 (defn- get-plain [go-url relative-url-template & url-params]
   (let [relative-url (apply format relative-url-template url-params)
-        response (client/get (absolute-url-for go-url relative-url))]
+        response (client/get (absolute-url-for (url/with-plain-text-password go-url) relative-url))]
     (:body response)))
 
 (defn- get-json [go-url relative-url-template & url-params]

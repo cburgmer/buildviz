@@ -2,6 +2,7 @@
   (:require [buildviz.go
              [aggregate :as goaggregate]
              [api :as goapi]]
+            [buildviz.util.url :as url]
             [cheshire.core :as j]
             [clj-http.client :as client]
             [clj-progress.core :as progress]
@@ -10,7 +11,7 @@
              [core :as t]
              [format :as tf]
              [local :as l]]
-            [clojure.string :as string]
+            [clojure.string :as str]
             [clojure.tools
              [cli :refer [parse-opts]]
              [logging :as log]]
@@ -22,16 +23,16 @@
 (def date-formatter (tf/formatter tz "YYYY-MM-dd" "YYYY/MM/dd" "YYYYMMdd" "dd.MM.YYYY"))
 
 (defn usage [options-summary]
-  (string/join "\n"
-               [""
-                "Syncs Go.cd build history with buildviz"
-                ""
-                "Usage: buildviz.go.sync [OPTIONS] GO_URL"
-                ""
-                "GO_URL            The URL of the Go.cd installation"
-                ""
-                "Options"
-                options-summary]))
+  (str/join "\n"
+            [""
+             "Syncs Go.cd build history with buildviz"
+             ""
+             "Usage: buildviz.go.sync [OPTIONS] GO_URL"
+             ""
+             "GO_URL            The URL of the Go.cd installation"
+             ""
+             "Options"
+             options-summary]))
 
 (def cli-options
   [["-b" "--buildviz URL" "URL pointing to a running buildviz instance"
@@ -121,16 +122,13 @@
                   :inputs inputs}})
        job-instances))
 
-(defn buildviz-build-base-url [buildviz-url job-name build-no]
-  (format "%s/builds/%s/%s" buildviz-url job-name build-no))
-
 (defn- put-build [buildviz-url job-name build-no build]
-  (client/put (string/join [buildviz-url (templ/uritemplate "/builds{/job}{/build}" {"job" job-name "build" build-no})])
+  (client/put (str/join [(url/with-plain-text-password buildviz-url) (templ/uritemplate "/builds{/job}{/build}" {"job" job-name "build" build-no})])
               {:content-type :json
                :body (j/generate-string build)}))
 
 (defn- put-junit-xml [buildviz-url job-name build-no xml-content]
-  (client/put (string/join [buildviz-url (templ/uritemplate "/builds{/job}{/build}/testresults" {"job" job-name "build" build-no})])
+  (client/put (str/join [(url/with-plain-text-password buildviz-url) (templ/uritemplate "/builds{/job}{/build}/testresults" {"job" job-name "build" build-no})])
               {:body xml-content}))
 
 (defn put-to-buildviz [buildviz-url {job-name :job-name build-no :build-id build :build junit-xml :junit-xml}]
@@ -151,7 +149,7 @@
 (def two-months-ago (t/minus (.withTimeAtStartOfDay (l/local-now)) (t/months 2)))
 
 (defn- get-latest-synced-build-start [buildviz-url]
-  (let [response (client/get (format "%s/status" buildviz-url))
+  (let [response (client/get (format "%s/status" (url/with-plain-text-password buildviz-url)))
         buildviz-status (j/parse-string (:body response) true)]
     (when-let [latest-build-start (:latestBuildStart buildviz-status)]
       (tc/from-long latest-build-start))))
@@ -166,7 +164,7 @@
 ;; run
 
 (defn- emit-start [go-url buildviz-url sync-start-time pipeline-stages]
-  (println "Go" go-url (distinct (map :group pipeline-stages)) "-> buildviz" buildviz-url)
+  (println "Go" (str go-url) (distinct (map :group pipeline-stages)) "-> buildviz" (str buildviz-url))
   (print (format "Finding all pipeline runs for syncing (starting from %s)..."
                  (tf/unparse (:date-time tf/formatters) sync-start-time)))
   (flush)
@@ -202,11 +200,11 @@
       (println (usage (:summary args)))
       (System/exit 0))
     (when (:errors args)
-      (println (string/join "\n" (:errors args)))
+      (println (str/join "\n" (:errors args)))
       (System/exit 1))
 
-    (let [go-url (first (:arguments args))
-          buildviz-url (:buildviz-url (:options args))
+    (let [go-url (url/url (first (:arguments args)))
+          buildviz-url (url/url (:buildviz-url (:options args)))
           sync-start-time (get-start-date buildviz-url (:sync-start-time (:options args)))
           sync-jobs-for-pipelines (set (:sync-jobs-for-pipelines (:options args)))
           selected-pipeline-group-names (set (:pipeline-groups (:options args)))]
