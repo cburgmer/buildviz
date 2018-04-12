@@ -28,15 +28,12 @@
                              (fn [_] {:status 404 :body ""})]) builds)]
     (cons job-builds test-results)))
 
-(defn- provide-buildviz-and-capture-puts [latest-build-start map-ref]
+(defn- provide-buildviz-and-capture-puts [map-ref]
   [[#"http://buildviz:8010/builds/(.+)/(.+)"
     (fn [req]
       (swap! map-ref #(conj % [(:uri req)
                                (j/parse-string (slurp (:body req)) true)]))
-      {:status 200 :body ""})]
-   ["http://buildviz:8010/status"
-    (successful-json-response (cond-> {}
-                                latest-build-start (assoc :latestBuildStart (tc/to-long latest-build-start))))]])
+      {:status 200 :body ""})]])
 
 (defn- serve-up [& routes]
   (->> routes
@@ -69,7 +66,7 @@
                                                                                    :timestamp 1493201298062
                                                                                    :duration 10200
                                                                                    :result "SUCCESS"})
-                                                    (provide-buildviz-and-capture-puts beginning-of-2016 store))
+                                                    (provide-buildviz-and-capture-puts store))
         (with-out-str (sut/sync-jobs (url/url "http://jenkins:4321") (url/url "http://buildviz:8010") beginning-of-2016)))
       (is (= [["/builds/some_job/21" {:start 1493201298062
                                       :end 1493201308262
@@ -86,7 +83,7 @@
                                                                                    :actions [{:causes [{:upstreamProject "the_upstream"
                                                                                                         :upstreamBuild "33"}]}
                                                                                              {:causes [{:userId "the_user"}]}]})
-                                                    (provide-buildviz-and-capture-puts beginning-of-2016 store))
+                                                    (provide-buildviz-and-capture-puts store))
         (with-out-str (sut/sync-jobs (url/url "http://jenkins:4321") (url/url "http://buildviz:8010") beginning-of-2016)))
       (is (nil? (get (first (map last @store))
                      :triggeredBy))))))
