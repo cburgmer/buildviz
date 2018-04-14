@@ -126,4 +126,46 @@
                                                  :end 1483272000000
                                                  :outcome "pass"
                                                  :inputs [{:revision "AnotherPipeline/21", :sourceId 7}]}]]
-             @store)))))
+             @store))))
+
+  (testing "should sync a failing stage"
+    (let [store (atom [])]
+      (fake/with-fake-routes-in-isolation
+        (serve-up (a-config (a-pipeline-group "Development"
+                                              (a-pipeline "Build"
+                                                          (a-stage "DoStuff"))))
+                  (a-short-history "Build" "DoStuff"
+                                   (a-stage-run 42 "1" "Failed"
+                                                (a-job-run "AlphaJob" 1493201298062)))
+                  (a-pipeline-run "Build" 42)
+                  (a-builds-properties "Build" 42 "DoStuff" "1" "AlphaJob"
+                                       {:start-time (t/date-time 2017 1 1 10 0 0)
+                                        :end-time (t/date-time 2017 1 1 12 0)
+                                        :outcome "Failed"
+                                        :actual-stage-run "1"})
+                  (a-file-list "Build" 42 "DoStuff" "1" "AlphaJob")
+                  (provide-buildviz-and-capture-puts store))
+        (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
+                                       (url/url "http://buildviz:8010")
+                                       beginning-of-2016 nil nil)))
+      (is (= [["/builds/Build%20DoStuff/42%201" {:start 1483264800000
+                                                 :end 1483272000000
+                                                 :outcome "fail"
+                                                 :inputs []}]]
+             @store))))
+
+  (testing "should ignore an ongoing stage"
+    (let [store (atom [])]
+      (fake/with-fake-routes-in-isolation
+        (serve-up (a-config (a-pipeline-group "Development"
+                                              (a-pipeline "Build"
+                                                          (a-stage "DoStuff"))))
+                  (a-short-history "Build" "DoStuff"
+                                   (a-stage-run 42 "1" "Unknown"
+                                                (a-job-run "AlphaJob" 1493201298062)))
+                  (a-pipeline-run "Build" 42)
+                  (provide-buildviz-and-capture-puts store))
+        (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
+                                       (url/url "http://buildviz:8010")
+                                       beginning-of-2016 nil nil)))
+      (is (empty? @store)))))
