@@ -4,6 +4,7 @@
             [cheshire.core :as j]
             [clj-http.fake :as fake]
             [clj-time.core :as t]
+            [clj-time.coerce :as tc]
             [clojure.string :as str]
             [clojure.test :refer :all]))
 
@@ -84,7 +85,7 @@
        (mapcat identity)
        (into {})))
 
-(def beginning-of-2016 (t/date-midnight 2016))
+(def beginning-of-2016 (t/date-time 2016 1 1))
 
 
 (deftest test-sync-jobs
@@ -163,7 +164,23 @@
                   (a-short-history "Build" "DoStuff"
                                    (a-stage-run 42 "1" "Unknown"
                                                 (a-job-run "AlphaJob" 1493201298062)))
-                  (a-pipeline-run "Build" 42)
+                  (provide-buildviz-and-capture-puts store))
+        (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
+                                       (url/url "http://buildviz:8010")
+                                       beginning-of-2016 nil nil)))
+      (is (empty? @store))))
+
+  (testing "should ignore a stage who's job ran before the sync date offset"
+    (let [store (atom [])]
+      (fake/with-fake-routes-in-isolation
+        (serve-up (a-config (a-pipeline-group "Development"
+                                              (a-pipeline "Build"
+                                                          (a-stage "DoStuff"))))
+                  (a-short-history "Build" "DoStuff"
+                                   (a-stage-run 42 "1" "Passed"
+                                                (a-job-run "AlphaJob"
+                                                           (- (tc/to-long beginning-of-2016)
+                                                              2))))
                   (provide-buildviz-and-capture-puts store))
         (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
                                        (url/url "http://buildviz:8010")

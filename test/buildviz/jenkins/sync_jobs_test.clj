@@ -40,7 +40,7 @@
        (mapcat identity)
        (into {})))
 
-(def beginning-of-2016 (t/date-midnight 2016))
+(def beginning-of-2016 (t/date-time 2016 1 1))
 
 
 (deftest test-sync-jobs

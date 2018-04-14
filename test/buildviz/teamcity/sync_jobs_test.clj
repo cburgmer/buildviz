@@ -34,7 +34,7 @@
                             (successful-json-response {:testOccurrences []})]) builds)]
     (cons job-builds testresults)))
 
-(def beginning-of-2016 (t/date-midnight 2016))
+(def beginning-of-2016 (t/date-time 2016 1 1))
 
 (defn- provide-buildviz-and-capture-puts [latest-build-start map-ref]
   [[#"http://buildviz:8010/builds/(.+)/(.+)"
