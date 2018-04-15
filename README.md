@@ -58,7 +58,7 @@ E.g. sync existing history from Go.cd (see `--help` for details):
 
     $ java -cp buildviz-0.10.1-standalone.jar buildviz.go.sync http://$USER:$PW@localhost:8153/go
 
-There's support for [Jenkins, Go.cd and TeamCity](https://github.com/cburgmer/buildviz/wiki/CI-tool-integration).
+There's support for [Jenkins, GoCD and TeamCity](https://github.com/cburgmer/buildviz/wiki/CI-tool-integration).
 
 ## More
 
