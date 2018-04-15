@@ -14,7 +14,7 @@
                  [ring/ring-json "0.2.0"]
                  [ring-middleware-accept "2.0.3"]
                  [compojure "1.1.6"]
-                 [bigml/closchema "0.6.1"]
+                 [metosin/scjsv "0.4.1"]
                  [clj-http "1.1.2"]
                  [clj-time "0.9.0"]
                  [cheshire "5.4.0"]

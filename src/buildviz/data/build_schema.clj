@@ -1,5 +1,5 @@
 (ns buildviz.data.build-schema
-  (:require [closchema.core :as schema]))
+  (:require [scjsv.core :as schema]))
 
 (def minimum-13-digit-timestamp (Math/pow 10 12)) ; Sun, 09 Sep 2001 01:46:40 GMT
 
@@ -13,21 +13,23 @@
                 :outcome {:enum ["pass" "fail"]}
                 :inputs {:type "array"
                          :items {:type "object"
-                                 :properties {:revision {:type ["string" "integer" "boolean"] :required true}
-                                              :source-id {:type ["string" "integer"] :required true}}
+                                 :properties {:revision {:type ["string" "integer" "boolean"]}
+                                              :source-id {:type ["string" "integer"]}}
+                                 :required [:revision :source-id]
                                  :additionalProperties false}}
                 :triggered-by {:type "array"
                                :minItems 1
                                :items {:type "object"
-                                       :properties {:job-name {:type "string" :required true}
-                                                    :build-id {:type "string" :required true}}
-                                       ;; :required [:jobName :buildId] # Not correctly implemented in closchema
+                                       :properties {:job-name {:type "string"}
+                                                    :build-id {:type "string"}}
+                                       :required [:job-name :build-id]
                                        :additionalProperties false}}}
    :required [:start]
    :additionalProperties false})
 
 (defn build-validation-errors [{:keys [start] :as build}]
-  (schema/report-errors (schema/validate (build-schema start) build)))
+  (let [validate (schema/validator (build-schema start))]
+    (validate build)))
 
 
 (defn build-with-outcome? [build]

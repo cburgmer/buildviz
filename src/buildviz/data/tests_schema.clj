@@ -1,22 +1,23 @@
 (ns buildviz.data.tests-schema
-  (:require [closchema.core :as schema]))
+  (:require [scjsv.core :as schema]))
 
 ;; TODO The schema does not fully resemble the internal schema, as values for :status are keywords, not strings (:pass not "pass")
 (def tests-schema {:type "array"
                    :items {:type "object"
-                           :properties {:name "string"
+                           :properties {:name {:type "string"}
                                         :children {:type "array"
                                                    :items {:type "object"
-                                                           :properties {:name "string"
-                                                                        :classname "string"
-                                                                        :runtime "integer"
+                                                           :properties {:name {:type "string"}
+                                                                        :classname {:type "string"}
+                                                                        :runtime {:type "integer"}
                                                                         :status {:enum ["pass" "fail" "skipped" "error"]}}
                                                            :required [:name :classname :status]}}}
                            :required [:name :children]}
                    })
 
 (defn tests-validation-errors [test-results]
-  (schema/report-errors (schema/validate tests-schema test-results)))
+  (let [validate (schema/validator tests-schema)]
+    (validate test-results)))
 
 
 (defn is-ok? [{status :status}]

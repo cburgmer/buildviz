@@ -1,6 +1,5 @@
 (ns buildviz.data.results
-  (:require [clj-time.core :as t]
-            [closchema.core :as schema]))
+  (:require [clj-time.core :as t]))
 
 (defprotocol BuildResultsProtocol
   (last-modified [this])
