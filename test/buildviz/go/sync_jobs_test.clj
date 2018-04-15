@@ -88,7 +88,7 @@
     (fn [req]
       (swap! map-ref #(conj % [(:uri req)
                                (slurp (:body req))]))
-      {:status 200 :body ""})]])
+      {:status 204 :body ""})]])
 
 (defn- serve-up [& routes]
   (->> routes
@@ -283,5 +283,66 @@
                                        beginning-of-2016 nil nil)))
       (is (= [["/builds/Build%20DoStuff/42%201/testresults"
                "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"Alpha\"></testsuite><testsuite name=\"Beta\"></testsuite></testsuites>"]]
+             (filter (fn [[path payload]] (= path "/builds/Build%20DoStuff/42%201/testresults"))
+                     @store)))))
+
+  (testing "should not store test results if one job has invalid XML"
+    (let [store (atom [])]
+      (fake/with-fake-routes-in-isolation
+        (serve-up (a-config (a-pipeline-group "Development"
+                                              (a-pipeline "Build"
+                                                          (a-stage "DoStuff"))))
+                  (a-short-history "Build" "DoStuff"
+                                   (a-stage-run 42 "1" "Passed"
+                                                (a-job-run "AlphaJob" 1493201298062)
+                                                (a-job-run "BetaJob" 1493201298062)))
+                  (a-pipeline-run "Build" 42
+                                  (a-material-revision "AnotherPipeline/21" 7))
+                  (a-builds-properties "Build" 42 "DoStuff" "1" "AlphaJob" {})
+                  (a-builds-properties "Build" 42 "DoStuff" "1" "BetaJob" {})
+                  (a-file-list "Build" 42 "DoStuff" "1" "AlphaJob"
+                               {:files [{:name "results.xml"
+                                         :url "http://example.com/something/files/Build/42/DoStuff/1/AlphaJob/tmp/results.xml"}]})
+                  (a-file-list "Build" 42 "DoStuff" "1" "BetaJob"
+                               {:files [{:name "results.xml"
+                                         :url "http://example.com/something/files/Build/42/DoStuff/1/BetaJob/tmp/results.xml"}]})
+                  (a-file "Build" 42 "DoStuff" "1" "AlphaJob" "tmp/results.xml"
+                          "<testsuites><testsuite name=\"Alpha\"></testsuite></testsuites>")
+                  (a-file "Build" 42 "DoStuff" "1" "BetaJob" "tmp/results.xml"
+                          "invalid xml")
+                  (provide-buildviz-and-capture-puts store))
+        (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
+                                       (url/url "http://buildviz:8010")
+                                       beginning-of-2016 nil nil)))
+      (is (= []
+             (filter (fn [[path payload]] (= path "/builds/Build%20DoStuff/42%201/testresults"))
+                     @store)))))
+
+  (testing "should store test results even if one job has no XML"
+    (let [store (atom [])]
+      (fake/with-fake-routes-in-isolation
+        (serve-up (a-config (a-pipeline-group "Development"
+                                              (a-pipeline "Build"
+                                                          (a-stage "DoStuff"))))
+                  (a-short-history "Build" "DoStuff"
+                                   (a-stage-run 42 "1" "Passed"
+                                                (a-job-run "AlphaJob" 1493201298062)
+                                                (a-job-run "BetaJob" 1493201298062)))
+                  (a-pipeline-run "Build" 42
+                                  (a-material-revision "AnotherPipeline/21" 7))
+                  (a-builds-properties "Build" 42 "DoStuff" "1" "AlphaJob" {})
+                  (a-builds-properties "Build" 42 "DoStuff" "1" "BetaJob" {})
+                  (a-file-list "Build" 42 "DoStuff" "1" "AlphaJob"
+                               {:files [{:name "results.xml"
+                                         :url "http://example.com/something/files/Build/42/DoStuff/1/AlphaJob/tmp/results.xml"}]})
+                  (a-file-list "Build" 42 "DoStuff" "1" "BetaJob")
+                  (a-file "Build" 42 "DoStuff" "1" "AlphaJob" "tmp/results.xml"
+                          "<testsuites><testsuite name=\"Alpha\"></testsuite></testsuites>")
+                  (provide-buildviz-and-capture-puts store))
+        (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
+                                       (url/url "http://buildviz:8010")
+                                       beginning-of-2016 nil nil)))
+      (is (= [["/builds/Build%20DoStuff/42%201/testresults"
+               "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"Alpha\"></testsuite></testsuites>"]]
              (filter (fn [[path payload]] (= path "/builds/Build%20DoStuff/42%201/testresults"))
                      @store))))))
