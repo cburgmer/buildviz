@@ -180,9 +180,38 @@
                                    (a-stage-run 42 "1" "Passed"
                                                 (a-job-run "AlphaJob"
                                                            (- (tc/to-long beginning-of-2016)
-                                                              2))))
+                                                              2))
+                                                (a-job-run "BetaJob"
+                                                           (+ (tc/to-long beginning-of-2016)
+                                                              9001))))
                   (provide-buildviz-and-capture-puts store))
         (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
                                        (url/url "http://buildviz:8010")
                                        beginning-of-2016 nil nil)))
-      (is (empty? @store)))))
+      (is (empty? @store))))
+
+  (testing "should sync stage of pipeline that's after the sync date offset"
+    (let [store (atom [])]
+      (fake/with-fake-routes-in-isolation
+        (serve-up (a-config (a-pipeline-group "Development"
+                                              (a-pipeline "Build"
+                                                          (a-stage "DoStuff")
+                                                          (a-stage "SomeMore"))))
+                  (a-short-history "Build" "DoStuff"
+                                   (a-stage-run 42 "1" "Passed"
+                                                (a-job-run "AlphaJob"
+                                                           (- (tc/to-long beginning-of-2016)
+                                                              2))))
+                  (a-short-history "Build" "SomeMore"
+                                   (a-stage-run 42 "1" "Passed"
+                                                (a-job-run "SomeJob"
+                                                           (tc/to-long beginning-of-2016))))
+                  (a-pipeline-run "Build" 42)
+                  (a-builds-properties "Build" 42 "SomeMore" "1" "SomeJob" {})
+                  (a-file-list "Build" 42 "SomeMore" "1" "SomeJob")
+                  (provide-buildviz-and-capture-puts store))
+        (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
+                                       (url/url "http://buildviz:8010")
+                                       beginning-of-2016 nil nil)))
+      (is (= ["/builds/Build%20SomeMore/42%201"]
+             (map first @store))))))
