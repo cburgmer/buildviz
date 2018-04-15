@@ -14,9 +14,11 @@
   (string/join [go-url relative-url]))
 
 (defn- get-plain [go-url relative-url-template & url-params]
-  (let [relative-url (apply format relative-url-template url-params)
-        response (client/get (absolute-url-for (url/with-plain-text-password go-url) relative-url))]
-    (:body response)))
+  (let [relative-url (apply format relative-url-template url-params)]
+    (log/info (format "Retrieving %s" relative-url))
+    (let [response (client/get (absolute-url-for (url/with-plain-text-password go-url) relative-url))]
+      (log/info (format "Retrieved %s: %s" relative-url (:status response)))
+      (:body response))))
 
 (defn- get-json [go-url relative-url-template & url-params]
   (j/parse-string (apply get-plain (cons go-url
