@@ -69,12 +69,22 @@
                                            content))]])
 
 (defn- a-file-list [pipeline-name pipeline-run stage-name stage-run build-name & files]
-  [[(format "http://gocd:8513/files/%s/%s/%s/%s/%s.json" pipeline-name pipeline-run stage-name stage-run build-name)
-    (successful-json-response [{:name "a_folder"
-                                :files files}])]])
+  [[(format "http://gocd:8513/files/%s/%s/%s/%s/%s.json"
+            pipeline-name pipeline-run stage-name stage-run build-name)
+    (successful-json-response files)]])
+
+(defn- a-file [pipeline-name pipeline-run stage-name stage-run build-name file-path content]
+  [[(format "http://gocd:8513/files/%s/%s/%s/%s/%s/%s"
+            pipeline-name pipeline-run stage-name stage-run build-name file-path)
+    (successful-response content)]])
 
 (defn- provide-buildviz-and-capture-puts [map-ref]
-  [[#"http://buildviz:8010/builds/(.+)/(.+)"
+  [[#"http://buildviz:8010/builds/(.+)/(.+)/testresults"
+    (fn [req]
+      (swap! map-ref #(conj % [(:uri req)
+                               (slurp (:body req))]))
+      {:status 200 :body ""})]
+   [#"http://buildviz:8010/builds/(.+)/(.+)"
     (fn [req]
       (swap! map-ref #(conj % [(:uri req)
                                (j/parse-string (slurp (:body req)) true)]))
@@ -190,7 +200,7 @@
                                        beginning-of-2016 nil nil)))
       (is (empty? @store))))
 
-  (testing "should sync stage of pipeline that's after the sync date offset"
+  (testing "should only sync stage of pipeline that's after the sync date offset"
     (let [store (atom [])]
       (fake/with-fake-routes-in-isolation
         (serve-up (a-config (a-pipeline-group "Development"
@@ -214,4 +224,64 @@
                                        (url/url "http://buildviz:8010")
                                        beginning-of-2016 nil nil)))
       (is (= ["/builds/Build%20SomeMore/42%201"]
-             (map first @store))))))
+             (map first @store)))))
+
+  (testing "should sync test results"
+    (let [store (atom [])]
+      (fake/with-fake-routes-in-isolation
+        (serve-up (a-config (a-pipeline-group "Development"
+                                              (a-pipeline "Build"
+                                                          (a-stage "DoStuff"))))
+                  (a-short-history "Build" "DoStuff"
+                                   (a-stage-run 42 "1" "Passed"
+                                                (a-job-run "AlphaJob" 1493201298062)))
+                  (a-pipeline-run "Build" 42
+                                  (a-material-revision "AnotherPipeline/21" 7))
+                  (a-builds-properties "Build" 42 "DoStuff" "1" "AlphaJob" {})
+                  (a-file-list "Build" 42 "DoStuff" "1" "AlphaJob"
+                               {:files [{:name "dontcare.log"
+                                         :url "http://example.com/something/files/Build/42/DoStuff/1/AlphaJob/tmp/dontcare.log"}
+                                        {:name "results.xml"
+                                         :url "http://example.com/something/files/Build/42/DoStuff/1/AlphaJob/tmp/results.xml"}]})
+                  (a-file "Build" 42 "DoStuff" "1" "AlphaJob" "tmp/results.xml"
+                          "<testsuites></testsuites>")
+                  (provide-buildviz-and-capture-puts store))
+        (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
+                                       (url/url "http://buildviz:8010")
+                                       beginning-of-2016 nil nil)))
+      (is (= [["/builds/Build%20DoStuff/42%201/testresults" "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites></testsuites>"]]
+             (filter (fn [[path payload]] (= path "/builds/Build%20DoStuff/42%201/testresults"))
+                     @store)))))
+
+  (testing "should combine test results for two jobs"
+    (let [store (atom [])]
+      (fake/with-fake-routes-in-isolation
+        (serve-up (a-config (a-pipeline-group "Development"
+                                              (a-pipeline "Build"
+                                                          (a-stage "DoStuff"))))
+                  (a-short-history "Build" "DoStuff"
+                                   (a-stage-run 42 "1" "Passed"
+                                                (a-job-run "AlphaJob" 1493201298062)
+                                                (a-job-run "BetaJob" 1493201298062)))
+                  (a-pipeline-run "Build" 42
+                                  (a-material-revision "AnotherPipeline/21" 7))
+                  (a-builds-properties "Build" 42 "DoStuff" "1" "AlphaJob" {})
+                  (a-builds-properties "Build" 42 "DoStuff" "1" "BetaJob" {})
+                  (a-file-list "Build" 42 "DoStuff" "1" "AlphaJob"
+                               {:files [{:name "results.xml"
+                                         :url "http://example.com/something/files/Build/42/DoStuff/1/AlphaJob/tmp/results.xml"}]})
+                  (a-file-list "Build" 42 "DoStuff" "1" "BetaJob"
+                               {:files [{:name "results.xml"
+                                         :url "http://example.com/something/files/Build/42/DoStuff/1/BetaJob/tmp/results.xml"}]})
+                  (a-file "Build" 42 "DoStuff" "1" "AlphaJob" "tmp/results.xml"
+                          "<testsuites><testsuite name=\"Alpha\"></testsuite></testsuites>")
+                  (a-file "Build" 42 "DoStuff" "1" "BetaJob" "tmp/results.xml"
+                          "<testsuites><testsuite name=\"Beta\"></testsuite></testsuites>")
+                  (provide-buildviz-and-capture-puts store))
+        (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
+                                       (url/url "http://buildviz:8010")
+                                       beginning-of-2016 nil nil)))
+      (is (= [["/builds/Build%20DoStuff/42%201/testresults"
+               "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"Alpha\"></testsuite><testsuite name=\"Beta\"></testsuite></testsuites>"]]
+             (filter (fn [[path payload]] (= path "/builds/Build%20DoStuff/42%201/testresults"))
+                     @store))))))
