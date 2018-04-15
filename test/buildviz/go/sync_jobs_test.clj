@@ -79,15 +79,15 @@
     (successful-response content)]])
 
 (defn- provide-buildviz-and-capture-puts [map-ref]
-  [[#"http://buildviz:8010/builds/(.+)/(.+)/testresults"
-    (fn [req]
-      (swap! map-ref #(conj % [(:uri req)
-                               (slurp (:body req))]))
-      {:status 200 :body ""})]
-   [#"http://buildviz:8010/builds/(.+)/(.+)"
+  [[#"http://buildviz:8010/builds/([^/]+)/([^/]+)"
     (fn [req]
       (swap! map-ref #(conj % [(:uri req)
                                (j/parse-string (slurp (:body req)) true)]))
+      {:status 200 :body ""})]
+   [#"http://buildviz:8010/builds/([^/]+)/([^/]+)/testresults"
+    (fn [req]
+      (swap! map-ref #(conj % [(:uri req)
+                               (slurp (:body req))]))
       {:status 200 :body ""})]])
 
 (defn- serve-up [& routes]
