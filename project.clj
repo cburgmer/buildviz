@@ -34,7 +34,7 @@
   :aot [buildviz.go.sync
         buildviz.jenkins.sync
         buildviz.teamcity.sync]
-  :profiles {:dev {:resource-paths ["test/resources"]
-                   :dependencies [[javax.servlet/servlet-api "2.5"]
+  :profiles {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
                                   [ring-mock "0.1.5"]
-                                  [clj-http-fake "1.0.2"]]}})
+                                  [clj-http-fake "1.0.2"]]}
+             :test {:resource-paths ["test/resources"]}})
