@@ -162,6 +162,6 @@
          (mapcat filter-xml-files file-tree))))
 
 (defn get-junit-xml [go-url job-instance]
-  (when-let [xml-file-url (first (xml-artifacts-for-job-run go-url job-instance))]
-    (log/info (format "Reading test results from %s" xml-file-url))
-    (get-plain go-url xml-file-url)))
+  (when-let [xml-file-urls (xml-artifacts-for-job-run go-url job-instance)]
+    (log/info (format "Reading test results from %s" xml-file-urls))
+    (map #(get-plain go-url %) xml-file-urls)))

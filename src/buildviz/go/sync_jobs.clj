@@ -1,6 +1,7 @@
 (ns buildviz.go.sync-jobs
   (:require [buildviz.go.aggregate :as goaggregate]
             [buildviz.go.api :as goapi]
+            [buildviz.go.junit :as junit]
             [buildviz.util.url :as url]
             [cheshire.core :as j]
             [clj-http.client :as client]
@@ -8,9 +9,11 @@
             [clj-time.coerce :as tc]
             [clj-time.core :as t]
             [clj-time.format :as tf]
+            [clojure.data.xml :as xml]
             [clojure.string :as str]
             [clojure.tools.logging :as log]
-            [uritemplate-clj.core :as templ]))
+            [uritemplate-clj.core :as templ])
+  (:import [javax.xml.stream.XMLStreamException]))
 
 (defn- aggregate-jobs-for-stage-instance [stage-instance sync-jobs-for-pipelines]
   (let [{pipeline-name :pipeline-name} stage-instance]
@@ -87,9 +90,10 @@
               {:content-type :json
                :body (j/generate-string build)}))
 
-(defn- put-junit-xml [buildviz-url job-name build-no xml-content]
-  (client/put (str/join [(url/with-plain-text-password buildviz-url) (templ/uritemplate "/builds{/job}{/build}/testresults" {"job" job-name "build" build-no})])
-              {:body xml-content}))
+(defn- put-junit-xml [buildviz-url job-name build-no junit-xml]
+  (let [xml-content (junit/merge-junit-xml junit-xml)]
+    (client/put (str/join [(url/with-plain-text-password buildviz-url) (templ/uritemplate "/builds{/job}{/build}/testresults" {"job" job-name "build" build-no})])
+                {:body xml-content})))
 
 (defn- put-to-buildviz [buildviz-url {job-name :job-name build-no :build-id build :build junit-xml :junit-xml}]
   (log/info (format "Syncing %s %s: build" job-name build-no))
@@ -97,6 +101,10 @@
   (when (some? junit-xml)
     (try
       (put-junit-xml buildviz-url job-name build-no junit-xml)
+      (catch javax.xml.stream.XMLStreamException e
+        (do
+          (log/errorf e "Unable parse JUnit XML from artifacts for %s %s." job-name build-no)
+          (log/info "Offending XML content is:\n" junit-xml)))
       (catch Exception e
         (if-let [data (ex-data e)]
           (do

@@ -78,7 +78,7 @@
                (:end aggregated-job))))))
 
   (testing "xml"
-    (testing "should merge XML"
-      (is (= "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"some test\"></testsuite><testsuite name=\"another test\"></testsuite></testsuites>"
-             (:junit-xml (aggregated-job-instance (aggregate/aggregate-jobs-for-stage (a-stage-instance [(a-job-instance-with-xml "<testsuites><testsuite name=\"some test\"/></testsuites>" "1")
-                                                                                                         (a-job-instance-with-xml "<testsuite name=\"another test\"></testsuite>" "1")] "1")))))))))
+    (testing "should merge JUnit XML lists"
+      (is (= ["testsuite 1" "second suite" "another testsuite"]
+             (:junit-xml (aggregated-job-instance (aggregate/aggregate-jobs-for-stage (a-stage-instance [(a-job-instance-with-xml ["testsuite 1" "second suite"] "1")
+                                                                                                         (a-job-instance-with-xml ["another testsuite"] "1")] "1")))))))))

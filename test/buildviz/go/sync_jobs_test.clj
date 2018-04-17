@@ -253,6 +253,36 @@
              (filter (fn [[path payload]] (= path "/builds/Build%20DoStuff/42%201/testresults"))
                      @store)))))
 
+  (testing "should sync multiple test results in one job"
+    (let [store (atom [])]
+      (fake/with-fake-routes-in-isolation
+        (serve-up (a-config (a-pipeline-group "Development"
+                                              (a-pipeline "Build"
+                                                          (a-stage "DoStuff"))))
+                  (a-short-history "Build" "DoStuff"
+                                   (a-stage-run 42 "1" "Passed"
+                                                (a-job-run "AlphaJob" 1493201298062)))
+                  (a-pipeline-run "Build" 42
+                                  (a-material-revision "AnotherPipeline/21" 7))
+                  (a-builds-properties "Build" 42 "DoStuff" "1" "AlphaJob" {})
+                  (a-file-list "Build" 42 "DoStuff" "1" "AlphaJob"
+                               {:name "one_result.xml"
+                                :url "http://example.com/something/files/Build/42/DoStuff/1/AlphaJob/one_result.xml"}
+                               {:name "others.xml"
+                                :url "http://example.com/something/files/Build/42/DoStuff/1/AlphaJob/others.xml"})
+                  (a-file "Build" 42 "DoStuff" "1" "AlphaJob" "one_result.xml"
+                          "<testsuite name=\"one\"></testsuite>")
+                  (a-file "Build" 42 "DoStuff" "1" "AlphaJob" "others.xml"
+                          "<testsuites><testsuite name=\"other\"></testsuite></testsuites>")
+                  (provide-buildviz-and-capture-puts store))
+        (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
+                                       (url/url "http://buildviz:8010")
+                                       beginning-of-2016 nil nil)))
+      (is (= [["/builds/Build%20DoStuff/42%201/testresults"
+               "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"one\"></testsuite><testsuite name=\"other\"></testsuite></testsuites>"]]
+             (filter (fn [[path payload]] (= path "/builds/Build%20DoStuff/42%201/testresults"))
+                     @store)))))
+
   (testing "should combine test results for two jobs"
     (let [store (atom [])]
       (fake/with-fake-routes-in-isolation
