@@ -1,2 +1,0 @@
-cruise_agent,cruise_job_duration,cruise_job_id,cruise_job_result,cruise_pipeline_counter,cruise_pipeline_label,cruise_stage_counter,cruise_timestamp_01_scheduled,cruise_timestamp_02_assigned,cruise_timestamp_03_preparing,cruise_timestamp_04_building,cruise_timestamp_05_completing,cruise_timestamp_06_completed
-vagrant-ubuntu-trusty-32,0,480,Passed,41,41,1,2015-09-19T12:18:33Z,2015-09-19T12:18:42Z,2015-09-19T12:18:53Z,2015-09-19T12:18:54Z,2015-09-19T12:18:54Z,2015-09-19T12:18:54Z
