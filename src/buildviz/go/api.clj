@@ -28,7 +28,7 @@
                   true))
 
 
-;; /properties/%pipeline/%pipeline_run/%stage/%stage_run/%job
+;; /api/jobs/%d.xml
 
 (defn- handle-missing-start-time-when-cancelled [build-start-time build-end-time]
   (if (nil? build-start-time)
@@ -160,6 +160,5 @@
          (mapcat filter-xml-files file-tree))))
 
 (defn get-junit-xml [go-url job-instance]
-  (when-let [xml-file-urls (xml-artifacts-for-job-run go-url job-instance)]
-    (log/info (format "Reading test results from %s" xml-file-urls))
+  (when-let [xml-file-urls (seq (xml-artifacts-for-job-run go-url job-instance))]
     (map #(get-plain go-url %) xml-file-urls)))
