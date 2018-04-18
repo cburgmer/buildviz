@@ -22,16 +22,16 @@
       (goaggregate/aggregate-jobs-for-stage stage-instance))))
 
 
-(defn- build-for-job [go-url stage-instance job-name]
-  (let [job-instance (assoc stage-instance :job-name job-name)]
-    (-> (goapi/build-for go-url job-instance)
-        (assoc :name job-name)
+(defn- build-for-job [go-url stage-instance {:keys [name id]}]
+  (let [job-instance (assoc stage-instance :job-name name)]
+    (-> (goapi/build-for go-url id)
+        (assoc :name name)
         (assoc :junit-xml (goapi/get-junit-xml go-url job-instance)))))
 
 (defn- add-job-instances-for-stage-instance [go-url stage-instance]
-  (let [job-names (:job-names stage-instance)]
+  (let [jobs (:jobs stage-instance)]
     (assoc stage-instance
-           :job-instances (map #(build-for-job go-url stage-instance %) job-names))))
+           :job-instances (map #(build-for-job go-url stage-instance %) jobs))))
 
 
 (defn- parse-stage-instance [{pipeline-run :pipeline_counter
@@ -42,7 +42,7 @@
    :pipeline-run pipeline-run
    :finished (not= "Unknown" result)
    :scheduled-time (tc/from-long (apply min (map :scheduled_date jobs)))
-   :job-names (map :name jobs)})
+   :jobs jobs})
 
 (defn- stage-instances-from [go-url sync-start-time {stage-name :stage pipeline-name :pipeline}]
   (let [safe-build-start-date (t/minus sync-start-time (t/millis 1))]

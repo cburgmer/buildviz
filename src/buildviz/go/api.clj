@@ -5,6 +5,7 @@
             [clj-time
              [coerce :as tc]
              [format :as tf]]
+            [clojure.data.xml :as xml]
             [clojure.string :as string]
             [clojure.tools.logging :as log]))
 
@@ -40,39 +41,36 @@
      :end end-time}
     {}))
 
-(defn- parse-datetime [property-map key]
-  (tc/to-long (tf/parse (get property-map key))))
+(defn- parse-datetime [value]
+  (tc/to-long (tf/parse value)))
+
+(defn- property-value-for [properties name]
+  (some->> properties
+           (filter #(and (= :property (:tag %))
+                         (= name (:name (:attrs %)))))
+           first
+           :content
+           first))
 
 (defn- parse-build-properties [properties]
-  (let [lines (string/split properties #"\n")
-        keys (string/split (first lines) #",")
-        values (string/split (second lines) #",")
-        property-map (zipmap keys values)
-        result (get property-map "cruise_job_result")]
+  (let [root (xml/parse-str properties)
+        properties (->> (:content root)
+                        (filter #(= :properties (:tag %)))
+                        first
+                        :content)
+        result (property-value-for properties "cruise_job_result")]
     (when-not (= "Unknown" result)
-      (let [start-time (parse-datetime property-map "cruise_timestamp_04_building")
-            end-time (parse-datetime property-map "cruise_timestamp_06_completed")
-            actual-stage-run (get property-map "cruise_stage_counter")
+      (let [start-time (parse-datetime (property-value-for properties "cruise_timestamp_04_building"))
+            end-time (parse-datetime (property-value-for properties "cruise_timestamp_06_completed"))
+            actual-stage-run (property-value-for properties "cruise_stage_counter")
             outcome (if (= "Passed" result) "pass" "fail")]
         (assoc (build-times start-time end-time)
                :outcome outcome
                :actual-stage-run actual-stage-run)))))
 
-(defn build-for [go-url {:keys [pipeline-name pipeline-run stage-name
-                                stage-run job-name]}]
-  (try
-    (let [build-properties (get-plain go-url
-                                      "/properties/%s/%s/%s/%s/%s"
-                                      pipeline-name pipeline-run stage-name stage-run job-name)]
-      (parse-build-properties build-properties))
-    (catch Exception e
-      ;; Deal with https://github.com/gocd/gocd/issues/1575
-      (if-let [data (ex-data e)]
-        (log/errorf "Unable to read build information for job %s (%s %s %s %s) (status %s): %s"
-                    job-name pipeline-name pipeline-run stage-name stage-run (:status data) (:body data))
-        (log/errorf e
-                    "Unable to read build information for job %s (%s %s %s %s)"
-                    job-name pipeline-name pipeline-run stage-name stage-run)))))
+(defn build-for [go-url job-id]
+  (let [build-properties (get-plain go-url "/api/jobs/%d.xml" job-id)]
+    (parse-build-properties build-properties)))
 
 
 ;; /api/stages/%pipeline/%stage/history
