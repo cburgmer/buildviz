@@ -47,7 +47,7 @@ function aBuild {
 function send {
     JOB=$1
     BUILD=$2
-    curl -H "Content-Type: application/json" --data @- -XPUT "http://localhost:${TARGET_PORT}/builds/${JOB}/${BUILD}"
+    curl --silent -H "Content-Type: application/json" --data @- -XPUT "http://localhost:${TARGET_PORT}/builds/${JOB}/${BUILD}" > /dev/null
 }
 
 function passingTestCase {
