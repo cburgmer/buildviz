@@ -3,7 +3,7 @@ set -eo pipefail
 
 readonly SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-readonly MAPPING_TARGET_DIR="${SCRIPT_DIR}/gocd"
+readonly MAPPING_TARGET="${SCRIPT_DIR}/gocd.tar.gz"
 readonly EXAMPLE_DIR="${SCRIPT_DIR}/../../examples/go"
 
 readonly WIREMOCK_PORT="3340"
@@ -14,7 +14,8 @@ readonly BUILDVIZ_BASE_URL="http://localhost:${BUILDVIZ_PORT}"
 readonly GOCD_BASE_URL="http://localhost:8153/go"
 readonly SYNC_URL="${WIREMOCK_BASE_URL}/go"
 
-readonly BUILDVIZ_TMP_DATA_DIR="/tmp/record.$$"
+readonly BUILDVIZ_TMP_DATA_DIR="/tmp/record.buildviz.$$"
+readonly MAPPING_TMP_DIR="/tmp/record.wiremock.$$"
 
 WIREMOCK_PID=
 BUILDVIZ_PID=
@@ -82,11 +83,10 @@ start_wiremock() {
     local base_url
     base_url=$(extract_base_url <<< "$GOCD_BASE_URL")
 
-    mkdir -p "$MAPPING_TARGET_DIR"
-
     echo_bold "Starting wiremock"
 
-    cd "$MAPPING_TARGET_DIR"
+    mkdir -p "$MAPPING_TMP_DIR"
+    cd "$MAPPING_TMP_DIR"
     "$SCRIPT_DIR/start_wiremock.sh" "$WIREMOCK_PORT" &
     WIREMOCK_PID=$!
     cd - > /dev/null
@@ -102,7 +102,13 @@ stop_wiremock() {
     if [[ -n "$WIREMOCK_PID" ]]; then
         curl --output /dev/null -X POST "${WIREMOCK_BASE_URL}/__admin/recordings/stop" || true
         pkill -P "$WIREMOCK_PID" || true
+
+        cd "$MAPPING_TMP_DIR"
+        tar -cf "$MAPPING_TARGET" ./*
+        cd - > /dev/null
     fi
+
+    rm -rf "$MAPPING_TMP_DIR"
 }
 
 sync_builds() {
@@ -117,8 +123,8 @@ clean_up() {
 }
 
 ensure_empty_mappings() {
-    if [[ -e "$MAPPING_TARGET_DIR" ]]; then
-        echo "Please empty ${MAPPING_TARGET_DIR} first"
+    if [[ -e "$MAPPING_TARGET" ]]; then
+        echo "Please remove ${MAPPING_TARGET} first"
         exit 1
     fi
 }

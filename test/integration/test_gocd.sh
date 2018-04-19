@@ -3,7 +3,7 @@ set -eo pipefail
 
 readonly SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-readonly MAPPING_TARGET_DIR="${SCRIPT_DIR}/gocd"
+readonly MAPPING_SOURCE="${SCRIPT_DIR}/gocd.tar.gz"
 
 readonly WIREMOCK_PORT="3340"
 readonly BUILDVIZ_PORT="3350"
@@ -12,7 +12,8 @@ readonly WIREMOCK_BASE_URL="http://localhost:${WIREMOCK_PORT}"
 readonly BUILDVIZ_BASE_URL="http://localhost:${BUILDVIZ_PORT}"
 readonly SYNC_URL="${WIREMOCK_BASE_URL}/go"
 
-readonly BUILDVIZ_TMP_DATA_DIR="/tmp/record.$$"
+readonly BUILDVIZ_TMP_DATA_DIR="/tmp/record.buildviz.$$"
+readonly MAPPING_TMP_DIR="/tmp/record.wiremock.$$"
 
 WIREMOCK_PID=
 BUILDVIZ_PID=
@@ -57,7 +58,9 @@ stop_buildviz() {
 start_wiremock() {
     echo_bold "Starting wiremock"
 
-    cd "$MAPPING_TARGET_DIR"
+    mkdir "$MAPPING_TMP_DIR"
+    cd "$MAPPING_TMP_DIR"
+    tar -xzf "$MAPPING_SOURCE"
     "$SCRIPT_DIR/start_wiremock.sh" "$WIREMOCK_PORT" &
     WIREMOCK_PID=$!
     cd - > /dev/null
@@ -70,6 +73,8 @@ stop_wiremock() {
     if [[ -n "$WIREMOCK_PID" ]]; then
         pkill -P "$WIREMOCK_PID" || true
     fi
+
+    rm -rf "$MAPPING_TMP_DIR"
 }
 
 sync_builds() {
@@ -83,7 +88,7 @@ clean_up() {
 }
 
 ensure_mappings() {
-    if [[ ! -e "$MAPPING_TARGET_DIR" ]]; then
+    if [[ ! -e "$MAPPING_SOURCE" ]]; then
         echo "Please run ./record_gocd.sh first"
         exit 1
     fi
