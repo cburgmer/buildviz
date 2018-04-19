@@ -18,4 +18,4 @@ if [ ! -f "$FILEPATH" ]; then
     )
 fi
 
-java -jar "$FILEPATH" --port "$PORT"
+java -jar "$FILEPATH" --port "$PORT" > /dev/null

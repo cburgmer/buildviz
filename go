@@ -1,20 +1,27 @@
 #!/bin/bash
-# Full test run
 set -e
 
 SCRIPT_DIR=$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)
 
-function unit_test {
-    "$SCRIPT_DIR/lein" test
+unit_test() {
+    "${SCRIPT_DIR}/lein" test
 }
 
-function end2end_test {
-    yes | "$SCRIPT_DIR/examples/runSeedDataExample.sh"
+test_integration() {
+    echo "Running integration test against recorded endpoints."
+    echo "If this fails you might have changed how the endpoints are requested, and might want to record from scratch."
+    "${SCRIPT_DIR}/test/integration/test_gocd.sh"
 }
 
-function main {
+test_example() {
+    echo "Running simple example to make sure it doesn't break"
+    yes | "${SCRIPT_DIR}/examples/runSeedDataExample.sh"
+}
+
+main() {
     unit_test
-    end2end_test
+    test_integration
+    test_example
 }
 
 main
