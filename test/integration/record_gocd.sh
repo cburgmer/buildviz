@@ -86,10 +86,8 @@ start_wiremock() {
     echo_bold "Starting wiremock"
 
     mkdir -p "$MAPPING_TMP_DIR"
-    cd "$MAPPING_TMP_DIR"
-    "$SCRIPT_DIR/start_wiremock.sh" "$WIREMOCK_PORT" &
+    "$SCRIPT_DIR/start_wiremock.sh" "$WIREMOCK_PORT" "$MAPPING_TMP_DIR" &
     WIREMOCK_PID=$!
-    cd - > /dev/null
 
     wait_for_server "${WIREMOCK_BASE_URL}/__admin"
 
@@ -104,7 +102,7 @@ stop_wiremock() {
         pkill -P "$WIREMOCK_PID" || true
 
         cd "$MAPPING_TMP_DIR"
-        tar -cf "$MAPPING_TARGET" ./*
+        tar -czf "$MAPPING_TARGET" ./*
         cd - > /dev/null
     fi
 

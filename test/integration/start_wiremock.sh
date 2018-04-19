@@ -2,6 +2,7 @@
 set -eo pipefail
 
 readonly PORT=${1:-3334}
+readonly ROOT_DIR=${2:-`pwd`}
 
 readonly SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -18,4 +19,4 @@ if [ ! -f "$FILEPATH" ]; then
     )
 fi
 
-java -jar "$FILEPATH" --port "$PORT" > /dev/null
+java -jar "$FILEPATH" --port "$PORT" --root-dir "$ROOT_DIR"> /dev/null

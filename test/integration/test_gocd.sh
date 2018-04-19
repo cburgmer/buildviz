@@ -59,11 +59,9 @@ start_wiremock() {
     echo_bold "Starting wiremock"
 
     mkdir "$MAPPING_TMP_DIR"
-    cd "$MAPPING_TMP_DIR"
-    tar -xzf "$MAPPING_SOURCE"
-    "$SCRIPT_DIR/start_wiremock.sh" "$WIREMOCK_PORT" &
+    tar -xzf "$MAPPING_SOURCE" -C "$MAPPING_TMP_DIR"
+    "$SCRIPT_DIR/start_wiremock.sh" "$WIREMOCK_PORT" "$MAPPING_TMP_DIR" &
     WIREMOCK_PID=$!
-    cd - > /dev/null
 
     wait_for_server "${WIREMOCK_BASE_URL}/__admin"
 }
