@@ -4,6 +4,7 @@ set -eo pipefail
 readonly SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 readonly MAPPING_SOURCE="${SCRIPT_DIR}/gocd.tar.gz"
+readonly DATA_DIR="${SCRIPT_DIR}/../../examples/data"
 
 readonly WIREMOCK_PORT="3340"
 readonly BUILDVIZ_PORT="3350"
@@ -15,68 +16,29 @@ readonly SYNC_URL="${WIREMOCK_BASE_URL}/go"
 readonly BUILDVIZ_TMP_DATA_DIR="/tmp/record.buildviz.$$"
 readonly MAPPING_TMP_DIR="/tmp/record.wiremock.$$"
 
-WIREMOCK_PID=
-BUILDVIZ_PID=
-
-wait_for_server() {
-    local url=$1
-    echo "Waiting for ${url}"
-    until curl --output /dev/null --silent --head --fail "$url"; do
-        printf '.'
-        sleep 5
-    done
-    echo "up"
-}
-
-echo_bold() {
-    local text="$1"
-    echo -ne "\033[1m"
-    echo "$text"
-    echo -ne "\033[0m"
-}
-
 start_buildviz() {
-    echo_bold "Starting buildviz"
-
-    mkdir "$BUILDVIZ_TMP_DATA_DIR"
-
-    BUILDVIZ_DATA_DIR="$BUILDVIZ_TMP_DATA_DIR" "${SCRIPT_DIR}/../../lein" do ring server-headless "$BUILDVIZ_PORT" > /dev/null &
-    BUILDVIZ_PID=$!
-
-    wait_for_server "$BUILDVIZ_BASE_URL"
+    PORT="$BUILDVIZ_PORT" "${DATA_DIR}/run_buildviz.sh" start
 }
 
 stop_buildviz() {
-    echo_bold "Stopping buildviz"
-    if [[ -n "$BUILDVIZ_PID" ]]; then
-        pkill -P "$BUILDVIZ_PID" || true
-    fi
-
-    rm -rf "$BUILDVIZ_TMP_DATA_DIR"
+    "${DATA_DIR}/run_buildviz.sh" stop
 }
 
 start_wiremock() {
-    echo_bold "Starting wiremock"
-
     mkdir "$MAPPING_TMP_DIR"
     tar -xzf "$MAPPING_SOURCE" -C "$MAPPING_TMP_DIR"
-    "$SCRIPT_DIR/start_wiremock.sh" "$WIREMOCK_PORT" "$MAPPING_TMP_DIR" &
-    WIREMOCK_PID=$!
 
-    wait_for_server "${WIREMOCK_BASE_URL}/__admin"
+    "${SCRIPT_DIR}/run_wiremock.sh" install
+    ROOT_DIR="$MAPPING_TMP_DIR" PORT="$WIREMOCK_PORT" "${SCRIPT_DIR}/run_wiremock.sh" start
 }
 
 stop_wiremock() {
-    echo_bold "Stopping wiremock"
-    if [[ -n "$WIREMOCK_PID" ]]; then
-        pkill -P "$WIREMOCK_PID" || true
-    fi
+    "${SCRIPT_DIR}/run_wiremock.sh" stop
 
     rm -rf "$MAPPING_TMP_DIR"
 }
 
 sync_builds() {
-    echo_bold "Syncing..."
     "${SCRIPT_DIR}/../../lein" run -m buildviz.go.sync "$SYNC_URL" --buildviz="$BUILDVIZ_BASE_URL" --from 2000-01-01
 }
 
@@ -96,15 +58,12 @@ main() {
     ensure_mappings
 
     # Handle Ctrl+C and errors
-    trap clean_up INT
-    trap clean_up ERR
+    trap clean_up EXIT
 
     start_buildviz
     start_wiremock
 
     sync_builds
-
-    clean_up
 }
 
 main

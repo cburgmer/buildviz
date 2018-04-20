@@ -1,58 +1,40 @@
 #!/bin/bash
+set -eo pipefail
 
-PORT=3333
+readonly SCRIPT_DIR=$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)
 
-curl --output /dev/null --silent --head --fail http://localhost:$PORT
-if [ $? -eq 0 ]; then
-    echo "Please stop the application running on port $PORT before continuing"
-    exit 1
-fi
+readonly BUILDVIZ_PORT=3333
+readonly BUILDVIZ_PATH="http://localhost:${BUILDVIZ_PORT}"
 
-set -e
-
-SCRIPT_DIR=$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)
-
-function wait_for_server() {
-    URL=$1
-    until $(curl --output /dev/null --silent --head --fail $URL); do
-        printf '.'
-        sleep 5
-    done
+ensure_port_available() {
+    if curl --output /dev/null --silent --head --fail "${BUILDVIZ_PATH}"; then
+        echo "Please stop the application running on port $PORT before continuing"
+        exit 1
+    fi
 }
 
-
-# Start buildviz
-TMP_DIR="/tmp/buildviz.$$"
-LOGGING_PATH="${TMP_DIR}/buildviz.log"
-
-mkdir -p "$TMP_DIR"
-
-echo "Starting buildviz... (sending stdout to $LOGGING_PATH)"
-BUILDVIZ_DATA_DIR=$TMP_DIR BUILDVIZ_PIPELINE_NAME="Dummy data example" ./lein do deps, ring server-headless $PORT > "$LOGGING_PATH" &
-SERVER_PID=$!
-
-function clean_up() {
-    pkill -P $SERVER_PID
-    exit 0
+clean_up() {
+    "${SCRIPT_DIR}/data/run_buildviz.sh" stop
 }
 
-# Handle Ctrl+C
-trap clean_up INT
+main() {
+    ensure_port_available
 
-# Wait
-echo "Waiting for buildviz to come up"
-wait_for_server http://localhost:$PORT
+    # Handle Ctrl+C
+    trap clean_up EXIT
 
-# Seed data
-echo "Seeding data..."
-PORT="${PORT}" "$SCRIPT_DIR"/data/seedDummyData.sh
+    PORT="$BUILDVIZ_PORT" "${SCRIPT_DIR}/data/run_buildviz.sh" start
 
-echo "Done..."
-echo
-echo "Point your browser to http://localhost:$PORT/"
-echo
-echo "Later, press any key to stop the server"
+    echo "Seeding data..."
+    PORT="$BUILDVIZ_PORT" "$SCRIPT_DIR"/data/seedDummyData.sh
 
-read -n 1
+    echo "Done..."
+    echo
+    echo "Point your browser to ${BUILDVIZ_PATH}"
+    echo
+    echo "Later, press any key to stop the server and bring down the vagrant box"
 
-clean_up
+    read -n 1
+}
+
+main

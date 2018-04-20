@@ -8,12 +8,14 @@ unit_test() {
 }
 
 test_integration() {
+    echo
     echo "Running integration test against recorded endpoints."
     echo "If this fails you might have changed how the endpoints are requested, and might want to record from scratch."
     "${SCRIPT_DIR}/test/integration/test_gocd.sh"
 }
 
 test_example() {
+    echo
     echo "Running simple example to make sure it doesn't break"
     yes | "${SCRIPT_DIR}/examples/runSeedDataExample.sh"
 }
