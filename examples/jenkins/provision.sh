@@ -2,6 +2,10 @@
 # With ideas from https://github.com/rgl/jenkins-vagrant/blob/master/provision.sh
 set -eo pipefail
 
+jenkins_queue_length() {
+    curl -H "$CRUMB" http://localhost:8080/queue/api/json | python -c "import json; import sys; print len(json.loads(sys.stdin.read())['items'])"
+}
+
 wget -q -O - https://jenkins-ci.org/debian/jenkins-ci.org.key | sudo apt-key add -
 sudo sh -c 'echo deb http://pkg.jenkins-ci.org/debian binary/ > /etc/apt/sources.list.d/jenkins.list'
 sudo apt-get update
@@ -63,6 +67,10 @@ popd
 echo "Triggering builds"
 for I in 1 2 3 4 5; do
     curl --silent -X POST -H "$CRUMB" http://localhost:8080/job/Test/build > /dev/null
+
     # Wait for build to run to enqueue next
-    sleep 10
+    sleep 2
+    until [[ "$(jenkins_queue_length)" -eq 0 ]] ; do
+        sleep 1
+    done
 done
