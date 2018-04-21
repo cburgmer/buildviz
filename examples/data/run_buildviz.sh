@@ -30,10 +30,27 @@ hint_at_logs() {
     fi
 }
 
+is_running() {
+    local pid
+
+    if [[ ! -f "$PID_FILE" ]]; then
+        return 1
+    fi
+
+    read -r pid < "$PID_FILE"
+    ps -p "$pid" > /dev/null
+}
+
 goal_start() {
     local port=${PORT:-3334}
 
     announce "Starting buildviz"
+
+    if is_running; then
+        echo " another running instance found"
+        exit 1
+    fi
+
     mkdir "$BUILDVIZ_TMP_DATA_DIR"
 
     BUILDVIZ_DATA_DIR="$BUILDVIZ_TMP_DATA_DIR" "${SCRIPT_DIR}/../../lein" do deps, ring server-headless "$port" > "$TMP_LOG" &
@@ -48,8 +65,8 @@ goal_stop() {
     local pid
 
     announce "Stopping buildviz"
-    if [[ ! -f "$PID_FILE" ]]; then
-        echo " no PID file found, nothing to do"
+    if ! is_running; then
+        echo " no running instance found, nothing to do"
         return
     fi
 

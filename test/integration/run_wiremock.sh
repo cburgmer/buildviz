@@ -9,7 +9,6 @@ readonly FILENAME="${ARTIFACT_NAME}-${VERSION}.jar"
 readonly FILEPATH="${SCRIPT_DIR}/${FILENAME}"
 
 readonly TMP_LOG="/tmp/run.$$.log"
-readonly BUILDVIZ_TMP_DATA_DIR="/tmp/record.wiremock.$$"
 readonly PID_FILE="${SCRIPT_DIR}/wiremock.pid"
 
 wait_for_server() {
@@ -51,6 +50,17 @@ goal_install() {
     fi
 }
 
+is_running() {
+    local pid
+
+    if [[ ! -f "$PID_FILE" ]]; then
+        return 1
+    fi
+
+    read -r pid < "$PID_FILE"
+    ps -p "$pid" > /dev/null
+}
+
 goal_start() {
     local port=${PORT:-3334}
     local root_dir=${ROOT_DIR:-`pwd`}
@@ -59,6 +69,11 @@ goal_start() {
 
     if [[ ! -f "$FILEPATH" ]]; then
         echo "Run $0 install first"
+        exit 1
+    fi
+
+    if is_running; then
+        echo " another running instance found"
         exit 1
     fi
 
@@ -74,8 +89,8 @@ goal_stop() {
     local pid
 
     announce "Stopping wiremock"
-    if [[ ! -f "$PID_FILE" ]]; then
-        echo " no PID file found, nothing to do"
+    if ! is_running; then
+        echo " no running instance found, nothing to do"
         return
     fi
 

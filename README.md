@@ -54,7 +54,7 @@ JUnit XML ([or JSON](https://github.com/cburgmer/buildviz/wiki#help-my-tests-don
 
 #### Sync from supported build servers
 
-E.g. sync existing history from Go.cd (see `--help` for details):
+E.g. sync existing history from GoCD (see `--help` for details):
 
     $ java -cp buildviz-0.10.1-standalone.jar buildviz.go.sync http://$USER:$PW@localhost:8153/go
 
