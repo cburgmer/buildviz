@@ -8,7 +8,7 @@ readonly BUILDVIZ_PATH="http://localhost:${BUILDVIZ_PORT}"
 
 ensure_port_available() {
     if curl --output /dev/null --silent --head --fail "${BUILDVIZ_PATH}"; then
-        echo "Please stop the application running on port $PORT before continuing"
+        echo "Please stop the application running on port ${BUILDVIZ_PORT} before continuing"
         exit 1
     fi
 }
@@ -31,11 +31,10 @@ main() {
     trap clean_up EXIT
 
     "${SCRIPT_DIR}/go/run.sh" start
-
     PORT="$BUILDVIZ_PORT" "${SCRIPT_DIR}/data/run_buildviz.sh" start
 
     echo "Syncing job history..."
-    "${SCRIPT_DIR}/../lein" run -m buildviz.go.sync http://localhost:8153/go --buildviz="${BUILDVIZ_PATH}" --from 2014-06-01
+    "${SCRIPT_DIR}/../lein" run -m buildviz.go.sync http://localhost:8153/go --buildviz="${BUILDVIZ_PATH}" --from 2000-01-01
 
     echo "Done..."
     echo

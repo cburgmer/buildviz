@@ -4,7 +4,7 @@ set -eo pipefail
 readonly SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 readonly TMP_LOG="/tmp/run.$$.log"
-readonly BASE_URL="http://localhost:8153/go"
+readonly BASE_URL="http://localhost:8080"
 
 wait_for_server() {
     local url=$1
