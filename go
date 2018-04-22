@@ -3,6 +3,10 @@ set -e
 
 SCRIPT_DIR=$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)
 
+lint() {
+    shellcheck examples/**/*.sh examples/*.sh test/integration/*.sh
+}
+
 unit_test() {
     "${SCRIPT_DIR}/lein" test
 }
@@ -21,6 +25,7 @@ test_example() {
 }
 
 main() {
+    lint
     unit_test
     test_integration
     test_example

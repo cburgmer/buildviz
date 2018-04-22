@@ -24,6 +24,7 @@ announce() {
 }
 
 hint_at_logs() {
+    # shellcheck disable=SC2181
     if [[ "$?" -ne 0 ]]; then
         echo
         echo "Logs are in ${TMP_LOG}"
@@ -53,6 +54,7 @@ goal_start() {
 
     mkdir "$BUILDVIZ_TMP_DATA_DIR"
 
+    # shellcheck disable=SC1010
     BUILDVIZ_DATA_DIR="$BUILDVIZ_TMP_DATA_DIR" "${SCRIPT_DIR}/../../lein" do deps, ring server-headless "$port" > "$TMP_LOG" &
     echo "$!" > "$PID_FILE"
 
@@ -84,7 +86,7 @@ main() {
     trap hint_at_logs EXIT
 
     if type -t "goal_$1" &>/dev/null; then
-        goal_$1
+        "goal_$1"
     else
         echo "usage: $0 (start|stop)"
     fi

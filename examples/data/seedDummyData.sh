@@ -23,8 +23,9 @@ function aBuild {
     TRIGGERED_BY_JOB=$2
     TRIGGERED_BY_BUILD_ID=$3
 
-    if [ ! -z $TRIGGERED_BY_JOB ]; then
-        TRIGGERED_BY=', "triggeredBy": [{"jobName": "'$TRIGGERED_BY_JOB'", "buildId":"'$TRIGGERED_BY_BUILD_ID'"}]'
+    if [ ! -z "$TRIGGERED_BY_JOB" ]; then
+        # shellcheck disable=SC2089
+        TRIGGERED_BY=', "triggeredBy": [{"jobName": "'"$TRIGGERED_BY_JOB"'", "buildId":"'"$TRIGGERED_BY_BUILD_ID"'"}]'
     fi
 
     START=$4
@@ -41,7 +42,7 @@ function aBuild {
     fi
 
     SOURCE_ID=42
-    echo '{"start": '$START', "end": '$END', "outcome": "'$OUTCOME'", "inputs": [{"revision": "'$REVISION'", "sourceId": "'$SOURCE_ID'"}]'$TRIGGERED_BY'}'
+    echo '{"start": '"$START"', "end": '"$END"', "outcome": "'"$OUTCOME"'", "inputs": [{"revision": "'"$REVISION"'", "sourceId": "'"$SOURCE_ID"'"}]'"$TRIGGERED_BY"'}'
 }
 
 function send {
@@ -148,7 +149,7 @@ for i in $(seq 1 3); do
 done
 
 for i in $(seq 1 3); do
-    aBuild "fail" '' '' $[ $TODAY - $i * 5000000 ] | send "aBrokenBuild" "$i"
+    aBuild "fail" '' '' $(( TODAY - i * 5000000 )) | send "aBrokenBuild" "$i"
 done
 failingTestCase | sendTestResult "aBrokenBuild" 1
 anotherTestCase "fail" | sendTestResult "aBrokenBuild" 2

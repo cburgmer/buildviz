@@ -23,6 +23,7 @@ announce() {
 }
 
 hint_at_logs() {
+    # shellcheck disable=SC2181
     if [[ "$?" -ne 0 ]]; then
         echo
         echo "Logs are in ${TMP_LOG}"
@@ -55,7 +56,7 @@ main() {
     trap hint_at_logs EXIT
 
     if type -t "goal_$1" &>/dev/null; then
-        goal_$1
+        "goal_$1"
     else
         echo "usage: $0 (start|stop)"
     fi

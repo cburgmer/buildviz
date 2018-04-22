@@ -2,7 +2,7 @@
 set -eo pipefail
 
 readonly PORT=${1:-3334}
-readonly ROOT_DIR=${2:-`pwd`}
+readonly ROOT_DIR=${2:-$PWD}
 
 readonly SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 

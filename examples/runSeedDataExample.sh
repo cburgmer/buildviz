@@ -34,7 +34,7 @@ main() {
     echo
     echo "Later, press any key to stop the server and bring down the vagrant box"
 
-    read -n 1
+    read -rn 1
 }
 
 main

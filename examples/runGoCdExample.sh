@@ -25,7 +25,7 @@ main() {
     echo
     echo "Press any key to continue"
 
-    read -n 1
+    read -rn 1
 
     # Handle Ctrl+C
     trap clean_up EXIT
@@ -42,7 +42,7 @@ main() {
     echo
     echo "Later, press any key to stop the server and bring down the vagrant box"
 
-    read -n 1
+    read -rn 1
 }
 
 main

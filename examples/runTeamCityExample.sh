@@ -1,3 +1,5 @@
+#!/bin/bash
+
 cat <<EOF
 Appologies, but you are on your own.
 

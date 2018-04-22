@@ -46,20 +46,22 @@ echo "Configuring pipeline"
 pushd .
 cd /mnt/jobs
 for JOB_CONFIG in *; do
-    JOB_NAME=$( echo $JOB_CONFIG | sed s/.xml$// )
+    # shellcheck disable=SC2001
+    JOB_NAME=$( echo "$JOB_CONFIG" | sed s/.xml$// )
     curl --silent -X POST --data-binary "@/mnt/jobs/$JOB_CONFIG" -H "Content-Type: application/xml" "http://localhost:8080/createItem?name=$JOB_NAME" > /dev/null
     curl --silent -X POST --data-binary "@/mnt/jobs/$JOB_CONFIG" "http://localhost:8080/job/$JOB_NAME/config.xml" > /dev/null
 done
 cd /mnt/views
 for VIEW_CONFIG in *; do
-    VIEW_NAME=$( echo $VIEW_CONFIG | sed s/.xml$// )
+    # shellcheck disable=SC2001
+    VIEW_NAME=$( echo "$VIEW_CONFIG" | sed s/.xml$// )
     curl --silent -X POST --data-binary "@/mnt/views/$VIEW_CONFIG" -H "Content-Type: application/xml" "http://localhost:8080/createView?name=$VIEW_NAME" > /dev/null
     curl --silent -X POST --data-binary "@/mnt/views/$VIEW_CONFIG" "http://localhost:8080/view/$VIEW_NAME/config.xml" > /dev/null
 done
 popd
 
 echo "Triggering builds"
-for I in 1 2 3 4 5; do
+for _ in 1 2 3 4 5; do
     curl --silent -X POST http://localhost:8080/job/Test/build > /dev/null
 
     # Wait for build to run to enqueue next
