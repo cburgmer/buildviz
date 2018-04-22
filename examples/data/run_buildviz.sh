@@ -4,7 +4,7 @@ set -eo pipefail
 readonly SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 readonly TMP_LOG="/tmp/run.$$.log"
-readonly BUILDVIZ_TMP_DATA_DIR="/tmp/record.buildviz.$$"
+readonly BUILDVIZ_TMP_DATA_DIR="/tmp/record.buildviz"
 readonly PID_FILE="${SCRIPT_DIR}/buildviz.pid"
 
 wait_for_server() {

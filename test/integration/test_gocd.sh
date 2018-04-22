@@ -13,7 +13,6 @@ readonly WIREMOCK_BASE_URL="http://localhost:${WIREMOCK_PORT}"
 readonly BUILDVIZ_BASE_URL="http://localhost:${BUILDVIZ_PORT}"
 readonly SYNC_URL="${WIREMOCK_BASE_URL}/go"
 
-readonly BUILDVIZ_TMP_DATA_DIR="/tmp/record.buildviz.$$"
 readonly MAPPING_TMP_DIR="/tmp/record.wiremock.$$"
 
 start_buildviz() {
