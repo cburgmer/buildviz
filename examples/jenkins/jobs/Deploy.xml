@@ -25,9 +25,11 @@
     <hudson.tasks.Shell>
       <command>#!/bin/bash
 echo $TEST_GIT_COMMIT
-RUNTIME=$(( $RANDOM % 20 ))
+RUNTIME=$(( RANDOM % 20 ))
 sleep $RUNTIME
-if [ $(( $RANDOM % 5 )) -eq 0 ]; then
+
+OUTCOME=$(( BUILD_NUMBER % 2 ))
+if [ $OUTCOME -eq 0 ]; then
   exit 1
 fi
 </command>

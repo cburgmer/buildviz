@@ -65,7 +65,7 @@ function aTestcase {
 EOF
 }
 
-OUTCOME=$(( $RANDOM % 3 ))
+OUTCOME=$(( BUILD_NUMBER % 3 ))
 
 aTestcase $OUTCOME > results.xml
 
