@@ -32,6 +32,7 @@ hint_at_logs() {
 
 goal_start() {
     announce "Starting vagrant image"
+    echo -n " (give it a few minutes)"
     (
         cd "$SCRIPT_DIR"
         vagrant up > "$TMP_LOG"
