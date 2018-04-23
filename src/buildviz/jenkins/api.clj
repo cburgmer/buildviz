@@ -3,7 +3,8 @@
             [buildviz.util.url :as url]
             [clj-http.client :as client]
             [clojure.string :as string]
-            [clojure.tools.logging :as log]))
+            [clojure.tools.logging :as log]
+            [uritemplate-clj.core :as templ]))
 
 (defn- get-json [jenkins-url relative-url]
   (log/info (format "Retrieving %s" relative-url))
@@ -22,7 +23,11 @@
 
 (defn- get-builds-starting-from [jenkins-url job-name offset]
   (let [offset-end (+ offset pagination-size)
-        response (get-json jenkins-url (format "/job/%s/api/json?tree=allBuilds[number,timestamp,duration,result,actions[lastBuiltRevision[SHA1],remoteUrls,parameters[name,value],causes[upstreamProject,upstreamBuild,userId]]]{%s,%s}" job-name offset offset-end))
+        response (get-json jenkins-url
+                           (templ/uritemplate "/job{/job}/api/json?tree=allBuilds[number,timestamp,duration,result,actions[lastBuiltRevision[SHA1],remoteUrls,parameters[name,value],causes[upstreamProject,upstreamBuild,userId]]]%7B{offset},{offsetEnd}%7D"
+                                              {"job" job-name
+                                               "offset" offset
+                                               "offsetEnd" offset-end}))
         builds (builds-response->builds response job-name)]
     (if (> pagination-size (count builds))
       builds
@@ -34,7 +39,8 @@
   (get-builds-starting-from jenkins-url job-name 0))
 
 (defn get-test-report [jenkins-url job-name build-number]
-  (let [test-report-url (format "/job/%s/%s/testReport/api/json" job-name build-number)]
+  (let [test-report-url (templ/uritemplate "/job{/job}{/build}/testReport/api/json"
+                                           {"job" job-name "build" build-number})]
     (try
       (get-json jenkins-url test-report-url)
       (catch Exception e

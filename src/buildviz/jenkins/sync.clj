@@ -42,7 +42,7 @@
 (def two-months-ago (t/minus (.withTimeAtStartOfDay (l/local-now)) (t/months 2)))
 
 (defn- get-latest-synced-build-start [buildviz-url]
-  (let [response (client/get (string/join [buildviz-url "/status"]))
+  (let [response (client/get (string/join [(url/with-plain-text-password buildviz-url) "/status"]))
         buildviz-status (j/parse-string (:body response) true)]
     (when-let [latest-build-start (:latestBuildStart buildviz-status)]
       (tc/from-long latest-build-start))))

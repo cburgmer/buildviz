@@ -7,24 +7,22 @@
              [format :as tf]]
             [clojure.data.xml :as xml]
             [clojure.string :as string]
-            [clojure.tools.logging :as log]))
+            [clojure.tools.logging :as log]
+            [uritemplate-clj.core :as templ]))
 
 (import com.fasterxml.jackson.core.JsonParseException)
 
 (defn- absolute-url-for [go-url relative-url]
   (string/join [go-url relative-url]))
 
-(defn- get-plain [go-url relative-url-template & url-params]
-  (let [relative-url (apply format relative-url-template url-params)]
-    (log/info (format "Retrieving %s" relative-url))
-    (let [response (client/get (absolute-url-for (url/with-plain-text-password go-url) relative-url))]
-      (log/info (format "Retrieved %s: %s" relative-url (:status response)))
-      (:body response))))
+(defn- get-plain [go-url relative-url]
+  (log/info (format "Retrieving %s" relative-url))
+  (let [response (client/get (absolute-url-for (url/with-plain-text-password go-url) relative-url))]
+    (log/info (format "Retrieved %s: %s" relative-url (:status response)))
+    (:body response)))
 
-(defn- get-json [go-url relative-url-template & url-params]
-  (j/parse-string (apply get-plain (cons go-url
-                                         (cons relative-url-template
-                                               url-params)))
+(defn- get-json [go-url relative-url]
+  (j/parse-string (get-plain go-url relative-url)
                   true))
 
 
@@ -69,14 +67,18 @@
                :actual-stage-run actual-stage-run)))))
 
 (defn build-for [go-url job-id]
-  (let [build-properties (get-plain go-url "/api/jobs/%d.xml" job-id)]
+  (let [build-properties (get-plain go-url (templ/uritemplate "/api/jobs{/id}.xml"
+                                                              {"id" job-id}))]
     (parse-build-properties build-properties)))
 
 
 ;; /api/stages/%pipeline/%stage/history
 
 (defn- get-stage-instances [go-url pipeline stage-name offset]
-  (let [stage-history (get-json go-url "/api/stages/%s/%s/history/%s" pipeline stage-name offset)
+  (let [stage-history (get-json go-url (templ/uritemplate "/api/stages{/pipeline}{/stage}/history{/offset}"
+                                                          {"pipeline" pipeline
+                                                           "stage" stage-name
+                                                           "offset" offset}))
         stage-instances (:stages stage-history)]
     (if (empty? stage-instances)
       []
@@ -95,7 +97,9 @@
    :sourceId (:id material)})
 
 (defn get-inputs-for-pipeline-run [go-url pipeline-name run]
-  (let [pipeline-instance (get-json go-url "/api/pipelines/%s/instance/%s" pipeline-name run)
+  (let [pipeline-instance (get-json go-url (templ/uritemplate "/api/pipelines{/pipeline}/instance{/run}"
+                                                              {"pipeline" pipeline-name
+                                                               "run" run}))
         revisions (:material_revisions (:build_cause pipeline-instance))]
     (map revision->input revisions)))
 
@@ -143,7 +147,12 @@
 
 (defn- try-get-artifact-tree [go-url {:keys [pipeline-name pipeline-run
                                              stage-name stage-run job-name]}]
-  (let [artifacts-url (format "/files/%s/%s/%s/%s/%s.json" pipeline-name pipeline-run stage-name stage-run job-name)]
+  (let [artifacts-url (templ/uritemplate "/files{/pipeline}{/run}{/stage}{/stageRun}{/job}.json"
+                                         {"pipeline" pipeline-name
+                                          "run" pipeline-run
+                                          "stage" stage-name
+                                          "stageRun" stage-run
+                                          "job" job-name})]
     (try
       (force-evaluate-json (get-json go-url artifacts-url))
       (catch JsonParseException e
