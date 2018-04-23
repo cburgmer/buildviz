@@ -3,17 +3,18 @@
             [cheshire.core :as j]
             [clj-http.client :as client]
             [clojure.string :as string]
-            [clojure.tools.logging :as log]))
+            [clojure.tools.logging :as log]
+            [uritemplate-clj.core :as templ]))
 
-(defn- get-json [teamcity-url path-template & path-params]
-  (let [relative-url (apply format (cons path-template path-params))]
-    (log/info (format "Retrieving %s" relative-url))
-    (j/parse-string (:body (client/get (string/join [(url/with-plain-text-password teamcity-url)
-                                                     relative-url])
-                                       {:accept "application/json"})) true)))
+(defn- get-json [teamcity-url relative-url]
+  (log/info (format "Retrieving %s" relative-url))
+  (j/parse-string (:body (client/get (string/join [(url/with-plain-text-password teamcity-url)
+                                                   relative-url])
+                                     {:accept "application/json"})) true))
 
 (defn get-jobs [teamcity-url project-name]
-  (let [response (get-json teamcity-url "/httpAuth/app/rest/projects/%s" project-name)]
+  (let [response (get-json teamcity-url (templ/uritemplate "/httpAuth/app/rest/projects{/project}"
+                                                           {"project" project-name}))]
     (-> response
         (get :buildTypes)
         (get :buildType))))
@@ -28,8 +29,11 @@
 
 (defn- get-builds-from [teamcity-url job-id offset]
   (let [response (get-json teamcity-url
-                           "/httpAuth/app/rest/buildTypes/id:%s/builds/?locator=count:%s,start:%s&fields=build(%s)"
-                           job-id builds-paging-count offset (string/join "," build-fields))
+                           (templ/uritemplate "/httpAuth/app/rest/buildTypes/id:{job}/builds/?locator=count:{count},start:{offset}&fields=build({fields})"
+                                              {"job" job-id
+                                               "count" builds-paging-count
+                                               "offset" offset
+                                               "fields" build-fields}))
         builds (get response :build)]
     (if (< (count builds) builds-paging-count)
       builds
@@ -45,8 +49,10 @@
 
 (defn- get-test-report-from [teamcity-url build-id offset]
   (let [response (get-json teamcity-url
-                           "/httpAuth/app/rest/testOccurrences?locator=count:%s,start:%s,build:(id:%s)"
-                           test-occurrence-paging-count offset build-id)
+                           (templ/uritemplate "/httpAuth/app/rest/testOccurrences?locator=count:{count},start:{offset},build:(id:{build})"
+                                              {"count" test-occurrence-paging-count
+                                               "offset" offset
+                                               "build" build-id}))
         test-occurrences (get response :testOccurrence)]
     (if (< (count test-occurrences) test-occurrence-paging-count)
       test-occurrences
