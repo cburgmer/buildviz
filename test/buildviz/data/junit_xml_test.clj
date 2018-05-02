@@ -69,6 +69,14 @@
                          :runtime 1234}]}]
            (junit-xml/parse-testsuites "<testsuite name=\"a suite\"><testcase classname=\"the class\" name=\"a test\" time=\"1.234\"></testcase></testsuite>"))))
 
+  (testing "should understand human formatted time"
+    (is (= 14029255
+           (-> (junit-xml/parse-testsuites "<testsuite name=\"a suite\"><testcase classname=\"the class\" name=\"a test\" time=\"14,029.255\"></testcase></testsuite>")
+               first
+               :children
+               first
+               :runtime))))
+
   (testing "ignored nodes"
     (is (= [{:name "a suite"
              :children [{:name "a test"

@@ -1,5 +1,6 @@
 (ns buildviz.data.junit-xml
-  (:require [clojure.data.xml :as xml]))
+  (:require [clojure.data.xml :as xml]
+            [clojure.string :as str]))
 
 ;; Parsing is following schema documented in http://llg.cubic.org/docs/junit/
 
@@ -23,9 +24,13 @@
 (defn- parse-name [elem]
   (:name (:attrs elem)))
 
+(defn- ignore-human-readable-formatting [time]
+  ;; work around https://github.com/junit-team/junit5/issues/1381
+  (str/replace time "," ""))
+
 (defn- parse-runtime [testcase-elem]
-  (if-let [time (:time (:attrs testcase-elem))]
-    (Math/round (* 1000 (Float/parseFloat time)))))
+  (when-let [time (:time (:attrs testcase-elem))]
+    (Math/round (* 1000 (Float/parseFloat (ignore-human-readable-formatting time))))))
 
 (defn- parse-status [testcase-elem]
   (cond
