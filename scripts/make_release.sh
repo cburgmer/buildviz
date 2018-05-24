@@ -11,7 +11,9 @@ fi
 sed -i "" "s/$OLD_VERSION/$NEW_VERSION/g" README.md
 sed -i "" "s/buildviz \"$OLD_VERSION\"/buildviz \"$NEW_VERSION\"/" project.clj
 
-git add README.md project.clj
+./lein do deps # force package-lock.json to be updated now
+
+git add README.md project.clj resources/public/package-lock.json
 git commit -m "Bump version"
 git show
 git tag $NEW_VERSION
