@@ -34,13 +34,13 @@
         var duration = end - start,
             momentDuration = moment.duration(duration);
         if (duration < 60 * 60 * 1000) {
-            return momentDuration.format("m [minutes]");
+            return momentDuration.format("m [minutes]", {usePlural: false});
         } else if (duration < 24 * 60 * 60 * 1000) {
-            return momentDuration.format("h [hours]");
+            return momentDuration.format("h [hours]", {usePlural: false});
         } else if (duration < 7 * 24 * 60 * 60 * 1000) {
-            return momentDuration.format("d [days]");
+            return momentDuration.format("d [days]", {usePlural: false});
         } else {
-            return momentDuration.format("w [weeks]");
+            return momentDuration.format("w [weeks]", {usePlural: false});
         }
     };
 

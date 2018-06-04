@@ -26,8 +26,8 @@
   :plugins [[lein-ring "0.9.3"]
             [lein-npm "0.6.1"]]
   :npm {:dependencies [[d3 "3.5.5"]
-                       [moment "2.10.6"]
-                       [moment-duration-format "1.3.0"]]
+                       [moment "2.22.2"]
+                       [moment-duration-format "2.2.2"]]
         :root "resources/public"}
   :ring {:handler buildviz.main/app
          :init buildviz.main/help}
