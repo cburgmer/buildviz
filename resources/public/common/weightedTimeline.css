@@ -1,0 +1,12 @@
+.weightedTimeline .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+.weightedTimeline .axis path {
+  stroke: none;
+}
+.weightedTimeline rect {
+  stroke: white;
+  stroke-width: 1px;
+}
