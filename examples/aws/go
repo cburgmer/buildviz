@@ -1,0 +1,48 @@
+#!/bin/bash
+set -eo pipefail
+
+readonly VERSION="0.11.1"
+
+buildviz_jar_name() {
+    echo "buildviz-$1-standalone.jar"
+}
+
+fetch_buildviz_jar() {
+    (
+        cd buildviz
+        if [[ ! -f $(buildviz_jar_name "$VERSION") ]]; then
+            rm -f $(buildviz_jar_name "*")
+            curl -LO "https://github.com/cburgmer/buildviz/releases/download/${VERSION}/buildviz-${VERSION}-standalone.jar"
+        fi
+    )
+}
+
+goal_build() {
+    fetch_buildviz_jar
+    docker-compose build
+}
+
+goal_up() {
+    fetch_buildviz_jar
+
+    docker-compose up -d
+
+    echo "Now point your browser to http://localhost:8080 ..."
+    echo "Stop with $0 stop"
+}
+
+goal_down() {
+    docker-compose down
+}
+
+main() {
+    if type "goal_$1" > /dev/null 2>&1; then
+        "goal_$1"
+    else
+        echo -n "Usage: $0 "
+        set | grep -e "^goal_" | sed "s/^goal_\(.*\)().*/\1/" | xargs | sed "s/ / | /"
+        exit 1
+    fi
+}
+
+main "$@"

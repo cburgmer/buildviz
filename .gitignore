@@ -13,5 +13,6 @@ pom.xml.asc
 .vagrant/
 /examples/teamcity/cache/
 /examples/jenkins/ubuntu-xenial-16.04-cloudimg-console.log
+/examples/aws/data/
 /data/
 /log/
