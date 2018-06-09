@@ -22,6 +22,14 @@ goal_build() {
     docker-compose build
 }
 
+goal_publish() {
+    docker-compose push
+}
+
+goal_logs() {
+    docker-compose logs
+}
+
 goal_up() {
     fetch_buildviz_jar
 
@@ -40,7 +48,7 @@ main() {
         "goal_$1"
     else
         echo -n "Usage: $0 "
-        set | grep -e "^goal_" | sed "s/^goal_\(.*\)().*/\1/" | xargs | sed "s/ / | /"
+        set | grep -e "^goal_" | sed "s/^goal_\(.*\)().*/\1/" | xargs | sed "s/ / | /g"
         exit 1
     fi
 }
