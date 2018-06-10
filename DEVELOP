@@ -23,7 +23,7 @@ Just a few pointers if you want to make changes to buildviz:
 
 ## Make a new release
 
-    $ ./scripts/make_release.sh 1.2.3
+    $ ./go make_release 1.2.3
 
 ## Re-generating the recorded traffic from actual GoCD server
 
