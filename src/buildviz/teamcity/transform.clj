@@ -2,7 +2,7 @@
   (:require [clj-time
              [coerce :as tc]
              [format :as tf]]
-            [buildviz.teamcity.transform-tests :refer [convert-test-results]]
+            [buildviz.teamcity.transform-testresults :refer [convert-test-results]]
             [clojure.string :as str]))
 
 (defn- sanitize-id [id]

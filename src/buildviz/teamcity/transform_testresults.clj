@@ -1,4 +1,4 @@
-(ns buildviz.teamcity.transform-tests
+(ns buildviz.teamcity.transform-testresults
   (:require [clj-time
              [coerce :as tc]
              [format :as tf]]))
