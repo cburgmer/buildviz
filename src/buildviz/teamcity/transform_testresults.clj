@@ -3,15 +3,15 @@
              [coerce :as tc]
              [format :as tf]]))
 
-(def ^:private junit-derived-name-pattern #"^(.+): ([^:]+)\.([^:\.]+)$")
+(def ^:private junit-derived-name-pattern #"^(?:(.+): )?([^:]+)\.([^:\.]+)$")
 (def ^:private rspec-derived-name-pattern #"^(.+): (.+)$")
 
 (defn- extract-junit-style-name [full-name]
   (when-let [match (re-matches junit-derived-name-pattern full-name)]
-    (let [suites (nth match 1)
+    (let [suite (nth match 1)
           classname (nth match 2)
           test-name (nth match 3)]
-      {:suite suites
+      {:suite (or suite "<no suite>")
        :name test-name
        :classname classname})))
 

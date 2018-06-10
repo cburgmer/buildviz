@@ -134,6 +134,15 @@
                :children
                first
                :classname))))
+  (testing "should handle no-suite information for JUnit origin"
+    (is (= {:name "<no suite>"
+            :children [{:classname "the.class"
+                        :name "the test"
+                        :status "pass"
+                        :runtime 0}]}
+           (-> (sut/teamcity-build->buildviz-build (a-teamcity-build-with-test {:name "the.class.the test"}))
+               :test-results
+               first))))
   (testing "should for now not care for nested suites for JUnit origin"
     (is (= "suite: nested suite"
            (-> (sut/teamcity-build->buildviz-build (a-teamcity-build-with-test {:name "suite: nested suite: the.class.the test"}))
