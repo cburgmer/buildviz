@@ -31,17 +31,34 @@
         testresults (map (fn [build]
                            [(format "http://teamcity:8000/httpAuth/app/rest/testOccurrences?locator=count:10000,start:0,build:(id:%s)"
                                     (:id build))
-                            (successful-json-response {:testOccurrences []})]) builds)]
+                            (successful-json-response {:testOccurrence []})]) builds)]
+    (cons job-builds testresults)))
+
+(defn- a-job-with-tests [job-id build tests]
+  (let [job-builds [(format "http://teamcity:8000/httpAuth/app/rest/buildTypes/id:%s/builds/?locator=count:100,start:0&fields=build(id,number,status,startDate,finishDate,state,revisions%%28revision%%28version%%2Cvcs-root-instance%%29%%29,snapshot-dependencies%%28build%%28number%%2CbuildType%%28name%%2CprojectName%%29%%29%%29,triggered)"
+                            job-id)
+                    (successful-json-response {:build [(merge {:revisions []
+                                                               :status "SUCCESS"
+                                                               :state "finished"}
+                                                              build)]})]
+        testresults [[(format "http://teamcity:8000/httpAuth/app/rest/testOccurrences?locator=count:10000,start:0,build:(id:%s)"
+                              (:id build))
+                      (successful-json-response {:testOccurrence tests})]]]
     (cons job-builds testresults)))
 
 (def beginning-of-2016 (t/date-time 2016 1 1))
 
 (defn- provide-buildviz-and-capture-puts [latest-build-start map-ref]
-  [[#"http://buildviz:8010/builds/(.+)/(.+)"
+  [[#"http://buildviz:8010/builds/([^/]+)/([^/]+)"
     (fn [req]
       (swap! map-ref #(conj % [(:uri req)
                                (j/parse-string (slurp (:body req)) true)]))
       {:status 200 :body ""})]
+   [#"http://buildviz:8010/builds/([^/]+)/([^/]+)/testresults"
+    (fn [req]
+      (swap! map-ref #(conj % [(:uri req)
+                               (j/parse-string (slurp (:body req)) true)]))
+      {:status 204 :body ""})]
    ["http://buildviz:8010/status"
     (successful-json-response (cond-> {}
                                 latest-build-start (assoc :latestBuildStart (tc/to-long latest-build-start))))]])
@@ -51,7 +68,7 @@
        (mapcat identity) ; flatten once
        (into {})))
 
-(deftest test-main
+(deftest test-teamcity-sync-jobs
   (testing "should sync a build"
     (let [stored (atom [])]
       (fake/with-fake-routes-in-isolation (serve-up (a-project "the_project" (a-job "theJobId" "theProject" "theJob #1"))
@@ -181,4 +198,26 @@
         (with-out-str (sut/sync-jobs (url/url "http://teamcity:8000") (url/url "http://buildviz:8010") ["the_project"] beginning-of-2016 build-start))
         (is (= ["/builds/theProject%20job1/11"
                 "/builds/theProject%20job1/12"]
-               (map first @stored)))))))
+               (map first @stored))))))
+
+  (testing "should sync test results"
+    (let [latest-build-start nil
+          stored (atom [])]
+      (fake/with-fake-routes-in-isolation (serve-up (a-project "the_project"
+                                                               (a-job "jobId1" "theProject" "job1"))
+                                                    (a-job-with-tests "jobId1"
+                                                                      {:id 10
+                                                                       :number 10
+                                                                       :startDate "20160410T000000+0000"
+                                                                       :finishDate "20160410T000100+0000"}
+                                                                      [{:name "suite: class.the test"
+                                                                        :status "SUCCESS"
+                                                                        :duration 42}])
+                                                    (provide-buildviz-and-capture-puts latest-build-start stored))
+        (with-out-str (sut/sync-jobs (url/url "http://teamcity:8000") (url/url "http://buildviz:8010") ["the_project"] beginning-of-2016 nil)))
+      (is (= ["/builds/theProject%20job1/10/testresults" [{:name "suite"
+                                                           :children [{:name "the test"
+                                                                       :classname "class"
+                                                                       :status "pass"
+                                                                       :runtime 42}]}]]
+             (nth @stored 1))))))
