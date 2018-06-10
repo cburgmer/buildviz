@@ -143,6 +143,24 @@
            (-> (sut/teamcity-build->buildviz-build (a-teamcity-build-with-test {:name "the.class.the test"}))
                :test-results
                first))))
+  (testing "should handle JUnit DataProvider name formatting"
+    (is (= {:name "The Suite"
+            :children [{:classname "the.class"
+                        :name "shouldDoSomething[2](Some: String)"
+                        :status "pass"
+                        :runtime 0}]}
+           (-> (sut/teamcity-build->buildviz-build (a-teamcity-build-with-test {:name "The Suite: the.class.shouldDoSomething[2](Some: String)"}))
+               :test-results
+               first))))
+  (testing "should handle line breaks in JUnit DataProvide formatting"
+    (is (= {:name "The Suite"
+            :children [{:classname "the.class"
+                        :name "shouldDoSomething[2](Some: String\nwith\nline\nbreaks)"
+                        :status "pass"
+                        :runtime 0}]}
+           (-> (sut/teamcity-build->buildviz-build (a-teamcity-build-with-test {:name "The Suite: the.class.shouldDoSomething[2](Some: String\nwith\nline\nbreaks)"}))
+               :test-results
+               first))))
   (testing "should for now not care for nested suites for JUnit origin"
     (is (= "suite: nested suite"
            (-> (sut/teamcity-build->buildviz-build (a-teamcity-build-with-test {:name "suite: nested suite: the.class.the test"}))

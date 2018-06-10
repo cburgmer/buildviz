@@ -3,7 +3,7 @@
              [coerce :as tc]
              [format :as tf]]))
 
-(def ^:private junit-derived-name-pattern #"^(?:(.+): )?([^:]+)\.([^:\.]+)$")
+(def ^:private junit-derived-name-pattern #"^(?s)(?:(.+): )?([^:]+)\.(.+)$")
 (def ^:private rspec-derived-name-pattern #"^(.+): (.+)$")
 
 (defn- extract-junit-style-name [full-name]
