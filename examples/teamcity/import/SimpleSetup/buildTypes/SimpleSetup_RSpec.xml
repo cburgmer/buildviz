@@ -31,8 +31,8 @@ EOF
 mkdir -p spec
 rspecTest > spec/example_spec.rb
 
-gem install rake
-gem install rspec -v 3.1.0]]></param>
+gem install rake -v 11
+gem install rspec -v 3.5]]></param>
           <param name="teamcity.step.mode" value="default" />
           <param name="use.custom.script" value="true" />
         </parameters>

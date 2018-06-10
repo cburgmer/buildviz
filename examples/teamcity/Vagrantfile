@@ -2,10 +2,11 @@
 # vi: set ft=ruby :
 
 Vagrant.configure(2) do |config|
-  config.vm.box = "ubuntu/trusty32"
+  config.vm.box = "ubuntu/xenial64"
 
   config.vm.network :forwarded_port, guest: 8111, host: 8111
   config.vm.synced_folder "import/", "/mnt/import"
+  config.vm.synced_folder "config/", "/mnt/config"
   config.vm.synced_folder "cache/", "/mnt/cache"
 
   config.vm.provider "virtualbox" do |v|
@@ -13,28 +14,28 @@ Vagrant.configure(2) do |config|
   end
 
   config.vm.provision "shell", inline: <<-SHELL
+    set -e
     SYNCED_IMPORT_DIR="/mnt/import"
     SYNCED_CACHE_DIR="/mnt/cache"
 
     sudo apt-get update
-    sudo apt-get -qy install curl openjdk-7-jre
+    sudo apt-get -qy install curl openjdk-8-jre ruby
 
     TEAMCITY_DIR=`pwd`/TeamCity
     if [ ! -d "$TEAMCITY_DIR" ]; then
-        TEAMCITY_DOWNLOAD="$SYNCED_CACHE_DIR/TeamCity.tar.gz"
+        TEAMCITY_TAR_GZ="TeamCity-2017.2.4.tar.gz"
+        TEAMCITY_DOWNLOAD="${SYNCED_CACHE_DIR}/${TEAMCITY_TAR_GZ}"
         if [ ! -f "$TEAMCITY_DOWNLOAD" ]; then
             echo "Downloading TeamCity..."
-            curl --silent http://download-cf.jetbrains.com/teamcity/TeamCity-9.1.6.tar.gz -o "$TEAMCITY_DOWNLOAD"
+            curl -L --silent "https://download.jetbrains.com/teamcity/${TEAMCITY_TAR_GZ}" -o "$TEAMCITY_DOWNLOAD"
         fi
         tar -zxf "$TEAMCITY_DOWNLOAD"
     fi
 
     echo "Setting up startup..."
-    START_UP_SCRIPT="/etc/init.d/teamcity"
-    sudo sh -c "echo $TEAMCITY_DIR/bin/runAll.sh \\$\\@ > $START_UP_SCRIPT"
-    sudo chmod a+x "$START_UP_SCRIPT"
-
-    sudo update-rc.d teamcity defaults
+    sudo cp /mnt/config/*.service /lib/systemd/system
+    sudo systemctl enable teamcity-agent
+    sudo systemctl enable teamcity-server
 
     echo "Setting up project..."
     PROJECT_CONFIG_DIR="/root/.BuildServer/config/projects"
@@ -43,8 +44,10 @@ Vagrant.configure(2) do |config|
     for PROJECT in *; do
         sudo cp -R "$SYNCED_IMPORT_DIR/$PROJECT" "$PROJECT_CONFIG_DIR"
     done
-    cd -
+    cd - > /dev/null
 
-    sudo service teamcity start
+    echo "Starting TeamCity agent and server..."
+    sudo service teamcity-agent start
+    sudo service teamcity-server start
   SHELL
 end

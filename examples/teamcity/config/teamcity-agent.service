@@ -1,0 +1,15 @@
+[Unit]
+Description=TeamCity Build Agent
+After=network.target
+
+[Service]
+Type=forking
+PIDFile=/home/ubuntu/TeamCity/buildAgent/logs/buildAgent.pid
+ExecStart=/usr/bin/sudo /home/ubuntu/TeamCity/buildAgent/bin/agent.sh start
+ExecStop=/usr/bin/sudo /home/ubuntu/TeamCity/buildAgent/bin/agent.sh stop
+RestartSec=10
+Restart=on-failure
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

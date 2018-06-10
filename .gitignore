@@ -12,7 +12,7 @@ pom.xml.asc
 /test/package-lock.json
 .vagrant/
 /examples/teamcity/cache/
-/examples/jenkins/ubuntu-xenial-16.04-cloudimg-console.log
+ubuntu-xenial-16.04-cloudimg-console.log
 /examples/aws/data/
 /examples/aws/deploy/.terraform/
 /examples/aws/deploy/terraform.tfstate*
