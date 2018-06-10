@@ -63,6 +63,14 @@
     (successful-json-response (cond-> {}
                                 latest-build-start (assoc :latestBuildStart (tc/to-long latest-build-start))))]])
 
+(defn- fail-buildviz-on-put-testresult []
+  [[#"http://buildviz:8010/builds/([^/]+)/([^/]+)"
+    (fn [req] {:status 200 :body ""})]
+   [#"http://buildviz:8010/builds/([^/]+)/([^/]+)/testresults"
+    (fn [req] {:status 400 :body ""})]
+   ["http://buildviz:8010/status"
+    (successful-json-response {})]])
+
 (defn- serve-up [& routes]
   (->> routes
        (mapcat identity) ; flatten once
@@ -220,4 +228,18 @@
                                                                        :classname "class"
                                                                        :status "pass"
                                                                        :runtime 42}]}]]
-             (nth @stored 1))))))
+             (nth @stored 1)))))
+
+  (testing "should handle error when syncing test results"
+    (fake/with-fake-routes-in-isolation (serve-up (a-project "the_project"
+                                                             (a-job "jobId1" "theProject" "job1"))
+                                                  (a-job-with-tests "jobId1"
+                                                                    {:id 10
+                                                                     :number 10
+                                                                     :startDate "20160410T000000+0000"
+                                                                     :finishDate "20160410T000100+0000"}
+                                                                    [{:name "suite: class.the test"
+                                                                      :status "SUCCESS"
+                                                                      :duration 42}])
+                                                  (fail-buildviz-on-put-testresult))
+      (with-out-str (sut/sync-jobs (url/url "http://teamcity:8000") (url/url "http://buildviz:8010") ["the_project"] beginning-of-2016 nil)))))

@@ -43,7 +43,14 @@
   (log/info (format "Syncing %s %s: build" job-name build-id))
   (put-build buildviz-url job-name build-id build)
   (when-not (empty? test-results)
-    (put-test-results buildviz-url job-name build-id test-results)))
+    (try
+      (put-test-results buildviz-url job-name build-id test-results)
+      (catch Exception e
+        (if-let [data (ex-data e)]
+          (do
+            (log/errorf "Unable to sync testresults for %s %s (status %s): %s" job-name build-id (:status data) (:body data))
+            (log/info "Offending content is:\n" test-results))
+          (log/errorf e "Unable to sync testresults for %s %s" job-name build-id))))))
 
 
 (defn- sync-oldest-first-to-deal-with-cancellation [builds]
