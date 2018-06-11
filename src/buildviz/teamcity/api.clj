@@ -12,12 +12,18 @@
                                                    relative-url])
                                      {:accept "application/json"})) true))
 
-(defn get-jobs [teamcity-url project-name]
+(defn get-jobs [teamcity-url project-id]
   (let [response (get-json teamcity-url (templ/uritemplate "/httpAuth/app/rest/projects{/project}"
-                                                           {"project" project-name}))]
-    (-> response
-        (get :buildTypes)
-        (get :buildType))))
+                                                           {"project" project-id}))
+        jobs (-> response
+                 (get :buildTypes)
+                 (get :buildType))
+        sub-projects (->> response
+                          :projects
+                          :project
+                          (map :id))]
+    (concat jobs
+            (mapcat #(get-jobs teamcity-url %) sub-projects))))
 
 
 (def ^:private builds-paging-count 100)

@@ -18,8 +18,16 @@
    :name job-name})
 
 (defn- a-project [id & jobs]
-  [["http://teamcity:8000/httpAuth/app/rest/projects/the_project"
+  [[(format "http://teamcity:8000/httpAuth/app/rest/projects/%s" id)
     (successful-json-response {:buildTypes {:buildType jobs}})]])
+
+(defn- a-project-with-sub-projects [id & sub-projects]
+  [[(format "http://teamcity:8000/httpAuth/app/rest/projects/%s" id)
+    (successful-json-response {:projects {:project sub-projects}
+                               :buildTypes {:buildType []}})]])
+
+(defn- a-sub-project [id]
+  {:id id})
 
 (defn- a-job-with-builds [job-id & builds]
   (let [job-builds [(format "http://teamcity:8000/httpAuth/app/rest/buildTypes/id:%s/builds/?locator=count:100,start:0&fields=build(id,number,status,startDate,finishDate,state,revisions%%28revision%%28version%%2Cvcs-root-instance%%29%%29,snapshot-dependencies%%28build%%28number%%2CbuildType%%28name%%2CprojectName%%29%%29%%29,triggered)"
@@ -242,4 +250,26 @@
                                                                       :status "SUCCESS"
                                                                       :duration 42}])
                                                   (fail-buildviz-on-put-testresult))
-      (with-out-str (sut/sync-jobs (url/url "http://teamcity:8000") (url/url "http://buildviz:8010") ["the_project"] beginning-of-2016 nil)))))
+      (with-out-str (sut/sync-jobs (url/url "http://teamcity:8000") (url/url "http://buildviz:8010") ["the_project"] beginning-of-2016 nil))))
+
+  (testing "should sync a sub project"
+    (let [stored (atom [])]
+      (fake/with-fake-routes-in-isolation
+        (serve-up (a-project-with-sub-projects "the_project"
+                                               (a-sub-project "the_sub_project"))
+                  (a-project "the_sub_project"
+                             (a-job "jobId1" "The Sub Project" "job1"))
+                  (a-job-with-builds "jobId1"
+                                     {:id 10
+                                      :number 10
+                                      :status "SUCCESS"
+                                      :startDate "20160410T041049+0000"
+                                      :finishDate "20160410T041100+0000"})
+                  (provide-buildviz-and-capture-puts beginning-of-2016 stored))
+        (with-out-str (sut/sync-jobs (url/url "http://teamcity:8000")
+                                     (url/url "http://buildviz:8010")
+                                     ["the_project"]
+                                     beginning-of-2016
+                                     nil))
+        (is (= ["/builds/The%20Sub%20Project%20job1/10"]
+               (map first @stored)))))))
