@@ -1,7 +1,7 @@
 #!/bin/bash
 set -eo pipefail
 
-readonly VERSION="0.11.1"
+readonly VERSION="0.12.0"
 
 buildviz_jar_name() {
     echo "buildviz-$1-standalone.jar"
