@@ -82,6 +82,7 @@ resource "aws_instance" "buildviz_instance" {
     inline = [
       "mkdir buildviz nginx", # Work around https://github.com/docker/compose/issues/3391
       "docker-compose pull",
+      "mkdir data", # create mount volume ourselves, so it has the correct owner, might be https://github.com/docker/compose/issues/3270
       "docker-compose up --no-build -d",
     ]
 
