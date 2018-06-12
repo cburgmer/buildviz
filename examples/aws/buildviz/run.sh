@@ -12,7 +12,7 @@ goal_do() {
 goal_schedule() {
     while true; do
         goal_do "$@"
-        sleep $((10 * 60))
+        sleep $((60 * 60)) # 60 * 60s = 1h
     done
 }
 

@@ -44,7 +44,7 @@ goal_down() {
 }
 
 ensure_ssh_identity_exists() {
-    if ! ssh-add -l | grep "$HOME/.ssh/id_rsa" > /dev/null; then
+    if ! ssh-add -l | grep "$HOME/.ssh/id_rsa " > /dev/null; then
         echo "Make sure the key uploaded to AWS is registered with ssh-add"
         exit 1
     fi
@@ -65,8 +65,8 @@ goal_tf() {
 
 main() {
     local GOAL="$1"
-    shift
     if type "goal_${GOAL}" > /dev/null 2>&1; then
+        shift
         "goal_${GOAL}" "$@"
     else
         echo -n "Usage: $0 "
