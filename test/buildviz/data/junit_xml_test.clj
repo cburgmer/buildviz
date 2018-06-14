@@ -159,14 +159,14 @@
            (with-out-str (junit-xml/to-string [{:name "The Suite"
                                                 :children []}])))))
   (testing "should serialize simple testsuite"
-    (is (= "The Suite\n  The Class.The Test 42ms pass\n"
+    (is (= "The Suite\n  The Class.The Test\t0.042\tpass\n"
            (with-out-str (junit-xml/to-string [{:name "The Suite"
                                                 :children [{:name "The Test"
                                                             :classname "The Class"
                                                             :runtime 42
                                                             :status "pass"}]}])))))
   (testing "should serialize nested testsuite"
-    (is (= "The Suite\n  Nested Suite\n    The Class.The Test 42ms pass\n"
+    (is (= "The Suite\n  Nested Suite\n    The Class.The Test\t0.042\tpass\n"
            (with-out-str (junit-xml/to-string [{:name "The Suite"
                                                 :children [{:name "Nested Suite"
                                                             :children [{:name "The Test"
