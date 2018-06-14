@@ -5,14 +5,8 @@
             [buildviz.teamcity.transform-testresults :refer [convert-test-results]]
             [clojure.string :as str]))
 
-(defn- sanitize-id [id]
-  (str/replace id #"[\.\\/:]" "\\$"))
-
 (defn- full-job-name [project-name job-name]
-  (sanitize-id (format "%s %s" project-name job-name)))
-
-(defn- build-id [number]
-  (sanitize-id number))
+  (format "%s %s" project-name job-name))
 
 (defn parse-build-date [date-str]
   (tf/parse (tf/formatters :basic-date-time-no-ms)
@@ -34,7 +28,7 @@
   (when (= type "unknown")
     (map (fn [{number :number {name :name projectName :projectName} :buildType}]
            {:job-name (full-job-name projectName name)
-            :build-id (build-id number)})
+            :build-id number})
          build)))
 
 (defn- convert-build [{:keys [status startDate finishDate revisions
@@ -53,6 +47,6 @@
 
 (defn teamcity-build->buildviz-build [{:keys [build tests project-name job-name]}]
   {:job-name (full-job-name project-name job-name)
-   :build-id (build-id (:number build))
+   :build-id (:number build)
    :build (convert-build build)
    :test-results (convert-test-results tests)})
