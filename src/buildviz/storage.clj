@@ -1,28 +1,25 @@
 (ns buildviz.storage
   (:require [buildviz.util.json :as json]
+            [buildviz.safe-filenames :as safe-filenames]
             [clojure.java.io :as io]
             [clojure.string :as str]))
 
-(defn- validate-names [& names]
-  (doseq [name names]
-    (when (re-find #"[\.\\/]" name)
-      (throw (IllegalArgumentException. (format "Illegal name '%s'" name))))))
-
+(defn- filename [& parts]
+  (safe-filenames/encode (apply str parts)))
 
 (defn store-build! [base-dir job-name build-id build-data]
-  (validate-names job-name build-id)
-  (let [job-dir (io/file base-dir job-name)]
+  (let [job-dir (io/file base-dir (filename job-name))]
     (.mkdirs job-dir)
-    (let [build-file (io/file job-dir (str/join [build-id ".json"]))]
+    (let [build-file (io/file job-dir (filename build-id ".json"))]
       (spit build-file (json/to-string build-data)))))
 
 
 (defn- match-build-id [build-file]
   (last (re-matches #"(.*)\.json"
-                    (.getName build-file))))
+                    (safe-filenames/decode (.getName build-file)))))
 
 (defn- builds-for-job-dir [job-dir extract-build-id]
-  (let [job-name (.getName job-dir)]
+  (let [job-name (safe-filenames/decode (.getName job-dir))]
     (->> job-dir
        .listFiles
        (map #(vector (extract-build-id %) %))
@@ -44,14 +41,12 @@
 
 
 (defn store-testresults! [base-dir job-name build-id test-xml]
-  (validate-names job-name build-id)
-  (let [job-dir (io/file base-dir job-name)]
+  (let [job-dir (io/file base-dir (filename job-name))]
     (.mkdirs job-dir)
-    (let [testresults-file (io/file job-dir (str/join [build-id ".xml"]))]
+    (let [testresults-file (io/file job-dir (filename build-id ".xml"))]
       (spit testresults-file test-xml))))
 
 (defn load-testresults [base-dir job-name build-id]
-  (validate-names job-name build-id)
-  (let [file (io/file base-dir (str/join [job-name "/" build-id ".xml"]))]
+  (let [file (io/file base-dir (str/join [(filename job-name) "/" (filename build-id ".xml")]))]
     (when (.exists file)
       (slurp file))))
