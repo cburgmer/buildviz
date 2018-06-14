@@ -67,8 +67,8 @@
 
 (defn- job-name [pipeline-name stage-name job-name]
   (if (= stage-name job-name)
-    (format "%s %s" pipeline-name stage-name)
-    (format "%s %s %s" pipeline-name stage-name job-name)))
+    (format "%s :: %s" pipeline-name stage-name)
+    (format "%s :: %s :: %s" pipeline-name stage-name job-name)))
 
 (defn- stage-instances->builds [{:keys [pipeline-name pipeline-run stage-name stage-run inputs job-instances]}]
   (map (fn [{outcome :outcome
