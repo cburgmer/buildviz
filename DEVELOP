@@ -13,6 +13,10 @@ Just a few pointers if you want to make changes to buildviz:
     $ ./test/serve_ui_test.sh
     $ open http://localhost:8000/test/RegressionRunner.html
 
+## Inspect JUnit XML file
+
+    $ ./lein run -m buildviz.data.junit-xml MY_JUNIT_RESULTS.xml
+
 ## Run sync for GoCD locally
 
     $ ./lein run -m buildviz.go.sync http://$USER:$PW@localhost:8153/go

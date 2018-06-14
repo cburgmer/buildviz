@@ -152,3 +152,24 @@
     (is (= "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"The Suite\"></testsuite></testsuites>"
            (junit-xml/serialize-testsuites [{:name "The Suite"
                                              :children []}])))))
+
+(deftest test-junit-to-string
+  (testing "should serialize empty testsuite"
+    (is (= "The Suite\n"
+           (with-out-str (junit-xml/to-string [{:name "The Suite"
+                                                :children []}])))))
+  (testing "should serialize simple testsuite"
+    (is (= "The Suite\n  The Class.The Test 42ms pass\n"
+           (with-out-str (junit-xml/to-string [{:name "The Suite"
+                                                :children [{:name "The Test"
+                                                            :classname "The Class"
+                                                            :runtime 42
+                                                            :status "pass"}]}])))))
+  (testing "should serialize nested testsuite"
+    (is (= "The Suite\n  Nested Suite\n    The Class.The Test 42ms pass\n"
+           (with-out-str (junit-xml/to-string [{:name "The Suite"
+                                                :children [{:name "Nested Suite"
+                                                            :children [{:name "The Test"
+                                                                        :classname "The Class"
+                                                                        :runtime 42
+                                                                        :status "pass"}]}]}]))))))
