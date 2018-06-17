@@ -8,7 +8,7 @@ readonly ARTIFACT_NAME="wiremock-standalone"
 readonly FILENAME="${ARTIFACT_NAME}-${VERSION}.jar"
 readonly FILEPATH="${SCRIPT_DIR}/${FILENAME}"
 
-readonly TMP_LOG="/tmp/run.$$.log"
+readonly TMP_LOG="/tmp/run.wiremock.log"
 readonly PID_FILE="${SCRIPT_DIR}/wiremock.pid"
 
 wait_for_server() {
@@ -78,12 +78,11 @@ goal_start() {
         exit 1
     fi
 
-    java -jar "$FILEPATH" --port "$port" --root-dir "$root_dir"> "$TMP_LOG" &
+    java -jar "$FILEPATH" --verbose --port "$port" --root-dir "$root_dir" > "$TMP_LOG" &
     echo "$!" > "$PID_FILE"
 
     wait_for_server "http://localhost:${port}/__admin"
     echo " done"
-    rm "$TMP_LOG"
 }
 
 goal_stop() {
