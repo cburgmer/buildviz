@@ -70,6 +70,11 @@
     (format "%s :: %s" pipeline-name stage-name)
     (format "%s :: %s :: %s" pipeline-name stage-name job-name)))
 
+(defn- build-id [pipeline-run stage-run]
+  (if (= "1" stage-run)
+    pipeline-run
+    (format "%s (Run %s)" pipeline-run stage-run)))
+
 (defn- stage-instances->builds [{:keys [pipeline-name pipeline-run stage-name stage-run inputs job-instances]}]
   (map (fn [{outcome :outcome
              start :start
@@ -77,7 +82,7 @@
              name :name
              junit-xml :junit-xml}]
          {:job-name (job-name pipeline-name stage-name name)
-          :build-id (format "%s %s" pipeline-run stage-run)
+          :build-id (build-id pipeline-run stage-run)
           :junit-xml junit-xml
           :build {:start start
                   :end end

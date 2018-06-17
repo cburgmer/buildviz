@@ -143,11 +143,34 @@
         (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
                                        (url/url "http://buildviz:8010")
                                        beginning-of-2016 nil nil)))
-      (is (= [["/builds/Build%20%3A%3A%20DoStuff/42%201" {:start 1483264800000
-                                                          :end 1483272000000
-                                                          :outcome "pass"
-                                                          :inputs [{:revision "AnotherPipeline/21", :sourceId 7}]}]]
+      (is (= [["/builds/Build%20%3A%3A%20DoStuff/42" {:start 1483264800000
+                                                      :end 1483272000000
+                                                      :outcome "pass"
+                                                      :inputs [{:revision "AnotherPipeline/21", :sourceId 7}]}]]
              @store))))
+
+  (testing "should handle a rerun"
+    (let [store (atom [])]
+      (fake/with-fake-routes-in-isolation
+        (serve-up (a-config (a-pipeline-group "Development"
+                                              (a-pipeline "Build"
+                                                          (a-stage "DoStuff"))))
+                  (a-short-history "Build" "DoStuff"
+                                   (a-stage-run 42 "2" "Passed"
+                                                (a-job-run "AlphaJob" 1493201298062 321)))
+                  (a-pipeline-run "Build" 42)
+                  (a-builds-properties 321
+                                       {:start-time (t/date-time 2017 1 1 10 0 0)
+                                        :end-time (t/date-time 2017 1 1 12 0)
+                                        :outcome "Passed"
+                                        :actual-stage-run "2"})
+                  (a-file-list "Build" 42 "DoStuff" "1" "AlphaJob")
+                  (provide-buildviz-and-capture-puts store))
+        (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
+                                       (url/url "http://buildviz:8010")
+                                       beginning-of-2016 nil nil)))
+      (is (= ["/builds/Build%20%3A%3A%20DoStuff/42%20%28Run%202%29"]
+             (map first @store)))))
 
   (testing "should sync a failing stage"
     (let [store (atom [])]
@@ -169,10 +192,10 @@
         (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
                                        (url/url "http://buildviz:8010")
                                        beginning-of-2016 nil nil)))
-      (is (= [["/builds/Build%20%3A%3A%20DoStuff/42%201" {:start 1483264800000
-                                                          :end 1483272000000
-                                                          :outcome "fail"
-                                                          :inputs []}]]
+      (is (= [["/builds/Build%20%3A%3A%20DoStuff/42" {:start 1483264800000
+                                                      :end 1483272000000
+                                                      :outcome "fail"
+                                                      :inputs []}]]
              @store))))
 
   (testing "should ignore an ongoing stage"
@@ -237,7 +260,7 @@
         (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
                                        (url/url "http://buildviz:8010")
                                        beginning-of-2016 nil nil)))
-      (is (= ["/builds/Build%20%3A%3A%20SomeMore/42%201"]
+      (is (= ["/builds/Build%20%3A%3A%20SomeMore/42"]
              (map first @store)))))
 
   (testing "should sync test results"
@@ -263,8 +286,8 @@
         (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
                                        (url/url "http://buildviz:8010")
                                        beginning-of-2016 nil nil)))
-      (is (= [["/builds/Build%20%3A%3A%20DoStuff/42%201/testresults" "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites></testsuites>"]]
-             (filter (fn [[path payload]] (= path "/builds/Build%20%3A%3A%20DoStuff/42%201/testresults"))
+      (is (= [["/builds/Build%20%3A%3A%20DoStuff/42/testresults" "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites></testsuites>"]]
+             (filter (fn [[path payload]] (= path "/builds/Build%20%3A%3A%20DoStuff/42/testresults"))
                      @store)))))
 
   (testing "should sync multiple test results in one job"
@@ -292,9 +315,9 @@
         (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
                                        (url/url "http://buildviz:8010")
                                        beginning-of-2016 nil nil)))
-      (is (= [["/builds/Build%20%3A%3A%20DoStuff/42%201/testresults"
+      (is (= [["/builds/Build%20%3A%3A%20DoStuff/42/testresults"
                "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"one\"></testsuite><testsuite name=\"other\"></testsuite></testsuites>"]]
-             (filter (fn [[path payload]] (= path "/builds/Build%20%3A%3A%20DoStuff/42%201/testresults"))
+             (filter (fn [[path payload]] (= path "/builds/Build%20%3A%3A%20DoStuff/42/testresults"))
                      @store)))))
 
   (testing "should combine test results for two jobs"
@@ -325,9 +348,9 @@
         (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
                                        (url/url "http://buildviz:8010")
                                        beginning-of-2016 nil nil)))
-      (is (= [["/builds/Build%20%3A%3A%20DoStuff/42%201/testresults"
+      (is (= [["/builds/Build%20%3A%3A%20DoStuff/42/testresults"
                "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"Alpha\"></testsuite><testsuite name=\"Beta\"></testsuite></testsuites>"]]
-             (filter (fn [[path payload]] (= path "/builds/Build%20%3A%3A%20DoStuff/42%201/testresults"))
+             (filter (fn [[path payload]] (= path "/builds/Build%20%3A%3A%20DoStuff/42/testresults"))
                      @store)))))
 
   (testing "should not store test results if one job has invalid XML"
@@ -359,7 +382,7 @@
                                        (url/url "http://buildviz:8010")
                                        beginning-of-2016 nil nil)))
       (is (= []
-             (filter (fn [[path payload]] (= path "/builds/Build%20%3A%3A%20DoStuff/42%201/testresults"))
+             (filter (fn [[path payload]] (= path "/builds/Build%20%3A%3A%20DoStuff/42/testresults"))
                      @store)))))
 
   (testing "should store test results even if one job has no XML"
@@ -386,7 +409,7 @@
         (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
                                        (url/url "http://buildviz:8010")
                                        beginning-of-2016 nil nil)))
-      (is (= [["/builds/Build%20%3A%3A%20DoStuff/42%201/testresults"
+      (is (= [["/builds/Build%20%3A%3A%20DoStuff/42/testresults"
                "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"Alpha\"></testsuite></testsuites>"]]
-             (filter (fn [[path payload]] (= path "/builds/Build%20%3A%3A%20DoStuff/42%201/testresults"))
+             (filter (fn [[path payload]] (= path "/builds/Build%20%3A%3A%20DoStuff/42/testresults"))
                      @store))))))
