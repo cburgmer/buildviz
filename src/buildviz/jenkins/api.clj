@@ -8,7 +8,8 @@
 
 (defn- get-json [jenkins-url relative-url]
   (log/info (format "Retrieving %s" relative-url))
-  (j/parse-string (:body (client/get (string/join [(url/with-plain-text-password jenkins-url) relative-url]))) true))
+  (j/parse-string (:body (client/get (string/join [(url/with-plain-text-password jenkins-url) relative-url])
+                                     {:client-params {"http.useragent" "buildviz (https://github.com/cburgmer/buildviz)"}})) true))
 
 (defn get-jobs [jenkins-url]
   (let [response (get-json jenkins-url "/api/json")]

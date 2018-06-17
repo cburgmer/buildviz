@@ -10,7 +10,9 @@
   (log/info (format "Retrieving %s" relative-url))
   (j/parse-string (:body (client/get (string/join [(url/with-plain-text-password teamcity-url)
                                                    relative-url])
-                                     {:accept "application/json"})) true))
+                                     {:accept "application/json"
+                                      :client-params {"http.useragent" "buildviz (https://github.com/cburgmer/buildviz)"}}))
+                  true))
 
 (defn get-jobs [teamcity-url project-id]
   (let [response (get-json teamcity-url (templ/uritemplate "/httpAuth/app/rest/projects{/project}"
