@@ -41,6 +41,18 @@ sync_builds() {
     "${SCRIPT_DIR}/../../lein" run -m buildviz.go.sync "$SYNC_URL" --buildviz="$BUILDVIZ_BASE_URL" --from 2000-01-01
 }
 
+ensure_user_agent() {
+    local count_request='{"method": "GET", "url": "/go/api/config/pipeline_groups", "headers": {"User-Agent": {"matches": "buildviz.*"}}}'
+    local count_response
+    count_response=$(echo "$count_request" | curl -X POST -d@- "${WIREMOCK_BASE_URL}/__admin/requests/count")
+    if ! grep '"count" : 1' <<<"$count_response" > /dev/null; then
+        echo "User agent not found:"
+        echo "$count_response"
+        exit 1
+    fi
+
+}
+
 clean_up() {
     stop_buildviz
     stop_wiremock
@@ -63,6 +75,8 @@ main() {
     start_wiremock
 
     sync_builds
+
+    ensure_user_agent
 }
 
 main
