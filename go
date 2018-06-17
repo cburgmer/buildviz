@@ -19,6 +19,8 @@ goal_test_integration() {
     "${SCRIPT_DIR}/test/integration/test_gocd.sh"
     echo "Testing buildviz.jenkins.sync"
     "${SCRIPT_DIR}/test/integration/test_jenkins.sh"
+    echo "Testing buildviz.teamcity.sync"
+    "${SCRIPT_DIR}/test/integration/test_teamcity.sh"
 }
 
 goal_test_example() {
