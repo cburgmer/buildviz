@@ -169,6 +169,11 @@
     (map make-file-url-path-only
          (mapcat filter-xml-files file-tree))))
 
+(defn- is-junit-xml? [content]
+  (re-find #"^(<\?[^>]+\?>)?(\s+|<!--.*-->)*<testsuite" content))
+
 (defn get-junit-xml [go-url job-instance]
   (when-let [xml-file-urls (seq (xml-artifacts-for-job-run go-url job-instance))]
-    (map #(get-plain go-url %) xml-file-urls)))
+    (->> xml-file-urls
+         (map #(get-plain go-url %))
+         (filter is-junit-xml?))))
