@@ -2,13 +2,11 @@ version: "2.4"
 
 services:
   buildviz:
-    build: buildviz
     volumes:
       - ./data:/buildviz/data
     image: cburgmer/buildviz
 
   sync:
-    build: buildviz
     command: schedule buildviz.teamcity.sync "https://guest@teamcity.jetbrains.com" --project KotlinTools --buildviz http://buildviz:3000
     restart: always
     image: cburgmer/buildviz

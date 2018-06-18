@@ -59,7 +59,38 @@ goal_make_release() {
         git commit -m "Bump version"
         git show
         git tag "$NEW_VERSION"
+        echo
+        echo "You now want to"
+        echo "$ git push origin master --tags"
+        echo "./go publish_docker ${NEW_VERSION} # once travis has built the jar"
     )
+}
+
+fetch_buildviz_jar() {
+    local version="$1"
+    (
+        cd src/docker
+        rm -f buildviz-*-standalone.jar
+        curl -LO "https://github.com/cburgmer/buildviz/releases/download/${version}/buildviz-${version}-standalone.jar"
+    )
+}
+
+goal_publish_docker() {
+    local latest_version="$1"
+    local image_name="cburgmer/buildviz"
+
+    if [[ -z "$latest_version" ]]; then
+        echo "Please provide a version number"
+        exit 1
+    fi
+
+    echo "Logged into docker registry?"
+    read -rn 1
+
+    fetch_buildviz_jar "$latest_version"
+    docker build src/docker --tag "${image_name}:${latest_version}" --tag "${image_name}:latest"
+    docker push "${image_name}:${latest_version}"
+    docker push "${image_name}:latest"
 }
 
 print_usage() {
