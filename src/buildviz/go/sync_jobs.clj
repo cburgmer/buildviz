@@ -57,11 +57,17 @@
     (assoc stage-instance :inputs inputs)))
 
 
-(defn- select-stages [filter-groups stages]
-  (if (seq filter-groups)
-    (filter #(contains? filter-groups (:group %)) stages)
-    stages))
+(defn- select-pipelines [selected-groups pipelines]
+  (if (seq selected-groups)
+    (filter #(contains? selected-groups (:group %)) pipelines)
+    pipelines))
 
+(defn- pipeline->stages [{pipeline-name :name stages :stages}]
+  (->> stages
+       (map :name)
+       (map #(assoc {}
+                    :stage %
+                    :pipeline pipeline-name))))
 
 ;; upload
 
@@ -119,22 +125,23 @@
 
 ;; run
 
-(defn- emit-start [go-url buildviz-url sync-start-time pipeline-stages]
-  (println "Go" (str go-url) (distinct (map :group pipeline-stages)) "-> buildviz" (str buildviz-url))
+(defn- emit-start [go-url buildviz-url sync-start-time pipelines]
+  (println "Go" (str go-url) (distinct (map :group pipelines)) "-> buildviz" (str buildviz-url))
   (print (format "Finding all pipeline runs for syncing (starting from %s)..."
                  (tf/unparse (:date-time tf/formatters) sync-start-time)))
   (flush)
 
-  pipeline-stages)
+  pipelines)
 
 (defn- emit-sync-start [pipeline-stages]
   (println "done")
   pipeline-stages)
 
 (defn sync-stages [go-url buildviz-url sync-start-time sync-jobs-for-pipelines selected-pipeline-group-names]
-  (->> (goapi/get-stages go-url)
-       (select-stages selected-pipeline-group-names)
+  (->> (goapi/get-pipelines go-url)
+       (select-pipelines selected-pipeline-group-names)
        (emit-start go-url buildviz-url sync-start-time)
+       (mapcat pipeline->stages)
        (mapcat #(stage-instances-from go-url sync-start-time %))
        (sort-by :scheduled-time)
        (take-while :finished)

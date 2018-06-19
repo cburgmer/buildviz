@@ -107,21 +107,12 @@
 
 ;; /api/config/pipeline_groups
 
-(defn- stages-for-pipeline [{pipeline-name :name stages :stages}]
-  (->> stages
-       (map :name)
-       (map #(assoc {}
-                    :stage %
-                    :pipeline pipeline-name))))
+(defn- groups->pipelines [{group-name :name pipelines :pipelines}]
+  (map #(assoc % :group group-name) pipelines))
 
-(defn- stages-for-pipeline-group [{group-name :name pipelines :pipelines}]
-  (->> pipelines
-       (mapcat stages-for-pipeline)
-       (map #(assoc % :group group-name))))
-
-(defn get-stages [go-url]
+(defn get-pipelines [go-url]
   (let [pipeline-groups (get-json go-url "/api/config/pipeline_groups")]
-    (mapcat stages-for-pipeline-group pipeline-groups)))
+    (mapcat groups->pipelines pipeline-groups)))
 
 
 ;; /files/%pipeline/%run/%stage/%run/%job.json
