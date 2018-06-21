@@ -11,7 +11,8 @@ readonly BUILDVIZ_PORT="3352"
 
 readonly WIREMOCK_BASE_URL="http://localhost:${WIREMOCK_PORT}"
 readonly BUILDVIZ_BASE_URL="http://localhost:${BUILDVIZ_PORT}"
-readonly SYNC_URL="http://admin:admin@localhost:${WIREMOCK_PORT}"
+readonly SYNC_URL="http://localhost:${WIREMOCK_PORT}"
+
 
 readonly MAPPING_TMP_DIR="/tmp/record.wiremock.$$"
 

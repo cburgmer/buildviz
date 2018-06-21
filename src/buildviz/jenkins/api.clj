@@ -6,10 +6,18 @@
             [clojure.tools.logging :as log]
             [uritemplate-clj.core :as templ]))
 
+(def ^:private jenkins-user (System/getenv "JENKINS_USER"))
+(def ^:private jenkins-password (System/getenv "JENKINS_PASSWORD"))
+(def ^:private jenkins-basic-auth (when jenkins-user
+                                    [jenkins-user jenkins-password]))
+
 (defn- get-json [jenkins-url relative-url]
   (log/info (format "Retrieving %s" relative-url))
-  (j/parse-string (:body (client/get (string/join [(url/with-plain-text-password jenkins-url) relative-url])
-                                     {:client-params {"http.useragent" "buildviz (https://github.com/cburgmer/buildviz)"}})) true))
+  (let [response (client/get (string/join [(url/with-plain-text-password jenkins-url) relative-url])
+                             {:client-params {"http.useragent" "buildviz (https://github.com/cburgmer/buildviz)"}
+                              :basic-auth jenkins-basic-auth})]
+    (log/info (format "Retrieved %s: %s" relative-url (:status response)))
+    (j/parse-string (:body response) true)))
 
 (defn get-jobs [jenkins-url]
   (let [response (get-json jenkins-url "/api/json")]

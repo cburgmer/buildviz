@@ -6,13 +6,20 @@
             [clojure.tools.logging :as log]
             [uritemplate-clj.core :as templ]))
 
+(def ^:private teamcity-user (System/getenv "TEAMCITY_USER"))
+(def ^:private teamcity-password (System/getenv "TEAMCITY_PASSWORD"))
+(def ^:private teamcity-basic-auth (when teamcity-user
+                                     [teamcity-user teamcity-password]))
+
 (defn- get-json [teamcity-url relative-url]
   (log/info (format "Retrieving %s" relative-url))
-  (j/parse-string (:body (client/get (string/join [(url/with-plain-text-password teamcity-url)
-                                                   relative-url])
-                                     {:accept "application/json"
-                                      :client-params {"http.useragent" "buildviz (https://github.com/cburgmer/buildviz)"}}))
-                  true))
+  (let [response (client/get (string/join [(url/with-plain-text-password teamcity-url)
+                                           relative-url])
+                             {:accept "application/json"
+                              :client-params {"http.useragent" "buildviz (https://github.com/cburgmer/buildviz)"}
+                              :basic-auth teamcity-basic-auth})]
+    (log/info (format "Retrieved %s: %s" relative-url (:status response)))
+    (j/parse-string (:body response) true)))
 
 (defn get-jobs [teamcity-url project-id]
   (let [response (get-json teamcity-url (templ/uritemplate "/httpAuth/app/rest/projects{/project}"
