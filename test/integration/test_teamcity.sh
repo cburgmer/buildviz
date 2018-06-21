@@ -12,6 +12,8 @@ readonly BUILDVIZ_PORT="3352"
 readonly WIREMOCK_BASE_URL="http://localhost:${WIREMOCK_PORT}"
 readonly BUILDVIZ_BASE_URL="http://localhost:${BUILDVIZ_PORT}"
 readonly SYNC_URL="http://localhost:${WIREMOCK_PORT}"
+readonly SYNC_USER="admin"
+readonly SYNC_PASSWORD="admin"
 
 
 readonly MAPPING_TMP_DIR="/tmp/record.wiremock.$$"
@@ -39,15 +41,27 @@ stop_wiremock() {
 }
 
 sync_builds() {
-    "${SCRIPT_DIR}/../../lein" run -m buildviz.teamcity.sync "$SYNC_URL" --buildviz="$BUILDVIZ_BASE_URL" --from 2000-01-01 -p SimpleSetup
+    TEAMCITY_USER="$SYNC_USER" TEAMCITY_PASSWORD="$SYNC_PASSWORD" "${SCRIPT_DIR}/../../lein" run -m buildviz.teamcity.sync "$SYNC_URL" --buildviz="$BUILDVIZ_BASE_URL" --from 2000-01-01 -p SimpleSetup
 }
 
 ensure_user_agent() {
     local count_request='{"method": "GET", "url": "/httpAuth/app/rest/projects/SimpleSetup", "headers": {"User-Agent": {"matches": "buildviz.*"}}}'
     local count_response
-    count_response=$(echo "$count_request" | curl -X POST -d@- "${WIREMOCK_BASE_URL}/__admin/requests/count")
+    count_response=$(echo "$count_request" | curl -s -X POST -d@- "${WIREMOCK_BASE_URL}/__admin/requests/count")
     if ! grep '"count" : 1' <<<"$count_response" > /dev/null; then
         echo "User agent not found:"
+        echo "$count_response"
+        exit 1
+    fi
+
+}
+
+ensure_basic_auth() {
+    local count_request='{"method": "GET", "url": "/httpAuth/app/rest/projects/SimpleSetup", "headers": {"Authorization": {"matches": "Basic YWRtaW46YWRtaW4="}}}'
+    local count_response
+    count_response=$(echo "$count_request" | curl -s -X POST -d@- "${WIREMOCK_BASE_URL}/__admin/requests/count")
+    if ! grep '"count" : 1' <<<"$count_response" > /dev/null; then
+        echo "Basic auth not found:"
         echo "$count_response"
         exit 1
     fi
@@ -78,6 +92,7 @@ main() {
     sync_builds
 
     ensure_user_agent
+    ensure_basic_auth
 }
 
 main

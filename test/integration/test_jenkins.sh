@@ -38,15 +38,27 @@ stop_wiremock() {
 }
 
 sync_builds() {
-    "${SCRIPT_DIR}/../../lein" run -m buildviz.jenkins.sync "$SYNC_URL" --buildviz="$BUILDVIZ_BASE_URL" --from 2000-01-01
+    JENKINS_USER="my_user" JENKINS_PASSWORD="my_password" "${SCRIPT_DIR}/../../lein" run -m buildviz.jenkins.sync "$SYNC_URL" --buildviz="$BUILDVIZ_BASE_URL" --from 2000-01-01
 }
 
 ensure_user_agent() {
     local count_request='{"method": "GET", "url": "/api/json", "headers": {"User-Agent": {"matches": "buildviz.*"}}}'
     local count_response
-    count_response=$(echo "$count_request" | curl -X POST -d@- "${WIREMOCK_BASE_URL}/__admin/requests/count")
+    count_response=$(echo "$count_request" | curl -s -X POST -d@- "${WIREMOCK_BASE_URL}/__admin/requests/count")
     if ! grep '"count" : 1' <<<"$count_response" > /dev/null; then
         echo "User agent not found:"
+        echo "$count_response"
+        exit 1
+    fi
+
+}
+
+ensure_basic_auth() {
+    local count_request='{"method": "GET", "url": "/api/json", "headers": {"Authorization": {"matches": "Basic bXlfdXNlcjpteV9wYXNzd29yZA=="}}}'
+    local count_response
+    count_response=$(echo "$count_request" | curl -s -X POST -d@- "${WIREMOCK_BASE_URL}/__admin/requests/count")
+    if ! grep '"count" : 1' <<<"$count_response" > /dev/null; then
+        echo "Basic auth not found:"
         echo "$count_response"
         exit 1
     fi
@@ -77,6 +89,7 @@ main() {
     sync_builds
 
     ensure_user_agent
+    ensure_basic_auth
 }
 
 main
