@@ -21,7 +21,7 @@ clean_up() {
 main() {
     ensure_port_available
 
-    echo "This example will download and install Jenkins in a VirtualBox and then sync its output to buildviz"
+    echo "This example will download and install Jenkins via Docker and then sync its output to buildviz"
     echo
     echo "Press any key to continue"
 
