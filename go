@@ -62,7 +62,7 @@ goal_make_release() {
         echo
         echo "You now want to"
         echo "$ git push origin master --tags"
-        echo "./go publish_docker ${NEW_VERSION} # once travis has built the jar"
+        echo "$ ./go publish_docker ${NEW_VERSION} # once travis has built the jar"
     )
 }
 
