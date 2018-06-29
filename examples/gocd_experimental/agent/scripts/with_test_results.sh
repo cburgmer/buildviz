@@ -6,6 +6,12 @@ is_successful() {
     test "$outcome" -ne 0
 }
 
+simulate_runtime() {
+    local runtime=$(( RANDOM % 20 ))
+    echo "Sleeping ${runtime}s"
+    sleep "$runtime"
+}
+
 test_results() {
     local outcome="$1"
     local failure=""
@@ -39,8 +45,11 @@ EOF
 }
 
 main() {
+    local fail_every_run_no="$1"
     local outcome
-    outcome=$((GO_PIPELINE_COUNTER % 3))
+    outcome=$((GO_PIPELINE_COUNTER % fail_every_run_no))
+
+    simulate_runtime
 
     test_results "$outcome" > results.xml
     is_successful "$outcome"

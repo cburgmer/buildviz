@@ -6,17 +6,63 @@
       <materials>
         <git url="https://github.com/cburgmer/buildviz.git" shallowClone="true" autoUpdate="false" />
       </materials>
-      <stage name="defaultStage" fetchMaterials="false">
+      <stage name="test" fetchMaterials="false">
         <jobs>
           <job name="defaultJob">
             <tasks>
-              <exec command="/scripts/with_test_results.sh">
+              <exec command="/bin/sh">
+                <arg>/scripts/with_test_results.sh</arg>
+                <arg>4</arg>
                 <runif status="passed" />
               </exec>
             </tasks>
             <artifacts>
               <artifact type="test" src="results.xml" dest="results.xml" />
             </artifacts>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="deploy" fetchMaterials="false">
+        <jobs>
+          <job name="deploy">
+            <tasks>
+              <exec command="/bin/sh">
+                <arg>/scripts/simple_job.sh</arg>
+                <arg>3</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="smokeTest" fetchMaterials="false">
+        <jobs>
+          <job name="smokeTest">
+            <tasks>
+              <exec command="/bin/sh">
+                <arg>/scripts/simple_job.sh</arg>
+                <arg>2</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+    </pipeline>
+    <pipeline name="anotherPipeline">
+      <materials>
+        <git url="https://github.com/cburgmer/buildviz.git" shallowClone="true" autoUpdate="false" />
+        <pipeline pipelineName="Example" stageName="test" materialName="results.xml" />
+      </materials>
+      <stage name="defaultStage">
+        <jobs>
+          <job name="defaultJob">
+            <tasks>
+              <exec command="/bin/sh">
+                <arg>/scripts/simple_job.sh</arg>
+                <arg>2</arg>
+              </exec>
+            </tasks>
           </job>
         </jobs>
       </stage>
