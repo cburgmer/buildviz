@@ -38,26 +38,47 @@ container_exists() {
     fi
 }
 
-goal_start() {
-    if ! container_exists; then
-        announce "Provisioning docker image"
-        echo
+provision_gocd() {
+    # Wonky workaround for trying to boot up server image with minimal config, but no agent registration
+    mkdir -p server/config
+    cp server/*.xml server/config
 
-        # Wonky workaround for trying to boot up server image with minimal config, but no agent registration
-        mkdir -p server/config
-        cp server/*.xml server/config
+    docker-compose up --no-start
+}
 
-        docker-compose up --no-start
-
-        echo "done"
-    fi
-
+start_gocd() {
     announce "Starting docker image"
     docker-compose up -d &> "$TMP_LOG"
 
     wait_for_server "$BASE_URL"
     echo " done"
     rm "$TMP_LOG"
+}
+
+wait_for_pipeline_to_be_schedulable() {
+    until curl --silent --fail "${BASE_URL}/api/pipelines/Example/status" | grep '"schedulable":true' > /dev/null; do
+        printf '.'
+        sleep 5
+    done
+}
+
+goal_start() {
+    local run
+    if ! container_exists; then
+        announce "Provisioning docker image"
+        echo
+        provision_gocd
+        start_gocd
+
+        for run in 1 2 3 4 5; do
+            announce "Scheduling run ${run}"
+            wait_for_pipeline_to_be_schedulable
+            curl --fail --silent -X POST "${BASE_URL}/api/pipelines/Example/schedule" -H 'Accept: application/vnd.go.cd.v1+json' -H "X-GoCD-Confirm: true" > /dev/null
+            echo
+        done
+    else
+        start_gocd
+    fi
 }
 
 

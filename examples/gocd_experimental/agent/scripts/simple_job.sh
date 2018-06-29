@@ -7,7 +7,7 @@ is_successful() {
 }
 
 simulate_runtime() {
-    local runtime=$(( RANDOM % 20 ))
+    local runtime=$(( RANDOM % 10 ))
     echo "Sleeping ${runtime}s"
     sleep "$runtime"
 }
