@@ -50,9 +50,20 @@
    [(format "http://gocd:8513/api/stages/%s/%s/history/%s" pipeline-name stage-name (count stage-runs))
     (successful-json-response {:stages '()})]])
 
-(defn- a-material-revision [revision id]
+(defn- a-simple-build-cause [revision id]
   {:modifications [{:revision revision}]
-   :material {:id id}})
+   :material {:id id}
+   :changed false})
+
+(defn- a-source-revision-build-cause [id revision]
+  {:material {:id id :type "Git"}
+   :modifications [{:revision revision}]
+   :changed true})
+
+(defn- a-pipeline-build-cause [id pipeline-name pipeline-run stage-name stage-run]
+  {:material {:id id :type "Pipeline"}
+   :modifications [{:revision (format "%s/%d/%s/%d" pipeline-name pipeline-run stage-name stage-run)}]
+   :changed true})
 
 (defn- a-pipeline-run [pipeline-name pipeline-run & revisions]
   [[(format "http://gocd:8513/api/pipelines/%s/instance/%s" pipeline-name pipeline-run)
@@ -132,7 +143,7 @@
                                    (a-stage-run 42 "1" "Passed"
                                                 (a-job-run "AlphaJob" 1493201298062 321)))
                   (a-pipeline-run "Build" 42
-                                  (a-material-revision "AnotherPipeline/21" 7))
+                                  (a-simple-build-cause "AnotherPipeline/21" 7))
                   (a-builds-properties 321
                                        {:start-time (t/date-time 2017 1 1 10 0 0)
                                         :end-time (t/date-time 2017 1 1 12 0)
@@ -148,6 +159,60 @@
                                                       :outcome "pass"
                                                       :inputs [{:revision "AnotherPipeline/21", :sourceId 7}]}]]
              @store))))
+
+  (testing "should sync a build trigger from another pipeline"
+    (let [store (atom [])]
+      (fake/with-fake-routes-in-isolation
+        (serve-up (a-config (a-pipeline-group "Development"
+                                              (a-pipeline "Build"
+                                                          (a-stage "DoStuff"))))
+                  (a-short-history "Build" "DoStuff"
+                                   (a-stage-run 42 "1" "Passed"
+                                                (a-job-run "AlphaJob" 1493201298062 321)))
+                  (a-pipeline-run "Build" 42
+                                  (a-pipeline-build-cause 7 "AnotherPipeline" 21 "AnotherStage" 2))
+                  (a-builds-properties 321
+                                       {:start-time (t/date-time 2017 1 1 10 0 0)
+                                        :end-time (t/date-time 2017 1 1 12 0)
+                                        :outcome "Passed"
+                                        :actual-stage-run "1"})
+                  (a-file-list "Build" 42 "DoStuff" "1" "AlphaJob")
+                  (provide-buildviz-and-capture-puts store))
+        (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
+                                       (url/url "http://buildviz:8010")
+                                       beginning-of-2016 nil nil)))
+      (is (= [{:job-name "AnotherPipeline :: AnotherStage"
+               :build-id "21 (Run 2)"}]
+             (-> @store
+                 first
+                 second
+                 :triggered-by)))))
+
+  (testing "should not count a source revision cause as pipeline trigger"
+    (let [store (atom [])]
+      (fake/with-fake-routes-in-isolation
+        (serve-up (a-config (a-pipeline-group "Development"
+                                              (a-pipeline "Build"
+                                                          (a-stage "DoStuff"))))
+                  (a-short-history "Build" "DoStuff"
+                                   (a-stage-run 42 "1" "Passed"
+                                                (a-job-run "AlphaJob" 1493201298062 321)))
+                  (a-pipeline-run "Build" 42
+                                  (a-source-revision-build-cause 7 "abcd"))
+                  (a-builds-properties 321
+                                       {:start-time (t/date-time 2017 1 1 10 0 0)
+                                        :end-time (t/date-time 2017 1 1 12 0)
+                                        :outcome "Passed"
+                                        :actual-stage-run "1"})
+                  (a-file-list "Build" 42 "DoStuff" "1" "AlphaJob")
+                  (provide-buildviz-and-capture-puts store))
+        (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
+                                       (url/url "http://buildviz:8010")
+                                       beginning-of-2016 nil nil)))
+      (is (nil? (-> @store
+                    first
+                    second
+                    :triggered-by)))))
 
   (testing "should handle a rerun"
     (let [store (atom [])]
@@ -273,7 +338,7 @@
                                    (a-stage-run 42 "1" "Passed"
                                                 (a-job-run "AlphaJob" 1493201298062 321)))
                   (a-pipeline-run "Build" 42
-                                  (a-material-revision "AnotherPipeline/21" 7))
+                                  (a-simple-build-cause "AnotherPipeline/21" 7))
                   (a-builds-properties 321 {})
                   (a-file-list "Build" 42 "DoStuff" "1" "AlphaJob"
                                {:files [{:name "dontcare.log"
@@ -300,7 +365,7 @@
                                    (a-stage-run 42 "1" "Passed"
                                                 (a-job-run "AlphaJob" 1493201298062 321)))
                   (a-pipeline-run "Build" 42
-                                  (a-material-revision "AnotherPipeline/21" 7))
+                                  (a-simple-build-cause "AnotherPipeline/21" 7))
                   (a-builds-properties 321 {})
                   (a-file-list "Build" 42 "DoStuff" "1" "AlphaJob"
                                {:name "one_result.xml"
@@ -331,7 +396,7 @@
                                                 (a-job-run "AlphaJob" 1493201298062 321)
                                                 (a-job-run "BetaJob" 1493201298062 987)))
                   (a-pipeline-run "Build" 42
-                                  (a-material-revision "AnotherPipeline/21" 7))
+                                  (a-simple-build-cause "AnotherPipeline/21" 7))
                   (a-builds-properties 321 {})
                   (a-builds-properties 987 {})
                   (a-file-list "Build" 42 "DoStuff" "1" "AlphaJob"
@@ -364,7 +429,7 @@
                                                 (a-job-run "AlphaJob" 1493201298062 321)
                                                 (a-job-run "BetaJob" 1493201298062 987)))
                   (a-pipeline-run "Build" 42
-                                  (a-material-revision "AnotherPipeline/21" 7))
+                                  (a-simple-build-cause "AnotherPipeline/21" 7))
                   (a-builds-properties 321 {})
                   (a-builds-properties 987 {})
                   (a-file-list "Build" 42 "DoStuff" "1" "AlphaJob"
@@ -396,7 +461,7 @@
                                                 (a-job-run "AlphaJob" 1493201298062 321)
                                                 (a-job-run "BetaJob" 1493201298062 987)))
                   (a-pipeline-run "Build" 42
-                                  (a-material-revision "AnotherPipeline/21" 7))
+                                  (a-simple-build-cause "AnotherPipeline/21" 7))
                   (a-builds-properties 321 {})
                   (a-builds-properties 987 {})
                   (a-file-list "Build" 42 "DoStuff" "1" "AlphaJob"
@@ -424,7 +489,7 @@
                                    (a-stage-run 42 "1" "Passed"
                                                 (a-job-run "AlphaJob" 1493201298062 321)))
                   (a-pipeline-run "Build" 42
-                                  (a-material-revision "AnotherPipeline/21" 7))
+                                  (a-simple-build-cause "AnotherPipeline/21" 7))
                   (a-builds-properties 321 {})
                   (a-file-list "Build" 42 "DoStuff" "1" "AlphaJob"
                                {:files [{:name "nontest.xml"

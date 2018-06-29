@@ -15,6 +15,17 @@
             [uritemplate-clj.core :as templ])
   (:import [javax.xml.stream.XMLStreamException]))
 
+(defn- job-name [pipeline-name stage-name job-name]
+  (if (= stage-name job-name)
+    (format "%s :: %s" pipeline-name stage-name)
+    (format "%s :: %s :: %s" pipeline-name stage-name job-name)))
+
+(defn- build-id [pipeline-run stage-run]
+  (if (= "1" stage-run)
+    pipeline-run
+    (format "%s (Run %s)" pipeline-run stage-run)))
+
+
 (defn- aggregate-jobs-for-stage-instance [stage-instance sync-jobs-for-pipelines]
   (let [{pipeline-name :pipeline-name} stage-instance]
     (if (contains? sync-jobs-for-pipelines pipeline-name)
@@ -51,10 +62,14 @@
          (map #(assoc % :stage-name stage-name :pipeline-name pipeline-name))
          (take-while #(t/after? (:scheduled-time %) safe-build-start-date)))))
 
-
 (defn- add-inputs-for-stage-instance [go-url {:keys [pipeline-run, pipeline-name] :as stage-instance}]
-  (let [inputs (goapi/get-inputs-for-pipeline-run go-url pipeline-name pipeline-run)]
-    (assoc stage-instance :inputs inputs)))
+  (let [{inputs :inputs
+         triggers :triggers} (goapi/get-inputs-for-pipeline-run go-url pipeline-name pipeline-run)]
+    (assoc stage-instance :inputs inputs
+           :triggered-by (seq (map (fn [{:keys [pipeline-name pipeline-run stage-name stage-run]}]
+                                     {:job-name (job-name pipeline-name stage-name stage-name)
+                                      :build-id (build-id pipeline-run stage-run)})
+                                   triggers)))))
 
 
 (defn- select-pipelines [selected-groups pipelines]
@@ -71,17 +86,7 @@
 
 ;; upload
 
-(defn- job-name [pipeline-name stage-name job-name]
-  (if (= stage-name job-name)
-    (format "%s :: %s" pipeline-name stage-name)
-    (format "%s :: %s :: %s" pipeline-name stage-name job-name)))
-
-(defn- build-id [pipeline-run stage-run]
-  (if (= "1" stage-run)
-    pipeline-run
-    (format "%s (Run %s)" pipeline-run stage-run)))
-
-(defn- stage-instances->builds [{:keys [pipeline-name pipeline-run stage-name stage-run inputs job-instances]}]
+(defn- stage-instances->builds [{:keys [pipeline-name pipeline-run stage-name stage-run inputs triggered-by job-instances]}]
   (map (fn [{outcome :outcome
              start :start
              end :end
@@ -90,10 +95,11 @@
          {:job-name (job-name pipeline-name stage-name name)
           :build-id (build-id pipeline-run stage-run)
           :junit-xml junit-xml
-          :build {:start start
-                  :end end
-                  :outcome outcome
-                  :inputs inputs}})
+          :build (cond-> {:start start
+                          :end end
+                          :outcome outcome
+                          :inputs inputs}
+                   triggered-by (assoc :triggered-by triggered-by))})
        job-instances))
 
 (defn- put-build [buildviz-url job-name build-no build]

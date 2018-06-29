@@ -6,7 +6,7 @@
              [coerce :as tc]
              [format :as tf]]
             [clojure.data.xml :as xml]
-            [clojure.string :as string]
+            [clojure.string :as str]
             [clojure.tools.logging :as log]
             [uritemplate-clj.core :as templ]))
 
@@ -18,7 +18,7 @@
                                  [gocd-user gocd-password]))
 
 (defn- absolute-url-for [go-url relative-url]
-  (string/join [go-url relative-url]))
+  (str/join [go-url relative-url]))
 
 (defn- get-plain [go-url relative-url]
   (log/info (format "Retrieving %s" relative-url))
@@ -103,12 +103,21 @@
   {:revision (:revision (first modifications))
    :sourceId (:id material)})
 
+(defn- pipeline-build-cause [{:keys [modifications material changed]}]
+  (when (and changed (= "Pipeline" (:type material)))
+    (let [revision-tokens (str/split (:revision (first modifications)) #"/")]
+      {:pipeline-name (nth revision-tokens 0)
+       :pipeline-run (nth revision-tokens 1)
+       :stage-name (nth revision-tokens 2)
+       :stage-run (nth revision-tokens 3)})))
+
 (defn get-inputs-for-pipeline-run [go-url pipeline-name run]
   (let [pipeline-instance (get-json go-url (templ/uritemplate "/api/pipelines{/pipeline}/instance{/run}"
                                                               {"pipeline" pipeline-name
                                                                "run" run}))
         revisions (:material_revisions (:build_cause pipeline-instance))]
-    (map revision->input revisions)))
+    {:inputs (map revision->input revisions)
+     :triggers (keep pipeline-build-cause revisions)}))
 
 
 ;; /api/config/pipeline_groups
@@ -136,9 +145,9 @@
 (defn- make-file-url-path-only [url]
   ;; Transform to path-only url so basic auth as provided by the user can be used.
   ;; Also works around broken Go domain setup
-  (string/replace url
-                  #"https?://[^/]+(/.+?)?/files/"
-                  "/files/"))
+  (str/replace url
+               #"https?://[^/]+(/.+?)?/files/"
+               "/files/"))
 
 (defn- force-evaluate-json [json]
   (doall json))
