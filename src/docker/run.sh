@@ -2,11 +2,11 @@
 set -e
 
 goal_server() {
-    java -jar ${BUILDVIZ_SERVER_DIR}/${BUILDVIZ_JAR}
+    java -jar "${BUILDVIZ_SERVER_DIR}/${BUILDVIZ_JAR}"
 }
 
 goal_do() {
-    java -cp ${BUILDVIZ_SERVER_DIR}/${BUILDVIZ_JAR} "$@"
+    java -cp "${BUILDVIZ_SERVER_DIR}/${BUILDVIZ_JAR}" "$@"
 }
 
 goal_schedule() {

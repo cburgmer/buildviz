@@ -4,7 +4,7 @@ set -e
 readonly SCRIPT_DIR=$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)
 
 goal_lint() {
-    shellcheck examples/**/*.sh examples/*.sh test/integration/*.sh
+    find . -name "*.sh" -not -path "./test/node_modules/*" | xargs shellcheck
 }
 
 goal_test_unit() {
