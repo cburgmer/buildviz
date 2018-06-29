@@ -12,7 +12,7 @@ services:
     image: gocd/gocd-agent-alpine-3.7:v18.6.0
     restart: always
     volumes:
-      - ./agent/scripts:/scripts
+      - ./scripts:/scripts
     environment:
       GO_SERVER_URL: "https://server:8154/go"
       AGENT_AUTO_REGISTER_KEY: "ab455494-52a3-4ce7-b0cc-d38fbdc0aea9"

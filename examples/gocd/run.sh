@@ -30,8 +30,15 @@ hint_at_logs() {
     fi
 }
 
+docker_compose() {
+    (
+        cd "$SCRIPT_DIR"
+        docker-compose "$@"
+    )
+}
+
 container_exists() {
-    if [[ -z $(docker-compose ps -q) ]]; then
+    if [[ -z $(docker_compose ps -q) ]]; then
         return 1
     else
         return 0
@@ -39,16 +46,17 @@ container_exists() {
 }
 
 provision_gocd() {
+    local server_path="${SCRIPT_DIR}/server"
     # Wonky workaround for trying to boot up server image with minimal config, but no agent registration
-    mkdir -p server/config
-    cp server/*.xml server/config
+    mkdir -p "${server_path}/config"
+    cp "$server_path"/*.xml "${server_path}/config"
 
-    docker-compose up --no-start
+    docker_compose up --no-start
 }
 
 start_gocd() {
     announce "Starting docker image"
-    docker-compose up -d &> "$TMP_LOG"
+    docker_compose up -d &> "$TMP_LOG"
 
     wait_for_server "$BASE_URL"
     echo " done"
@@ -84,14 +92,14 @@ goal_start() {
 
 goal_stop() {
     announce "Stopping docker image"
-    docker-compose stop &> "$TMP_LOG"
+    docker_compose stop &> "$TMP_LOG"
     echo " done"
     rm "$TMP_LOG"
 }
 
 goal_destroy() {
     announce "Destroying docker container"
-    docker-compose down &> "$TMP_LOG"
+    docker_compose down &> "$TMP_LOG"
     echo " done"
     rm "$TMP_LOG"
 }

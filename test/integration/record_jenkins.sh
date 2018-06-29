@@ -22,11 +22,11 @@ extract_base_url() {
     sed 's/^\(.*\/\/[^\/]*\).*$/\1/'
 }
 
-start_vagrant_image() {
+start_container() {
     "$EXAMPLE_DIR/run.sh" start
 }
 
-stop_vagrant_image() {
+stop_container() {
     "$EXAMPLE_DIR/run.sh" stop
 }
 
@@ -65,7 +65,7 @@ sync_builds() {
 }
 
 clean_up() {
-    stop_vagrant_image
+    stop_container
     stop_buildviz
     stop_wiremock
 }
@@ -83,7 +83,7 @@ main() {
     # Handle Ctrl+C and errors
     trap clean_up EXIT
 
-    start_vagrant_image
+    start_container
     start_buildviz
     start_wiremock
 

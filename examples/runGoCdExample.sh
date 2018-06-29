@@ -14,14 +14,14 @@ ensure_port_available() {
 }
 
 clean_up() {
-    "${SCRIPT_DIR}/go/run.sh" stop
+    "${SCRIPT_DIR}/gocd/run.sh" stop
     "${SCRIPT_DIR}/data/run_buildviz.sh" stop
 }
 
 main() {
     ensure_port_available
 
-    echo "This example will download and install GoCD in a VirtualBox and then sync its output to buildviz"
+    echo "This example will download and install GoCD via Docker and then sync its output to buildviz"
     echo
     echo "Press any key to continue"
 
@@ -30,7 +30,7 @@ main() {
     # Handle Ctrl+C
     trap clean_up EXIT
 
-    "${SCRIPT_DIR}/go/run.sh" start
+    "${SCRIPT_DIR}/gocd/run.sh" start
     PORT="$BUILDVIZ_PORT" "${SCRIPT_DIR}/data/run_buildviz.sh" start
 
     echo "Syncing job history..."
