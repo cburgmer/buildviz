@@ -38,11 +38,13 @@
    :scheduled_date scheduled-date
    :id id})
 
-(defn- a-stage-run [pipeline-run stage-run result & jobs]
-  {:pipeline_counter pipeline-run
-   :counter stage-run
-   :result result
-   :jobs jobs})
+(defn- a-stage-run
+  ([stage-name stage-run] {:name stage-name
+                           :counter stage-run})
+  ([pipeline-run stage-run result & jobs] {:pipeline_counter pipeline-run
+                                           :counter stage-run
+                                           :result result
+                                           :jobs jobs}))
 
 (defn- a-short-history [pipeline-name stage-name & stage-runs]
   [[(format "http://gocd:8513/api/stages/%s/%s/history/0" pipeline-name stage-name)
@@ -65,9 +67,10 @@
    :modifications [{:revision (format "%s/%d/%s/%d" pipeline-name pipeline-run stage-name stage-run)}]
    :changed true})
 
-(defn- a-pipeline-run [pipeline-name pipeline-run & revisions]
+(defn- a-pipeline-run [pipeline-name pipeline-run stages & revisions]
   [[(format "http://gocd:8513/api/pipelines/%s/instance/%s" pipeline-name pipeline-run)
-    (successful-json-response {:build_cause {:material_revisions revisions}})]])
+    (successful-json-response {:stages stages
+                               :build_cause {:material_revisions revisions}})]])
 
 (defn- cruise-property [name value]
   (xml/element :property {:name name} (xml/->CData value)))
@@ -143,6 +146,7 @@
                                    (a-stage-run 42 "1" "Passed"
                                                 (a-job-run "AlphaJob" 1493201298062 321)))
                   (a-pipeline-run "Build" 42
+                                  [(a-stage-run "DoStuff" "1")]
                                   (a-simple-build-cause "AnotherPipeline/21" 7))
                   (a-builds-properties 321
                                        {:start-time (t/date-time 2017 1 1 10 0 0)
@@ -170,6 +174,7 @@
                                    (a-stage-run 42 "1" "Passed"
                                                 (a-job-run "AlphaJob" 1493201298062 321)))
                   (a-pipeline-run "Build" 42
+                                  [(a-stage-run "DoStuff" "1")]
                                   (a-pipeline-build-cause 7 "AnotherPipeline" 21 "AnotherStage" 2))
                   (a-builds-properties 321
                                        {:start-time (t/date-time 2017 1 1 10 0 0)
@@ -198,6 +203,7 @@
                                    (a-stage-run 42 "1" "Passed"
                                                 (a-job-run "AlphaJob" 1493201298062 321)))
                   (a-pipeline-run "Build" 42
+                                  [(a-stage-run "DoStuff" "1")]
                                   (a-source-revision-build-cause 7 "abcd"))
                   (a-builds-properties 321
                                        {:start-time (t/date-time 2017 1 1 10 0 0)
@@ -214,6 +220,80 @@
                     second
                     :triggered-by)))))
 
+  (testing "should sync build trigger from stage of same pipeline"
+    (let [store (atom [])]
+      (fake/with-fake-routes-in-isolation
+        (serve-up (a-config (a-pipeline-group "Development"
+                                              (a-pipeline "Build"
+                                                          (a-stage "DoStuff")
+                                                          (a-stage "MoreStuff"))))
+                  (a-short-history "Build" "DoStuff"
+                                   (a-stage-run 42 "1" "Passed"
+                                                (a-job-run "AlphaJob" 1483261200000 321)))
+                  (a-short-history "Build" "MoreStuff"
+                                   (a-stage-run 42 "1" "Passed"
+                                                (a-job-run "defaultJob" 1483268400099 4711)))
+                  (a-pipeline-run "Build" 42
+                                  [(a-stage-run "DoStuff" "1") (a-stage-run "MoreStuff" "1")])
+                  (a-builds-properties 321
+                                       {:start-time (t/date-time 2017 1 1 10 0 0)
+                                        :end-time (t/date-time 2017 1 1 12 0 0)
+                                        :outcome "Passed"
+                                        :actual-stage-run "1"})
+                  (a-builds-properties 4711
+                                       {:start-time (t/date-time 2017 1 1 12 0 10)
+                                        :end-time (t/date-time 2017 1 1 12 0 50)
+                                        :outcome "Passed"
+                                        :actual-stage-run "1"})
+                  (a-file-list "Build" 42 "DoStuff" "1" "AlphaJob")
+                  (a-file-list "Build" 42 "MoreStuff" "1" "defaultJob")
+                  (provide-buildviz-and-capture-puts store))
+        (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
+                                       (url/url "http://buildviz:8010")
+                                       beginning-of-2016 nil nil)))
+      (is (= [{:job-name "Build :: DoStuff"
+               :build-id "42"}]
+             (-> @store
+                 (nth 1)
+                 second
+                 :triggered-by)))))
+
+  (testing "should not sync build trigger for re-run of stage"
+    (let [store (atom [])]
+      (fake/with-fake-routes-in-isolation
+        (serve-up (a-config (a-pipeline-group "Development"
+                                              (a-pipeline "Build"
+                                                          (a-stage "DoStuff")
+                                                          (a-stage "MoreStuff"))))
+                  (a-short-history "Build" "DoStuff"
+                                   (a-stage-run 42 "1" "Passed"
+                                                (a-job-run "AlphaJob" 1483261200000 321)))
+                  (a-short-history "Build" "MoreStuff"
+                                   (a-stage-run 42 "2" "Passed"
+                                                (a-job-run "defaultJob" 1483268400099 4711)))
+                  (a-pipeline-run "Build" 42
+                                  [(a-stage-run "DoStuff" "1") (a-stage-run "MoreStuff" "2")])
+                  (a-builds-properties 321
+                                       {:start-time (t/date-time 2017 1 1 10 0 0)
+                                        :end-time (t/date-time 2017 1 1 12 0 0)
+                                        :outcome "Passed"
+                                        :actual-stage-run "1"})
+                  (a-builds-properties 4711
+                                       {:start-time (t/date-time 2017 1 1 12 0 10)
+                                        :end-time (t/date-time 2017 1 1 12 0 50)
+                                        :outcome "Passed"
+                                        :actual-stage-run "1"})
+                  (a-file-list "Build" 42 "DoStuff" "1" "AlphaJob")
+                  (a-file-list "Build" 42 "MoreStuff" "1" "defaultJob")
+                  (provide-buildviz-and-capture-puts store))
+        (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
+                                       (url/url "http://buildviz:8010")
+                                       beginning-of-2016 nil nil)))
+      (is (nil? (-> @store
+                    (nth 1)
+                    second
+                    :triggered-by)))))
+
   (testing "should handle a rerun"
     (let [store (atom [])]
       (fake/with-fake-routes-in-isolation
@@ -223,7 +303,7 @@
                   (a-short-history "Build" "DoStuff"
                                    (a-stage-run 42 "2" "Passed"
                                                 (a-job-run "AlphaJob" 1493201298062 321)))
-                  (a-pipeline-run "Build" 42)
+                  (a-pipeline-run "Build" 42 [(a-stage-run "DoStuff" "1")])
                   (a-builds-properties 321
                                        {:start-time (t/date-time 2017 1 1 10 0 0)
                                         :end-time (t/date-time 2017 1 1 12 0)
@@ -246,7 +326,7 @@
                   (a-short-history "Build" "DoStuff"
                                    (a-stage-run 42 "1" "Failed"
                                                 (a-job-run "AlphaJob" 1493201298062 321)))
-                  (a-pipeline-run "Build" 42)
+                  (a-pipeline-run "Build" 42 [(a-stage-run "DoStuff" "1")])
                   (a-builds-properties 321
                                        {:start-time (t/date-time 2017 1 1 10 0 0)
                                         :end-time (t/date-time 2017 1 1 12 0)
@@ -318,7 +398,7 @@
                                                 (a-job-run "SomeJob"
                                                            (tc/to-long beginning-of-2016)
                                                            987)))
-                  (a-pipeline-run "Build" 42)
+                  (a-pipeline-run "Build" 42 [(a-stage-run "DoStuff" "1")])
                   (a-builds-properties 987 {})
                   (a-file-list "Build" 42 "SomeMore" "1" "SomeJob")
                   (provide-buildviz-and-capture-puts store))
@@ -337,8 +417,7 @@
                   (a-short-history "Build" "DoStuff"
                                    (a-stage-run 42 "1" "Passed"
                                                 (a-job-run "AlphaJob" 1493201298062 321)))
-                  (a-pipeline-run "Build" 42
-                                  (a-simple-build-cause "AnotherPipeline/21" 7))
+                  (a-pipeline-run "Build" 42 [(a-stage-run "DoStuff" "1")])
                   (a-builds-properties 321 {})
                   (a-file-list "Build" 42 "DoStuff" "1" "AlphaJob"
                                {:files [{:name "dontcare.log"
@@ -364,8 +443,7 @@
                   (a-short-history "Build" "DoStuff"
                                    (a-stage-run 42 "1" "Passed"
                                                 (a-job-run "AlphaJob" 1493201298062 321)))
-                  (a-pipeline-run "Build" 42
-                                  (a-simple-build-cause "AnotherPipeline/21" 7))
+                  (a-pipeline-run "Build" 42 [(a-stage-run "DoStuff" "1")])
                   (a-builds-properties 321 {})
                   (a-file-list "Build" 42 "DoStuff" "1" "AlphaJob"
                                {:name "one_result.xml"
@@ -395,8 +473,7 @@
                                    (a-stage-run 42 "1" "Passed"
                                                 (a-job-run "AlphaJob" 1493201298062 321)
                                                 (a-job-run "BetaJob" 1493201298062 987)))
-                  (a-pipeline-run "Build" 42
-                                  (a-simple-build-cause "AnotherPipeline/21" 7))
+                  (a-pipeline-run "Build" 42 [(a-stage-run "DoStuff" "1")])
                   (a-builds-properties 321 {})
                   (a-builds-properties 987 {})
                   (a-file-list "Build" 42 "DoStuff" "1" "AlphaJob"
@@ -428,8 +505,7 @@
                                    (a-stage-run 42 "1" "Passed"
                                                 (a-job-run "AlphaJob" 1493201298062 321)
                                                 (a-job-run "BetaJob" 1493201298062 987)))
-                  (a-pipeline-run "Build" 42
-                                  (a-simple-build-cause "AnotherPipeline/21" 7))
+                  (a-pipeline-run "Build" 42 [(a-stage-run "DoStuff" "1")])
                   (a-builds-properties 321 {})
                   (a-builds-properties 987 {})
                   (a-file-list "Build" 42 "DoStuff" "1" "AlphaJob"
@@ -460,8 +536,7 @@
                                    (a-stage-run 42 "1" "Passed"
                                                 (a-job-run "AlphaJob" 1493201298062 321)
                                                 (a-job-run "BetaJob" 1493201298062 987)))
-                  (a-pipeline-run "Build" 42
-                                  (a-simple-build-cause "AnotherPipeline/21" 7))
+                  (a-pipeline-run "Build" 42 [(a-stage-run "DoStuff" "1")])
                   (a-builds-properties 321 {})
                   (a-builds-properties 987 {})
                   (a-file-list "Build" 42 "DoStuff" "1" "AlphaJob"
@@ -488,8 +563,7 @@
                   (a-short-history "Build" "DoStuff"
                                    (a-stage-run 42 "1" "Passed"
                                                 (a-job-run "AlphaJob" 1493201298062 321)))
-                  (a-pipeline-run "Build" 42
-                                  (a-simple-build-cause "AnotherPipeline/21" 7))
+                  (a-pipeline-run "Build" 42 [(a-stage-run "DoStuff" "1")])
                   (a-builds-properties 321 {})
                   (a-file-list "Build" 42 "DoStuff" "1" "AlphaJob"
                                {:files [{:name "nontest.xml"

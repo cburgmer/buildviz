@@ -22,7 +22,7 @@
 
 (defn- build-id [pipeline-run stage-run]
   (if (= "1" stage-run)
-    pipeline-run
+    (str pipeline-run)
     (format "%s (Run %s)" pipeline-run stage-run)))
 
 
@@ -62,14 +62,22 @@
          (map #(assoc % :stage-name stage-name :pipeline-name pipeline-name))
          (take-while #(t/after? (:scheduled-time %) safe-build-start-date)))))
 
-(defn- add-inputs-for-stage-instance [go-url {:keys [pipeline-run, pipeline-name] :as stage-instance}]
+(defn- previous-stage-trigger [{:keys [pipeline-name pipeline-run stage-name stage-run]} stages]
+  (when (= "1" stage-run)
+    (when-let [previous-stage (last (take-while #(not= stage-name (:name %)) stages))]
+      [{:job-name (job-name pipeline-name (:name previous-stage) (:name previous-stage))
+        :build-id (build-id pipeline-run (:counter previous-stage))}])))
+
+(defn- add-inputs-for-stage-instance [go-url {:keys [pipeline-run pipeline-name] :as stage-instance}]
   (let [{inputs :inputs
-         triggers :triggers} (goapi/get-inputs-for-pipeline-run go-url pipeline-name pipeline-run)]
+         triggers :triggers
+         stages :stages} (goapi/get-inputs-for-pipeline-run go-url pipeline-name pipeline-run)]
     (assoc stage-instance :inputs inputs
-           :triggered-by (seq (map (fn [{:keys [pipeline-name pipeline-run stage-name stage-run]}]
-                                     {:job-name (job-name pipeline-name stage-name stage-name)
-                                      :build-id (build-id pipeline-run stage-run)})
-                                   triggers)))))
+           :triggered-by (seq (concat (previous-stage-trigger stage-instance stages)
+                                      (map (fn [{:keys [pipeline-name pipeline-run stage-name stage-run]}]
+                                             {:job-name (job-name pipeline-name stage-name stage-name)
+                                              :build-id (build-id pipeline-run stage-run)})
+                                           triggers))))))
 
 
 (defn- select-pipelines [selected-groups pipelines]

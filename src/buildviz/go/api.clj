@@ -117,7 +117,8 @@
                                                                "run" run}))
         revisions (:material_revisions (:build_cause pipeline-instance))]
     {:inputs (map revision->input revisions)
-     :triggers (keep pipeline-build-cause revisions)}))
+     :triggers (keep pipeline-build-cause revisions)
+     :stages (:stages pipeline-instance)}))
 
 
 ;; /api/config/pipeline_groups
