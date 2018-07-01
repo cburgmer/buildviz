@@ -99,27 +99,10 @@
 
 ;; /api/pipelines/%pipelines/instance/%run
 
-(defn- revision->input [{:keys [modifications material]}]
-  {:revision (:revision (first modifications))
-   :sourceId (:id material)})
-
-(defn- pipeline-build-cause [{:keys [modifications material changed]}]
-  (when (and changed (= "Pipeline" (:type material)))
-    (let [revision-tokens (str/split (:revision (first modifications)) #"/")]
-      {:pipeline-name (nth revision-tokens 0)
-       :pipeline-run (nth revision-tokens 1)
-       :stage-name (nth revision-tokens 2)
-       :stage-run (nth revision-tokens 3)})))
-
-(defn get-inputs-for-pipeline-run [go-url pipeline-name run]
-  (let [pipeline-instance (get-json go-url (templ/uritemplate "/api/pipelines{/pipeline}/instance{/run}"
-                                                              {"pipeline" pipeline-name
-                                                               "run" run}))
-        revisions (:material_revisions (:build_cause pipeline-instance))]
-    {:inputs (map revision->input revisions)
-     :triggers (keep pipeline-build-cause revisions)
-     :stages (:stages pipeline-instance)}))
-
+(defn get-pipeline-instance [go-url pipeline-name run]
+  (get-json go-url (templ/uritemplate "/api/pipelines{/pipeline}/instance{/run}"
+                                      {"pipeline" pipeline-name
+                                       "run" run})))
 
 ;; /api/config/pipeline_groups
 

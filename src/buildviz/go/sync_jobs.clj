@@ -2,6 +2,7 @@
   (:require [buildviz.go.aggregate :as goaggregate]
             [buildviz.go.api :as goapi]
             [buildviz.go.junit :as junit]
+            [buildviz.go.transform :as transform]
             [buildviz.util.url :as url]
             [cheshire.core :as j]
             [clj-http.client :as client]
@@ -14,17 +15,6 @@
             [clojure.tools.logging :as log]
             [uritemplate-clj.core :as templ])
   (:import [javax.xml.stream.XMLStreamException]))
-
-(defn- job-name [pipeline-name stage-name job-name]
-  (if (= stage-name job-name)
-    (format "%s :: %s" pipeline-name stage-name)
-    (format "%s :: %s :: %s" pipeline-name stage-name job-name)))
-
-(defn- build-id [pipeline-run stage-run]
-  (if (= "1" stage-run)
-    (str pipeline-run)
-    (format "%s (Run %s)" pipeline-run stage-run)))
-
 
 (defn- aggregate-jobs-for-stage-instance [stage-instance sync-jobs-for-pipelines]
   (let [{pipeline-name :pipeline-name} stage-instance]
@@ -62,26 +52,12 @@
          (map #(assoc % :stage-name stage-name :pipeline-name pipeline-name))
          (take-while #(t/after? (:scheduled-time %) safe-build-start-date)))))
 
-(defn- previous-stage-trigger [{:keys [pipeline-name pipeline-run stage-name stage-run]} stages]
-  (when (= "1" stage-run)
-    (when-let [previous-stage (last (take-while #(not= stage-name (:name %)) stages))]
-      [{:job-name (job-name pipeline-name (:name previous-stage) (:name previous-stage))
-        :build-id (build-id pipeline-run (:counter previous-stage))}])))
-
-(defn- pipeline-material-triggers [{:keys [stage-name]} triggers stages]
-  (when (= stage-name (:name (first stages)))
-    (map (fn [{:keys [pipeline-name pipeline-run stage-name stage-run]}]
-           {:job-name (job-name pipeline-name stage-name stage-name)
-            :build-id (build-id pipeline-run stage-run)})
-         triggers)))
 
 (defn- add-inputs-for-stage-instance [go-url {:keys [pipeline-run pipeline-name] :as stage-instance}]
-  (let [{inputs :inputs
-         triggers :triggers
-         stages :stages} (goapi/get-inputs-for-pipeline-run go-url pipeline-name pipeline-run)]
-    (assoc stage-instance :inputs inputs
-           :triggered-by (seq (concat (previous-stage-trigger stage-instance stages)
-                                      (pipeline-material-triggers stage-instance triggers stages))))))
+  (let [pipeline-instance (goapi/get-pipeline-instance go-url pipeline-name pipeline-run)]
+    (assoc stage-instance
+           :inputs (transform/inputs-for-stage-instance pipeline-instance)
+           :triggered-by (transform/build-triggers-for-stage-instance pipeline-instance stage-instance))))
 
 
 (defn- select-pipelines [selected-groups pipelines]
@@ -97,22 +73,6 @@
                     :pipeline pipeline-name))))
 
 ;; upload
-
-(defn- stage-instances->builds [{:keys [pipeline-name pipeline-run stage-name stage-run inputs triggered-by job-instances]}]
-  (map (fn [{outcome :outcome
-             start :start
-             end :end
-             name :name
-             junit-xml :junit-xml}]
-         {:job-name (job-name pipeline-name stage-name name)
-          :build-id (build-id pipeline-run stage-run)
-          :junit-xml junit-xml
-          :build (cond-> {:start start
-                          :end end
-                          :outcome outcome
-                          :inputs inputs}
-                   triggered-by (assoc :triggered-by triggered-by))})
-       job-instances))
 
 (defn- put-build [buildviz-url job-name build-no build]
   (client/put (str/join [(url/with-plain-text-password buildviz-url) (templ/uritemplate "/builds{/job}{/build}" {"job" job-name "build" build-no})])
@@ -168,7 +128,7 @@
        (map #(add-inputs-for-stage-instance go-url %))
        (map #(add-job-instances-for-stage-instance go-url %))
        (map #(aggregate-jobs-for-stage-instance % sync-jobs-for-pipelines))
-       (mapcat stage-instances->builds)
+       (mapcat transform/stage-instances->builds)
        (map #(put-to-buildviz buildviz-url %))
        (map progress/tick)
        dorun
