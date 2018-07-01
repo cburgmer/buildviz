@@ -1,6 +1,5 @@
 (ns buildviz.go.transform
-  (:require [buildviz.go.aggregate :as goaggregate]
-            [clojure.string :as str]))
+  (:require [clojure.string :as str]))
 
 (defn- job-name [pipeline-name stage-name]
   (format "%s :: %s" pipeline-name stage-name))
@@ -55,18 +54,46 @@
     (map revision->input revisions)))
 
 
-(defn stage-instances->builds [{:keys [pipeline-name pipeline-run stage-name stage-run pipeline-instance] :as stage-instance}]
-  (let [{outcome :outcome
-         start :start
-         end :end
-         junit-xml :junit-xml} (goaggregate/aggregate-jobs-for-stage stage-instance)
-        inputs (inputs-for-stage-instance pipeline-instance)
-        triggered-by (seq (build-triggers-for-stage-instance pipeline-name pipeline-run stage-name stage-run pipeline-instance))]
+(defn- aggregate-build-times [job-instances]
+  (let [start-times (map :start job-instances)
+        end-times (map :end job-instances)]
+    (if (and (empty? (filter nil? end-times))
+             (seq end-times))
+      {:start (apply min start-times)
+       :end (apply max end-times)}
+      {})))
+
+(defn- ignore-old-runs-for-rerun-stages [job-instances stage-run]
+  (filter #(= stage-run (:actual-stage-run %)) job-instances))
+
+(defn- aggregate-builds [stage-run job-instances]
+  (let [outcomes (map :outcome job-instances)
+        accumulated-outcome (if (every? #(= "pass" %) outcomes)
+                              "pass"
+                              "fail")]
+    (-> job-instances
+        (ignore-old-runs-for-rerun-stages stage-run)
+        aggregate-build-times
+        (assoc :outcome accumulated-outcome))))
+
+
+(defn- aggregate-testresults [job-instances]
+  (->> job-instances
+       (mapcat :junit-xml)
+       (remove nil?)
+       seq))
+
+
+(defn stage-instances->builds [{:keys [pipeline-name pipeline-run stage-name stage-run pipeline-instance job-instances]}]
+  (let [inputs (inputs-for-stage-instance pipeline-instance)
+        triggered-by (seq (build-triggers-for-stage-instance pipeline-name
+                                                             pipeline-run
+                                                             stage-name
+                                                             stage-run
+                                                             pipeline-instance))]
     {:job-name (job-name pipeline-name stage-name)
      :build-id (build-id pipeline-run stage-run)
-     :junit-xml junit-xml
-     :build (cond-> {:start start
-                     :end end
-                     :outcome outcome
-                     :inputs inputs}
+     :junit-xml (aggregate-testresults job-instances)
+     :build (cond-> (aggregate-builds stage-run job-instances)
+              inputs (assoc :inputs inputs)
               triggered-by (assoc :triggered-by triggered-by))}))
