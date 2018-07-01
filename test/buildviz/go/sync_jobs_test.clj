@@ -220,6 +220,40 @@
                     second
                     :triggered-by)))))
 
+  (testing "should only sync build trigger from pipeline material for first stage"
+    (let [store (atom [])]
+      (fake/with-fake-routes-in-isolation
+        (serve-up (a-config (a-pipeline-group "Development"
+                                              (a-pipeline "Build"
+                                                          (a-stage "DoStuff")
+                                                          (a-stage "MoreStuff"))))
+                  (a-short-history "Build" "DoStuff"
+                                   (a-stage-run 42 "1" "Passed"
+                                                (a-job-run "AlphaJob" 1483261200000 321)))
+                  (a-short-history "Build" "MoreStuff"
+                                   (a-stage-run 42 "1" "Passed"
+                                                (a-job-run "defaultJob" 1483268400099 4711)))
+                  (a-pipeline-run "Build" 42
+                                  [(a-stage-run "DoStuff" "1") (a-stage-run "MoreStuff" "1")]
+                                  (a-pipeline-build-cause 7 "AnotherPipeline" 21 "AnotherStage" 2))
+                  (a-builds-properties 321 {})
+                  (a-builds-properties 4711 {})
+                  (a-file-list "Build" 42 "DoStuff" "1" "AlphaJob")
+                  (a-file-list "Build" 42 "MoreStuff" "1" "defaultJob")
+                  (provide-buildviz-and-capture-puts store))
+        (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
+                                       (url/url "http://buildviz:8010")
+                                       beginning-of-2016 nil nil)))
+      (let [pipeline-trigger {:job-name "AnotherPipeline :: AnotherStage"
+                              :build-id "21 (Run 2)"}]
+        (is (= 1
+               (->> @store
+                    (map second)
+                    (map :triggered-by)
+                    (filter (fn [triggers] (some #(= % pipeline-trigger)
+                                                 triggers)))
+                    count))))))
+
   (testing "should sync build trigger from stage of same pipeline"
     (let [store (atom [])]
       (fake/with-fake-routes-in-isolation

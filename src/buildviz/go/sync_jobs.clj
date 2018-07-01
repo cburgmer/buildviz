@@ -68,16 +68,20 @@
       [{:job-name (job-name pipeline-name (:name previous-stage) (:name previous-stage))
         :build-id (build-id pipeline-run (:counter previous-stage))}])))
 
+(defn- pipeline-material-triggers [{:keys [stage-name]} triggers stages]
+  (when (= stage-name (:name (first stages)))
+    (map (fn [{:keys [pipeline-name pipeline-run stage-name stage-run]}]
+           {:job-name (job-name pipeline-name stage-name stage-name)
+            :build-id (build-id pipeline-run stage-run)})
+         triggers)))
+
 (defn- add-inputs-for-stage-instance [go-url {:keys [pipeline-run pipeline-name] :as stage-instance}]
   (let [{inputs :inputs
          triggers :triggers
          stages :stages} (goapi/get-inputs-for-pipeline-run go-url pipeline-name pipeline-run)]
     (assoc stage-instance :inputs inputs
            :triggered-by (seq (concat (previous-stage-trigger stage-instance stages)
-                                      (map (fn [{:keys [pipeline-name pipeline-run stage-name stage-run]}]
-                                             {:job-name (job-name pipeline-name stage-name stage-name)
-                                              :build-id (build-id pipeline-run stage-run)})
-                                           triggers))))))
+                                      (pipeline-material-triggers stage-instance triggers stages))))))
 
 
 (defn- select-pipelines [selected-groups pipelines]
