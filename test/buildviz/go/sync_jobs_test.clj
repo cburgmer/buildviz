@@ -125,16 +125,16 @@
 (deftest test-sync-jobs
   (testing "should handle no pipeline groups"
     (fake/with-fake-routes-in-isolation (serve-up (a-config))
-      (with-out-str (sut/sync-stages (url/url "http://gocd:8513") (url/url "http://buildviz:8010") beginning-of-2016 nil nil))))
+      (with-out-str (sut/sync-stages (url/url "http://gocd:8513") (url/url "http://buildviz:8010") beginning-of-2016 nil))))
 
   (testing "should handle empty pipeline group"
     (fake/with-fake-routes-in-isolation (serve-up (a-config (a-pipeline-group "Development")))
-      (with-out-str (sut/sync-stages (url/url "http://gocd:8513") (url/url "http://buildviz:8010") beginning-of-2016 nil nil))))
+      (with-out-str (sut/sync-stages (url/url "http://gocd:8513") (url/url "http://buildviz:8010") beginning-of-2016 nil))))
 
   (testing "should handle empty pipeline"
     (fake/with-fake-routes-in-isolation (serve-up (a-config (a-pipeline-group "Development"
                                                                               (a-pipeline "Build"))))
-      (with-out-str (sut/sync-stages (url/url "http://gocd:8513") (url/url "http://buildviz:8010") beginning-of-2016 nil nil))))
+      (with-out-str (sut/sync-stages (url/url "http://gocd:8513") (url/url "http://buildviz:8010") beginning-of-2016 nil))))
 
   (testing "should sync a stage"
     (let [store (atom [])]
@@ -157,7 +157,7 @@
                   (provide-buildviz-and-capture-puts store))
         (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
                                        (url/url "http://buildviz:8010")
-                                       beginning-of-2016 nil nil)))
+                                       beginning-of-2016 nil)))
       (is (= [["/builds/Build%20%3A%3A%20DoStuff/42" {:start 1483264800000
                                                       :end 1483272000000
                                                       :outcome "pass"
@@ -185,7 +185,7 @@
                   (provide-buildviz-and-capture-puts store))
         (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
                                        (url/url "http://buildviz:8010")
-                                       beginning-of-2016 nil nil)))
+                                       beginning-of-2016 nil)))
       (is (= [{:job-name "AnotherPipeline :: AnotherStage"
                :build-id "21 (Run 2)"}]
              (-> @store
@@ -214,7 +214,7 @@
                   (provide-buildviz-and-capture-puts store))
         (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
                                        (url/url "http://buildviz:8010")
-                                       beginning-of-2016 nil nil)))
+                                       beginning-of-2016 nil)))
       (is (nil? (-> @store
                     first
                     second
@@ -243,7 +243,7 @@
                   (provide-buildviz-and-capture-puts store))
         (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
                                        (url/url "http://buildviz:8010")
-                                       beginning-of-2016 nil nil)))
+                                       beginning-of-2016 nil)))
       (let [pipeline-trigger {:job-name "AnotherPipeline :: AnotherStage"
                               :build-id "21 (Run 2)"}]
         (is (= 1
@@ -284,7 +284,7 @@
                   (provide-buildviz-and-capture-puts store))
         (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
                                        (url/url "http://buildviz:8010")
-                                       beginning-of-2016 nil nil)))
+                                       beginning-of-2016 nil)))
       (is (= [{:job-name "Build :: DoStuff"
                :build-id "42"}]
              (-> @store
@@ -322,7 +322,7 @@
                   (provide-buildviz-and-capture-puts store))
         (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
                                        (url/url "http://buildviz:8010")
-                                       beginning-of-2016 nil nil)))
+                                       beginning-of-2016 nil)))
       (is (nil? (-> @store
                     (nth 1)
                     second
@@ -347,7 +347,7 @@
                   (provide-buildviz-and-capture-puts store))
         (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
                                        (url/url "http://buildviz:8010")
-                                       beginning-of-2016 nil nil)))
+                                       beginning-of-2016 nil)))
       (is (= ["/builds/Build%20%3A%3A%20DoStuff/42%20%28Run%202%29"]
              (map first @store)))))
 
@@ -370,7 +370,7 @@
                   (provide-buildviz-and-capture-puts store))
         (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
                                        (url/url "http://buildviz:8010")
-                                       beginning-of-2016 nil nil)))
+                                       beginning-of-2016 nil)))
       (is (= [["/builds/Build%20%3A%3A%20DoStuff/42" {:start 1483264800000
                                                       :end 1483272000000
                                                       :outcome "fail"
@@ -389,7 +389,7 @@
                   (provide-buildviz-and-capture-puts store))
         (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
                                        (url/url "http://buildviz:8010")
-                                       beginning-of-2016 nil nil)))
+                                       beginning-of-2016 nil)))
       (is (empty? @store))))
 
   (testing "should ignore a stage who's job ran before the sync date offset"
@@ -411,7 +411,7 @@
                   (provide-buildviz-and-capture-puts store))
         (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
                                        (url/url "http://buildviz:8010")
-                                       beginning-of-2016 nil nil)))
+                                       beginning-of-2016 nil)))
       (is (empty? @store))))
 
   (testing "should only sync stage of pipeline that's after the sync date offset"
@@ -438,7 +438,7 @@
                   (provide-buildviz-and-capture-puts store))
         (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
                                        (url/url "http://buildviz:8010")
-                                       beginning-of-2016 nil nil)))
+                                       beginning-of-2016 nil)))
       (is (= ["/builds/Build%20%3A%3A%20SomeMore/42"]
              (map first @store)))))
 
@@ -463,7 +463,7 @@
                   (provide-buildviz-and-capture-puts store))
         (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
                                        (url/url "http://buildviz:8010")
-                                       beginning-of-2016 nil nil)))
+                                       beginning-of-2016 nil)))
       (is (= [["/builds/Build%20%3A%3A%20DoStuff/42/testresults" "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites></testsuites>"]]
              (filter (fn [[path payload]] (= path "/builds/Build%20%3A%3A%20DoStuff/42/testresults"))
                      @store)))))
@@ -491,7 +491,7 @@
                   (provide-buildviz-and-capture-puts store))
         (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
                                        (url/url "http://buildviz:8010")
-                                       beginning-of-2016 nil nil)))
+                                       beginning-of-2016 nil)))
       (is (= [["/builds/Build%20%3A%3A%20DoStuff/42/testresults"
                "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"one\"></testsuite><testsuite name=\"other\"></testsuite></testsuites>"]]
              (filter (fn [[path payload]] (= path "/builds/Build%20%3A%3A%20DoStuff/42/testresults"))
@@ -523,7 +523,7 @@
                   (provide-buildviz-and-capture-puts store))
         (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
                                        (url/url "http://buildviz:8010")
-                                       beginning-of-2016 nil nil)))
+                                       beginning-of-2016 nil)))
       (is (= [["/builds/Build%20%3A%3A%20DoStuff/42/testresults"
                "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"Alpha\"></testsuite><testsuite name=\"Beta\"></testsuite></testsuites>"]]
              (filter (fn [[path payload]] (= path "/builds/Build%20%3A%3A%20DoStuff/42/testresults"))
@@ -555,7 +555,7 @@
                   (provide-buildviz-and-capture-puts store))
         (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
                                        (url/url "http://buildviz:8010")
-                                       beginning-of-2016 nil nil)))
+                                       beginning-of-2016 nil)))
       (is (= []
              (filter (fn [[path payload]] (= path "/builds/Build%20%3A%3A%20DoStuff/42/testresults"))
                      @store)))))
@@ -582,7 +582,7 @@
                   (provide-buildviz-and-capture-puts store))
         (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
                                        (url/url "http://buildviz:8010")
-                                       beginning-of-2016 nil nil)))
+                                       beginning-of-2016 nil)))
       (is (= [["/builds/Build%20%3A%3A%20DoStuff/42/testresults"
                "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"Alpha\"></testsuite></testsuites>"]]
              (filter (fn [[path payload]] (= path "/builds/Build%20%3A%3A%20DoStuff/42/testresults"))
@@ -611,7 +611,7 @@
                   (provide-buildviz-and-capture-puts store))
         (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
                                        (url/url "http://buildviz:8010")
-                                       beginning-of-2016 nil nil)))
+                                       beginning-of-2016 nil)))
       (is (= [["/builds/Build%20%3A%3A%20DoStuff/42/testresults" "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites></testsuites>"]]
              (filter (fn [[path payload]] (= path "/builds/Build%20%3A%3A%20DoStuff/42/testresults"))
                      @store))))))

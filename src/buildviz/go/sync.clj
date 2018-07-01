@@ -34,10 +34,6 @@
    ["-f" "--from DATE" "Date from which on builds are loaded, if not specified tries to pick up where the last run finished"
     :id :sync-start-time
     :parse-fn #(tf/parse date-formatter %)]
-   ["-j" "--sync-jobs PIPELINE" "Pipelines for which Go jobs will be synced individually and not aggregated inside stage"
-    :id :sync-jobs-for-pipelines
-    :default nil
-    :assoc-fn (fn [previous key val] (assoc previous key (conj (get previous key) val)))]
    ["-g" "--pipeline-group PIPELINE_GROUP" "Go pipeline groups to be synced, all by default"
     :id :pipeline-groups
     :default nil
@@ -73,7 +69,6 @@
     (let [go-url (url/url (first (:arguments args)))
           buildviz-url (url/url (:buildviz-url (:options args)))
           sync-start-time (get-start-date buildviz-url (:sync-start-time (:options args)))
-          sync-jobs-for-pipelines (set (:sync-jobs-for-pipelines (:options args)))
           selected-pipeline-group-names (set (:pipeline-groups (:options args)))]
 
-      (sync-jobs/sync-stages go-url buildviz-url sync-start-time sync-jobs-for-pipelines selected-pipeline-group-names))))
+      (sync-jobs/sync-stages go-url buildviz-url sync-start-time selected-pipeline-group-names))))

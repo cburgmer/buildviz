@@ -16,13 +16,6 @@
             [uritemplate-clj.core :as templ])
   (:import [javax.xml.stream.XMLStreamException]))
 
-(defn- aggregate-jobs-for-stage-instance [stage-instance sync-jobs-for-pipelines]
-  (let [{pipeline-name :pipeline-name} stage-instance]
-    (if (contains? sync-jobs-for-pipelines pipeline-name)
-      stage-instance
-      (goaggregate/aggregate-jobs-for-stage stage-instance))))
-
-
 (defn- build-for-job [go-url stage-instance {:keys [name id]}]
   (let [job-instance (assoc stage-instance :job-name name)]
     (-> (goapi/build-for go-url id)
@@ -114,7 +107,7 @@
   (println "done")
   pipeline-stages)
 
-(defn sync-stages [go-url buildviz-url sync-start-time sync-jobs-for-pipelines selected-pipeline-group-names]
+(defn sync-stages [go-url buildviz-url sync-start-time selected-pipeline-group-names]
   (->> (goapi/get-pipelines go-url)
        (select-pipelines selected-pipeline-group-names)
        (emit-start go-url buildviz-url sync-start-time)
@@ -126,7 +119,7 @@
        (progress/init "Syncing")
        (map #(add-pipeline-instance-for-stage-run go-url %))
        (map #(add-job-instances-for-stage-run go-url %))
-       (map #(aggregate-jobs-for-stage-instance % sync-jobs-for-pipelines))
+       (map goaggregate/aggregate-jobs-for-stage)
        (mapcat transform/stage-instances->builds)
        (map #(put-to-buildviz buildviz-url %))
        (map progress/tick)

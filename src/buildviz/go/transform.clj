@@ -1,10 +1,8 @@
 (ns buildviz.go.transform
   (:require [clojure.string :as str]))
 
-(defn- job-name [pipeline-name stage-name job-name]
-  (if (= stage-name job-name)
-    (format "%s :: %s" pipeline-name stage-name)
-    (format "%s :: %s :: %s" pipeline-name stage-name job-name)))
+(defn- job-name [pipeline-name stage-name]
+  (format "%s :: %s" pipeline-name stage-name))
 
 (defn- build-id [pipeline-run stage-run]
   (if (= "1" stage-run)
@@ -14,7 +12,7 @@
 
 (defn- previous-stage-trigger [pipeline-name pipeline-run stage-name stages]
   (when-let [previous-stage (last (take-while #(not= stage-name (:name %)) stages))]
-    [{:job-name (job-name pipeline-name (:name previous-stage) (:name previous-stage))
+    [{:job-name (job-name pipeline-name (:name previous-stage))
       :build-id (build-id pipeline-run (:counter previous-stage))}]))
 
 
@@ -25,7 +23,7 @@
           pipeline-run (nth revision-tokens 1)
           stage-name (nth revision-tokens 2)
           stage-run (nth revision-tokens 3)]
-      {:job-name (job-name pipeline-name stage-name stage-name)
+      {:job-name (job-name pipeline-name stage-name)
        :build-id (build-id pipeline-run stage-run)})))
 
 (defn- pipeline-material-triggers [pipeline-instance stages]
@@ -66,7 +64,7 @@
                end :end
                name :name
                junit-xml :junit-xml}]
-           {:job-name (job-name pipeline-name stage-name name)
+           {:job-name (job-name pipeline-name stage-name)
             :build-id (build-id pipeline-run stage-run)
             :junit-xml junit-xml
             :build (cond-> {:start start
