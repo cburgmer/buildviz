@@ -1,6 +1,5 @@
 (ns buildviz.go.sync-jobs
-  (:require [buildviz.go.aggregate :as goaggregate]
-            [buildviz.go.api :as goapi]
+  (:require [buildviz.go.api :as goapi]
             [buildviz.go.junit :as junit]
             [buildviz.go.transform :as transform]
             [buildviz.util.url :as url]
@@ -19,7 +18,6 @@
 (defn- build-for-job [go-url stage-instance {:keys [name id]}]
   (let [job-instance (assoc stage-instance :job-name name)]
     (-> (goapi/build-for go-url id)
-        (assoc :name name)
         (assoc :junit-xml (goapi/get-junit-xml go-url job-instance)))))
 
 (defn- add-job-instances-for-stage-run [go-url stage-instance]
@@ -119,8 +117,7 @@
        (progress/init "Syncing")
        (map #(add-pipeline-instance-for-stage-run go-url %))
        (map #(add-job-instances-for-stage-run go-url %))
-       (map goaggregate/aggregate-jobs-for-stage)
-       (mapcat transform/stage-instances->builds)
+       (map transform/stage-instances->builds)
        (map #(put-to-buildviz buildviz-url %))
        (map progress/tick)
        dorun

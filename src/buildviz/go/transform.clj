@@ -1,5 +1,6 @@
 (ns buildviz.go.transform
-  (:require [clojure.string :as str]))
+  (:require [buildviz.go.aggregate :as goaggregate]
+            [clojure.string :as str]))
 
 (defn- job-name [pipeline-name stage-name]
   (format "%s :: %s" pipeline-name stage-name))
@@ -45,7 +46,6 @@
         (previous-stage-trigger pipeline-name pipeline-run stage-name stages)))))
 
 
-
 (defn- revision->input [{:keys [modifications material]}]
   {:revision (:revision (first modifications))
    :sourceId (:id material)})
@@ -55,21 +55,18 @@
     (map revision->input revisions)))
 
 
-
-(defn stage-instances->builds [{:keys [pipeline-name pipeline-run stage-name stage-run pipeline-instance job-instances]}]
-  (let [inputs (inputs-for-stage-instance pipeline-instance)
+(defn stage-instances->builds [{:keys [pipeline-name pipeline-run stage-name stage-run pipeline-instance] :as stage-instance}]
+  (let [{outcome :outcome
+         start :start
+         end :end
+         junit-xml :junit-xml} (goaggregate/aggregate-jobs-for-stage stage-instance)
+        inputs (inputs-for-stage-instance pipeline-instance)
         triggered-by (seq (build-triggers-for-stage-instance pipeline-name pipeline-run stage-name stage-run pipeline-instance))]
-    (map (fn [{outcome :outcome
-               start :start
-               end :end
-               name :name
-               junit-xml :junit-xml}]
-           {:job-name (job-name pipeline-name stage-name)
-            :build-id (build-id pipeline-run stage-run)
-            :junit-xml junit-xml
-            :build (cond-> {:start start
-                            :end end
-                            :outcome outcome
-                            :inputs inputs}
-                     triggered-by (assoc :triggered-by triggered-by))})
-         job-instances)))
+    {:job-name (job-name pipeline-name stage-name)
+     :build-id (build-id pipeline-run stage-run)
+     :junit-xml junit-xml
+     :build (cond-> {:start start
+                     :end end
+                     :outcome outcome
+                     :inputs inputs}
+              triggered-by (assoc :triggered-by triggered-by))}))
