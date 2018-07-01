@@ -79,26 +79,26 @@
                :body (j/generate-string build)}))
 
 (defn- put-junit-xml [buildviz-url job-name build-no junit-xml]
-  (let [xml-content (junit/merge-junit-xml junit-xml)]
-    (client/put (str/join [(url/with-plain-text-password buildviz-url) (templ/uritemplate "/builds{/job}{/build}/testresults" {"job" job-name "build" build-no})])
-                {:body xml-content})))
+  (try
+    (let [xml-content (junit/merge-junit-xml junit-xml)]
+      (client/put (str/join [(url/with-plain-text-password buildviz-url) (templ/uritemplate "/builds{/job}{/build}/testresults" {"job" job-name "build" build-no})])
+                  {:body xml-content}))
+    (catch javax.xml.stream.XMLStreamException e
+      (do
+        (log/errorf e "Unable parse JUnit XML from artifacts for %s %s." job-name build-no)
+        (log/info "Offending XML content is:\n" junit-xml)))
+    (catch Exception e
+      (if-let [data (ex-data e)]
+        (do
+          (log/errorf "Unable to sync testresults for %s %s (status %s): %s" job-name build-no (:status data) (:body data))
+          (log/info "Offending XML content is:\n" junit-xml))
+        (log/errorf e "Unable to sync testresults for %s %s" job-name build-no)))))
 
 (defn- put-to-buildviz [buildviz-url {job-name :job-name build-no :build-id build :build junit-xml :junit-xml}]
   (log/info (format "Syncing %s %s: build" job-name build-no))
   (put-build buildviz-url job-name build-no build)
   (when (some? junit-xml)
-    (try
-      (put-junit-xml buildviz-url job-name build-no junit-xml)
-      (catch javax.xml.stream.XMLStreamException e
-        (do
-          (log/errorf e "Unable parse JUnit XML from artifacts for %s %s." job-name build-no)
-          (log/info "Offending XML content is:\n" junit-xml)))
-      (catch Exception e
-        (if-let [data (ex-data e)]
-          (do
-            (log/errorf "Unable to sync testresults for %s %s (status %s): %s" job-name build-no (:status data) (:body data))
-            (log/info "Offending XML content is:\n" junit-xml))
-          (log/errorf e "Unable to sync testresults for %s %s" job-name build-no))))))
+    (put-junit-xml buildviz-url job-name build-no junit-xml)))
 
 ;; run
 
