@@ -29,7 +29,7 @@
         (assoc :name name)
         (assoc :junit-xml (goapi/get-junit-xml go-url job-instance)))))
 
-(defn- add-job-instances-for-stage-instance [go-url stage-instance]
+(defn- add-job-instances-for-stage-run [go-url stage-instance]
   (let [jobs (:jobs stage-instance)]
     (assoc stage-instance
            :job-instances (map #(build-for-job go-url stage-instance %) jobs))))
@@ -53,11 +53,10 @@
          (take-while #(t/after? (:scheduled-time %) safe-build-start-date)))))
 
 
-(defn- add-inputs-for-stage-instance [go-url {:keys [pipeline-run pipeline-name] :as stage-instance}]
+(defn- add-pipeline-instance-for-stage-run [go-url {:keys [pipeline-run pipeline-name] :as stage-instance}]
   (let [pipeline-instance (goapi/get-pipeline-instance go-url pipeline-name pipeline-run)]
     (assoc stage-instance
-           :inputs (transform/inputs-for-stage-instance pipeline-instance)
-           :triggered-by (transform/build-triggers-for-stage-instance pipeline-instance stage-instance))))
+           :pipeline-instance pipeline-instance)))
 
 
 (defn- select-pipelines [selected-groups pipelines]
@@ -125,8 +124,8 @@
        (take-while :finished)
        (emit-sync-start)
        (progress/init "Syncing")
-       (map #(add-inputs-for-stage-instance go-url %))
-       (map #(add-job-instances-for-stage-instance go-url %))
+       (map #(add-pipeline-instance-for-stage-run go-url %))
+       (map #(add-job-instances-for-stage-run go-url %))
        (map #(aggregate-jobs-for-stage-instance % sync-jobs-for-pipelines))
        (mapcat transform/stage-instances->builds)
        (map #(put-to-buildviz buildviz-url %))

@@ -39,7 +39,7 @@
 (defn- rerun? [stage-run]
   (not= "1" stage-run))
 
-(defn build-triggers-for-stage-instance [pipeline-instance {:keys [pipeline-name pipeline-run stage-name stage-run]}]
+(defn- build-triggers-for-stage-instance [pipeline-name pipeline-run stage-name stage-run pipeline-instance]
   (let [stages (:stages pipeline-instance)]
     (if (first-stage? stage-name stages)
       (pipeline-material-triggers pipeline-instance stages)
@@ -52,24 +52,26 @@
   {:revision (:revision (first modifications))
    :sourceId (:id material)})
 
-(defn inputs-for-stage-instance [pipeline-instance]
+(defn- inputs-for-stage-instance [pipeline-instance]
   (let [revisions (:material_revisions (:build_cause pipeline-instance))]
     (map revision->input revisions)))
 
 
 
-(defn stage-instances->builds [{:keys [pipeline-name pipeline-run stage-name stage-run inputs triggered-by job-instances]}]
-  (map (fn [{outcome :outcome
-             start :start
-             end :end
-             name :name
-             junit-xml :junit-xml}]
-         {:job-name (job-name pipeline-name stage-name name)
-          :build-id (build-id pipeline-run stage-run)
-          :junit-xml junit-xml
-          :build (cond-> {:start start
-                          :end end
-                          :outcome outcome
-                          :inputs inputs}
-                   (not (empty? triggered-by)) (assoc :triggered-by triggered-by))})
-       job-instances))
+(defn stage-instances->builds [{:keys [pipeline-name pipeline-run stage-name stage-run pipeline-instance job-instances]}]
+  (let [inputs (inputs-for-stage-instance pipeline-instance)
+        triggered-by (seq (build-triggers-for-stage-instance pipeline-name pipeline-run stage-name stage-run pipeline-instance))]
+    (map (fn [{outcome :outcome
+               start :start
+               end :end
+               name :name
+               junit-xml :junit-xml}]
+           {:job-name (job-name pipeline-name stage-name name)
+            :build-id (build-id pipeline-run stage-run)
+            :junit-xml junit-xml
+            :build (cond-> {:start start
+                            :end end
+                            :outcome outcome
+                            :inputs inputs}
+                     triggered-by (assoc :triggered-by triggered-by))})
+         job-instances)))
