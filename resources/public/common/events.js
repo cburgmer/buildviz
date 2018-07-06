@@ -8,23 +8,36 @@ var events = (function (utils, tooltip) {
         height = graphFactory.size - margin.top - margin.bottom;
 
     var x = d3.time.scale()
-            .range([0, width]);
+        .range([0, width]);
 
-    var y = d3.scale.linear()
-            .range([height, 0])
-            .nice();
+    var y = d3.scale.log()
+        .rangeRound([height, 0])
+        .clamp(true);
 
     var xAxis = d3.svg.axis()
-            .scale(x)
-            .orient("bottom");
+        .scale(x)
+        .orient("bottom");
+
+    var seconds = function (value) {
+        return value * 1000;
+    };
+
+    var minutes = function (value) {
+        return value * 60 * 1000;
+    };
+
+    var hours = function (value) {
+        return value * 60 * 60 * 1000;
+    };
 
     var yAxis = d3.svg.axis()
-            .scale(y)
-            .outerTickSize(0)
-            .tickFormat(function (d) {
-                return utils.formatTimeInMs(d);
-            })
-            .orient("left");
+        .scale(y)
+        .outerTickSize(0)
+        .tickValues([seconds(10), seconds(20), seconds(30), minutes(1), minutes(2), minutes(5), minutes(10), minutes(20), minutes(30), hours(1), hours(2), hours(5), hours(10), hours(24)])
+        .tickFormat(function (d) {
+            return utils.formatTimeInMs(d);
+        })
+        .orient("left");
 
     var avarageLine = d3.svg.line()
             .interpolate('basis')
@@ -72,7 +85,7 @@ var events = (function (utils, tooltip) {
             d3.max(eventGroups, function(c) { return d3.max(c.events, function (b) { return b.date; }); })
         ]);
         y.domain([
-            0,
+            seconds(10),
             d3.max(eventGroups, function(c) { return d3.max(c.events, function (b) { return b.value; }); })
         ]);
 
