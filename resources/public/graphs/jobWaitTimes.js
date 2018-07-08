@@ -1,4 +1,4 @@
-(function (timespanSelection, graphDescription, graphFactory, durationsByDay, jobColors, dataSource) {
+(function (timespanSelection, graphDescription, graphFactory, events, jobColors, dataSource) {
     var timespanSelector = timespanSelection.create(timespanSelection.timespans.twoMonths),
         description = graphDescription.create({
             description: ["Average job wait times by day.",
@@ -19,29 +19,42 @@
             widgets: [timespanSelector.widget, description.widget]
         });
 
+    var eventForBuildWaitTime = function (buildWaitTime, color) {
+        return {
+            date: new Date(buildWaitTime.start),
+            value: buildWaitTime.waitTime,
+            color: color,
+            tooltip: '<div>' + buildWaitTime.job + ' #' + buildWaitTime.buildId + '</div>' +
+                '<div>' + utils.formatTimeInMs(buildWaitTime.waitTime) + '</div>'
+        };
+    };
+
     var transformWaitTimes = function (data) {
-        var jobNames = data.map(function (entry) {
-            return entry.job;
+        var waitTimesByJob = d3.nest()
+            .key(function (d) {
+                return d.job;
+            })
+            .sortValues(function (a, b) { return b.start - a.start; })
+            .entries(data);
+
+        var jobNames = waitTimesByJob.map(function (group) {
+            return group.key;
         });
         var color = jobColors.colors(jobNames);
 
-        return data.map(function (entry) {
+        return waitTimesByJob.map(function (group) {
+            var c = color(group.key);
             return {
-                title: entry.job,
-                color: color(entry.job),
-                durations: entry.waitTimes.map(function (day) {
-                    return {
-                        date: new Date(day.date),
-                        duration: day.waitTime / 1000
-                    };
+                id: group.key,
+                color: c,
+                events: group.values.map(function (entry) {
+                    return eventForBuildWaitTime(entry, c);
                 })
             };
-        }).filter(function (entry) {
-            return entry.durations.length > 1;
         });
     };
 
-    var waitTimesPane = durationsByDay(graph.svg, 'Average wait time');
+    var waitTimesPane = events(graph.svg, 'Average wait time');
 
     timespanSelector.load(function (fromTimestamp) {
         graph.loading();
@@ -52,4 +65,4 @@
             waitTimesPane.render(transformWaitTimes(data), fromTimestamp);
         });
     });
-}(timespanSelection, graphDescription, graphFactory, durationsByDay, jobColors, dataSource));
+}(timespanSelection, graphDescription, graphFactory, events, jobColors, dataSource));

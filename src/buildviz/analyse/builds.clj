@@ -1,6 +1,5 @@
 (ns buildviz.analyse.builds
-  (:require [buildviz.analyse.duration :as duration]
-            [buildviz.data.build-schema :refer [build-with-outcome? failed-build?]]
+  (:require [buildviz.data.build-schema :refer [build-with-outcome? failed-build?]]
             [buildviz.util.math :as math]))
 
 (defn builds-with-outcome [builds]

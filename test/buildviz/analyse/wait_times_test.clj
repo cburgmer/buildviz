@@ -10,63 +10,55 @@
    :end end
    :start 0})
 
-(defn- a-triggered-build
-  ([job start triggered-by]
-   (a-triggered-build job "42" start triggered-by))
-  ([job build-id start triggered-by]
-   {:job job
-    :build-id build-id
-    :start start
-    :end (+ start 1000)
-    :triggered-by (map (fn [[triggering-job triggering-build-id]]
-                         {:job-name triggering-job
-                          :build-id triggering-build-id})
-                       triggered-by)}))
+(defn- a-triggered-build [job build-id start triggered-by]
+  {:job job
+   :build-id build-id
+   :start start
+   :end (+ start 1000)
+   :triggered-by (map (fn [[triggering-job triggering-build-id]]
+                        {:job-name triggering-job
+                         :build-id triggering-build-id})
+                      triggered-by)})
 
 (deftest test-wait-times-by-day
   (testing "should calculate wait time for triggered build"
-    (is (= {"deploy" {"1970-01-01" 800}}
-           (sut/wait-times-by-day [(a-triggered-build "deploy" 1000 [["test" "41"]])
-                                   (a-build "test" "41" 200)]))))
+    (is (= [{:job "deploy" :build-id "42" :start 1000 :wait-time 800}]
+           (sut/wait-times [(a-triggered-build "deploy" "42" 1000 [["test" "41"]])
+                            (a-build "test" "41" 200)]))))
 
-  (testing "should calculate wait time for build triggered by two"
-    (is (= {"deploy" {"1970-01-01" 700}}
-           (sut/wait-times-by-day [(a-triggered-build "deploy" 1000 [["test" "41"]
-                                                                     ["test" "40"]])
-                                   (a-build "test" "41" 500)
-                                   (a-build "test" "40" 100)]))))
+  (testing "should use longest wait time for build triggered by two"
+    (is (= [{:job "deploy" :build-id "42" :start 1000 :wait-time 900}]
+           (sut/wait-times [(a-triggered-build "deploy" "42" 1000 [["test" "41"]
+                                                              ["test" "40"]])
+                            (a-build "test" "41" 500)
+                            (a-build "test" "40" 100)]))))
 
   (testing "should handle optional 'end' value for triggering build"
-    (is (empty? (sut/wait-times-by-day [(a-triggered-build "deploy" 1000 [["test" "41"]])
-                                        (-> (a-build "test" "41" 200)
-                                            (dissoc :end))]))))
+    (is (empty? (sut/wait-times [(a-triggered-build "deploy" "42" 1000 [["test" "41"]])
+                                 (-> (a-build "test" "41" 200)
+                                     (dissoc :end))]))))
 
-  (testing "should handle optional 'end' value for triggered build"
-    (is (empty? (sut/wait-times-by-day [(-> (a-triggered-build "deploy" 1000 [["test" "41"]])
-                                            (dissoc :end))
-                                        (a-build "test" "41" 200)]))))
+  (testing "should not be affected by missing 'end' value for triggered build"
+    (is (= [{:job "deploy" :build-id "42" :start 1000 :wait-time 800}]
+           (sut/wait-times [(-> (a-triggered-build "deploy" "42" 1000 [["test" "41"]])
+                                (dissoc :end))
+                            (a-build "test" "41" 200)]))))
 
   (testing "should handle missing triggering build"
-    (is (empty? (sut/wait-times-by-day [(a-triggered-build "deploy" 1000 [["test" "41"]])]))))
+    (is (empty? (sut/wait-times [(a-triggered-build "deploy" "42" 1000 [["test" "41"]])]))))
 
-  (testing "should average wait times"
-    (is (= {"deploy" {"1970-01-01" 900}}
-           (sut/wait-times-by-day [(a-triggered-build "deploy" "42" 2000 [["test" "41"]])
-                                   (a-build "test" "41" 1000)
-                                   (a-triggered-build "deploy" "30" 1000 [["test" "30"]])
-                                   (a-build "test" "30" 200)]))))
+  (testing "should handle two builds on same date"
+    (is (= [{:job "deploy" :build-id "42" :start 2000 :wait-time 1000}
+            {:job "deploy" :build-id "30" :start 1000 :wait-time 800}]
+           (sut/wait-times [(a-triggered-build "deploy" "42" 2000 [["test" "41"]])
+                            (a-build "test" "41" 1000)
+                            (a-triggered-build "deploy" "30" 1000 [["test" "30"]])
+                            (a-build "test" "30" 200)]))))
 
-  (testing "should list wait times by day"
-    (is (= {"deploy" {"1970-01-01" 800
-                      "1970-01-02" 1000}}
-           (sut/wait-times-by-day [(a-triggered-build "deploy" "42" (+ 2000 a-day) [["test" "41"]])
-                                   (a-build "test" "41" (+ 1000 a-day))
-                                   (a-triggered-build "deploy" "30" 1000 [["test" "30"]])
-                                   (a-build "test" "30" 200)]))))
 
   (testing "should calculate wait time for build triggered by two over two days"
-    (is (= {"deploy" {"1970-01-02" (/ a-day 2)}}
-           (sut/wait-times-by-day [(a-triggered-build "deploy" a-day [["test" "41"]
-                                                                      ["test" "40"]])
-                                   (a-build "test" "41" a-day)
-                                   (a-build "test" "40" 0)])))))
+    (is (= [{:job "deploy" :build-id "42" :start a-day :wait-time a-day}]
+           (sut/wait-times [(a-triggered-build "deploy" "42" a-day [["test" "41"]
+                                                               ["test" "40"]])
+                            (a-build "test" "41" a-day)
+                            (a-build "test" "40" 0)])))))

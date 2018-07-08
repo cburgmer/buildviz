@@ -1,6 +1,5 @@
 (ns buildviz.controllers.util
-  (:require [buildviz.analyse.wait-times :refer [wait-times-by-day]]
-            [buildviz.util.csv :as csv]))
+  (:require [buildviz.util.csv :as csv]))
 
 (defn- remap-date-first [[key wait-times-by-day]]
   (map (fn [[day avg-wait-time]]
