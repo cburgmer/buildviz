@@ -70,7 +70,14 @@
 (defn- a-pipeline-run [pipeline-name pipeline-run stages & revisions]
   [[(format "http://gocd:8513/api/pipelines/%s/instance/%s" pipeline-name pipeline-run)
     (successful-json-response {:stages stages
-                               :build_cause {:material_revisions revisions}})]])
+                               :build_cause {:material_revisions revisions
+                                             :trigger_forced false}})]])
+
+(defn- a-forced-pipeline-run [pipeline-name pipeline-run stages & revisions]
+  [[(format "http://gocd:8513/api/pipelines/%s/instance/%s" pipeline-name pipeline-run)
+    (successful-json-response {:stages stages
+                               :build_cause {:material_revisions revisions
+                                             :trigger_forced true}})]])
 
 (defn- cruise-property [name value]
   (xml/element :property {:name name} (xml/->CData value)))
@@ -192,6 +199,29 @@
                  first
                  second
                  :triggered-by)))))
+
+  (testing "should not sync a forced build trigger"
+    (let [store (atom [])]
+      (fake/with-fake-routes-in-isolation
+        (serve-up (a-config (a-pipeline-group "Development"
+                                              (a-pipeline "Build"
+                                                          (a-stage "DoStuff"))))
+                  (a-short-history "Build" "DoStuff"
+                                   (a-stage-run 42 "1" "Passed"
+                                                (a-job-run "AlphaJob" 1493201298062 321)))
+                  (a-forced-pipeline-run "Build" 42
+                                         [(a-stage-run "DoStuff" "1")]
+                                         (a-pipeline-build-cause 7 "AnotherPipeline" 21 "AnotherStage" 2))
+                  (a-builds-properties 321 {})
+                  (a-file-list "Build" 42 "DoStuff" "1" "AlphaJob")
+                  (provide-buildviz-and-capture-puts store))
+        (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
+                                       (url/url "http://buildviz:8010")
+                                       beginning-of-2016 nil)))
+      (is (nil? (-> @store
+                    first
+                    second
+                    :triggered-by)))))
 
   (testing "should not count a source revision cause as pipeline trigger"
     (let [store (atom [])]

@@ -26,9 +26,13 @@
       {:job-name (job-name pipeline-name stage-name)
        :build-id (build-id pipeline-run stage-run)})))
 
+(defn- triggered-by-pipeline-run? [pipeline-instance]
+  (not (:trigger_forced (:build_cause pipeline-instance))))
+
 (defn- pipeline-material-triggers [pipeline-instance stages]
-  (let [revisions (:material_revisions (:build_cause pipeline-instance))]
-    (keep pipeline-build-cause revisions)))
+  (when (triggered-by-pipeline-run? pipeline-instance)
+    (let [revisions (:material_revisions (:build_cause pipeline-instance))]
+      (keep pipeline-build-cause revisions))))
 
 
 (defn- first-stage? [stage-name stages]
