@@ -60,17 +60,22 @@
   (testing "should respond with CSV"
     (let [app (the-app {"test" {"1" {:start (+ 100 a-timestamp)
                                      :end (+ 200 a-timestamp)}}
-                        "deploy-staging" {"1" {:start (+ 700 a-timestamp)
+                        "deploy-staging" {"1" {:start (+ 400 a-timestamp)
                                                :end (+ 800 a-timestamp)
                                                :triggered-by [{:job-name "test"
                                                                :build-id "1"}]}}
                         "deploy-uat" {"2" {:start (+ 3800 a-timestamp)
                                            :end (+ 5000 a-timestamp)
                                            :triggered-by [{:job-name "test"
+                                                           :build-id "1"}]}}
+                        "smoke-test" {"1" {:start (+ 1000 a-timestamp)
+                                           :end (+ 1100 a-timestamp)
+                                           :triggered-by [{:job-name "test"
                                                            :build-id "1"}]}}}
                        {})]
       (is (= (str/join "\n" ["job,buildId,start,waitTime"
-                             (format "deploy-staging,1,1986-10-14 04:03:28,%.8f" (float (/ 500 a-day)))
+                             (format "deploy-staging,1,1986-10-14 04:03:27,%.8f" (float (/ 200 a-day)))
+                             (format "smoke-test,1,1986-10-14 04:03:28,%.8f" (float (/ 800 a-day)))
                              (format "deploy-uat,2,1986-10-14 04:03:31,%.8f" (float (/ 3600 a-day)))
                              ""])
              (:body (plain-get-request app "/waittimes")))))))
