@@ -15,7 +15,7 @@
         graph = graphFactory.create({
             id: 'waitTimes',
             headline: "Job wait times",
-            noDataReason: "provided <code>start</code>, <code>end</code> times and <code>triggeredBy</code> information for your builds over at least two consecutive days",
+            noDataReason: "provided <code>start</code>, <code>end</code> times and <code>triggeredBy</code> information for your builds",
             widgets: [timespanSelector.widget, description.widget]
         });
 

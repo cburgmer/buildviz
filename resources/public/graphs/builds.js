@@ -12,7 +12,7 @@
         graph = graphFactory.create({
             id: 'builds',
             headline: "Builds",
-            noDataReason: "provided <code>start</code> and <code>end</code> times for your builds over at least two consecutive days",
+            noDataReason: "provided <code>start</code> and <code>end</code> times for your builds",
             widgets: [timespanSelector.widget, description.widget]
         });
 
