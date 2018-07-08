@@ -1,4 +1,4 @@
-(function (timespanSelection, graphDescription, graphFactory, durationsByDay, jobColors, dataSource) {
+(function (timespanSelection, graphDescription, graphFactory, events, jobColors, dataSource) {
     var timespanSelector = timespanSelection.create(timespanSelection.timespans.twoMonths),
         description = graphDescription.create({
             description: ["Runtime over time for all pipelines identified for the given interval, average by day.",
@@ -11,34 +11,44 @@
         graph = graphFactory.create({
             id: 'pipelineRuntime',
             headline: "Pipeline runtime",
-            noDataReason: "provided <code>start</code>, <code>end</code> times and <code>triggeredBy</code> information for your builds over at least two consecutive days",
+            noDataReason: "provided <code>start</code>, <code>end</code> times and <code>triggeredBy</code> information for your builds",
             widgets: [timespanSelector.widget, description.widget]
         });
 
     var transformRuntimes = function (data) {
-        var pipelineEndJobNames = data.map(function (entry) {
-            return entry.pipeline[entry.pipeline.length - 1];
+        var pipelineRuntimesByPipeline = d3.nest()
+            .key(function (d) {
+                return d.pipeline.join('/');
+            })
+            .sortValues(function (a, b) { return b.start - a.start; })
+            .entries(data);
+
+        var pipelineEndJobNames = pipelineRuntimesByPipeline.map(function (group) {
+            return group.key[group.key.length - 1];
         });
         var color = jobColors.colors(pipelineEndJobNames);
 
-        return data.map(function (entry) {
+        return pipelineRuntimesByPipeline.map(function (group) {
+            var pipeline = group.values[0].pipeline;
+            var c = color(pipeline[pipeline.length - 1]);
             return {
-                title: entry.pipeline.join(', '),
-                tooltip: entry.pipeline.join('<br>→ '),
-                color: color(entry.pipeline[entry.pipeline.length - 1]),
-                durations: entry.runtimes.map(function (day) {
+                id: group.key,
+                color: c,
+                events: group.values.map(function (pipelineRun) {
+                    var duration = pipelineRun.end - pipelineRun.start;
                     return {
-                        date: new Date(day.date),
-                        duration: day.runtime / 1000
+                        date: new Date(pipelineRun.end),
+                        value: duration,
+                        color: c,
+                        tooltip: '<div>' + utils.formatTimeInMs(duration) + '</div>' +
+                            pipeline.join('<br>→ ')
                     };
                 })
             };
-        }).filter(function (entry) {
-            return entry.durations.length > 1;
         });
     };
 
-    var runtimePane = durationsByDay(graph.svg, 'Average runtime');
+    var runtimePane = events(graph.svg, 'Average runtime', 'lines');
 
     timespanSelector.load(function (fromTimestamp) {
         graph.loading();
@@ -49,4 +59,4 @@
             runtimePane.render(transformRuntimes(data), fromTimestamp);
         });
     });
-}(timespanSelection, graphDescription, graphFactory, durationsByDay, jobColors, dataSource));
+}(timespanSelection, graphDescription, graphFactory, events, jobColors, dataSource));

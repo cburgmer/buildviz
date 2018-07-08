@@ -1,6 +1,5 @@
 (ns buildviz.analyse.pipelines
-  (:require [buildviz.analyse.duration :as duration]
-            [buildviz.data.build-schema :refer [was-triggered-by?]]))
+  (:require [buildviz.data.build-schema :refer [was-triggered-by?]]))
 
 (defn- find-build [{:keys [job-name build-id]} builds]
   (when job-name
@@ -57,16 +56,15 @@
             (= "fail" (pipeline-run-outcome pipeline-run)))
           pipeline-runs))
 
-(defn- pipeline-run->duration [pipeline-run]
-  {:name (pipeline-run-name pipeline-run)
-   :end (pipeline-run-end pipeline-run)
-   :duration (- (pipeline-run-end pipeline-run)
-                (pipeline-run-start pipeline-run))})
+(defn- build-pipeline-run [pipeline-run]
+  {:pipeline (pipeline-run-name pipeline-run)
+   :start (pipeline-run-start pipeline-run)
+   :end (pipeline-run-end pipeline-run)})
 
-(defn pipeline-runtimes-by-day [builds]
+(defn pipelines [builds]
   (->> builds
        find-pipeline-runs
        ignore-unsuccessful-pipeline-runs-to-remove-noise-of-interrupted-pipelines
        (filter pipeline-run-end)
-       (map pipeline-run->duration)
-       duration/average-by-day))
+       (map build-pipeline-run)
+       (map #(dissoc % :name :duration))))

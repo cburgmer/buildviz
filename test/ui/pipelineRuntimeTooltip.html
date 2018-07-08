@@ -5,64 +5,50 @@
 <link rel="stylesheet" href="../../resources/public/common/timespanSelection.css">
 <link rel="stylesheet" href="../../resources/public/common/graphDescription.css">
 <link rel="stylesheet" href="../../resources/public/common/graphFactory.css">
-<link rel="stylesheet" href="../../resources/public/common/durationsByDay.css">
+<link rel="stylesheet" href="../../resources/public/common/events.css">
 <body>
     <script>
-        var dataSource = {
-            load: function (_, callback) {
-                callback([
-                    {
-                        "pipeline": [
-                            "Some_Build",
-                            "Other_Build"
-                        ],
-                        "runtimes": [
-                            {
-                                "date": "2016-01-03",
-                                "runtime": 28358
-                            },
-                            {
-                                "date": "2016-01-04",
-                                "runtime": 63776
-                            },
-                            {
-                                "date": "2016-01-05",
-                                "runtime": 29444
-                            },
-                            {
-                                "date": "2016-01-07",
-                                "runtime": 29505
-                            },
-                            {
-                                "date": "2016-01-08",
-                                "runtime": 29508
-                            }
-                        ]
-                    },
-                    {
-                        "pipeline": [
-                            "Test",
-                            "Deploy",
-                            "SmokeTest"
-                        ],
-                        "runtimes": [
-                            {
-                                "date": "2016-01-07",
-                                "runtime": 29505
-                            },
-                            {
-                                "date": "2016-01-08",
-                                "runtime": 47112
-                            },
-                            {
-                                "date": "2016-01-09",
-                                "runtime": 37747
-                            }
-                        ]
-                    }
-                ]);
-            }
-        };
+     var dataSource = {
+         load: function (_, callback) {
+             callback([{
+                 "pipeline": ["Some_Build", "Other_Build"],
+                 start: 1443650400000,
+                 end: 1443651000000
+             }, {
+                 "pipeline": ["Some_Build", "Other_Build"],
+                 start: 1443996000000,
+                 end: 1443996360000
+             }, {
+                 "pipeline": ["Some_Build", "Other_Build"],
+                 start: 1446418800000,
+                 end: 1446419064000
+             }, {
+                 "pipeline": ["Some_Build", "Other_Build"],
+                 start: 1446850800000,
+                 end: 1446851190000
+             }, {
+                 "pipeline": ["Some_Build", "Other_Build"],
+                 start: 1446937200000,
+                 end: 1446937380000
+             }, {
+                 "pipeline": ["Test", "Deploy", "SmokeTest"],
+                 start: 1441663200000,
+                 end: 1441663320000
+             }, {
+                 "pipeline": ["Test", "Deploy", "SmokeTest"],
+                 start: 1442527200000,
+                 end: 1442527350000
+             }, {
+                 "pipeline": ["Test", "Deploy", "SmokeTest"],
+                 start: 1443736800000,
+                 end: 1443737040000
+             }, {
+                 "pipeline": ["Test", "Deploy", "SmokeTest"],
+                 start: 1446937200000,
+                 end: 1446937390000
+             }]);
+         }
+     };
     </script>
     <script src="../../resources/public/node_modules/d3/d3.min.js"></script>
     <script src="../../resources/public/common/tooltip.js"></script>
@@ -71,13 +57,13 @@
     <script src="../../resources/public/common/graphDescription.js"></script>
     <script src="../../resources/public/common/utils.js"></script>
     <script src="../../resources/public/common/jobColors.js"></script>
-    <script src="../../resources/public/common/durationsByDay.js"></script>
+    <script src="../../resources/public/common/events.js"></script>
     <script src="testHelpers.js"></script>
     <script>
-        testHelpers.mockDateToday('2016-01-09');
+     testHelpers.mockDateToday('2015-10-18');
     </script>
     <script src="../../resources/public/graphs/pipelineRuntime.js"></script>
     <script>
-        testHelpers.hoverOver(document.querySelector('.entry'));
+     testHelpers.hoverOver(document.querySelector('.eventGroup circle'));
     </script>
 </body>

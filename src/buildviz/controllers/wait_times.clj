@@ -1,6 +1,5 @@
 (ns buildviz.controllers.wait-times
   (:require [buildviz.analyse.wait-times :refer [wait-times]]
-            [buildviz.controllers.util :as util]
             [buildviz.data.results :as results]
             [buildviz.util.http :as http]
             [buildviz.util.csv :as csv]))

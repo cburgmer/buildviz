@@ -1,12 +1,12 @@
 .events .axis path,
 .events .axis line {
-  fill: none;
-  stroke: #000;
-  shape-rendering: crispEdges;
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
 }
 
 .events .x.axis path {
-  display: none;
+    display: none;
 }
 
 .events .eventGroup circle {
@@ -19,7 +19,8 @@
     stroke-dasharray: 0.9;
 }
 
-.events:hover .eventGroup circle {
+.events:hover .eventGroup circle,
+.events:hover .eventGroup path {
     opacity: 0.4;
 }
 .events:hover .eventGroup:hover circle,
@@ -27,15 +28,28 @@
     opacity: 1;
     stroke-width: 1px;
 }
+.events:hover .eventGroup:hover path,
+.events:hover .eventGroup.highlightedElement path {
+    opacity: 1;
+}
 
 .events .eventGroup path {
     stroke-width: 3px;
     fill: none;
-
-    visibility: hidden;
 }
 
-.events .eventGroup:hover path,
-.events .eventGroup.highlightedElement path {
+.events.linesMode .eventGroup circle {
+    visibility: hidden;
+}
+.events.linesMode .eventGroup:hover circle,
+.events.linesMode .eventGroup.highlightedElement circle {
+    visibility: visible;
+}
+
+.events.circlesMode .eventGroup path {
+    visibility: hidden;
+}
+.events.circlesMode .eventGroup:hover path,
+.events.circlesMode .eventGroup.highlightedElement path {
     visibility: visible;
 }

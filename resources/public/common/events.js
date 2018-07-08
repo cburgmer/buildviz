@@ -40,7 +40,6 @@ var events = (function (utils, tooltip) {
         .orient("left");
 
     var avarageLine = d3.svg.line()
-            .interpolate('basis')
             .x(function(d) { return x(d.date); })
             .y(function(d) { return y(d.value); });
 
@@ -54,8 +53,12 @@ var events = (function (utils, tooltip) {
         return axis;
     };
 
-    var createAxesPane = function (svg, yAxisCaption) {
-        svg.attr('class', 'events');
+    var createAxesPane = function (svg, yAxisCaption, defaultMode) {
+        if (defaultMode === 'lines') {
+            svg.attr('class', 'events linesMode');
+        } else {
+            svg.attr('class', 'events circlesMode');
+        }
 
         var axesPane = svg
                 .append("g")
@@ -160,11 +163,11 @@ var events = (function (utils, tooltip) {
         tooltip.register(circle, tooltipHtml);
     };
 
-    return function (svg, yAxisCaption) {
+    return function (svg, yAxisCaption, defaultMode) {
         var axesPane,
             getOrCreateAxesPane = function () {
                 if (axesPane === undefined) {
-                    axesPane = createAxesPane(svg, yAxisCaption);
+                    axesPane = createAxesPane(svg, yAxisCaption, defaultMode);
                 }
 
                 return axesPane;
