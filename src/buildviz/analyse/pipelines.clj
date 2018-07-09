@@ -30,7 +30,7 @@
   (let [pipeline [pipeline-end-build]]
     (recur-pipeline-ending-with pipeline builds)))
 
-(defn- find-pipeline-runs [builds]
+(defn- find-build-chains [builds]
   (let [pipeline-end-candidates (->> builds
                                      (filter :triggered-by)
                                      (filter #(is-pipeline-end? % builds)))]
@@ -39,32 +39,21 @@
          (filter #(< 1 (count %))))))
 
 
-(defn- pipeline-run-end [builds-of-pipeline-run]
-  (:end (last builds-of-pipeline-run)))
-
-(defn- pipeline-run-start [builds-of-pipeline-run]
-  (:start (first builds-of-pipeline-run)))
-
-(defn- pipeline-run-outcome [builds-of-pipeline-run]
-  (:outcome (last builds-of-pipeline-run)))
-
-(defn- pipeline-run-name [builds-of-pipeline-run]
-  (map :job builds-of-pipeline-run))
-
 (defn- ignore-unsuccessful-pipeline-runs-to-remove-noise-of-interrupted-pipelines [pipeline-runs]
   (remove (fn [pipeline-run]
-            (= "fail" (pipeline-run-outcome pipeline-run)))
+            (= "fail" (:outcome pipeline-run)))
           pipeline-runs))
 
-(defn- build-pipeline-run [pipeline-run]
-  {:pipeline (pipeline-run-name pipeline-run)
-   :start (pipeline-run-start pipeline-run)
-   :end (pipeline-run-end pipeline-run)})
+(defn- build-chain->pipeline-run [build-chain]
+  {:pipeline (map :job build-chain)
+   :start (:start (first build-chain))
+   :end (:end (last build-chain))
+   :outcome (:outcome (last build-chain))})
 
 (defn pipelines [builds]
   (->> builds
-       find-pipeline-runs
+       find-build-chains
+       (map build-chain->pipeline-run)
        ignore-unsuccessful-pipeline-runs-to-remove-noise-of-interrupted-pipelines
-       (filter pipeline-run-end)
-       (map build-pipeline-run)
-       (map #(dissoc % :name :duration))))
+       (map #(dissoc % :outcome))
+       (filter :end)))
