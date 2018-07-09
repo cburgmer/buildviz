@@ -124,11 +124,15 @@ var events = (function (utils, tooltip) {
                 return d.color;
             });
 
-        selection
+        var path = selection
             .select('path')
             .attr('d', function (d) {
                 return avarageLine(d.events);
             });
+
+        tooltip.register(path, function (d) {
+            return d.tooltip;
+        });
 
         var circle = selection.selectAll('circle')
                 .data(function (d) { return d.events; });
@@ -156,11 +160,9 @@ var events = (function (utils, tooltip) {
                 return x(d.date);
             });
 
-        var tooltipHtml = function (d) {
+        tooltip.register(circle, function (d) {
             return d.tooltip;
-        };
-
-        tooltip.register(circle, tooltipHtml);
+        });
     };
 
     return function (svg, yAxisCaption, defaultMode) {

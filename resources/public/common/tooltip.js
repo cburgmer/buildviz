@@ -11,6 +11,11 @@ var tooltip = function () {
     var mouseover = function (html) {
         var targetRect = d3.event.target.getBoundingClientRect(),
             windowRect = document.body.getBoundingClientRect();
+
+        if (!html) {
+            return;
+        }
+
         tooltip
             .style("display", "inline")
             .html(html)

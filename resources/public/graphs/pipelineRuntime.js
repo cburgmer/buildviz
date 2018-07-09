@@ -34,6 +34,7 @@
             return {
                 id: group.key,
                 color: c,
+                tooltip: pipeline.join('<br>→ '),
                 events: group.values.map(function (pipelineRun) {
                     var duration = pipelineRun.end - pipelineRun.start;
                     var buildNames = pipelineRun.builds .map(function (build) {
