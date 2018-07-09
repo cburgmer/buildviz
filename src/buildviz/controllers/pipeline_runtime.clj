@@ -16,9 +16,12 @@
     (if (= (:mime accept) :json)
       (http/respond-with-json pipeline-list)
       (http/respond-with-csv
-       (csv/export-table ["pipeline" "start" "end"]
+       (csv/export-table ["pipeline" "start" "end" "builds"]
                          (->> pipeline-list
-                              (map (fn [{:keys [pipeline start end]}]
+                              (map (fn [{:keys [pipeline start end builds]}]
                                      [(str/join "|" pipeline)
                                       (csv/format-timestamp start)
-                                      (csv/format-timestamp end)]))))))))
+                                      (csv/format-timestamp end)
+                                      (str/join "|" (map (fn [{:keys [job build-id]}]
+                                                           (format "%s/%s" job build-id))
+                                                         builds))]))))))))

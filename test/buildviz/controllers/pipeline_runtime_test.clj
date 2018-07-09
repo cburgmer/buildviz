@@ -75,8 +75,8 @@
                                            :triggered-by [{:job-name "test"
                                                            :build-id "2"}]}}}
                        {})]
-      (is (= (str/join "\n" ["pipeline,start,end"
-                             "test|deploy-staging,1986-10-14 04:03:27,1986-10-14 04:03:28"
-                             "test|deploy-uat,1986-10-15 04:03:29,1986-10-15 04:03:30"
+      (is (= (str/join "\n" ["pipeline,start,end,builds"
+                             "test|deploy-staging,1986-10-14 04:03:27,1986-10-14 04:03:28,test/1|deploy-staging/1"
+                             "test|deploy-uat,1986-10-15 04:03:29,1986-10-15 04:03:30,test/2|deploy-uat/2"
                              ""])
              (:body (plain-get-request app "/pipelineruntime")))))))
