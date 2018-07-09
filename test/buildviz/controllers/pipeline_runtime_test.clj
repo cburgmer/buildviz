@@ -15,47 +15,65 @@
 
 (deftest test-get-pipeline-runtime
   (testing "should return pipeline runtime"
-    (let [app (the-app {"test" {2 {:start (+ 2000 a-day)}
-                                1 {:start 100}}
-                        "deploy" {2 {:start (+ 2500 a-day)
-                                     :end (+ 2800 a-day)
-                                     :triggered-by [{:job-name "test"
-                                                     :build-id 2}]}
-                                  1 {:start 200
-                                     :end 700
-                                     :triggered-by [{:job-name "test"
-                                                     :build-id 1}]}}}
+    (let [app (the-app {"test" {"2" {:start (+ 2000 a-day)}
+                                "1" {:start 100}}
+                        "deploy" {"2" {:start (+ 2500 a-day)
+                                       :end (+ 2800 a-day)
+                                       :triggered-by [{:job-name "test"
+                                                       :build-id "2"}]}
+                                  "1" {:start 200
+                                       :end 700
+                                       :triggered-by [{:job-name "test"
+                                                       :build-id "1"}]}}}
                        {})]
-      (is (= [{"pipeline" ["test" "deploy"] "start" 86402000 "end" 86402800}
-              {"pipeline" ["test" "deploy"] "start" 100 "end" 700}]
+      (is (= [{"pipeline" ["test" "deploy"]
+               "builds" [{"job" "test"
+                          "buildId" "2"}
+                         {"job" "deploy"
+                          "buildId" "2"}]
+               "start" 86402000
+               "end" 86402800}
+              {"pipeline" ["test" "deploy"]
+               "builds" [{"job" "test"
+                          "buildId" "1"}
+                         {"job" "deploy"
+                          "buildId" "1"}]
+               "start" 100
+               "end" 700}]
              (json-body (json-get-request app "/pipelineruntime"))))))
 
   (testing "should respect time offset"
-    (let [app (the-app {"test" {1 {:start 100}
-                                2 {:start (+ 2000 a-day)}}
-                        "deploy" {1 {:start 200
-                                     :end 700
-                                     :triggered-by [{:job-name "test"
-                                                     :build-id 1}]}
-                                  2 {:start (+ 2500 a-day)
-                                     :end (+ 2800 a-day)
-                                     :triggered-by [{:job-name "test"
-                                                     :build-id 2}]}}}
+    (let [app (the-app {"test" {"1" {:start 100}
+                                "2" {:start (+ 2000 a-day)}}
+                        "deploy" {"1" {:start 200
+                                       :end 700
+                                       :triggered-by [{:job-name "test"
+                                                       :build-id "1"}]}
+                                  "2" {:start (+ 2500 a-day)
+                                       :end (+ 2800 a-day)
+                                       :triggered-by [{:job-name "test"
+                                                       :build-id "2"}]}}}
                        {})]
-      (is (= [{"pipeline" ["test" "deploy"] "start" 86402000 "end" 86402800}]
+      (is (= [{"pipeline" ["test" "deploy"]
+               "builds" [{"job" "test"
+                          "buildId" "2"}
+                         {"job" "deploy"
+                          "buildId" "2"}]
+               "start" 86402000
+               "end" 86402800}]
              (json-body (json-get-request app "/pipelineruntime" {"from" a-day}))))))
 
   (testing "should respond with CSV"
-    (let [app (the-app {"test" {1 {:start (+ 100 a-timestamp)}
-                                2 {:start (+ 2000 a-day a-timestamp)}}
-                        "deploy-staging" {1 {:start (+ 200 a-timestamp)
-                                             :end (+ 700 a-timestamp)
-                                             :triggered-by [{:job-name "test"
-                                                             :build-id 1}]}}
-                        "deploy-uat" {2 {:start (+ 2500 a-day a-timestamp)
-                                         :end (+ 2800 a-day a-timestamp)
-                                         :triggered-by [{:job-name "test"
-                                                         :build-id 2}]}}}
+    (let [app (the-app {"test" {"1" {:start (+ 100 a-timestamp)}
+                                "2" {:start (+ 2000 a-day a-timestamp)}}
+                        "deploy-staging" {"1" {:start (+ 200 a-timestamp)
+                                               :end (+ 700 a-timestamp)
+                                               :triggered-by [{:job-name "test"
+                                                               :build-id "1"}]}}
+                        "deploy-uat" {"2" {:start (+ 2500 a-day a-timestamp)
+                                           :end (+ 2800 a-day a-timestamp)
+                                           :triggered-by [{:job-name "test"
+                                                           :build-id "2"}]}}}
                        {})]
       (is (= (str/join "\n" ["pipeline,start,end"
                              "test|deploy-staging,1986-10-14 04:03:27,1986-10-14 04:03:28"

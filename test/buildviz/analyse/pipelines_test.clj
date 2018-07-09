@@ -72,9 +72,22 @@
                            (a-build "test" "41")]))))
 
   (testing "should handle two runs of the same pipeline"
-    (is (= [{:pipeline ["test" "deploy"] :start 86400200 :end 86401000}
-            {:pipeline ["test" "deploy"] :start 400 :end 1000}]
+    (is (= [{:pipeline ["test" "deploy"]
+             :builds [{:job "test"
+                       :build-id "41"}
+                      {:job "deploy"
+                       :build-id "20"}]
+             :start 86400200
+             :end 86401000}
+            {:pipeline ["test" "deploy"]
+             :builds [{:job "test"
+                       :build-id "40"}
+                      {:job "deploy"
+                       :build-id "18"}]
+             :start 400
+             :end 1000}]
            (sut/pipelines [{:job "deploy"
+                            :build-id "20"
                             :triggered-by [{:job-name "test"
                                             :build-id "41"}]
                             :end (+ 1000 a-day)}
@@ -82,6 +95,7 @@
                             :build-id "41"
                             :start (+ 200 a-day)}
                            {:job "deploy"
+                            :build-id "18"
                             :triggered-by [{:job-name "test"
                                             :build-id "40"}]
                             :end 1000}
@@ -90,8 +104,20 @@
                             :start 400}]))))
 
   (testing "should handle build triggered by two over two days"
-    (is (= [{:pipeline ["test" "deploy"] :start 86400000 :end 86400000}
-            {:pipeline ["test" "deploy"] :start 0 :end 86400000}]
+    (is (= [{:pipeline ["test" "deploy"]
+             :builds [{:job "test"
+                       :build-id "41"}
+                      {:job "deploy"
+                       :build-id "42"}]
+             :start 86400000
+             :end 86400000}
+            {:pipeline ["test" "deploy"]
+             :builds [{:job "test"
+                       :build-id "40"}
+                      {:job "deploy"
+                       :build-id "42"}]
+             :start 0
+             :end 86400000}]
            (sut/pipelines [{:job "deploy"
                             :build-id "42"
                             :triggered-by [{:job-name "test"

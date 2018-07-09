@@ -36,12 +36,15 @@
                 color: c,
                 events: group.values.map(function (pipelineRun) {
                     var duration = pipelineRun.end - pipelineRun.start;
+                    var buildNames = pipelineRun.builds .map(function (build) {
+                        return build.job + ' #' + build.buildId;
+                    });
                     return {
                         date: new Date(pipelineRun.end),
                         value: duration,
                         color: c,
                         tooltip: '<div>' + utils.formatTimeInMs(duration) + '</div>' +
-                            pipeline.join('<br>→ ')
+                            buildNames.join('<br>→ ')
                     };
                 })
             };

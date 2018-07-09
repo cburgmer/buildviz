@@ -46,6 +46,7 @@
 
 (defn- build-chain->pipeline-run [build-chain]
   {:pipeline (map :job build-chain)
+   :builds (map #(select-keys % [:job :build-id]) build-chain)
    :start (:start (first build-chain))
    :end (:end (last build-chain))
    :outcome (:outcome (last build-chain))})
