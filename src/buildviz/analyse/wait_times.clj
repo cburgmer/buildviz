@@ -13,7 +13,8 @@
       {:job job
        :build-id build-id
        :start start
-       :wait-time wait-time})))
+       :wait-time wait-time
+       :triggered-by (select-keys triggering-build [:job :build-id])})))
 
 (defn- longest-build-wait-time [build all-builds]
   (->> (:triggered-by build)

@@ -25,7 +25,8 @@
             value: buildWaitTime.waitTime,
             color: color,
             tooltip: '<div>' + buildWaitTime.job + ' #' + buildWaitTime.buildId + '</div>' +
-                '<div>' + utils.formatTimeInMs(buildWaitTime.waitTime) + '</div>'
+                '<div>' + utils.formatTimeInMs(buildWaitTime.waitTime) + '</div>' +
+                '<div>triggered by ' + buildWaitTime.triggeredBy.job + ' #' + buildWaitTime.triggeredBy.buildId + '</div>'
         };
     };
 

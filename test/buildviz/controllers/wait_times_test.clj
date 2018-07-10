@@ -30,11 +30,13 @@
       (is (= [{"job" "deploy"
                "buildId" "2"
                "start" 86403800
-               "waitTime" 800}
+               "waitTime" 800
+               "triggeredBy" {"job" "test" "buildId" "2"}}
               {"job" "deploy"
                "buildId" "1"
                "start" 700
-               "waitTime" 500}]
+               "waitTime" 500
+               "triggeredBy" {"job" "test" "buildId" "1"}}]
              (json-body (json-get-request app "/waittimes"))))))
 
   (testing "should respect time offset"
@@ -54,7 +56,8 @@
       (is (= [{"job" "deploy"
                "buildId" "2"
                "start" 86403800
-               "waitTime" 800}]
+               "waitTime" 800
+               "triggeredBy" {"job" "test" "buildId" "2"}}]
              (json-body (json-get-request app "/waittimes" {"from" a-day}))))))
 
   (testing "should respond with CSV"
@@ -73,9 +76,9 @@
                                            :triggered-by [{:job-name "test"
                                                            :build-id "1"}]}}}
                        {})]
-      (is (= (str/join "\n" ["job,buildId,start,waitTime"
-                             (format "deploy-staging,1,1986-10-14 04:03:27,%.8f" (float (/ 200 a-day)))
-                             (format "smoke-test,1,1986-10-14 04:03:28,%.8f" (float (/ 800 a-day)))
-                             (format "deploy-uat,2,1986-10-14 04:03:31,%.8f" (float (/ 3600 a-day)))
+      (is (= (str/join "\n" ["job,buildId,start,waitTime,triggeredBy"
+                             (format "deploy-staging,1,1986-10-14 04:03:27,%.8f,test/1" (float (/ 200 a-day)))
+                             (format "smoke-test,1,1986-10-14 04:03:28,%.8f,test/1" (float (/ 800 a-day)))
+                             (format "deploy-uat,2,1986-10-14 04:03:31,%.8f,test/1" (float (/ 3600 a-day)))
                              ""])
              (:body (plain-get-request app "/waittimes")))))))
