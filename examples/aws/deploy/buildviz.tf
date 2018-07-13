@@ -33,8 +33,8 @@ resource "aws_security_group" "buildviz_instance_http_security_group" {
   vpc_id = "${aws_vpc.buildviz_vpc.id}"
 
   ingress {
-    from_port   = 8080
-    to_port     = 8080
+    from_port   = 80
+    to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -63,6 +63,15 @@ resource "aws_instance" "buildviz_instance" {
     }
   }
 
+  provisioner "file" {
+    source      = "../docker-compose.prod.yml"
+    destination = "docker-compose.prod.yml"
+
+    connection {
+      user = "ec2-user"
+    }
+  }
+
   provisioner "remote-exec" {
     inline = [
       "sudo yum update -y",
@@ -83,7 +92,7 @@ resource "aws_instance" "buildviz_instance" {
       "mkdir buildviz nginx", # Work around https://github.com/docker/compose/issues/3391
       "docker-compose pull",
       "mkdir data", # create mount volume ourselves, so it has the correct owner, might be https://github.com/docker/compose/issues/3270
-      "docker-compose up --no-build -d",
+      "docker-compose -f docker-compose.yml -f docker-compose.prod.yml up --no-build -d",
     ]
 
     connection {
@@ -96,6 +105,7 @@ output "instance_fqdn" {
   value = "${aws_instance.buildviz_instance.public_dns}"
 }
 
+// A hosted zone can be created using https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/CreatingNewSubdomain.html
 data "aws_route53_zone" "selected" {
   name         = "buildviz.cburgmer.space."
 }

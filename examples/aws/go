@@ -44,6 +44,10 @@ goal_tf() {
     )
 }
 
+goal_ssh() {
+    ssh ec2-user@buildviz.cburgmer.space
+}
+
 main() {
     local GOAL="$1"
     if type "goal_${GOAL}" > /dev/null 2>&1; then
