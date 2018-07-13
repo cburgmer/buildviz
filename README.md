@@ -19,7 +19,7 @@ All it needs is your build history including test results.
 
 ## Example
 
-Here's [buildviz's look at ci.jenkins-ci.org](http://cburgmer.github.io/buildviz/ci.jenkins-ci.org/), the Jenkins project's own build server instance.
+Here's [buildviz's look at 'Kotlin Tools and Libraries'](http://buildviz.cburgmer.space/index.html) on [teamcity.jetbrains.com](https://teamcity.jetbrains.com/project.html?projectId=KotlinTools).
 
 ## Usage
 
