@@ -95,3 +95,15 @@ resource "aws_instance" "buildviz_instance" {
 output "instance_fqdn" {
   value = "${aws_instance.buildviz_instance.public_dns}"
 }
+
+data "aws_route53_zone" "selected" {
+  name         = "buildviz.cburgmer.space."
+}
+
+resource "aws_route53_record" "buildviz_dns_record" {
+  zone_id = "${data.aws_route53_zone.selected.zone_id}"
+  name    = "${data.aws_route53_zone.selected.name}"
+  type    = "A"
+  ttl     = "300"
+  records = ["${aws_instance.buildviz_instance.public_ip}"]
+}
