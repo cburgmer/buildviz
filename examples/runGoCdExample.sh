@@ -40,7 +40,7 @@ main() {
     echo
     echo "Point your browser to ${BUILDVIZ_PATH}"
     echo
-    echo "Later, press any key to stop the server and bring down the vagrant box"
+    echo "Later, press any key to stop the server and bring down the container"
 
     read -rn 1
 }
