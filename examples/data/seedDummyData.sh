@@ -23,7 +23,7 @@ function aBuild {
     TRIGGERED_BY_JOB=$2
     TRIGGERED_BY_BUILD_ID=$3
 
-    if [ ! -z "$TRIGGERED_BY_JOB" ]; then
+    if [ -n "$TRIGGERED_BY_JOB" ]; then
         # shellcheck disable=SC2089
         TRIGGERED_BY=', "triggeredBy": [{"jobName": "'"$TRIGGERED_BY_JOB"'", "buildId":"'"$TRIGGERED_BY_BUILD_ID"'"}]'
     fi

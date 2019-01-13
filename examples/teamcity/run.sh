@@ -59,7 +59,6 @@ start_teamcity() {
 }
 
 goal_start() {
-    local run
     if ! container_exists; then
         announce "Provisioning docker image"
         echo
