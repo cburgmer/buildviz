@@ -139,7 +139,7 @@ goal_destroy() {
 
 goal_purge() {
     announce "Purging docker images"
-    docker rmi jenkins/jenkins:2.128-alpine >> "$TMP_LOG"
+    docker rmi jenkins/jenkins:2.157-alpine >> "$TMP_LOG"
     docker rmi buildviz_jenkins_example >> "$TMP_LOG"
     echo " done"
     rm "$TMP_LOG"

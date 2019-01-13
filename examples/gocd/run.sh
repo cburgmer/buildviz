@@ -106,8 +106,8 @@ goal_destroy() {
 
 goal_purge() {
     announce "Purging docker images"
-    docker rmi gocd/gocd-server:v18.6.0 >> "$TMP_LOG"
-    docker rmi gocd/gocd-agent-alpine-3.7:v18.6.0 >> "$TMP_LOG"
+    docker rmi gocd/gocd-server:v18.12.0 >> "$TMP_LOG"
+    docker rmi gocd/gocd-agent-alpine-3.8:v18.12.0 >> "$TMP_LOG"
     echo " done"
     rm "$TMP_LOG"
 }
