@@ -30,25 +30,49 @@ hint_at_logs() {
     fi
 }
 
-goal_start() {
-    announce "Starting vagrant image"
-    echo -n " (give it a few minutes)"
+docker_compose() {
     (
         cd "$SCRIPT_DIR"
-        vagrant up > "$TMP_LOG"
+        docker-compose "$@"
     )
+}
+
+container_exists() {
+    if [[ -z $(docker_compose ps -q) ]]; then
+        return 1
+    else
+        return 0
+    fi
+}
+
+provision_teamcity() {
+    docker_compose up --no-start
+}
+
+start_teamcity() {
+    announce "Starting docker image"
+    docker_compose up -d &> "$TMP_LOG"
 
     wait_for_server "$BASE_URL"
     echo " done"
     rm "$TMP_LOG"
 }
 
+goal_start() {
+    local run
+    if ! container_exists; then
+        announce "Provisioning docker image"
+        echo
+        provision_teamcity
+        start_teamcity
+    else
+        start_teamcity
+    fi
+}
+
 goal_stop() {
-    announce "Stopping vagrant image"
-    (
-        cd "$SCRIPT_DIR"
-        vagrant halt > "$TMP_LOG"
-    )
+    announce "Stopping docker image"
+    docker_compose stop &> "$TMP_LOG"
     echo " done"
     rm "$TMP_LOG"
 }

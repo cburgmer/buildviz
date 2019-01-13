@@ -44,6 +44,11 @@ mkdir -p spec
 rspecTest > spec/example_spec.rb
 anotherRspecTest > spec/another_spec.rb
 
+if ! type gem &> /dev/null; then
+  apt-get update
+  apt-get -qy install ruby
+fi
+
 gem install rake
 gem install rspec -v 3.1.0
 gem install rspec_junit_formatter]]></param>
