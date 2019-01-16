@@ -65,6 +65,9 @@ provision_pipeline() {
 
     "$fly_bin" -t buildviz login -c "$BASE_URL" -u user -p password > "$TMP_LOG"
     "$fly_bin" -t buildviz set-pipeline -p pipeline -c pipeline.yml -n > "$TMP_LOG"
+    "$fly_bin" -t buildviz unpause-pipeline -p pipeline > "$TMP_LOG"
+    "$fly_bin" -t buildviz unpause-job -j pipeline/hello-world > "$TMP_LOG"
+    "$fly_bin" -t buildviz trigger-job -j pipeline/hello-world > "$TMP_LOG"
     rm "$fly_bin"
 }
 
