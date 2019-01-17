@@ -45,11 +45,11 @@ container_exists() {
     fi
 }
 
-provision_teamcity() {
+provision_container() {
     docker_compose up --no-start
 }
 
-start_teamcity() {
+start_server() {
     announce "Starting docker image"
     docker_compose up -d &> "$TMP_LOG"
 
@@ -62,10 +62,10 @@ goal_start() {
     if ! container_exists; then
         announce "Provisioning docker image"
         echo
-        provision_teamcity
-        start_teamcity
+        provision_container
+        start_server
     else
-        start_teamcity
+        start_server
     fi
 }
 
@@ -76,13 +76,28 @@ goal_stop() {
     rm "$TMP_LOG"
 }
 
+goal_destroy() {
+    announce "Destroying docker container"
+    docker_compose down &> "$TMP_LOG"
+    echo " done"
+    rm "$TMP_LOG"
+}
+
+goal_purge() {
+    announce "Purging docker images"
+    docker rmi jetbrains/teamcity-server:2018.1.2 >> "$TMP_LOG"
+    docker rmi jetbrains/teamcity-minimal-agent:2018.1.2 >> "$TMP_LOG"
+    echo " done"
+    rm "$TMP_LOG"
+}
+
 main() {
     trap hint_at_logs EXIT
 
     if type -t "goal_$1" &>/dev/null; then
         "goal_$1"
     else
-        echo "usage: $0 (start|stop)"
+        echo "usage: $0 (start|stop|destroy|purge)"
     fi
 }
 
