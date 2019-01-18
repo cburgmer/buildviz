@@ -27,7 +27,7 @@ Re-running the examples will re-use the provisioned containers.
 
 #### Cleaning up
 
-To remove the test instance and then the downloaded docker images run
+To remove the test instance and then the downloaded docker images run, e.g.
 
     $ ./jenkins/run.sh destroy
     $ ./jenkins/run.sh purge
