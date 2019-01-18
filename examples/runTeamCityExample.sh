@@ -1,16 +1,48 @@
 #!/bin/bash
+set -eo pipefail
 
-cat <<EOF
-Appologies, but you are on your own.
+readonly SCRIPT_DIR=$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)
 
-TeamCity has a manual setup process, amongst that a license agreement you need to accept.
+readonly BUILDVIZ_PORT=3333
+readonly BUILDVIZ_PATH="http://localhost:${BUILDVIZ_PORT}"
 
-Here's what you can do:
+ensure_port_available() {
+    if curl --output /dev/null --silent --head --fail "${BUILDVIZ_PATH}"; then
+        echo "Please stop the application running on port ${BUILDVIZ_PORT} before continuing"
+        exit 1
+    fi
+}
 
-1. $ ./teamcity/run.sh start
-2. Please follow instructions there
-3. Then switch to http://localhost:8111/overview.html and start some builds.
-4. In one tab: $ ./lein do deps, ring server-headless
-5. In another: $ ./lein run -m buildviz.teamcity.sync http://admin:admin@localhost:8111 -p SimpleSetup
-6. Open http://localhost:3000/index.html
-EOF
+clean_up() {
+    "${SCRIPT_DIR}/teamcity/run.sh" stop
+    "${SCRIPT_DIR}/data/run_buildviz.sh" stop
+}
+
+main() {
+    ensure_port_available
+
+    echo "This example will download and install TeamCity via Docker and then sync its output to buildviz"
+    echo
+    echo "Press any key to continue"
+
+    read -rn 1
+
+    # Handle Ctrl+C
+    trap clean_up EXIT
+
+    "${SCRIPT_DIR}/teamcity/run.sh" start
+    PORT="$BUILDVIZ_PORT" "${SCRIPT_DIR}/data/run_buildviz.sh" start
+
+    echo "Syncing job history..."
+    "${SCRIPT_DIR}/../lein" run -m buildviz.teamcity.sync http://admin:admin@localhost:8111 --buildviz="${BUILDVIZ_PATH}" --from 2000-01-01 -p SimpleSetup
+
+    echo "Done..."
+    echo
+    echo "Point your browser to ${BUILDVIZ_PATH}"
+    echo
+    echo "Later, press any key to stop the server and bring down the container"
+
+    read -rn 1
+}
+
+main
