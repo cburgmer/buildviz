@@ -9,6 +9,7 @@ readonly BASE_URL="http://localhost:${PORT}"
 readonly USER="admin"
 readonly PASSWORD="admin"
 readonly BASE_API_URL="http://${USER}:${PASSWORD}@localhost:${PORT}/httpAuth/app/rest"
+readonly DATA_DIR="${SCRIPT_DIR}/data"
 
 wait_for_server() {
     local url=$1
@@ -50,6 +51,10 @@ container_exists() {
 }
 
 provision_container() {
+    local data_projects="${DATA_DIR}/config/projects/"
+    mkdir -p "$data_projects"
+    cp -R "${SCRIPT_DIR}/projects"/* "$data_projects"
+
     docker_compose up --no-start
 }
 
@@ -134,6 +139,7 @@ goal_stop() {
 goal_destroy() {
     announce "Destroying docker container"
     docker_compose down &> "$TMP_LOG"
+    rm -rf "$DATA_DIR" &> "$TMP_LOG"
     echo " done"
     rm "$TMP_LOG"
 }

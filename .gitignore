@@ -17,12 +17,4 @@ pom.xml.asc
 /data/
 /log/
 /examples/gocd/server/config/
-/examples/teamcity/data/config/projects/_Root/
-/examples/teamcity/data/config/*.dist
-/examples/teamcity/data/config/*.xml
-/examples/teamcity/data/config/*.dtd
-/examples/teamcity/data/config/_auth/
-/examples/teamcity/data/config/_logging/
-/examples/teamcity/data/config/_notifications/
-/examples/teamcity/data/config/**/*.properties
-/examples/teamcity/data/system/
+/examples/teamcity/data/
