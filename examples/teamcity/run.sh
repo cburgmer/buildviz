@@ -146,8 +146,8 @@ goal_destroy() {
 
 goal_purge() {
     announce "Purging docker images"
-    docker rmi jetbrains/teamcity-server:2018.2.1 &> "$TMP_LOG"
-    docker rmi jetbrains/teamcity-minimal-agent:2018.2.1 &> "$TMP_LOG"
+    docker images -q jetbrains/teamcity-server | xargs docker rmi &> "$TMP_LOG"
+    docker images -q jetbrains/teamcity-minimal-agent | xargs docker rmi &> "$TMP_LOG"
     echo " done"
     rm "$TMP_LOG"
 }
