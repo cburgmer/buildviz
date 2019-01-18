@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<build-type xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" uuid="ac2c45a6-3ea3-4b44-bf8a-b45334e5a1a5" xsi:noNamespaceSchemaLocation="http://www.jetbrains.com/teamcity/schemas/9.0/project-config.xsd">
+<build-type xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" uuid="ac2c45a6-3ea3-4b44-bf8a-b45334e5a1a5" xsi:noNamespaceSchemaLocation="http://www.jetbrains.com/teamcity/schemas/2018.1/project-config.xsd">
   <name>Test</name>
   <description />
   <settings>
@@ -61,7 +61,7 @@ EOF
 EOF
 }
 
-OUTCOME=$(( $RANDOM % 3 ))
+OUTCOME=$(( BUILD_NUMBER % 3 ))
 
 aTestcase $OUTCOME > results.xml
 manyTestcases > manyResults.xml
@@ -90,3 +90,4 @@ fi]]></param>
     <cleanup />
   </settings>
 </build-type>
+

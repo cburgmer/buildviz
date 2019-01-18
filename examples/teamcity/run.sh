@@ -98,6 +98,7 @@ run_build() {
 run_builds() {
     run_build "SimpleSetup_Test"
     run_build "SimpleSetup_Test"
+    run_build "SimpleSetup_Test"
     run_build "SimpleSetup_RSpecJUnitXml"
     run_build "SimpleSetup_RSpec"
     run_build "SimpleSetup_SubProject_Test"
