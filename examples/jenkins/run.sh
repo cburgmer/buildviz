@@ -55,6 +55,7 @@ configure_pipeline() {
     local job_name
     local view_config
     local view_name
+    announce "Configuring pipeline"
     (
         cd "$SCRIPT_DIR"/jobs
         for job_config in *; do
@@ -73,9 +74,11 @@ configure_pipeline() {
             curl --fail --silent -X POST --data-binary "@$view_config" "${BASE_URL}/view/${view_name}/config.xml" > /dev/null
         done
     )
+    echo " done"
 }
 
 trigger_builds() {
+    announce "Triggering builds"
     for _ in 1 2 3 4 5; do
         curl --fail --silent -X POST "${BASE_URL}/job/Test/build" > /dev/null
 
@@ -85,40 +88,46 @@ trigger_builds() {
             sleep 1
         done
     done
+    echo " done"
+}
+
+provision_container() {
+    docker build "$SCRIPT_DIR" --tag buildviz_jenkins_example
+    docker container create -p 8080:8080 --name buildviz_jenkins_example buildviz_jenkins_example &> "$TMP_LOG"
 }
 
 provision_jenkins() {
-    docker build "$SCRIPT_DIR" --tag buildviz_jenkins_example
-    docker container create -p 8080:8080 --name buildviz_jenkins_example buildviz_jenkins_example
-    docker container start buildviz_jenkins_example
-
-    echo "Disabling Jenkins security"
-    wait_for_server "$BASE_URL/favicon.ico"
+    announce "Disabling Jenkins security"
     sleep 10
-    docker container exec buildviz_jenkins_example rm /var/jenkins_home/config.xml
-    docker container exec buildviz_jenkins_example cp -p /var/jenkins_home/jenkins.install.UpgradeWizard.state /var/jenkins_home/jenkins.install.InstallUtil.lastExecVersion
-    docker container restart buildviz_jenkins_example
+    docker container exec buildviz_jenkins_example rm /var/jenkins_home/config.xml &> "$TMP_LOG"
+    docker container exec buildviz_jenkins_example cp -p /var/jenkins_home/jenkins.install.UpgradeWizard.state /var/jenkins_home/jenkins.install.InstallUtil.lastExecVersion &> "$TMP_LOG"
+    docker container restart buildviz_jenkins_example &> "$TMP_LOG"
+    rm "$TMP_LOG"
     wait_for_server "$BASE_URL"
+    echo " done"
+}
 
-    echo "Configuring pipeline"
-    configure_pipeline
-    echo "Triggering builds"
-    trigger_builds
+start_server() {
+    local check_path="${1:-/}"
+    announce "Starting docker image"
+    docker container start buildviz_jenkins_example &> "$TMP_LOG"
+
+    wait_for_server "${BASE_URL}${check_path}"
+    echo " done"
+    rm "$TMP_LOG"
 }
 
 goal_start() {
     if ! container_exists; then
         announce "Provisioning docker image"
         echo
+        provision_container
+        start_server "/favicon.ico"
         provision_jenkins
-        echo "done"
+        configure_pipeline
+        trigger_builds
     else
-        announce "Starting docker image"
-        docker container start buildviz_jenkins_example > "$TMP_LOG"
-
-        wait_for_server "$BASE_URL"
-        echo " done"
-        rm "$TMP_LOG"
+        start_server
     fi
 }
 
