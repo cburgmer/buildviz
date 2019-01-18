@@ -4,7 +4,8 @@ set -e
 readonly SCRIPT_DIR=$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)
 
 goal_lint() {
-    find "$SCRIPT_DIR" -name "*.sh" -not -path "${SCRIPT_DIR}/test/node_modules/*" | xargs shellcheck
+    find "$SCRIPT_DIR" -name "*.sh" -not -path "${SCRIPT_DIR}/test/node_modules/*" -exec shellcheck {} +
+    shellcheck "$SCRIPT_DIR"/go
 }
 
 goal_test_unit() {
@@ -53,6 +54,7 @@ goal_make_release() {
         sed -i "" "s/$OLD_VERSION/$NEW_VERSION/g" README.md
         sed -i "" "s/buildviz \"$OLD_VERSION\"/buildviz \"$NEW_VERSION\"/" project.clj
 
+        # shellcheck disable=SC1010
         ./lein do deps # force package-lock.json to be updated now
 
         git add README.md project.clj resources/public/package-lock.json
