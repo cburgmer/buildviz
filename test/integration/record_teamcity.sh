@@ -23,11 +23,11 @@ extract_base_url() {
     sed 's/^\(.*\/\/[^\/]*\).*$/\1/'
 }
 
-start_vagrant_image() {
+start_container() {
     "$EXAMPLE_DIR/run.sh" start
 }
 
-stop_vagrant_image() {
+stop_container() {
     "$EXAMPLE_DIR/run.sh" stop
 }
 
@@ -70,7 +70,7 @@ finish_recording() {
 }
 
 clean_up() {
-    stop_vagrant_image
+    stop_container
     stop_buildviz
     stop_wiremock
     echo
@@ -89,13 +89,10 @@ main() {
     # Handle Ctrl+C and errors
     trap clean_up EXIT
 
-    start_vagrant_image
+    start_container
     start_buildviz
     start_wiremock
     start_recording
-
-    echo "Please ensure that TeamCity has run some builds, in at least green and red states, then press enter"
-    read -rn 1
 
     sync_builds
     finish_recording
