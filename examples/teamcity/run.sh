@@ -13,15 +13,6 @@ readonly BASE_API_URL="http://${USER}:${PASSWORD}@localhost:${PORT}/httpAuth/app
 wait_for_server() {
     local url=$1
     echo -n " waiting for ${url}"
-    until curl --output /dev/null --silent --head --fail "$url"; do
-        printf '.'
-        sleep 5
-    done
-}
-
-wait_for_server_200() {
-    local url=$1
-    echo -n " waiting for ${url} to return 200"
     until [[ $(curl  --output /dev/null --silent --head --write-out "%{http_code}" "$url") -eq 200 ]]; do
         printf '.'
         sleep 5
@@ -63,37 +54,58 @@ provision_container() {
 }
 
 start_server() {
+    local check_path="${1:-/favicon.ico}"
     announce "Starting docker image"
     docker_compose up -d &> "$TMP_LOG"
 
-    wait_for_server "${BASE_URL}/mnt"
+    wait_for_server "${BASE_URL}${check_path}"
     echo " done"
     rm "$TMP_LOG"
 }
 
 authorize_worker() {
-    curl -X PUT -H "Content-Type: text/plain" --data true "${BASE_API_URL}/agents/id:1/authorized" &> "$TMP_LOG"
+    curl --fail -X PUT -H "Content-Type: text/plain" --data true "${BASE_API_URL}/agents/id:1/authorized" &> "$TMP_LOG"
     rm "$TMP_LOG"
+}
+
+teamcity_queue_length() {
+    curl --silent --fail "${BASE_API_URL}/buildQueue" -H "Accept: application/json" | \
+        python -c "import json; import sys; print json.loads(sys.stdin.read())['count']"
+}
+
+build_queue_empty() {
+    if [[ "$(teamcity_queue_length)" -eq 0 ]]; then
+        return 0;
+    else
+        return 1;
+    fi
 }
 
 run_build() {
     local buildId="$1"
-    curl -X POST -H "Content-Type: application/xml"  --data "<build><buildType id=\"${buildId}\"/></build>" "${BASE_API_URL}/buildQueue"
+    announce "Triggering build ${buildId}"
+    curl --fail -X POST -H "Content-Type: application/xml"  --data "<build><buildType id=\"${buildId}\"/></build>" "${BASE_API_URL}/buildQueue" &> "$TMP_LOG"
+    rm "$TMP_LOG"
+
+    sleep 2
+    until build_queue_empty ; do
+        printf '.'
+        sleep 5
+    done
+    echo " done"
 }
 
 run_builds() {
-    announce "Running builds"
-    run_build "SimpleSetup_Test" &> "$TMP_LOG"
-    run_build "SimpleSetup_RSpecJUnitXml" &> "$TMP_LOG"
-    run_build "SimpleSetup_RSpec" &> "$TMP_LOG"
-    run_build "SimpleSetup_SubProject_Test" &> "$TMP_LOG"
-    echo " done"
-    rm "$TMP_LOG"
+    run_build "SimpleSetup_Test"
+    run_build "SimpleSetup_Test"
+    run_build "SimpleSetup_RSpecJUnitXml"
+    run_build "SimpleSetup_RSpec"
+    run_build "SimpleSetup_SubProject_Test"
 }
 
 provision_teamcity() {
     announce "Please manually create the admin user via the web UI ${BASE_URL}, user '${USER}' with password '${PASSWORD}' (I'll wait)"
-    wait_for_server_200 "${BASE_API_URL}/server"
+    wait_for_server "${BASE_API_URL}/server"
     echo "Thank you"
     authorize_worker
     run_builds
@@ -107,7 +119,7 @@ goal_start() {
         start_server
         provision_teamcity
     else
-        start_server
+        start_server "/login.html"
     fi
 }
 
