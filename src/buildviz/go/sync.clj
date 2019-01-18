@@ -18,11 +18,11 @@
 (defn usage [options-summary]
   (str/join "\n"
             [""
-             "Syncs Go.cd build history with buildviz"
+             "Syncs GoCD build history with buildviz"
              ""
              "Usage: buildviz.go.sync [OPTIONS] GO_URL"
              ""
-             "GO_URL            The URL of the Go.cd installation"
+             "GO_URL            The URL of the GoCD installation"
              ""
              "Options"
              options-summary]))

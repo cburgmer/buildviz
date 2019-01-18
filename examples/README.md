@@ -19,7 +19,7 @@ This is the quickest, most lightweight example with some fake seed data:
 These demos show integration with popular CI servers. Installed via Docker, they
 come with a minimal pipeline pre-configured.
 
-    $ ./runGoCdExample.sh       # Go.cd
+    $ ./runGoCdExample.sh       # GoCD
     $ ./runJenkinsExample.sh    # Jenkins
     $ ./runTeamCityExample.sh   # TeamCity
 
