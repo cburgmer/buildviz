@@ -148,8 +148,8 @@ goal_destroy() {
 
 goal_purge() {
     announce "Purging docker images"
-    docker images -q jenkins/jenkins | xargs docker rmi &> "$TMP_LOG"
     docker images -q buildviz_jenkins_example | xargs docker rmi &> "$TMP_LOG"
+    docker images -q jenkins/jenkins | xargs docker rmi &> "$TMP_LOG"
     echo " done"
     rm "$TMP_LOG"
 }
