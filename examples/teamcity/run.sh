@@ -29,7 +29,7 @@ announce() {
 
 hint_at_logs() {
     # shellcheck disable=SC2181
-    if [[ "$?" -ne 0 ]]; then
+    if [[ "$?" -ne 0 && -f "$TMP_LOG" ]]; then
         echo
         echo "Logs are in ${TMP_LOG}"
     fi
@@ -73,6 +73,13 @@ authorize_worker() {
     rm "$TMP_LOG"
 }
 
+provision_teamcity() {
+    announce "Please manually create the admin user via the web UI ${BASE_URL}, user '${USER}' with password '${PASSWORD}' (I'll wait)"
+    wait_for_server "${BASE_API_URL}/server"
+    echo "Thank you"
+    authorize_worker
+}
+
 teamcity_queue_length() {
     curl --silent --fail "${BASE_API_URL}/buildQueue" -H "Accept: application/json" | \
         python -c "import json; import sys; print json.loads(sys.stdin.read())['count']"
@@ -109,14 +116,6 @@ run_builds() {
     run_build "SimpleSetup_SubProject_Test"
 }
 
-provision_teamcity() {
-    announce "Please manually create the admin user via the web UI ${BASE_URL}, user '${USER}' with password '${PASSWORD}' (I'll wait)"
-    wait_for_server "${BASE_API_URL}/server"
-    echo "Thank you"
-    authorize_worker
-    run_builds
-}
-
 goal_start() {
     if ! container_exists; then
         announce "Provisioning docker image"
@@ -124,6 +123,7 @@ goal_start() {
         provision_container
         start_server
         provision_teamcity
+        run_builds
     else
         start_server "/login.html"
     fi

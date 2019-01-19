@@ -38,16 +38,30 @@ container_exists() {
     fi
 }
 
-jenkins_queue_length() {
-    curl --silent http://localhost:8080/queue/api/json | python -c "import json; import sys; print len(json.loads(sys.stdin.read())['items'])"
+provision_container() {
+    docker build "$SCRIPT_DIR" --tag buildviz_jenkins_example
+    docker container create -p 8080:8080 --name buildviz_jenkins_example buildviz_jenkins_example &> "$TMP_LOG"
 }
 
-build_queue_empty() {
-    if [[ "$(jenkins_queue_length)" -eq 0 ]]; then
-        return 0;
-    else
-        return 1;
-    fi
+start_server() {
+    local check_path="${1:-/}"
+    announce "Starting docker image"
+    docker container start buildviz_jenkins_example &> "$TMP_LOG"
+
+    wait_for_server "${BASE_URL}${check_path}"
+    echo " done"
+    rm "$TMP_LOG"
+}
+
+provision_jenkins() {
+    announce "Disabling Jenkins security"
+    sleep 10
+    docker container exec buildviz_jenkins_example rm /var/jenkins_home/config.xml &> "$TMP_LOG"
+    docker container exec buildviz_jenkins_example cp -p /var/jenkins_home/jenkins.install.UpgradeWizard.state /var/jenkins_home/jenkins.install.InstallUtil.lastExecVersion &> "$TMP_LOG"
+    docker container restart buildviz_jenkins_example &> "$TMP_LOG"
+    rm "$TMP_LOG"
+    wait_for_server "$BASE_URL"
+    echo " done"
 }
 
 configure_pipeline() {
@@ -77,44 +91,34 @@ configure_pipeline() {
     echo " done"
 }
 
-trigger_builds() {
-    announce "Triggering builds"
-    for _ in 1 2 3 4 5; do
-        curl --fail --silent -X POST "${BASE_URL}/job/Test/build" > /dev/null
+jenkins_queue_length() {
+    curl --silent http://localhost:8080/queue/api/json | python -c "import json; import sys; print len(json.loads(sys.stdin.read())['items'])"
+}
 
-        # Wait for build to run to enqueue next
-        sleep 2
-        until build_queue_empty ; do
-            sleep 1
-        done
+build_queue_empty() {
+    if [[ "$(jenkins_queue_length)" -eq 0 ]]; then
+        return 0;
+    else
+        return 1;
+    fi
+}
+
+wait_for_pipeline_to_be_schedulable() {
+    sleep 2
+    until build_queue_empty ; do
+        printf '.'
+        sleep 5
     done
-    echo " done"
 }
 
-provision_container() {
-    docker build "$SCRIPT_DIR" --tag buildviz_jenkins_example
-    docker container create -p 8080:8080 --name buildviz_jenkins_example buildviz_jenkins_example &> "$TMP_LOG"
-}
-
-provision_jenkins() {
-    announce "Disabling Jenkins security"
-    sleep 10
-    docker container exec buildviz_jenkins_example rm /var/jenkins_home/config.xml &> "$TMP_LOG"
-    docker container exec buildviz_jenkins_example cp -p /var/jenkins_home/jenkins.install.UpgradeWizard.state /var/jenkins_home/jenkins.install.InstallUtil.lastExecVersion &> "$TMP_LOG"
-    docker container restart buildviz_jenkins_example &> "$TMP_LOG"
-    rm "$TMP_LOG"
-    wait_for_server "$BASE_URL"
-    echo " done"
-}
-
-start_server() {
-    local check_path="${1:-/}"
-    announce "Starting docker image"
-    docker container start buildviz_jenkins_example &> "$TMP_LOG"
-
-    wait_for_server "${BASE_URL}${check_path}"
-    echo " done"
-    rm "$TMP_LOG"
+run_builds() {
+    local run
+    for run in 1 2 3 4 5; do
+        announce "Triggering build run ${run}"
+        wait_for_pipeline_to_be_schedulable
+        curl --fail --silent -X POST "${BASE_URL}/job/Test/build" > /dev/null
+        echo
+    done
 }
 
 goal_start() {
@@ -125,7 +129,7 @@ goal_start() {
         start_server "/favicon.ico"
         provision_jenkins
         configure_pipeline
-        trigger_builds
+        run_builds
     else
         start_server
     fi

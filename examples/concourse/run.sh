@@ -24,7 +24,7 @@ announce() {
 
 hint_at_logs() {
     # shellcheck disable=SC2181
-    if [[ "$?" -ne 0 ]]; then
+    if [[ "$?" -ne 0 && -f "$TMP_LOG" ]]; then
         echo
         echo "Logs are in ${TMP_LOG}"
     fi
@@ -90,13 +90,28 @@ goal_stop() {
     rm "$TMP_LOG"
 }
 
+goal_destroy() {
+    announce "Destroying docker container"
+    docker_compose down &> "$TMP_LOG"
+    echo " done"
+    rm "$TMP_LOG"
+}
+
+goal_purge() {
+    announce "Purging docker images"
+    docker images -q concourse/concourse | xargs docker rmi &> "$TMP_LOG"
+    docker images -q postgres | xargs docker rmi &> "$TMP_LOG"
+    echo " done"
+    rm "$TMP_LOG"
+}
+
 main() {
     trap hint_at_logs EXIT
 
     if type -t "goal_$1" &>/dev/null; then
         "goal_$1"
     else
-        echo "usage: $0 (start|stop)"
+        echo "usage: $0 (start|stop|destroy|purge)"
     fi
 }
 
