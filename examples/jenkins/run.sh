@@ -39,8 +39,7 @@ container_exists() {
 }
 
 provision_container() {
-    docker build "$SCRIPT_DIR" --tag buildviz_jenkins_example
-    docker container create -p 8080:8080 --name buildviz_jenkins_example buildviz_jenkins_example &> "$TMP_LOG"
+    docker container create -p 8080:8080 --name buildviz_jenkins_example jenkins/jenkins:2.157-alpine &> "$TMP_LOG"
 }
 
 start_server() {
@@ -54,6 +53,11 @@ start_server() {
 }
 
 provision_jenkins() {
+    announce "Installing plugins"
+    docker container exec buildviz_jenkins_example /usr/local/bin/install-plugins.sh git promoted-builds git-client parameterized-trigger build-pipeline-plugin dashboard-view &> "$TMP_LOG"
+    rm "$TMP_LOG"
+    echo " done"
+
     announce "Disabling Jenkins security"
     sleep 10
     docker container exec buildviz_jenkins_example rm /var/jenkins_home/config.xml &> "$TMP_LOG"
@@ -152,7 +156,6 @@ goal_destroy() {
 
 goal_purge() {
     announce "Purging docker images"
-    docker images -q buildviz_jenkins_example | xargs docker rmi &> "$TMP_LOG"
     docker images -q jenkins/jenkins | xargs docker rmi &> "$TMP_LOG"
     echo " done"
     rm "$TMP_LOG"
