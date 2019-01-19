@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -eo pipefail
 
 readonly SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -27,6 +27,8 @@ hint_at_logs() {
     if [[ "$?" -ne 0 && -f "$TMP_LOG" ]]; then
         echo
         echo "Logs are in ${TMP_LOG}"
+    else
+        rm -f "$TMP_LOG"
     fi
 }
 
@@ -60,11 +62,10 @@ start_server() {
 
     wait_for_server "$BASE_URL"
     echo " done"
-    rm "$TMP_LOG"
 }
 
 pipeline_schedulable() {
-    curl --silent --fail "${BASE_URL}/api/pipelines/Example/status" | grep '"schedulable":true' > /dev/null
+    curl --silent --fail "${BASE_URL}/api/pipelines/Example/status" | grep '"schedulable":true' &>> "$TMP_LOG"
 }
 
 wait_for_pipeline_to_be_schedulable() {
@@ -79,7 +80,7 @@ run_builds() {
     for run in 1 2 3 4 5; do
         announce "Triggering build run ${run}"
         wait_for_pipeline_to_be_schedulable
-        curl --fail --silent -X POST "${BASE_URL}/api/pipelines/Example/schedule" -H 'Accept: application/vnd.go.cd.v1+json' -H "X-GoCD-Confirm: true" > /dev/null
+        curl --fail -X POST "${BASE_URL}/api/pipelines/Example/schedule" -H 'Accept: application/vnd.go.cd.v1+json' -H "X-GoCD-Confirm: true" &>> "$TMP_LOG"
         echo
     done
 }
@@ -99,24 +100,21 @@ goal_start() {
 
 goal_stop() {
     announce "Stopping docker image"
-    docker_compose stop &> "$TMP_LOG"
+    docker_compose stop &>> "$TMP_LOG"
     echo " done"
-    rm "$TMP_LOG"
 }
 
 goal_destroy() {
     announce "Destroying docker container"
-    docker_compose down &> "$TMP_LOG"
+    docker_compose down &>> "$TMP_LOG"
     echo " done"
-    rm "$TMP_LOG"
 }
 
 goal_purge() {
     announce "Purging docker images"
-    docker images -q gocd/gocd-server | xargs docker rmi &> "$TMP_LOG"
-    docker images -q gocd/gocd-agent-alpine-3.8 | xargs docker rmi &> "$TMP_LOG"
+    docker images -q gocd/gocd-server | xargs docker rmi &>> "$TMP_LOG"
+    docker images -q gocd/gocd-agent-alpine-3.8 | xargs docker rmi &>> "$TMP_LOG"
     echo " done"
-    rm "$TMP_LOG"
 }
 
 main() {

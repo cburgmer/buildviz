@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -eo pipefail
 
 readonly SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -27,6 +27,8 @@ hint_at_logs() {
     if [[ "$?" -ne 0 && -f "$TMP_LOG" ]]; then
         echo
         echo "Logs are in ${TMP_LOG}"
+    else
+        rm -f "$TMP_LOG"
     fi
 }
 
@@ -51,24 +53,25 @@ provision_container() {
 
 start_server() {
     announce "Starting docker image"
-    docker_compose up -d &> "$TMP_LOG"
+    docker_compose up -d &>> "$TMP_LOG"
 
     wait_for_server "$BASE_URL"
     echo " done"
-    rm "$TMP_LOG"
 }
 
 provision_pipeline() {
     local fly_bin="/tmp/fly.$$"
-    curl -vL "${BASE_URL}/api/v1/cli?arch=amd64&platform=darwin" -o "$fly_bin" &> "$TMP_LOG"
-    chmod a+x "$fly_bin" > "$TMP_LOG"
+    {
+        curl -vL "${BASE_URL}/api/v1/cli?arch=amd64&platform=darwin" -o "$fly_bin"
+        chmod a+x "$fly_bin"
 
-    "$fly_bin" -t buildviz login -c "$BASE_URL" -u user -p password > "$TMP_LOG"
-    "$fly_bin" -t buildviz set-pipeline -p pipeline -c pipeline.yml -n > "$TMP_LOG"
-    "$fly_bin" -t buildviz unpause-pipeline -p pipeline > "$TMP_LOG"
-    "$fly_bin" -t buildviz unpause-job -j pipeline/hello-world > "$TMP_LOG"
-    "$fly_bin" -t buildviz trigger-job -j pipeline/hello-world > "$TMP_LOG"
-    rm "$fly_bin"
+        "$fly_bin" -t buildviz login -c "$BASE_URL" -u user -p password
+        "$fly_bin" -t buildviz set-pipeline -p pipeline -c pipeline.yml -n
+        "$fly_bin" -t buildviz unpause-pipeline -p pipeline
+        "$fly_bin" -t buildviz unpause-job -j pipeline/hello-world
+        "$fly_bin" -t buildviz trigger-job -j pipeline/hello-world
+        rm "$fly_bin"
+    } &>> "$TMP_LOG"
 }
 
 goal_start() {
@@ -85,24 +88,21 @@ goal_start() {
 
 goal_stop() {
     announce "Stopping docker image"
-    docker_compose stop &> "$TMP_LOG"
+    docker_compose stop &>> "$TMP_LOG"
     echo " done"
-    rm "$TMP_LOG"
 }
 
 goal_destroy() {
     announce "Destroying docker container"
-    docker_compose down &> "$TMP_LOG"
+    docker_compose down &>> "$TMP_LOG"
     echo " done"
-    rm "$TMP_LOG"
 }
 
 goal_purge() {
     announce "Purging docker images"
-    docker images -q concourse/concourse | xargs docker rmi &> "$TMP_LOG"
-    docker images -q postgres | xargs docker rmi &> "$TMP_LOG"
+    docker images -q concourse/concourse | xargs docker rmi &>> "$TMP_LOG"
+    docker images -q postgres | xargs docker rmi &>> "$TMP_LOG"
     echo " done"
-    rm "$TMP_LOG"
 }
 
 main() {

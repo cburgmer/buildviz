@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -eo pipefail
 
 readonly SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -27,6 +27,8 @@ hint_at_logs() {
     if [[ "$?" -ne 0 && -f "$TMP_LOG" ]]; then
         echo
         echo "Logs are in ${TMP_LOG}"
+    else
+        rm -f "$TMP_LOG"
     fi
 }
 
@@ -45,25 +47,23 @@ provision_container() {
 start_server() {
     local check_path="${1:-/}"
     announce "Starting docker image"
-    docker container start buildviz_jenkins_example &> "$TMP_LOG"
+    docker container start buildviz_jenkins_example &>> "$TMP_LOG"
 
     wait_for_server "${BASE_URL}${check_path}"
     echo " done"
-    rm "$TMP_LOG"
 }
 
 provision_jenkins() {
     announce "Installing plugins"
-    docker container exec buildviz_jenkins_example /usr/local/bin/install-plugins.sh git promoted-builds git-client parameterized-trigger build-pipeline-plugin dashboard-view &> "$TMP_LOG"
-    rm "$TMP_LOG"
+    docker container exec buildviz_jenkins_example /usr/local/bin/install-plugins.sh git promoted-builds git-client parameterized-trigger build-pipeline-plugin dashboard-view &>> "$TMP_LOG"
     echo " done"
 
     announce "Disabling Jenkins security"
     sleep 10
-    docker container exec buildviz_jenkins_example rm /var/jenkins_home/config.xml &> "$TMP_LOG"
-    docker container exec buildviz_jenkins_example cp -p /var/jenkins_home/jenkins.install.UpgradeWizard.state /var/jenkins_home/jenkins.install.InstallUtil.lastExecVersion &> "$TMP_LOG"
-    docker container restart buildviz_jenkins_example &> "$TMP_LOG"
-    rm "$TMP_LOG"
+    # shellcheck disable=SC2129
+    docker container exec buildviz_jenkins_example rm /var/jenkins_home/config.xml &>> "$TMP_LOG"
+    docker container exec buildviz_jenkins_example cp -p /var/jenkins_home/jenkins.install.UpgradeWizard.state /var/jenkins_home/jenkins.install.InstallUtil.lastExecVersion &>> "$TMP_LOG"
+    docker container restart buildviz_jenkins_example &>> "$TMP_LOG"
     wait_for_server "$BASE_URL"
     echo " done"
 }
@@ -79,8 +79,8 @@ configure_pipeline() {
         for job_config in *; do
             # shellcheck disable=SC2001
             job_name=$( echo "$job_config" | sed s/.xml$// )
-            curl --fail --silent -X POST --data-binary "@$job_config" -H "Content-Type: application/xml" "${BASE_URL}/createItem?name=${job_name}" > /dev/null
-            curl --fail --silent -X POST --data-binary "@$job_config" "${BASE_URL}/job/${job_name}/config.xml" > /dev/null
+            curl --fail -X POST --data-binary "@$job_config" -H "Content-Type: application/xml" "${BASE_URL}/createItem?name=${job_name}" &>> "$TMP_LOG"
+            curl --fail -X POST --data-binary "@$job_config" "${BASE_URL}/job/${job_name}/config.xml" &>> "$TMP_LOG" > /dev/null
         done
     )
     (
@@ -88,8 +88,8 @@ configure_pipeline() {
         for view_config in *; do
             # shellcheck disable=SC2001
             view_name=$( echo "$view_config" | sed s/.xml$// )
-            curl --fail --silent -X POST --data-binary "@$view_config" -H "Content-Type: application/xml" "${BASE_URL}/createView?name=${view_name}" > /dev/null
-            curl --fail --silent -X POST --data-binary "@$view_config" "${BASE_URL}/view/${view_name}/config.xml" > /dev/null
+            curl --fail -X POST --data-binary "@$view_config" -H "Content-Type: application/xml" "${BASE_URL}/createView?name=${view_name}" &>> "$TMP_LOG"
+            curl --fail -X POST --data-binary "@$view_config" "${BASE_URL}/view/${view_name}/config.xml" &>> "$TMP_LOG"
         done
     )
     echo " done"
@@ -120,7 +120,7 @@ run_builds() {
     for run in 1 2 3 4 5; do
         announce "Triggering build run ${run}"
         wait_for_pipeline_to_be_schedulable
-        curl --fail --silent -X POST "${BASE_URL}/job/Test/build" > /dev/null
+        curl --fail -X POST "${BASE_URL}/job/Test/build" &>> "$TMP_LOG"
         echo
     done
 }
@@ -141,24 +141,21 @@ goal_start() {
 
 goal_stop() {
     announce "Stopping docker image"
-    docker container stop buildviz_jenkins_example > "$TMP_LOG"
+    docker container stop buildviz_jenkins_example &>> "$TMP_LOG"
     echo " done"
-    rm "$TMP_LOG"
 }
 
 goal_destroy() {
     announce "Destroying docker container"
-    docker container stop buildviz_jenkins_example > "$TMP_LOG"
-    docker container rm buildviz_jenkins_example >> "$TMP_LOG"
+    docker container stop buildviz_jenkins_example &>> "$TMP_LOG"
+    docker container rm buildviz_jenkins_example &>> "$TMP_LOG"
     echo " done"
-    rm "$TMP_LOG"
 }
 
 goal_purge() {
     announce "Purging docker images"
-    docker images -q jenkins/jenkins | xargs docker rmi &> "$TMP_LOG"
+    docker images -q jenkins/jenkins | xargs docker rmi &>> "$TMP_LOG"
     echo " done"
-    rm "$TMP_LOG"
 }
 
 main() {

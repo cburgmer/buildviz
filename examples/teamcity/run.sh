@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -eo pipefail
 
 readonly SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -32,6 +32,8 @@ hint_at_logs() {
     if [[ "$?" -ne 0 && -f "$TMP_LOG" ]]; then
         echo
         echo "Logs are in ${TMP_LOG}"
+    else
+        rm -f "$TMP_LOG"
     fi
 }
 
@@ -65,12 +67,10 @@ start_server() {
 
     wait_for_server "${BASE_URL}${check_path}"
     echo " done"
-    rm "$TMP_LOG"
 }
 
 authorize_worker() {
-    curl --fail -X PUT -H "Content-Type: text/plain" --data true "${BASE_API_URL}/agents/id:1/authorized" &> "$TMP_LOG"
-    rm "$TMP_LOG"
+    curl --fail -X PUT -H "Content-Type: text/plain" --data true "${BASE_API_URL}/agents/id:1/authorized" &>> "$TMP_LOG"
 }
 
 provision_teamcity() {
@@ -96,8 +96,7 @@ build_queue_empty() {
 run_build() {
     local buildId="$1"
     announce "Triggering build ${buildId}"
-    curl --fail -X POST -H "Content-Type: application/xml"  --data "<build><buildType id=\"${buildId}\"/></build>" "${BASE_API_URL}/buildQueue" &> "$TMP_LOG"
-    rm "$TMP_LOG"
+    curl --fail -X POST -H "Content-Type: application/xml"  --data "<build><buildType id=\"${buildId}\"/></build>" "${BASE_API_URL}/buildQueue" &>> "$TMP_LOG"
 
     sleep 2
     until build_queue_empty ; do
@@ -131,25 +130,22 @@ goal_start() {
 
 goal_stop() {
     announce "Stopping docker image"
-    docker_compose stop &> "$TMP_LOG"
+    docker_compose stop &>> "$TMP_LOG"
     echo " done"
-    rm "$TMP_LOG"
 }
 
 goal_destroy() {
     announce "Destroying docker container"
-    docker_compose down &> "$TMP_LOG"
-    rm -rf "$DATA_DIR" &> "$TMP_LOG"
+    docker_compose down &>> "$TMP_LOG"
+    rm -rf "$DATA_DIR" &>> "$TMP_LOG"
     echo " done"
-    rm "$TMP_LOG"
 }
 
 goal_purge() {
     announce "Purging docker images"
-    docker images -q jetbrains/teamcity-server | xargs docker rmi &> "$TMP_LOG"
-    docker images -q jetbrains/teamcity-minimal-agent | xargs docker rmi &> "$TMP_LOG"
+    docker images -q jetbrains/teamcity-server | xargs docker rmi &>> "$TMP_LOG"
+    docker images -q jetbrains/teamcity-minimal-agent | xargs docker rmi &>> "$TMP_LOG"
     echo " done"
-    rm "$TMP_LOG"
 }
 
 main() {
