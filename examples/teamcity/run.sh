@@ -63,7 +63,7 @@ provision_container() {
 start_server() {
     local check_path="${1:-/favicon.ico}"
     announce "Starting docker image"
-    docker_compose up -d &> "$TMP_LOG"
+    docker_compose up -d &>> "$TMP_LOG"
 
     wait_for_server "${BASE_URL}${check_path}"
     echo " done"

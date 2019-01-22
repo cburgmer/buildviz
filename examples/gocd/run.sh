@@ -58,7 +58,7 @@ provision_container() {
 
 start_server() {
     announce "Starting docker image"
-    docker_compose up -d &> "$TMP_LOG"
+    docker_compose up -d &>> "$TMP_LOG"
 
     wait_for_server "$BASE_URL"
     echo " done"
