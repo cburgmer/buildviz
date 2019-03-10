@@ -9,7 +9,8 @@ goal_lint() {
 }
 
 goal_test_unit() {
-    "${SCRIPT_DIR}/lein" test
+    # shellcheck disable=SC1010
+    "${SCRIPT_DIR}/lein" do clean, test
 }
 
 goal_test_integration() {
