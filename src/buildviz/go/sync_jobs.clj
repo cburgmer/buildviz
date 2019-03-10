@@ -13,7 +13,7 @@
             [clojure.string :as str]
             [clojure.tools.logging :as log]
             [uritemplate-clj.core :as templ])
-  (:import [javax.xml.stream.XMLStreamException]))
+  (:import [javax.xml.stream XMLStreamException]))
 
 (defn- build-for-job [go-url stage-instance {:keys [name id]}]
   (let [job-instance (assoc stage-instance :job-name name)]
