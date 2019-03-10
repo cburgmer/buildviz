@@ -23,7 +23,7 @@
 (defn- get-plain [go-url relative-url]
   (log/info (format "Retrieving %s" relative-url))
   (let [response (client/get (absolute-url-for (url/with-plain-text-password go-url) relative-url)
-                             {:client-params {"http.useragent" "buildviz (https://github.com/cburgmer/buildviz)"}
+                             {:headers {"User-Agent" "buildviz (https://github.com/cburgmer/buildviz)"}
                               :basic-auth gocd-basic-auth})]
     (log/info (format "Retrieved %s: %s" relative-url (:status response)))
     (:body response)))

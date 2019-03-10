@@ -14,7 +14,7 @@
 (defn- get-json [jenkins-url relative-url]
   (log/info (format "Retrieving %s" relative-url))
   (let [response (client/get (string/join [(url/with-plain-text-password jenkins-url) relative-url])
-                             {:client-params {"http.useragent" "buildviz (https://github.com/cburgmer/buildviz)"}
+                             {:headers {"User-Agent" "buildviz (https://github.com/cburgmer/buildviz)"}
                               :basic-auth jenkins-basic-auth})]
     (log/info (format "Retrieved %s: %s" relative-url (:status response)))
     (j/parse-string (:body response) true)))

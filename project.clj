@@ -15,7 +15,7 @@
                  [ring-middleware-accept "2.0.3"]
                  [compojure "1.6.1"]
                  [metosin/scjsv "0.5.0"]
-                 [clj-http "2.0.0"]
+                 [clj-http "3.9.1"]
                  [clj-time "0.15.1"]
                  [cheshire "5.8.1"]
                  [org.clojure/data.xml "0.0.8"]

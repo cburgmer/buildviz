@@ -16,7 +16,7 @@
   (let [response (client/get (string/join [(url/with-plain-text-password teamcity-url)
                                            relative-url])
                              {:accept "application/json"
-                              :client-params {"http.useragent" "buildviz (https://github.com/cburgmer/buildviz)"}
+                              :headers {"User-Agent" "buildviz (https://github.com/cburgmer/buildviz)"}
                               :basic-auth teamcity-basic-auth})]
     (log/info (format "Retrieved %s: %s" relative-url (:status response)))
     (j/parse-string (:body response) true)))
