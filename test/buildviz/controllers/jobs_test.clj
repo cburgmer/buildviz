@@ -22,7 +22,7 @@
                                      4 {:start 100 :end 120 :outcome "pass" :inputs [{:source-id 42 :revision "yet_another_revision"}]}}}
                        {})]
       (is (= (str/join ["job,averageRuntime,totalCount,failedCount,flakyCount\n"
-                    (format "someBuild,%.8f,4,2,1\n" 0.00000023)])
+                        "someBuild,0.00000023,4,2,1\n"])
              (:body (plain-get-request app "/jobs")))))
 
     ;; GET should return empty map for json by default

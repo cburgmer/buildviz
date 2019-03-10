@@ -3,7 +3,8 @@
              [coerce :as tc]
              [core :as t]
              [format :as tf]]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [buildviz.util.math :as math]))
 
 (def separator ",")
 
@@ -38,7 +39,7 @@
 
 (defn format-duration [duration]
   (when-not (nil? duration)
-    (format "%.8f" (float (/ duration day-in-millis)))))
+    (math/format-locale-neutral "%.8f" (float (/ duration day-in-millis)))))
 
 (defn export-table [header entries]
   (str/join [(str/join "\n" (cons (export header)

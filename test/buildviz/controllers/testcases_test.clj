@@ -31,14 +31,14 @@
     (let [app (the-app {"aBuild" {1 {:start 0}}}
                        {"aBuild" {1 "<testsuites><testsuite name=\"a suite\"><testcase name=\"a,test\" classname=\"a class\" time=\"10\"></testcase></testsuite></testsuites>"}})]
       (is (= (str/join ["averageRuntime,failedCount,job,testsuite,classname,name\n"
-                    (format "%.8f,0,aBuild,a suite,a class,\"a,test\"\n" 0.00011574)])
+                        "0.00011574,0,aBuild,a suite,a class,\"a,test\"\n"])
              (:body (get-request app "/testcases"))))))
 
   (testing "GET should handle nested testsuites in CSV"
     (let [app (the-app {"aBuild" {1 {:start 0}}}
                        {"aBuild" {1 "<testsuites><testsuite name=\"a suite\"><testsuite name=\"nested suite\"><testcase name=\"a,test\" classname=\"a class\" time=\"10\"><failure/></testcase></testsuite></testsuite></testsuites>"}})]
       (is (= (str/join ["averageRuntime,failedCount,job,testsuite,classname,name\n"
-                    (format "%.8f,1,aBuild,a suite: nested suite,a class,\"a,test\"\n" 0.00011574)])
+                        "0.00011574,1,aBuild,a suite: nested suite,a class,\"a,test\"\n"])
              (:body (plain-get-request app "/testcases"))))))
 
   (testing "GET should not include builds without test cases"

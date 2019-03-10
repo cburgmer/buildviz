@@ -77,8 +77,8 @@
                                                            :build-id "1"}]}}}
                        {})]
       (is (= (str/join "\n" ["job,buildId,start,waitTime,triggeredBy"
-                             (format "deploy-staging,1,1986-10-14 04:03:27,%.8f,test/1" (float (/ 200 a-day)))
-                             (format "smoke-test,1,1986-10-14 04:03:28,%.8f,test/1" (float (/ 800 a-day)))
-                             (format "deploy-uat,2,1986-10-14 04:03:31,%.8f,test/1" (float (/ 3600 a-day)))
+                             "deploy-staging,1,1986-10-14 04:03:27,0.00000231,test/1"  ; (/ 200 a-day)
+                             "smoke-test,1,1986-10-14 04:03:28,0.00000926,test/1"  ; (/ 800 a-day)
+                             "deploy-uat,2,1986-10-14 04:03:31,0.00004167,test/1"  ; (/ 3600 a-day)
                              ""])
              (:body (plain-get-request app "/waittimes")))))))

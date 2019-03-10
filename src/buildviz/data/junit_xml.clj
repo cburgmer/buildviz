@@ -2,7 +2,8 @@
   (:gen-class)
   (:require [clojure.data.xml :as xml]
             [clojure.string :as str]
-            [clojure.java.io :as io]))
+            [clojure.java.io :as io]
+            [buildviz.util.math :as math]))
 
 ;; Parsing is following schema documented in http://llg.cubic.org/docs/junit/
 
@@ -94,7 +95,7 @@
 (declare element->node)
 
 (defn format-runtime-in-millis [duration]
-  (format "%.3f" (float (/ duration 1000))))
+  (math/format-locale-neutral "%.3f" (float (/ duration 1000))))
 
 (defn- testcase-status->node [status]
   (case status

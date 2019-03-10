@@ -38,7 +38,7 @@
                {"aBuild" {"1" "<testsuite name=\"a suite\"><testsuite name=\"nested suite\"><testcase name=\"testcase\" classname=\"class\" time=\"10\"/><testcase name=\"another testcase\" classname=\"class\" time=\"30\"/></testsuite></testsuite>"
                           "2" "<testsuite name=\"a suite\"><testsuite name=\"nested suite\"><testcase name=\"testcase\" classname=\"class\" time=\"60\"/></testsuite></testsuite>"}})]
       (is (= (str/join ["averageRuntime,job,testsuite,classname\n"
-                    (format "%.8f,aBuild,a suite: nested suite,class\n" 0.0005787)])
+                        "0.00057870,aBuild,a suite: nested suite,class\n"])
              (:body (plain-get-request app "/testclasses")))))
 
     ;; GET should not include builds without test cases

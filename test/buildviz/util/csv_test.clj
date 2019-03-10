@@ -31,7 +31,7 @@
            (format-timestamp (tc/to-long a-datetime)))))
 
   (testing "format-duration"
-    (is (= (format "%.8f" 1.)
+    (is (= "1.00000000"
            (format-duration (* 24 60 60 1000))))
     (is (= 1
            (Math/round (* 24. 60 60 1000
