@@ -3,7 +3,7 @@
   :url "https://github.com/cburgmer/buildviz"
   :license {:name "BSD 2-Clause"
             :url "http://opensource.org/licenses/BSD-2-Clause"}
-  :dependencies [[org.clojure/clojure "1.7.0"]
+  :dependencies [[org.clojure/clojure "1.10.0"]
                  [org.clojure/tools.logging "0.4.1"]
                  [log4j/log4j "1.2.17" :exclusions [javax.mail/mail
                                                     javax.jms/jms
@@ -15,7 +15,7 @@
                  [ring-middleware-accept "2.0.3"]
                  [compojure "1.6.1"]
                  [metosin/scjsv "0.4.1"]
-                 [clj-http "1.1.2"]
+                 [clj-http "2.0.0"]
                  [clj-time "0.14.4"]
                  [cheshire "5.8.0"]
                  [org.clojure/data.xml "0.0.8"]
