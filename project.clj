@@ -38,4 +38,5 @@
   :profiles {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
                                   [ring-mock "0.1.5"]
                                   [clj-http-fake "1.0.3"]]}
-             :test {:resource-paths ["test/resources"]}})
+             :test {:resource-paths ["test/resources"]}}
+  :jvm-opts ["--illegal-access=deny"]) ; https://clojure.org/guides/faq#illegal_access
