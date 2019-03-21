@@ -2,14 +2,14 @@ version: "2.4"
 
 services:
   server:
-    image: gocd/gocd-server:v18.12.0
+    image: gocd/gocd-server:v19.2.0
     volumes:
       - ./server/config:/godata/config
     ports:
       - "8153:8153"
 
   agent:
-    image: gocd/gocd-agent-alpine-3.8:v18.12.0
+    image: gocd/gocd-agent-alpine-3.9:v19.2.0
     restart: always
     volumes:
       - ./scripts:/scripts
