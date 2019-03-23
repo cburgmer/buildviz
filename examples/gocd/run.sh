@@ -113,7 +113,7 @@ goal_destroy() {
 goal_purge() {
     announce "Purging docker images"
     docker images -q gocd/gocd-server | xargs docker rmi &>> "$TMP_LOG"
-    docker images -q gocd/gocd-agent-alpine-3.8 | xargs docker rmi &>> "$TMP_LOG"
+    docker images -q gocd/gocd-agent-alpine-3.9 | xargs docker rmi &>> "$TMP_LOG"
     echo " done"
 }
 
