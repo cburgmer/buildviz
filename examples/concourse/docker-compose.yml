@@ -1,16 +1,23 @@
-version: "2.4"
+version: "3"
 
 services:
   concourse:
-    image: concourse/concourse:4.2.2
-    command: "quickstart --add-local-user=user:password --main-team-local-user=user --external-url=http://localhost:8080 --postgres-user=concourse --postgres-password=password --postgres-host=db --worker-garden-dns-server 8.8.8.8"
+    image: concourse/concourse:5.0.0
+    command: "quickstart"
     ports:
       - "8080:8080"
     privileged: true
-
+    environment:
+      - CONCOURSE_POSTGRES_HOST=db
+      - CONCOURSE_POSTGRES_USER=concourse
+      - CONCOURSE_POSTGRES_PASSWORD=password
+      - CONCOURSE_POSTGRES_DATABASE=concourse
+      - CONCOURSE_EXTERNAL_URL=http://localhost:8080
+      - CONCOURSE_ADD_LOCAL_USER=user:password
+      - CONCOURSE_MAIN_TEAM_LOCAL_USER=user
   db:
     image: postgres:11.1
     environment:
-      POSTGRES_USER: "concourse"
-      POSTGRES_PASSWORD: "password"
-      POSTGRES_DB: "atc"
+      - POSTGRES_USER=concourse
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=concourse
