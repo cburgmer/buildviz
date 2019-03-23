@@ -41,7 +41,7 @@ container_exists() {
 }
 
 provision_container() {
-    docker container create -p 8080:8080 --name buildviz_jenkins_example jenkins/jenkins:2.160-alpine
+    docker container create -p 8080:8080 --name buildviz_jenkins_example jenkins/jenkins:2.168-alpine
 }
 
 start_server() {
