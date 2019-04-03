@@ -1,30 +1,30 @@
 // Simple debouncing so we save requests on start-up for same URLs
-var dataSource = function () {
-    var module = {};
+const dataSource = function () {
+    const module = {};
 
-    var loadHandlersByType = {};
+    const loadHandlersByType = {};
 
-    var loadHandlers = function (type) {
+    const loadHandlers = function (type) {
         loadHandlersByType[type] = loadHandlersByType[type] || {};
         return loadHandlersByType[type];
     };
 
-    var queueHandler = function (type, url, handler) {
-        var handlers = loadHandlers(type)[url] || [];
+    const queueHandler = function (type, url, handler) {
+        const handlers = loadHandlers(type)[url] || [];
         handlers.push(handler);
         loadHandlers(type)[url] = handlers;
         return handlers;
     };
 
-    var unqueueHandlers = function (type, url) {
-        var handlers = loadHandlers(type)[url];
+    const unqueueHandlers = function (type, url) {
+        const handlers = loadHandlers(type)[url];
         loadHandlers(type)[url] = undefined;
 
         return handlers;
     };
 
-    var load = function (type, url, handler) {
-        var handlers = queueHandler(type, url, handler),
+    const load = function (type, url, handler) {
+        const handlers = queueHandler(type, url, handler),
             isFirstHandler = handlers.length === 1;
 
         if (isFirstHandler) {
@@ -40,8 +40,8 @@ var dataSource = function () {
         }
     };
 
-    var callbackHandlers = function (type, url, error, data) {
-        var handlers = unqueueHandlers(type, url);
+    const callbackHandlers = function (type, url, error, data) {
+        const handlers = unqueueHandlers(type, url);
 
         if (error) {
             console.warn(error);

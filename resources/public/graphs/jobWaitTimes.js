@@ -1,5 +1,5 @@
 (function (timespanSelection, graphDescription, graphFactory, events, jobColors, dataSource) {
-    var timespanSelector = timespanSelection.create(timespanSelection.timespans.twoMonths),
+    const timespanSelector = timespanSelection.create(timespanSelection.timespans.twoMonths),
         description = graphDescription.create({
             description: ["Average job wait times by day.",
                           "Wait times are calculated from the delay between the build starting and the end of the previous triggering build.",
@@ -19,7 +19,7 @@
             widgets: [timespanSelector.widget, description.widget]
         });
 
-    var eventForBuildWaitTime = function (buildWaitTime, color) {
+    const eventForBuildWaitTime = function (buildWaitTime, color) {
         return {
             date: new Date(buildWaitTime.start),
             value: buildWaitTime.waitTime,
@@ -30,21 +30,21 @@
         };
     };
 
-    var transformWaitTimes = function (data) {
-        var waitTimesByJob = d3.nest()
+    const transformWaitTimes = function (data) {
+        const waitTimesByJob = d3.nest()
             .key(function (d) {
                 return d.job;
             })
             .sortValues(function (a, b) { return b.start - a.start; })
             .entries(data);
 
-        var jobNames = waitTimesByJob.map(function (group) {
+        const jobNames = waitTimesByJob.map(function (group) {
             return group.key;
         });
-        var color = jobColors.colors(jobNames);
+        const color = jobColors.colors(jobNames);
 
         return waitTimesByJob.map(function (group) {
-            var c = color(group.key);
+            const c = color(group.key);
             return {
                 id: group.key,
                 color: c,
@@ -55,7 +55,7 @@
         });
     };
 
-    var waitTimesPane = events(graph.svg, 'Average wait time');
+    const waitTimesPane = events(graph.svg, 'Average wait time');
 
     timespanSelector.load(function (fromTimestamp) {
         graph.loading();

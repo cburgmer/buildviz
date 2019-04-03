@@ -1,11 +1,11 @@
 (function (timespanSelection, graphDescription, graphFactory, utils, jobColors, dataSource) {
-    var buildEntries = function (jobEntries) {
+    const buildEntries = function (jobEntries) {
         return jobEntries
             .filter(function (job) {
                 return job.averageRuntime;
             })
             .map(function (job) {
-                var averageRuntime = job.averageRuntime,
+                const averageRuntime = job.averageRuntime,
                     runtime = averageRuntime ? ' (' + utils.formatTimeInMs(averageRuntime) + ')' : '';
 
                 return {
@@ -16,8 +16,8 @@
             });
     };
 
-    var buildHierarchy = function (jobEntries) {
-        var hierarchy = d3.nest()
+    const buildHierarchy = function (jobEntries) {
+        const hierarchy = d3.nest()
                 .key(function (d) {
                     return d.name.split(' ')[0];
                 })
@@ -30,24 +30,24 @@
         });
     };
 
-    var treemap = d3.layout.treemap()
+    const treemap = d3.layout.treemap()
             .size([graphFactory.size, graphFactory.size])
             .sort(function (a, b) {
                 return a.value - b.value;
             });
 
-    var skipParentNodes = function (nodes) {
+    const skipParentNodes = function (nodes) {
         return nodes.filter(function(d) { return d.depth > 0 && !d.children; });
     };
 
-    var renderGraph = function (jobEntries, svg) {
-        var jobNames = jobEntries.map(function (job) {
+    const renderGraph = function (jobEntries, svg) {
+        const jobNames = jobEntries.map(function (job) {
             return job.jobName;
         });
-        var color = jobColors.colors(jobNames),
+        const color = jobColors.colors(jobNames),
             builds = buildHierarchy(buildEntries(jobEntries));
 
-        var selection = svg
+        const selection = svg
                 .selectAll("g")
                 .data(skipParentNodes(treemap.nodes({children: builds})),
                       function (d) {
@@ -57,7 +57,7 @@
         selection.exit()
             .remove();
 
-        var node = selection
+        const node = selection
             .enter()
             .append("g")
             .on("mouseover", function(d) {
@@ -68,7 +68,7 @@
             });
 
         window.addEventListener('jobSelected', function (event) {
-            var jobName = event.detail.jobName;
+            const jobName = event.detail.jobName;
 
             svg.selectAll("g")
                 .classed('highlightedElement', function (d) {
@@ -115,7 +115,7 @@
             });
     };
 
-    var timespanSelector = timespanSelection.create(timespanSelection.timespans.twoWeeks),
+    const timespanSelector = timespanSelection.create(timespanSelection.timespans.twoWeeks),
         description = graphDescription.create({
             description: "Average runtime by job for the selected interval. The job's runtime is calculated as time between start and end of its builds.",
             answer: ['Where is most of the time spent?'],

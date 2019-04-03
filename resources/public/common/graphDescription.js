@@ -1,14 +1,14 @@
-var graphDescription = function (d3) {
-    var module = {};
+const graphDescription = function (d3) {
+    const module = {};
 
-    var githubWikiLink = function (question) {
-        var baseUrl = 'https://github.com/cburgmer/buildviz/wiki/Questions';
+    const githubWikiLink = function (question) {
+        const baseUrl = 'https://github.com/cburgmer/buildviz/wiki/Questions';
 
         return baseUrl + '#' + question.replace(/ /g, '-').replace(/\?/g, '').toLowerCase();
     };
 
-    var answerToListWidget = function (answersTo) {
-        var ul = d3.select(document.createElement('ul'));
+    const answerToListWidget = function (answersTo) {
+        const ul = d3.select(document.createElement('ul'));
         answersTo.forEach(function (answerTo) {
             ul.append('li')
                 .append('a')
@@ -18,22 +18,22 @@ var graphDescription = function (d3) {
         return ul.node();
     };
 
-    var textWidget = function (text) {
-        var p = d3.select(document.createElement('p'));
+    const textWidget = function (text) {
+        const p = d3.select(document.createElement('p'));
         p.text(text);
         return p.node();
     };
 
-    var csvLinkWidget = function (link) {
-        var h4 = d3.select(document.createElement('h4'));
+    const csvLinkWidget = function (link) {
+        const h4 = d3.select(document.createElement('h4'));
         h4.append('a')
             .attr('href', link)
             .text('Source as CSV');
         return h4.node();
     };
 
-    var createBlock = function (content, widget, headline) {
-        var block = d3.select(document.createElement('div'));
+    const createBlock = function (content, widget, headline) {
+        const block = d3.select(document.createElement('div'));
         if (headline) {
             block
                 .append('h4')
@@ -44,7 +44,7 @@ var graphDescription = function (d3) {
     };
 
     module.create = function (params) {
-        var container = d3.select(document.createElement('div'))
+        const container = d3.select(document.createElement('div'))
                 .attr('class', 'graphDescription')
                 .text('?'),
             section = container

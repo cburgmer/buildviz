@@ -1,11 +1,11 @@
-var badJobs = function (jobColors, utils) {
+const badJobs = function (jobColors, utils) {
     "use strict";
 
-    var module = {};
+    const module = {};
 
-    var borderWidthInPx = 30;
+    const borderWidthInPx = 30;
 
-    var selectWorst = function (pipeline, n) {
+    const selectWorst = function (pipeline, n) {
         pipeline.sort(function (jobA, jobB) {
             return jobA.value - jobB.value;
         });
@@ -13,7 +13,7 @@ var badJobs = function (jobColors, utils) {
         return pipeline.slice(-n);
     };
 
-    var bubble = d3.layout.pack()
+    const bubble = d3.layout.pack()
             .sort(null)
             .size([graphFactory.size, graphFactory.size])
             .padding(1.5),
@@ -21,7 +21,7 @@ var badJobs = function (jobColors, utils) {
             return bubbleNodes.filter(function(d) { return d.depth > 0; });
         };
 
-    var colorScale = function (maxDomain) {
+    const colorScale = function (maxDomain) {
         return d3.scale.linear()
             .domain([0, maxDomain])
             .range(["white", d3.rgb("red").darker()])
@@ -29,15 +29,15 @@ var badJobs = function (jobColors, utils) {
     };
 
     module.renderData = function (data, svg, jobCount, worstFailureRatio) {
-        var jobNames = data.map(function (job) {
+        const jobNames = data.map(function (job) {
             return job.name;
         });
-        var jobColor = jobColors.colors(jobNames),
+        const jobColor = jobColors.colors(jobNames),
             worstJobs = selectWorst(data, jobCount);
 
-        var color = colorScale(worstFailureRatio);
+        const color = colorScale(worstFailureRatio);
 
-        var selection = svg.selectAll("g")
+        const selection = svg.selectAll("g")
                 .data(noGrouping(bubble.nodes({children: worstJobs})),
                       function(d) { return d.name; });
 
@@ -45,7 +45,7 @@ var badJobs = function (jobColors, utils) {
             .exit()
             .remove();
 
-        var node = selection
+        const node = selection
                 .enter()
                 .append('g');
 

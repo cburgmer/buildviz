@@ -1,23 +1,23 @@
 (function (dataSource) {
     "use strict";
 
-    var statusHeader = d3.select("body")
+    const statusHeader = d3.select("body")
             .append('header')
             .attr('class', 'status');
-    var h1 = statusHeader
+    const h1 = statusHeader
             .append("h1");
 
-    var pipelineNameSpan = h1.append('span');
+    const pipelineNameSpan = h1.append('span');
     h1.append('a')
         .attr('href', 'https://github.com/cburgmer/buildviz')
         .text('buildviz');
 
-    var baseUrl = function () {
+    const baseUrl = function () {
         return window.location.href.replace(new RegExp('/[^/]*([\\?#].*)?$'), '');
     };
 
-    var showInitialHelp = function (header) {
-        var now = +new Date(),
+    const showInitialHelp = function (header) {
+        const now = +new Date(),
             aMinuteAgo = now - 61234,
             serverUrl = baseUrl(),
             commands = ['echo \'{"start":' + aMinuteAgo + ',"end":' + now + ',"outcome":"fail"}\' \\\n  | curl -X PUT -H "Content-type: application/json" -d@- ' + serverUrl + '/builds/my_job/42',
@@ -30,8 +30,8 @@
             .text(commands.join('\n'));
     };
 
-    var durationToString = function (start, end) {
-        var duration = end - start,
+    const durationToString = function (start, end) {
+        const duration = end - start,
             momentDuration = moment.duration(duration);
         return momentDuration.format("w [weeks], d [days], h [hours], m [minutes]", {
             largest: 1,
@@ -49,7 +49,7 @@
             .append('span')
             .attr('class', 'details')
             .text(function () {
-                var latestBuild = status.latestBuildStart ?
+                const latestBuild = status.latestBuildStart ?
                         ', latest from ' + durationToString(status.latestBuildStart, +Date.now()) + ' ago'
                         : '',
                     totalTimeOfBuilds = status.earliestBuildStart ?

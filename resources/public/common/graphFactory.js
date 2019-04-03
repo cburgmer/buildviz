@@ -1,11 +1,11 @@
-var graphFactory = function (d3) {
+const graphFactory = function (d3) {
     "use strict";
-    var module = {};
+    const module = {};
 
     module.size = 600;
 
     module.textWithLineBreaks = function (elem, lines) {
-        var textElem = d3.select(elem),
+        const textElem = d3.select(elem),
             lineHeight = 1.1,
             yCorrection = (lineHeight * lines.length) / 2 - 0.95;
 
@@ -18,7 +18,7 @@ var graphFactory = function (d3) {
     };
 
     module.create = function (params) {
-        var id = 'graph_' + params.id,
+        const id = 'graph_' + params.id,
             widget = d3.select(document.currentScript.parentNode)
                 .append("section")
                 .attr("class", "graph " + params.id)
@@ -29,11 +29,11 @@ var graphFactory = function (d3) {
             .attr('href', '#')
             .text('╳');
 
-        var enlargeLink = widget.append("a")
+        const enlargeLink = widget.append("a")
                 .attr('class', 'enlarge')
                 .attr("href", '#' + id);
 
-        var header = enlargeLink.append('header');
+        const header = enlargeLink.append('header');
         header.append("h1")
             .text(params.headline);
 
@@ -46,7 +46,7 @@ var graphFactory = function (d3) {
         widget.append('div')
             .attr('class', 'loader');
 
-        var svg = enlargeLink
+        const svg = enlargeLink
                 .append("svg")
                 .attr("preserveAspectRatio", "xMinYMin meet")
                 .attr("viewBox", "0 0 " + module.size + " " + module.size),

@@ -1,36 +1,36 @@
-var events = (function (utils, tooltip) {
+const events = (function (utils, tooltip) {
     "use strict";
 
-    var module = {};
+    const module = {};
 
-    var margin = {top: 10, right: 0, bottom: 30, left: 60},
+    const margin = {top: 10, right: 0, bottom: 30, left: 60},
         width = graphFactory.size - margin.left - margin.right,
         height = graphFactory.size - margin.top - margin.bottom;
 
-    var x = d3.time.scale()
+    const x = d3.time.scale()
         .range([0, width]);
 
-    var y = d3.scale.log()
+    const y = d3.scale.log()
         .rangeRound([height, 0])
         .clamp(true);
 
-    var xAxis = d3.svg.axis()
+    const xAxis = d3.svg.axis()
         .scale(x)
         .orient("bottom");
 
-    var seconds = function (value) {
+    const seconds = function (value) {
         return value * 1000;
     };
 
-    var minutes = function (value) {
+    const minutes = function (value) {
         return value * 60 * 1000;
     };
 
-    var hours = function (value) {
+    const hours = function (value) {
         return value * 60 * 60 * 1000;
     };
 
-    var yAxis = d3.svg.axis()
+    const yAxis = d3.svg.axis()
         .scale(y)
         .outerTickSize(0)
         .tickValues([seconds(10), seconds(20), seconds(30), minutes(1), minutes(2), minutes(5), minutes(10), minutes(20), minutes(30), hours(1), hours(2), hours(5), hours(10), hours(24)])
@@ -39,12 +39,12 @@ var events = (function (utils, tooltip) {
         })
         .orient("left");
 
-    var avarageLine = d3.svg.line()
+    const avarageLine = d3.svg.line()
             .x(function(d) { return x(d.date); })
             .y(function(d) { return y(d.value); });
 
-    var saneDayTicks = function (axis, scale) {
-        var dayCount = (x.domain()[1] - x.domain()[0]) / (24 * 60 * 60 * 1000);
+    const saneDayTicks = function (axis, scale) {
+        const dayCount = (x.domain()[1] - x.domain()[0]) / (24 * 60 * 60 * 1000);
         if (dayCount < 10) {
             axis.ticks(d3.time.days, 1);
         } else {
@@ -53,14 +53,14 @@ var events = (function (utils, tooltip) {
         return axis;
     };
 
-    var createAxesPane = function (svg, yAxisCaption, defaultMode) {
+    const createAxesPane = function (svg, yAxisCaption, defaultMode) {
         if (defaultMode === 'lines') {
             svg.attr('class', 'events linesMode');
         } else {
             svg.attr('class', 'events circlesMode');
         }
 
-        var axesPane = svg
+        const axesPane = svg
                 .append("g")
                 .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -80,8 +80,8 @@ var events = (function (utils, tooltip) {
         return axesPane;
     };
 
-    var renderData = function (eventGroups, startTimestamp, svg, g) {
-        var xMin = startTimestamp > 0 ? startTimestamp : d3.min(eventGroups, function(c) { return d3.min(c.events, function (b) { return b.date; }); });
+    const renderData = function (eventGroups, startTimestamp, svg, g) {
+        const xMin = startTimestamp > 0 ? startTimestamp : d3.min(eventGroups, function(c) { return d3.min(c.events, function (b) { return b.date; }); });
 
         x.domain([
             xMin,
@@ -98,13 +98,13 @@ var events = (function (utils, tooltip) {
         g.selectAll('.y.axis')
             .call(yAxis);
 
-        var selection = g.selectAll(".eventGroup")
+        const selection = g.selectAll(".eventGroup")
                 .data(eventGroups, function (d) { return d.id; });
 
         selection.exit()
             .remove();
 
-        var graph = selection.enter()
+        const graph = selection.enter()
             .append("g")
             .attr('class', 'eventGroup')
             .on("mouseover", function(d) {
@@ -115,7 +115,7 @@ var events = (function (utils, tooltip) {
             });
 
         window.addEventListener('jobSelected', function (event) {
-            var jobName = event.detail.jobName;
+            const jobName = event.detail.jobName;
 
             svg.selectAll(".eventGroup")
                 .classed('highlightedElement', function (d) {
@@ -133,7 +133,7 @@ var events = (function (utils, tooltip) {
                 return d.color;
             });
 
-        var path = selection
+        const path = selection
             .select('path')
             .attr('d', function (d) {
                 return avarageLine(d.events);
@@ -143,7 +143,7 @@ var events = (function (utils, tooltip) {
             return d.tooltip;
         });
 
-        var circle = selection.selectAll('circle')
+        const circle = selection.selectAll('circle')
                 .data(function (d) { return d.events; });
 
         circle.enter()
@@ -175,8 +175,8 @@ var events = (function (utils, tooltip) {
     };
 
     return function (svg, yAxisCaption, defaultMode) {
-        var axesPane,
-            getOrCreateAxesPane = function () {
+        let axesPane;
+        const getOrCreateAxesPane = function () {
                 if (axesPane === undefined) {
                     axesPane = createAxesPane(svg, yAxisCaption, defaultMode);
                 }
@@ -195,7 +195,7 @@ var events = (function (utils, tooltip) {
                     return;
                 }
 
-                var g = getOrCreateAxesPane();
+                const g = getOrCreateAxesPane();
 
                 renderData(eventGroups, startTimestamp, svg, g);
             }

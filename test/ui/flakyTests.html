@@ -8,17 +8,17 @@
 <link rel="stylesheet" href="../../resources/public/common/tooltip.css">
 <body>
     <script>
-     var toCsvDate = function (date) {
+     const toCsvDate = function (date) {
          return date.toISOString().replace('T', ' ');
      };
 
-     var dateDaysAgo = function (daysAgo) {
-         var d = new Date('2000-01-01');
+     const dateDaysAgo = function (daysAgo) {
+         const d = new Date('2000-01-01');
          d.setDate(d.getDate() - daysAgo);
          return d;
      };
 
-     var aFlakyTest = function (name, flakyCount, countDaysAgoOfLatestFailure) {
+     const aFlakyTest = function (name, flakyCount, countDaysAgoOfLatestFailure) {
          return {
              latestBuildId: "4",
              latestFailure: toCsvDate(dateDaysAgo(countDaysAgoOfLatestFailure)),
@@ -27,14 +27,14 @@
          };
      };
 
-     var forJob = function (jobName, tests) {
+     const forJob = function (jobName, tests) {
          return tests.map(function (test) {
              test.job = jobName;
              return test;
          });
      };
 
-     var dataSource = {
+     const dataSource = {
          loadCSV: function (_, callback) {
              callback(
                  [forJob("aFlakyBuild", [aFlakyTest("Another Test Case", 80, 0),

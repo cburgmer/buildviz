@@ -1,17 +1,17 @@
 (function (timespanSelection, graphDescription, graphFactory, zoomableSunburst, dataSource, jobColors, utils) {
-    var testCountPerJob = 5;
+    const testCountPerJob = 5;
 
-    var concatIds = function (ids) {
+    const concatIds = function (ids) {
         return ids.join('/');
     };
 
-    var title = function (entry) {
+    const title = function (entry) {
         return [entry.name + ' (' + utils.formatTimeInMs(entry.averageRuntime, {showMillis: true}) + ')',
                 entry.testClass,
                 entry.testSuite].join('\n');
     };
 
-    var transformTestCase = function (testCase, parentId) {
+    const transformTestCase = function (testCase, parentId) {
         return {
             name: testCase.name,
             size: testCase.averageRuntime,
@@ -20,9 +20,9 @@
         };
     };
 
-    var flattenTests = function (testsuites) {
+    const flattenTests = function (testsuites) {
         return testsuites.reduce(function (tests, testsuite) {
-            var suiteTests = testsuite.children.reduce(function (tests, testClass) {
+            const suiteTests = testsuite.children.reduce(function (tests, testClass) {
                 return tests.concat(testClass.children.map(function (test) {
                     return {
                         name: test.name,
@@ -37,14 +37,14 @@
         }, []);
     };
 
-    var slowestNTests = function (testsuites, n) {
-        var tests = flattenTests(testsuites);
+    const slowestNTests = function (testsuites, n) {
+        const tests = flattenTests(testsuites);
 
         tests.sort(function (a, b) {
             return a.averageRuntime - b.averageRuntime;
         });
 
-        var slowestTests = tests.slice(-n),
+        const slowestTests = tests.slice(-n),
             remaindingTotalAverageRuntime = tests.slice(0, -n).reduce(function (totalAverageRuntime, test) {
                 return totalAverageRuntime + test.averageRuntime;
             }, 0);
@@ -60,14 +60,14 @@
         return slowestTests;
     };
 
-    var transformTestCases = function (testcasesByJob) {
-        var jobNames = testcasesByJob.map(function (jobEntry) {
+    const transformTestCases = function (testcasesByJob) {
+        const jobNames = testcasesByJob.map(function (jobEntry) {
             return jobEntry.jobName;
         });
-        var color = jobColors.colors(jobNames);
+        const color = jobColors.colors(jobNames);
 
         return testcasesByJob.map(function (jobEntry) {
-            var jobName = jobEntry.jobName,
+            const jobName = jobEntry.jobName,
                 children = slowestNTests(jobEntry.children, testCountPerJob);
 
             return {
@@ -81,7 +81,7 @@
         });
     };
 
-    var timespanSelector = timespanSelection.create(timespanSelection.timespans.sevenDays),
+    const timespanSelector = timespanSelection.create(timespanSelection.timespans.sevenDays),
         description = graphDescription.create({
             description: 'Average runtime of the 5 slowest test cases by job. Multiple test cases with the same name have their runtimes added up.',
             answer: ['What could be the first place to look at to improve test runtime?'],
@@ -94,7 +94,7 @@
             noDataReason: "uploaded test results",
             widgets: [timespanSelector.widget, description.widget]
         });
-    var sunburst = zoomableSunburst(graph.svg, graphFactory.size);
+    const sunburst = zoomableSunburst(graph.svg, graphFactory.size);
 
     timespanSelector.load(function (fromTimestamp) {
         graph.loading();
@@ -102,7 +102,7 @@
         dataSource.load('testcases?from='+ fromTimestamp, function (testCases) {
             graph.loaded();
 
-            var data = {
+            const data = {
                 name: "Tests",
                 id: '__tests__',
                 color: 'transparent',

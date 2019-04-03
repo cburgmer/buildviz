@@ -1,5 +1,5 @@
 (function (timespanSelection, graphDescription, graphFactory, events, jobColors, dataSource, utils) {
-    var timespanSelector = timespanSelection.create(timespanSelection.timespans.twoMonths),
+    const timespanSelector = timespanSelection.create(timespanSelection.timespans.twoMonths),
         description = graphDescription.create({
             description: "Build runtime (time between start and end)",
             answer: ['Has a job gotten considerably slower?',
@@ -16,9 +16,9 @@
             widgets: [timespanSelector.widget, description.widget]
         });
 
-    var eventForBuild = function (build, color) {
-        var isFailingBuild = build.outcome && build.outcome !== 'pass';
-        var duration = (build.end - build.start);
+    const eventForBuild = function (build, color) {
+        const isFailingBuild = build.outcome && build.outcome !== 'pass';
+        const duration = (build.end - build.start);
         return {
             date: new Date(build.end),
             value: duration,
@@ -30,22 +30,22 @@
         };
     };
 
-    var transformBuilds = function (builds) {
-        var buildsByJob = d3.nest()
+    const transformBuilds = function (builds) {
+        const buildsByJob = d3.nest()
                 .key(function (d) {
                     return d.job;
                 })
                 .sortValues(function (a, b) { return b.end - a.end; })
                 .entries(builds);
 
-        var jobNames = buildsByJob.map(function (group) {
+        const jobNames = buildsByJob.map(function (group) {
             return group.key;
         });
-        var color = jobColors.colors(jobNames);
+        const color = jobColors.colors(jobNames);
 
         return buildsByJob.map(function (group) {
-            var c = color(group.key);
-            var events = group.values
+            const c = color(group.key);
+            const events = group.values
                     .filter(function (build) {
                         return build.end;
                     })
@@ -60,7 +60,7 @@
         });
     };
 
-    var runtimePane = events(graph.svg, 'Runtime');
+    const runtimePane = events(graph.svg, 'Runtime');
 
     timespanSelector.load(function (fromTimestamp) {
         graph.loading();

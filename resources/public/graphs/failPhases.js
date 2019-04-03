@@ -1,20 +1,20 @@
 (function (timespanSelection, graphDescription, graphFactory, utils, tooltip, dataSource) {
-    var margin = {top: 10, right: 0, bottom: 30, left: 35},
+    const margin = {top: 10, right: 0, bottom: 30, left: 35},
         width = graphFactory.size - margin.left - margin.right,
         height = graphFactory.size - margin.top - margin.bottom;
 
-    var x = d3.time.scale()
+    const x = d3.time.scale()
             .range([0, width]);
 
-    var y = d3.scale.linear()
+    const y = d3.scale.linear()
             .domain([0, 24])
             .range([height, 0]);
 
-    var xAxis = d3.svg.axis()
+    const xAxis = d3.svg.axis()
             .scale(x)
             .orient("bottom");
 
-    var yAxis = d3.svg.axis()
+    const yAxis = d3.svg.axis()
             .scale(y)
             .orient("left")
             .outerTickSize(0)
@@ -31,23 +31,23 @@
                 }
             });
 
-    var timeOfDay = function (date) {
+    const timeOfDay = function (date) {
         return (date.getTime() - (date.getTimezoneOffset() * 60 * 1000)) % (24 * 60 * 60 * 1000) / (60 * 60 * 1000);
     };
 
-    var startOfDay = function (date) {
+    const startOfDay = function (date) {
         return new Date(date.getFullYear(), date.getMonth(), date.getDate());
     };
 
-    var endOfDay = function (date) {
-        var nextDay = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
+    const endOfDay = function (date) {
+        const nextDay = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
 
         return new Date(nextDay.getTime() - 1);
     };
 
-    var phasesByDay = function (start, end) {
-        var phases = [],
-            startDate = new Date(start),
+    const phasesByDay = function (start, end) {
+        const phases = [];
+        let startDate = new Date(start),
             endDate = end ? new Date(end) : undefined,
             endOfCurrentDay = endOfDay(startDate);
 
@@ -71,13 +71,11 @@
         return phases;
     };
 
-    var flatten = function (listOfLists) {
+    const flatten = function (listOfLists) {
         return listOfLists.reduce(function (a, b) { return a.concat(b); }, []);
     };
 
-    var calculatePhasesByDay = function (data) {
-        var lastEntry;
-
+    const calculatePhasesByDay = function (data) {
         return flatten(data.map(function (entry) {
             return phasesByDay(entry.start, entry.end)
                 .map(function (phase) {
@@ -92,7 +90,7 @@
         }));
     };
 
-    var annotateDateAndTime = function (phases) {
+    const annotateDateAndTime = function (phases) {
         return phases.map(function (phase) {
             phase.startOfDay = startOfDay(phase.start);
             phase.endOfDay = endOfDay(phase.end);
@@ -102,12 +100,12 @@
         });
     };
 
-    var isWeekend = function (date) {
-        var dayOfWeek = date.getDay();
+    const isWeekend = function (date) {
+        const dayOfWeek = date.getDay();
         return dayOfWeek === 0 || dayOfWeek === 6;
     };
 
-    var shortTimeString = function (date, referenceDate) {
+    const shortTimeString = function (date, referenceDate) {
         if (startOfDay(date).valueOf() === startOfDay(referenceDate).valueOf()) {
             return date.toLocaleTimeString();
         } else {
@@ -115,8 +113,8 @@
         }
     };
 
-    var saneDayTicks = function (axis, scale) {
-        var dayCount = (x.domain()[1] - x.domain()[0]) / (24 * 60 * 60 * 1000);
+    const saneDayTicks = function (axis, scale) {
+        const dayCount = (x.domain()[1] - x.domain()[0]) / (24 * 60 * 60 * 1000);
         if (dayCount < 10) {
             axis.ticks(d3.time.days, 1);
         } else {
@@ -125,8 +123,8 @@
         return axis;
     };
 
-    var axesPane,
-        getOrCreateAxesPane = function (svg) {
+    let axesPane;
+    const getOrCreateAxesPane = function (svg) {
             if (axesPane === undefined) {
                 axesPane = svg
                     .append("g")
@@ -154,8 +152,8 @@
             axesPane = undefined;
         };
 
-    var renderData = function (data, startTimestamp, svg) {
-        var phasesByDay = annotateDateAndTime(calculatePhasesByDay(data));
+    const renderData = function (data, startTimestamp, svg) {
+        const phasesByDay = annotateDateAndTime(calculatePhasesByDay(data));
 
         if (!phasesByDay.length) {
             removeAxesPane(svg);
@@ -163,12 +161,12 @@
             return;
         }
 
-        var xMin = startTimestamp > 0 ? startTimestamp : d3.min(phasesByDay, function(d) { return d.startOfDay; });
+        const xMin = startTimestamp > 0 ? startTimestamp : d3.min(phasesByDay, function(d) { return d.startOfDay; });
 
         x.domain([xMin,
                   d3.max(phasesByDay, function(d) { return d.endOfDay; })]);
 
-        var pane = getOrCreateAxesPane(svg);
+        const pane = getOrCreateAxesPane(svg);
 
         pane.selectAll('.x.axis')
             .call(saneDayTicks(xAxis, x));
@@ -176,7 +174,7 @@
         pane.selectAll('.y.axis')
             .call(yAxis);
 
-        var selection = pane.selectAll('.entry')
+        const selection = pane.selectAll('.entry')
             .data(phasesByDay,
                   function (d) {
                       return d.start;
@@ -185,14 +183,14 @@
         selection.exit()
             .remove();
 
-        var g = selection
+        const g = selection
                 .enter()
                 .append('g')
                 .attr("class", "entry");
 
         g.append('rect')
             .attr('class', function (d) {
-                var classNames = [];
+                const classNames = [];
                 if (isWeekend(d.start)) {
                     classNames.push('weekend');
                 }
@@ -216,9 +214,9 @@
                 return y(d.startTime) - y(d.endTime);
             });
 
-        var tooltipText = function (d) {
-            var duration = utils.formatTimeInMs(d.duration),
-                lines = [];
+        const tooltipText = function (d) {
+            const duration = utils.formatTimeInMs(d.duration);
+            let lines = [];
 
             lines.push('<span class="label">' + d.start.toLocaleDateString() + '</span>');
             lines.push('<span class="label">from</span> ' + shortTimeString(d.phaseStart, d.start));
@@ -231,7 +229,7 @@
             if (d.color === 'red') {
                 lines.push('');
                 lines = lines.concat(d.culprits.map(function (culprit) {
-                    var isOngoing = d.ongoingCulprits.indexOf(culprit) >= 0;
+                    const isOngoing = d.ongoingCulprits.indexOf(culprit) >= 0;
                     return '<span class="culprit">' + culprit + '</span>' +
                         (isOngoing ? ' <span class="ongoing">(ongoing)</span>' : '');
                 }));
@@ -242,7 +240,7 @@
         tooltip.register(g, tooltipText);
 };
 
-    var timespanSelector = timespanSelection.create(timespanSelection.timespans.twoMonths),
+    const timespanSelector = timespanSelection.create(timespanSelection.timespans.twoMonths),
         description = graphDescription.create({
             description: ['A failing phase starts when one job fails on an otherwise green pipeline and ends when the job is re-run with a now good outcome.',
                           'The failing phase continues when another job starts to fail in between and only ends when that job also passes again.',

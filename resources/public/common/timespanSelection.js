@@ -1,9 +1,9 @@
-var timespanSelection = function (d3) {
-    var module = {};
+const timespanSelection = function (d3) {
+    const module = {};
 
-    var fromDaysAgo = function (days) {
+    const fromDaysAgo = function (days) {
         return function () {
-            var today = new Date(),
+            const today = new Date(),
                 daysAgo = new Date(today.getFullYear(), today.getMonth(), today.getDate() - days);
 
             return +daysAgo;
@@ -43,37 +43,37 @@ var timespanSelection = function (d3) {
         }
     };
 
-    var notifyTimespanSelected = function (onTimespanSelected, span) {
+    const notifyTimespanSelected = function (onTimespanSelected, span) {
         onTimespanSelected(span.timestamp.call());
     };
 
     module.create = function (selectedSpan) {
-        var onTimespanSelected;
+        let onTimespanSelected;
 
-        var container = d3.select(document.createElement('div'))
+        const container = d3.select(document.createElement('div'))
                 .attr('class', 'timespan');
 
-        var currentlySelected = container.append('span')
+        const currentlySelected = container.append('span')
                 .on('click', function () {
                     d3.event.preventDefault();
                 });
 
-        var timespanList = container.append('div')
+        const timespanList = container.append('div')
                 .attr('class', 'timespanSelection')
                 .append('ol')
                 .attr('class', 'timespanList');
 
-        var timespans = Object.keys(module.timespans).map(function (spanName) {
+        const timespans = Object.keys(module.timespans).map(function (spanName) {
             return module.timespans[spanName];
         });
 
-        var selection = timespanList.selectAll(".item")
+        const selection = timespanList.selectAll(".item")
                 .data(timespans,
                       function (d) {
                           return d.label;
                       });
 
-        var updateSelection = function () {
+        const updateSelection = function () {
             currentlySelected.text(selectedSpan.shortLabel);
             selection
                 .classed('selected', function (span) {

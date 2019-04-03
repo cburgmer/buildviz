@@ -1,11 +1,11 @@
 (function (timespanSelection, graphDescription, jobColors, graphFactory, dataSource, weightedTimeline) {
-    var transformEntry = function (data, svg) {
-        var jobNames = d3.set(data.map(function (test) {
+    const transformEntry = function (data, svg) {
+        const jobNames = d3.set(data.map(function (test) {
             return test.job;
         })).values();
-        var jobColor = jobColors.colors(jobNames);
+        const jobColor = jobColors.colors(jobNames);
 
-        var flakyTests = data.map(function (testCase) {
+        const flakyTests = data.map(function (testCase) {
             return {
                 id: [testCase.job, testCase.classname, testCase.name].join("\\"),
                 name: testCase.name,
@@ -24,7 +24,7 @@
             };
         });
 
-        var isEqualDates = function (dateA, dateB) {
+        const isEqualDates = function (dateA, dateB) {
             return dateA.getTime() === dateB.getTime();
         };
 
@@ -38,7 +38,7 @@
         return flakyTests;
     };
 
-    var timespanSelector = timespanSelection.create(timespanSelection.timespans.twoWeeks),
+    const timespanSelector = timespanSelection.create(timespanSelection.timespans.twoWeeks),
         description = graphDescription.create({
             description: ["All flaky test cases.",
                           "A test case is considered flaky if it failed in one build, but passed in another,",
@@ -55,7 +55,7 @@
             widgets: [timespanSelector.widget, description.widget]
         });
 
-    var runtimePane = weightedTimeline(graph.svg, 'Last seen');
+    const runtimePane = weightedTimeline(graph.svg, 'Last seen');
 
     timespanSelector.load(function (fromTimestamp) {
         graph.loading();

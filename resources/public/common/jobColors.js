@@ -1,8 +1,8 @@
-var jobColors = function () {
+const jobColors = function () {
     "use strict";
-    var module = {};
+    const module = {};
 
-    var jobColor;
+    let jobColor;
 
     module.colors = function (jobNames) {
         if (! jobColor) {

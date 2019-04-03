@@ -1,18 +1,18 @@
 (function (timespanSelection, graphDescription, graphFactory, dataSource, badJobs) {
-    var jobCount = 5,
+    const jobCount = 5,
         worstFlakyRatio = 1/4; /* one out of four */
 
-    var flakyRatio = function (job) {
+    const flakyRatio = function (job) {
         return job.flakyCount / job.failedCount;
     };
 
-    var flakyBuildsAsBubbles = function (jobEntries) {
+    const flakyBuildsAsBubbles = function (jobEntries) {
         return jobEntries
             .filter(function (job) {
                 return job.flakyCount > 0;
             })
             .map(function (job) {
-                var ratio = flakyRatio(job);
+                const ratio = flakyRatio(job);
                 return {
                     name: job.jobName,
                     title: [job.jobName,
@@ -26,7 +26,7 @@
             });
     };
 
-    var timespanSelector = timespanSelection.create(timespanSelection.timespans.twoWeeks),
+    const timespanSelector = timespanSelection.create(timespanSelection.timespans.twoWeeks),
         description = graphDescription.create({
             description: ["The 5 jobs with the most flaky failing builds.",
                           "A failing build is considered flaky, if another build that was given the same inputs passes.",
@@ -52,7 +52,7 @@
         dataSource.load('jobs?from=' + fromTimestamp, function (data) {
             graph.loaded();
 
-            var flakyJobs = flakyBuildsAsBubbles(data);
+            const flakyJobs = flakyBuildsAsBubbles(data);
 
             badJobs.renderData(flakyJobs, graph.svg, jobCount, worstFlakyRatio);
         });

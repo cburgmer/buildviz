@@ -1,9 +1,9 @@
-var zoomableSunburst = function (svg, diameter) {
-    var zoomTransitionDuration = 750,
+const zoomableSunburst = function (svg, diameter) {
+    const zoomTransitionDuration = 750,
         maxCaptionCharacterCount = diameter / 16;
 
-    var rootPane,
-        getOrCreateRootPane = function () {
+    let rootPane;
+    const getOrCreateRootPane = function () {
             if (!rootPane) {
                 rootPane = svg.append("g")
                     .attr("transform", "translate(" + (diameter / 2) + "," + (diameter / 2) + ")");
@@ -17,15 +17,15 @@ var zoomableSunburst = function (svg, diameter) {
 
     svg.attr('class', 'zoomableSunburst');
 
-    var radius = diameter / 2;
+    const radius = diameter / 2;
 
-    var x = d3.scale.linear()
+    const x = d3.scale.linear()
             .range([0, 2 * Math.PI]);
 
-    var y = d3.scale.linear()
+    const y = d3.scale.linear()
             .range([0, radius]);
 
-    var partition = d3.layout.partition()
+    const partition = d3.layout.partition()
             .sort(function (a, b) {
                 if (a.name === b.name) {
                     return 0;
@@ -37,18 +37,18 @@ var zoomableSunburst = function (svg, diameter) {
             })
             .value(function(d) { return d.size; });
 
-    var arc = d3.svg.arc()
+    const arc = d3.svg.arc()
             .startAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x))); })
             .endAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x + d.dx))); })
             .innerRadius(function(d) { return Math.max(0, y(d.y)); })
             .outerRadius(function(d) { return Math.max(0, y(d.y + d.dy)); });
 
-    var computeTextRotation = function (d) {
+    const computeTextRotation = function (d) {
         return (x(d.x + d.dx / 2) - Math.PI / 2) / Math.PI * 180;
     };
 
-    var arcTween = function (d) {
-        var xd = d3.interpolate(x.domain(), [d.x, d.x + d.dx]),
+    const arcTween = function (d) {
+        const xd = d3.interpolate(x.domain(), [d.x, d.x + d.dx]),
             yd = d3.interpolate(y.domain(), [d.y, 1]),
             yr = d3.interpolate(y.range(), [d.y ? 20 : 0, radius]);
         return function(d, i) {
@@ -66,30 +66,29 @@ var zoomableSunburst = function (svg, diameter) {
         };
     };
 
-    var nodeLuminance = function (d, l) {
+    const nodeLuminance = function (d, l) {
         if (!d.value) {
             return 50;
         }
-        var luminance = d3.scale.sqrt()
+        const luminance = d3.scale.sqrt()
                 .domain([0, 1e6])
                 .range([90, 40]);
 
         return luminance(d.value);
     };
 
-    var closestAncestorWithColor = function (d) {
-        var parent = d;
+    const closestAncestorWithColor = function (d) {
+        let parent = d;
         while (!parent.color && parent.parent) {
             parent = parent.parent;
         }
         return parent;
     };
 
-    var nodeColorWithFallbackToParentColor = function (d) {
-        var color = d.color;
-        var ancestor;
+    const nodeColorWithFallbackToParentColor = function (d) {
+        let color = d.color;
         if (! color) {
-            ancestor = closestAncestorWithColor(d);
+            const ancestor = closestAncestorWithColor(d);
             color = d3.lab(ancestor.color);
             color.l = nodeLuminance(d, color.l);
         }
@@ -97,8 +96,8 @@ var zoomableSunburst = function (svg, diameter) {
     };
 
     // poor man's text clipping
-    var maxLength = function (text, length) {
-        var ellipsis = '…';
+    const maxLength = function (text, length) {
+        const ellipsis = '…';
         if (text.length > length) {
             return text.substr(0, length - 1) + ellipsis;
         } else {
@@ -106,20 +105,20 @@ var zoomableSunburst = function (svg, diameter) {
         }
     };
 
-    var enoughPlaceForText = function (d, selectedNode) {
-        var currentDx = selectedNode ? selectedNode.dx : 1;
+    const enoughPlaceForText = function (d, selectedNode) {
+        const currentDx = selectedNode ? selectedNode.dx : 1;
         return (d.dx / currentDx) > 0.015;
     };
 
-    var displayText = function(d, selectedNode) {
-        var currentDepth = selectedNode ? selectedNode.depth : 0;
+    const displayText = function(d, selectedNode) {
+        const currentDepth = selectedNode ? selectedNode.depth : 0;
         if (d.depth === 0 || d.depth < currentDepth || !enoughPlaceForText(d, selectedNode)) {
             return false;
         }
         return true;
     };
 
-    var allChildNodesFor = function (parentNode) {
+    const allChildNodesFor = function (parentNode) {
         if (!parentNode.children) {
             return [parentNode];
         }
@@ -129,18 +128,18 @@ var zoomableSunburst = function (svg, diameter) {
         }, [parentNode]);
     };
 
-    var allNodesFor = function (node) {
-        var nodes = allChildNodesFor(node);
+    const allNodesFor = function (node) {
+        const nodes = allChildNodesFor(node);
         if (node.parent) {
             nodes.push(node.parent);
         }
         return nodes;
     };
 
-    var renderSunburst = function (rootNode, domElement, showTransition) {
-        var nodes = allNodesFor(rootNode);
+    const renderSunburst = function (rootNode, domElement, showTransition) {
+        const nodes = allNodesFor(rootNode);
 
-        var selection = domElement
+        const selection = domElement
                 .selectAll('g')
                 .data(nodes,
                       function (d) {
@@ -148,7 +147,7 @@ var zoomableSunburst = function (svg, diameter) {
                       });
 
         // enter
-        var g = selection
+        const g = selection
             .enter()
             .append("g")
             .attr('class', 'segment')
@@ -167,7 +166,7 @@ var zoomableSunburst = function (svg, diameter) {
             });
 
         window.addEventListener('jobSelected', function (event) {
-            var jobName = event.detail.jobName;
+            const jobName = event.detail.jobName;
 
             svg.selectAll(".segment")
                 .classed('highlightedElement', function (d) {
@@ -192,7 +191,7 @@ var zoomableSunburst = function (svg, diameter) {
                 if (d.children) {
                     return maxLength(d.name, maxCaptionCharacterCount * d.dy);
                 }
-                var totalDepthCount = 1.0 / d.dy,
+                const totalDepthCount = 1.0 / d.dy,
                     depthsLeft = totalDepthCount - d.depth;
                 return maxLength(d.name, maxCaptionCharacterCount * depthsLeft * d.dy);
             });
@@ -221,7 +220,7 @@ var zoomableSunburst = function (svg, diameter) {
             });
 
         // exit
-        var exit = selection
+        const exit = selection
                 .exit();
 
         exit.select('text')
@@ -237,7 +236,7 @@ var zoomableSunburst = function (svg, diameter) {
             });
     };
 
-    var render = function (data) {
+    const render = function (data) {
         if (!data.children.length) {
             removeRootPane();
             return;

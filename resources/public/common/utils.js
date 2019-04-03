@@ -1,5 +1,5 @@
-var utils = (function () {
-    var module = {};
+const utils = (function () {
+    const module = {};
 
     module.breakJobName = function (jobName) {
         return jobName
@@ -15,22 +15,22 @@ var utils = (function () {
             }, []);
     };
 
-    var padZero = function (value, padToLength) {
-        var paddedValue = String(value);
+    const padZero = function (value, padToLength) {
+        let paddedValue = String(value);
         while (paddedValue.length < padToLength) {
             paddedValue = '0' + paddedValue;
         }
         return paddedValue;
     };
 
-    var formatHMS = function (values) {
+    const formatHMS = function (values) {
         return [values[0]].concat(values.slice(1).map(function (val) {
             return padZero(val, 2);
         })).join(':');
     };
 
     module.formatTimeInMs = function (timeInMs, options) {
-        var hours = Math.floor(timeInMs / (60 * 60 * 1000)),
+        const hours = Math.floor(timeInMs / (60 * 60 * 1000)),
             minutes = Math.floor(timeInMs % (60 * 60 * 1000) / (60 * 1000)),
             rawSeconds = timeInMs % (60 * 1000) / 1000,
             millis = timeInMs % 1000,

@@ -1,18 +1,18 @@
 (function (timespanSelection, graphDescription, graphFactory, dataSource, badJobs) {
-    var jobCount = 5,
+    const jobCount = 5,
         worstFailureRatio = 0.25;
 
-    var failRatio = function (job) {
+    const failRatio = function (job) {
         return job.failedCount / job.totalCount;
     };
 
-    var failedBuildsAsBubbles = function (jobEntries) {
+    const failedBuildsAsBubbles = function (jobEntries) {
         return jobEntries
             .filter(function (job) {
                 return job.failedCount > 0;
             })
             .map(function (job) {
-                var ratio = failRatio(job);
+                const ratio = failRatio(job);
                 return {
                     name: job.jobName,
                     title: [job.jobName,
@@ -26,7 +26,7 @@
             });
     };
 
-    var timespanSelector = timespanSelection.create(timespanSelection.timespans.twoWeeks),
+    const timespanSelector = timespanSelection.create(timespanSelection.timespans.twoWeeks),
         description = graphDescription.create({
             description: ["The 5 jobs with the most failed builds. The size of each job's circle follows its total failed build count.",
                           "The border color shows the failure rate, calculated by total build failures relative to total build count.",
@@ -50,7 +50,7 @@
         dataSource.load('jobs?from=' + fromTimestamp, function (data) {
             graph.loaded();
 
-            var failedJobs = failedBuildsAsBubbles(data);
+            const failedJobs = failedBuildsAsBubbles(data);
 
             badJobs.renderData(failedJobs, graph.svg, jobCount, worstFailureRatio);
         });

@@ -5,14 +5,14 @@
 <link rel="stylesheet" href="../../resources/public/status.css">
 <body>
     <script>
-        var dataSource = {
+        const dataSource = {
             load: function (_, callback) {
                 callback({
                     totalBuildCount: 0
                 });
             }
         };
-        var oldDateConstructor = window.Date;
+        const oldDateConstructor = window.Date;
         window.Date = function () {
             return new oldDateConstructor(1445074862000)
         };

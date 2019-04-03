@@ -1,18 +1,18 @@
 (function (timespanSelection, graphDescription, graphFactory, zoomableSunburst, dataSource, jobColors) {
-    var testCountPerJob = 5;
+    const testCountPerJob = 5;
 
-    var concatIds = function (ids) {
+    const concatIds = function (ids) {
         return ids.join('/');
     };
 
-    var title = function (entry) {
-        var failures = entry.failedCount ? ' (' + entry.failedCount + ')' : '';
+    const title = function (entry) {
+        const failures = entry.failedCount ? ' (' + entry.failedCount + ')' : '';
         return [entry.name + failures,
                 entry.testClass,
                 entry.testSuite].join('\n');
     };
 
-    var transformTestCase = function (testCase, parentId) {
+    const transformTestCase = function (testCase, parentId) {
         return {
             name: testCase.name,
             size: testCase.failedCount,
@@ -21,9 +21,9 @@
         };
     };
 
-    var flattenTests = function (testsuites) {
+    const flattenTests = function (testsuites) {
         return testsuites.reduce(function (tests, testsuite) {
-            var suiteTests = testsuite.children.reduce(function (tests, testClass) {
+            const suiteTests = testsuite.children.reduce(function (tests, testClass) {
                 return tests.concat(testClass.children.map(function (test) {
                     return {
                         name: test.name,
@@ -38,20 +38,20 @@
         }, []);
     };
 
-    var excludeAlwaysGreenTests = function (tests) {
+    const excludeAlwaysGreenTests = function (tests) {
         return tests.filter(function (testCase) {
             return testCase.failedCount > 0;
         });
     };
 
-    var mostNFailingTestCases = function (testsuites, n) {
-        var tests = excludeAlwaysGreenTests(flattenTests(testsuites));
+    const mostNFailingTestCases = function (testsuites, n) {
+        const tests = excludeAlwaysGreenTests(flattenTests(testsuites));
 
         tests.sort(function (a, b) {
             return a.failedCount - b.failedCount;
         });
 
-        var mostFailingTests = tests.slice(-n),
+        const mostFailingTests = tests.slice(-n),
             remaindingTotalFailedCount = tests.slice(0, -n).reduce(function (totalFailedCount, test) {
                 return totalFailedCount + test.failedCount;
             }, 0);
@@ -67,14 +67,14 @@
         return mostFailingTests;
     };
 
-    var transformFailingTests = function (testcasesByJob) {
-        var jobNames = testcasesByJob.map(function (jobEntry) {
+    const transformFailingTests = function (testcasesByJob) {
+        const jobNames = testcasesByJob.map(function (jobEntry) {
             return jobEntry.jobName;
         });
-        var color = jobColors.colors(jobNames);
+        const color = jobColors.colors(jobNames);
 
         return testcasesByJob .map(function (jobEntry) {
-            var jobName = jobEntry.jobName,
+            const jobName = jobEntry.jobName,
                 children = mostNFailingTestCases(jobEntry.children, testCountPerJob);
 
             return {
@@ -90,7 +90,7 @@
         });
     };
 
-    var timespanSelector = timespanSelection.create(timespanSelection.timespans.sevenDays),
+    const timespanSelector = timespanSelection.create(timespanSelection.timespans.sevenDays),
         description = graphDescription.create({
             description: "The 5 test cases with the most failures by job. Multiple test cases with the same name have their failures added up.",
             answer: ["What are the tests that provide either the most or the least feedback?"],
@@ -103,7 +103,7 @@
             noDataReason: "uploaded test results",
             widgets: [timespanSelector.widget, description.widget]
         });
-    var sunburst = zoomableSunburst(graph.svg, graphFactory.size);
+    const sunburst = zoomableSunburst(graph.svg, graphFactory.size);
 
     timespanSelector.load(function (fromTimestamp) {
         graph.loading();
@@ -111,7 +111,7 @@
         dataSource.load('testcases?from='+ fromTimestamp, function (failures) {
             graph.loaded();
 
-            var data = {
+            const data = {
                 name: "Most frequently failing tests",
                 id: '__most_frequently_failing_tests__',
                 color: 'transparent',

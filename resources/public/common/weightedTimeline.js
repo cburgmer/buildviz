@@ -1,23 +1,23 @@
-var weightedTimeline = (function (tooltip, graphFactory) {
+const weightedTimeline = (function (tooltip, graphFactory) {
     "use strict";
 
-    var module = {};
+    const module = {};
 
-    var margin = {top: 20, right: 0, bottom: 10, left: 60},
+    const margin = {top: 20, right: 0, bottom: 10, left: 60},
         width = graphFactory.size - margin.left - margin.right,
         height = graphFactory.size - margin.top - margin.bottom;
 
-    var y = d3.scale.linear().range([0, height]);
+    const y = d3.scale.linear().range([0, height]);
 
-    var yAxis = d3.svg.axis()
+    const yAxis = d3.svg.axis()
         .scale(y)
         .outerTickSize(0)
         .orient("left");
 
-    var timeFormat = d3.time.format('%b %d');
+    const timeFormat = d3.time.format('%b %d');
 
-    var createAxesPane = function (svg, axisCaption) {
-        var axesPane = svg
+    const createAxesPane = function (svg, axisCaption) {
+        const axesPane = svg
                 .append("g")
                 .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -30,19 +30,19 @@ var weightedTimeline = (function (tooltip, graphFactory) {
         return axesPane;
     };
 
-    var dateAtMidnight = function (fullDate) {
+    const dateAtMidnight = function (fullDate) {
         return new Date(fullDate.getFullYear(), fullDate.getMonth(), fullDate.getDate());
     };
 
-    var isEqualDates = function (dateA, dateB) {
+    const isEqualDates = function (dateA, dateB) {
         return dateA.getTime() === dateB.getTime();
     };
 
-    var extractTicks = function (data) {
-        var ticks = [];
+    const extractTicks = function (data) {
+        const ticks = [];
 
         data.forEach(function (entry) {
-            var date = dateAtMidnight(entry.date),
+            const date = dateAtMidnight(entry.date),
                 lastTick = ticks[ticks.length - 1];
             if (ticks.length === 0 ||
                 ! isEqualDates(date, lastTick.date)) {
@@ -56,7 +56,7 @@ var weightedTimeline = (function (tooltip, graphFactory) {
         return ticks;
     };
 
-    var renderData = function (data, g) {
+    const renderData = function (data, g) {
         data.forEach(function(entry, idx) {
             if (idx === 0) {
                 entry.offset = 0;
@@ -67,10 +67,10 @@ var weightedTimeline = (function (tooltip, graphFactory) {
 
         y.domain([0, data[data.length - 1].offset + data[data.length - 1].value]);
 
-        var ticks = extractTicks(data);
+        const ticks = extractTicks(data);
         yAxis
             .tickFormat(function (tick) {
-                var tickEntry = ticks.find(function (t) { return tick <= t.offset; });
+                const tickEntry = ticks.find(function (t) { return tick <= t.offset; });
                 return timeFormat(tickEntry.date);
             })
             .tickValues(ticks.map(function (t) { return t.offset; }));
@@ -78,13 +78,13 @@ var weightedTimeline = (function (tooltip, graphFactory) {
         g.selectAll('.y.axis')
             .call(yAxis);
 
-        var selection = g.selectAll(".bar")
+        const selection = g.selectAll(".bar")
             .data(data, function (d) { return d.id; });
 
         selection.exit()
             .remove();
 
-        var node = selection
+        const node = selection
             .enter()
             .append("g")
             .attr("class", "bar");
@@ -103,7 +103,7 @@ var weightedTimeline = (function (tooltip, graphFactory) {
                 return d.color;
             });
 
-        var hasSpaceForText = function (d) {
+        const hasSpaceForText = function (d) {
             return y(d.value) > 12;
         };
 
@@ -114,14 +114,14 @@ var weightedTimeline = (function (tooltip, graphFactory) {
             .attr("x", 38)
             .attr("y", function(d) { return ; })
             .attr('y', function (d) {
-                var offset = hasSpaceForText(d) ? 2 : 0;
+                const offset = hasSpaceForText(d) ? 2 : 0;
                 return y(d.offset) + offset;
             })
             .text(function (d) {
                 return hasSpaceForText(d) ? d.name : '...';
             });
 
-        var tooltipHtml = function (d) {
+        const tooltipHtml = function (d) {
             return d.tooltip;
         };
 
@@ -129,8 +129,8 @@ var weightedTimeline = (function (tooltip, graphFactory) {
     };
 
     return function (svg, axisCaption) {
-        var axesPane,
-            getOrCreateAxesPane = function () {
+        let axesPane;
+        const getOrCreateAxesPane = function () {
                 if (axesPane === undefined) {
                     axesPane = createAxesPane(svg, axisCaption);
                 }
@@ -150,7 +150,7 @@ var weightedTimeline = (function (tooltip, graphFactory) {
                     return;
                 }
 
-                var g = getOrCreateAxesPane();
+                const g = getOrCreateAxesPane();
 
                 renderData(data, g);
             }

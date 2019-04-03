@@ -1,15 +1,15 @@
-var tooltip = function () {
-    var tooltip = d3.select("body").append("div")
+const tooltip = function () {
+    const tooltip = d3.select("body").append("div")
             .attr("class", "tooltip")
             .style("display", "none");
 
-    var pointerIsOnLeftSideOfScreen = function () {
-        var windowRect = document.body.getBoundingClientRect();
+    const pointerIsOnLeftSideOfScreen = function () {
+        const windowRect = document.body.getBoundingClientRect();
         return d3.event.pageX < (windowRect.width / 2);
     };
 
-    var mouseover = function (html) {
-        var targetRect = d3.event.target.getBoundingClientRect(),
+    const mouseover = function (html) {
+        const targetRect = d3.event.target.getBoundingClientRect(),
             windowRect = document.body.getBoundingClientRect();
 
         if (!html) {
@@ -31,11 +31,11 @@ var tooltip = function () {
         }
     };
 
-    var mouseout = function () {
+    const mouseout = function () {
         tooltip.style("display", "none");
     };
 
-    var register = function (element, htmlFactory) {
+    const register = function (element, htmlFactory) {
         element
             .on("mouseover", function (d) { mouseover(htmlFactory(d)); })
             .on("mouseout", mouseout);

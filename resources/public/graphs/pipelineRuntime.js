@@ -1,5 +1,5 @@
 (function (timespanSelection, graphDescription, graphFactory, events, jobColors, dataSource) {
-    var timespanSelector = timespanSelection.create(timespanSelection.timespans.twoMonths),
+    const timespanSelector = timespanSelection.create(timespanSelection.timespans.twoMonths),
         description = graphDescription.create({
             description: ["Runtime over time for all pipelines identified for the given interval, average by day.",
                           "A pipeline is considered a simple chain of jobs, each triggering another until the pipeline finishes.",
@@ -15,29 +15,29 @@
             widgets: [timespanSelector.widget, description.widget]
         });
 
-    var transformRuntimes = function (data) {
-        var pipelineRuntimesByPipeline = d3.nest()
+    const transformRuntimes = function (data) {
+        const pipelineRuntimesByPipeline = d3.nest()
             .key(function (d) {
                 return d.pipeline.join('/');
             })
             .sortValues(function (a, b) { return b.start - a.start; })
             .entries(data);
 
-        var pipelineEndJobNames = pipelineRuntimesByPipeline.map(function (group) {
+        const pipelineEndJobNames = pipelineRuntimesByPipeline.map(function (group) {
             return group.key[group.key.length - 1];
         });
-        var color = jobColors.colors(pipelineEndJobNames);
+        const color = jobColors.colors(pipelineEndJobNames);
 
         return pipelineRuntimesByPipeline.map(function (group) {
-            var pipeline = group.values[0].pipeline;
-            var c = color(pipeline[pipeline.length - 1]);
+            const pipeline = group.values[0].pipeline;
+            const c = color(pipeline[pipeline.length - 1]);
             return {
                 id: group.key,
                 color: c,
                 tooltip: pipeline.join('<br>→ '),
                 events: group.values.map(function (pipelineRun) {
-                    var duration = pipelineRun.end - pipelineRun.start;
-                    var buildNames = pipelineRun.builds .map(function (build) {
+                    const duration = pipelineRun.end - pipelineRun.start;
+                    const buildNames = pipelineRun.builds .map(function (build) {
                         return build.job + ' #' + build.buildId;
                     });
                     return {
@@ -52,7 +52,7 @@
         });
     };
 
-    var runtimePane = events(graph.svg, 'Average runtime', 'lines');
+    const runtimePane = events(graph.svg, 'Average runtime', 'lines');
 
     timespanSelector.load(function (fromTimestamp) {
         graph.loading();

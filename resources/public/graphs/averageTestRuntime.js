@@ -1,29 +1,29 @@
 (function (timespanSelection, graphDescription, graphFactory, zoomableSunburst, utils, jobColors, dataSource) {
-    var title = function (entry) {
-        var runtime = '';
+    const title = function (entry) {
+        let runtime = '';
         if (entry.averageRuntime !== undefined) {
             runtime = ' (' + utils.formatTimeInMs(entry.averageRuntime, {showMillis: true}) + ')';
         }
         return entry.name + runtime;
     };
 
-    var hasOnlyOneChild = function (children) {
+    const hasOnlyOneChild = function (children) {
         return children && children.length === 1;
     };
 
-    var skipOnlyTestSuite = function (children) {
-        var hasOnlyOneTestSuite = hasOnlyOneChild(children);
+    const skipOnlyTestSuite = function (children) {
+        const hasOnlyOneTestSuite = hasOnlyOneChild(children);
 
         return hasOnlyOneTestSuite ? children[0].children : children;
     };
 
-    var concatIds = function (parentId, id) {
+    const concatIds = function (parentId, id) {
         return parentId + '/' + id;
     };
 
-    var buildNodeStructure = function (hierarchy, parentId) {
+    const buildNodeStructure = function (hierarchy, parentId) {
         return Object.keys(hierarchy).map(function (nodeName) {
-            var entry = hierarchy[nodeName],
+            const entry = hierarchy[nodeName],
                 id = concatIds(parentId, nodeName);
 
             if (entry.name) {
@@ -42,16 +42,16 @@
         });
     };
 
-    var buildPackageHierarchy = function (classEntries, parentId) {
-        var packageHierarchy = {};
+    const buildPackageHierarchy = function (classEntries, parentId) {
+        const packageHierarchy = {};
 
         classEntries.forEach(function (entry) {
-            var packageClassName = entry.name,
+            const packageClassName = entry.name,
                 components = packageClassName.split(/[\.:]/),
                 packagePath = components.slice(0, -1),
                 className = components.pop();
 
-            var branch = packagePath.reduce(function (packageBranch, packageName) {
+            const branch = packagePath.reduce(function (packageBranch, packageName) {
                 if (!packageBranch[packageName]) {
                     packageBranch[packageName] = {};
                 }
@@ -64,8 +64,8 @@
         return buildNodeStructure(packageHierarchy, parentId);
     };
 
-    var mergeSingleChildHierarchy = function (elem) {
-        var children = elem.children && elem.children.map(mergeSingleChildHierarchy);
+    const mergeSingleChildHierarchy = function (elem) {
+        const children = elem.children && elem.children.map(mergeSingleChildHierarchy);
 
         if (hasOnlyOneChild(children) && children[0].children) {
             elem.name = elem.name + '.' + children[0].name;
@@ -76,7 +76,7 @@
         return elem;
     };
 
-    var addAccumulatedApproximateRuntime = function (elem) {
+    const addAccumulatedApproximateRuntime = function (elem) {
         if (elem.children) {
             elem.children = elem.children.map(addAccumulatedApproximateRuntime);
         }
@@ -88,7 +88,7 @@
         return elem;
     };
 
-    var addTitle = function (elem) {
+    const addTitle = function (elem) {
         elem.title = title(elem);
         if (elem.children) {
             elem.children = elem.children.map(addTitle);
@@ -96,7 +96,7 @@
         return elem;
     };
 
-    var toSunburstFormat = function (elem) {
+    const toSunburstFormat = function (elem) {
         elem.size = elem.averageRuntime;
         if (elem.children) {
             elem.children = elem.children.map(toSunburstFormat);
@@ -104,7 +104,7 @@
         return elem;
     };
 
-    var transformClasses = function (classNodes, parentId) {
+    const transformClasses = function (classNodes, parentId) {
         return buildPackageHierarchy(classNodes, parentId)
             .map(addAccumulatedApproximateRuntime)
             .map(mergeSingleChildHierarchy)
@@ -112,20 +112,20 @@
             .map(toSunburstFormat);
     };
 
-    var transformTestSuite = function (node, parentId) {
+    const transformTestSuite = function (node, parentId) {
         if (!node.children) {
             return transformClasses([node], parentId)[0];
         }
 
-        var classNodes = node.children.filter(function (child) {
+        const classNodes = node.children.filter(function (child) {
             return !child.children;
         });
 
-        var nestedSuites = node.children.filter(function (child) {
+        const nestedSuites = node.children.filter(function (child) {
             return child.children;
         });
 
-        var id = concatIds(parentId, node.name);
+        const id = concatIds(parentId, node.name);
 
         return {
             name: node.name,
@@ -136,8 +136,8 @@
         };
     };
 
-    var skipParentNodesIfAllOnlyHaveOneChild = function (nodes) {
-        var allHaveOneChild = nodes.reduce(function (allHaveOneChild, node) {
+    const skipParentNodesIfAllOnlyHaveOneChild = function (nodes) {
+        const allHaveOneChild = nodes.reduce(function (allHaveOneChild, node) {
             return allHaveOneChild && hasOnlyOneChild(node);
         }, true);
 
@@ -150,18 +150,18 @@
         }
     };
 
-    var transformTestsuites = function (testclassesByJob) {
-        var jobNames = testclassesByJob.map(function (jobEntry) {
+    const transformTestsuites = function (testclassesByJob) {
+        const jobNames = testclassesByJob.map(function (jobEntry) {
             return jobEntry.jobName;
         });
-        var color = jobColors.colors(jobNames);
+        const color = jobColors.colors(jobNames);
 
         return testclassesByJob
             .filter(function (jobEntry) {
                 return jobEntry.children.length > 0;
             })
             .map(function (jobEntry) {
-                var jobName = jobEntry.jobName,
+                const jobName = jobEntry.jobName,
                     children = jobEntry.children;
 
                 return {
@@ -175,7 +175,7 @@
             });
     };
 
-    var timespanSelector = timespanSelection.create(timespanSelection.timespans.sevenDays),
+    const timespanSelector = timespanSelection.create(timespanSelection.timespans.sevenDays),
         description = graphDescription.create({
             description: ["Average runtime of tests per class/file by job.",
                           "Runtimes of test cases are added up by test class/file and grouped by package hierarchy.",
@@ -191,7 +191,7 @@
             noDataReason: "uploaded test results",
             widgets: [timespanSelector.widget, description.widget]
         });
-    var sunburst = zoomableSunburst(graph.svg, graphFactory.size);
+    const sunburst = zoomableSunburst(graph.svg, graphFactory.size);
 
     timespanSelector.load(function (fromTimestamp) {
         graph.loading();
@@ -199,7 +199,7 @@
         dataSource.load('testclasses?from='+ fromTimestamp, function (testsuites) {
             graph.loaded();
 
-            var data = {
+            const data = {
                 name: "Test suites",
                 id: '__testsuites__',
                 color: 'transparent',
