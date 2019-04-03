@@ -58,11 +58,23 @@
             .remove();
 
         var node = selection
-                .enter()
-                .append("g")
-                .attr('data-id', function (d) {
-                    return 'jobname-' + d.name;
+            .enter()
+            .append("g")
+            .on("mouseover", function(d) {
+                window.dispatchEvent(new CustomEvent('jobSelected', {detail: {jobName: d.name}}));
+            })
+            .on('mouseout', function () {
+                window.dispatchEvent(new CustomEvent('jobSelected', {detail: {jobName: undefined}}));
+            });
+
+        window.addEventListener('jobSelected', function (event) {
+            var jobName = event.detail.jobName;
+
+            svg.selectAll("g")
+                .classed('highlightedElement', function (d) {
+                    return d.name === jobName;
                 });
+        });
 
         node.append('rect')
             .style('fill', function (d) {

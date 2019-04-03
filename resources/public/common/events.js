@@ -105,18 +105,27 @@ var events = (function (utils, tooltip) {
             .remove();
 
         var graph = selection.enter()
-                .append("g")
-                .attr('class', 'eventGroup')
-                .attr('data-id', function (d) {
-                    return 'jobname-' + d.id;
-                });
-
-        // move hovered item in front
-        graph.on("mouseover", function(d) {
-            svg.selectAll(".eventGroup").sort(function (a, b) {
-                if (a.id != d.id) return -1;
-                else return 1;
+            .append("g")
+            .attr('class', 'eventGroup')
+            .on("mouseover", function(d) {
+                window.dispatchEvent(new CustomEvent('jobSelected', {detail: {jobName: d.id}}));
+            })
+            .on('mouseout', function () {
+                window.dispatchEvent(new CustomEvent('jobSelected', {detail: {jobName: undefined}}));
             });
+
+        window.addEventListener('jobSelected', function (event) {
+            var jobName = event.detail.jobName;
+
+            svg.selectAll(".eventGroup")
+                .classed('highlightedElement', function (d) {
+                    return d.id === jobName;
+                })
+                .sort(function (a, b) {
+                    // move hovered item in front
+                    if (a.id !== jobName) return -1;
+                    else return 1;
+                });
         });
 
         graph.append('path')

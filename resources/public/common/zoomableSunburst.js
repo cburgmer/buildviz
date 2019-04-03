@@ -149,16 +149,31 @@ var zoomableSunburst = function (svg, diameter) {
 
         // enter
         var g = selection
-                .enter()
-                .append("g")
-                .attr('data-id', function (d) {
-                    return d.id;
-                })
-                .on('click', function (d) {
-                    d3.event.preventDefault();
+            .enter()
+            .append("g")
+            .attr('class', 'segment')
+            .on('click', function (d) {
+                d3.event.preventDefault();
 
-                    renderSunburst(d, domElement, true);
+                renderSunburst(d, domElement, true);
+            })
+            .on("mouseover", function(d) {
+                if (d.depth === 1) {
+                    window.dispatchEvent(new CustomEvent('jobSelected', {detail: {jobName: d.id.replace('jobname-', '')}}));
+                }
+            })
+            .on('mouseout', function () {
+                window.dispatchEvent(new CustomEvent('jobSelected', {detail: {jobName: undefined}}));
+            });
+
+        window.addEventListener('jobSelected', function (event) {
+            var jobName = event.detail.jobName;
+
+            svg.selectAll(".segment")
+                .classed('highlightedElement', function (d) {
+                    return d.depth === 1 && d.id.replace('jobname-', '') === jobName;
                 });
+        });
 
         selection.attr('role', function (d) {
             if (d.depth - rootNode.depth <= 1) {
