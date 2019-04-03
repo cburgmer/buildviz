@@ -117,6 +117,7 @@ const events = (function (utils, tooltip) {
         window.addEventListener('jobSelected', function (event) {
             const jobName = event.detail.jobName;
 
+            svg.classed('highlighted', !!jobName);
             svg.selectAll(".eventGroup")
                 .classed('highlightedElement', function (d) {
                     return d.id === jobName;
