@@ -70,6 +70,7 @@
         window.addEventListener('jobSelected', function (event) {
             const jobName = event.detail.jobName;
 
+            svg.classed('highlighted', !!jobName);
             svg.selectAll("g")
                 .classed('highlightedElement', function (d) {
                     return d.name === jobName;

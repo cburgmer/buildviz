@@ -1,5 +1,8 @@
-.zoomableSunburst .highlightedElement:not(:hover) text {
-    font-weight: bold;
+.zoomableSunburst.highlighted .segment {
+  opacity: 0.4;
+}
+.zoomableSunburst.highlighted .segment.highlightedElement {
+  opacity: 1;
 }
 .zoomableSunburst g {
     cursor: pointer;

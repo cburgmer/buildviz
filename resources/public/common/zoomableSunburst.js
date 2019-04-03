@@ -168,9 +168,11 @@ const zoomableSunburst = function (svg, diameter) {
         window.addEventListener('jobSelected', function (event) {
             const jobName = event.detail.jobName;
 
+            svg.classed('highlighted', !!jobName);
             svg.selectAll(".segment")
                 .classed('highlightedElement', function (d) {
-                    return d.depth === 1 && d.id.replace('jobname-', '') === jobName;
+                    return (d.depth === 1 && d.id.replace('jobname-', '') === jobName) ||
+                        (d.depth > 1 && d.id.replace('jobname-', '').startsWith(jobName + '/'));
                 });
         });
 

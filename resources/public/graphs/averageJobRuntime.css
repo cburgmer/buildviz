@@ -1,3 +1,6 @@
-.averageJobRuntime .highlightedElement:not(:hover) text {
-    font-weight: bold;
+.averageJobRuntime .highlighted g {
+  opacity: 0.4;
+}
+.averageJobRuntime .highlighted g.highlightedElement {
+  opacity: 1;
 }
