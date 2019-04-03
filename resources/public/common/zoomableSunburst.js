@@ -157,9 +157,7 @@ const zoomableSunburst = function (svg, diameter) {
                 renderSunburst(d, domElement, true);
             })
             .on("mouseover", function(d) {
-                if (d.depth === 1) {
-                    window.dispatchEvent(new CustomEvent('jobSelected', {detail: {jobName: d.id.replace('jobname-', '')}}));
-                }
+                window.dispatchEvent(new CustomEvent('jobSelected', {detail: {jobName: d.jobName}}));
             })
             .on('mouseout', function () {
                 window.dispatchEvent(new CustomEvent('jobSelected', {detail: {jobName: undefined}}));
@@ -171,8 +169,7 @@ const zoomableSunburst = function (svg, diameter) {
             svg.classed('highlighted', !!jobName);
             svg.selectAll(".segment")
                 .classed('highlightedElement', function (d) {
-                    return (d.depth === 1 && d.id.replace('jobname-', '') === jobName) ||
-                        (d.depth > 1 && d.id.replace('jobname-', '').startsWith(jobName + '/'));
+                    return d.jobName === jobName;
                 });
         });
 

@@ -12,12 +12,13 @@
                 entry.testSuite].join('\n');
     };
 
-    const transformTestCase = function (testCase, parentId) {
+    const transformTestCase = function (testCase, jobName) {
         return {
             name: testCase.name,
             size: testCase.failedCount,
             title: title(testCase),
-            id: concatIds([parentId, testCase.testSuite, testCase.testClass, testCase.name])
+            jobName: jobName,
+            id: concatIds([jobName, testCase.testSuite, testCase.testClass, testCase.name])
         };
     };
 
@@ -81,6 +82,7 @@
                 name: jobName,
                 color: color(jobName),
                 id: 'jobname-' + jobName,
+                jobName: jobName,
                 children: children.map(function (child) {
                     return transformTestCase(child, jobName);
                 })

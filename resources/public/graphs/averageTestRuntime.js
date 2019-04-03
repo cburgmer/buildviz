@@ -21,7 +21,7 @@
         return parentId + '/' + id;
     };
 
-    const buildNodeStructure = function (hierarchy, parentId) {
+    const buildNodeStructure = function (hierarchy, parentId, jobName) {
         return Object.keys(hierarchy).map(function (nodeName) {
             const entry = hierarchy[nodeName],
                 id = concatIds(parentId, nodeName);
@@ -30,19 +30,21 @@
                 return {
                     name: nodeName,
                     id: id,
+                    jobName: jobName,
                     averageRuntime: entry.averageRuntime
                 };
             } else {
                 return {
                     name: nodeName,
                     id: id,
-                    children: buildNodeStructure(entry, id)
+                    jobName: jobName,
+                    children: buildNodeStructure(entry, id, jobName)
                 };
             }
         });
     };
 
-    const buildPackageHierarchy = function (classEntries, parentId) {
+    const buildPackageHierarchy = function (classEntries, parentId, jobName) {
         const packageHierarchy = {};
 
         classEntries.forEach(function (entry) {
@@ -61,7 +63,7 @@
             branch[className] = entry;
         });
 
-        return buildNodeStructure(packageHierarchy, parentId);
+        return buildNodeStructure(packageHierarchy, parentId, jobName);
     };
 
     const mergeSingleChildHierarchy = function (elem) {
@@ -104,17 +106,17 @@
         return elem;
     };
 
-    const transformClasses = function (classNodes, parentId) {
-        return buildPackageHierarchy(classNodes, parentId)
+    const transformClasses = function (classNodes, parentId, jobName) {
+        return buildPackageHierarchy(classNodes, parentId, jobName)
             .map(addAccumulatedApproximateRuntime)
             .map(mergeSingleChildHierarchy)
             .map(addTitle)
             .map(toSunburstFormat);
     };
 
-    const transformTestSuite = function (node, parentId) {
+    const transformTestSuite = function (node, parentId, jobName) {
         if (!node.children) {
-            return transformClasses([node], parentId)[0];
+            return transformClasses([node], parentId, jobName)[0];
         }
 
         const classNodes = node.children.filter(function (child) {
@@ -130,8 +132,9 @@
         return {
             name: node.name,
             id: id,
-            children: transformClasses(classNodes, id).concat(nestedSuites.map(function(suite) {
-                return transformTestSuite(suite, id);
+            jobName: jobName,
+            children: transformClasses(classNodes, id, jobName).concat(nestedSuites.map(function(suite) {
+                return transformTestSuite(suite, id, jobName);
             }))
         };
     };
@@ -168,8 +171,9 @@
                     name: jobName,
                     color: color(jobName),
                     id: 'jobname-' + jobName,
+                    jobName: jobName,
                     children: skipParentNodesIfAllOnlyHaveOneChild(skipOnlyTestSuite(children.map(function (child) {
-                        return transformTestSuite(child, jobName);
+                        return transformTestSuite(child, jobName, jobName);
                     })))
                 };
             });
