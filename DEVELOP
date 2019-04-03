@@ -3,6 +3,8 @@ Just a few pointers if you want to make changes to buildviz:
 ## Run the server locally
 
     $ ./lein do deps, ring server
+    # optionally
+    $ ./examples/data/seedDummyData.sh
 
 ## Run the tests
 
