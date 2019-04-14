@@ -39,10 +39,10 @@ const tooltip = (function() {
 
     const register = function(element, htmlFactory) {
         element
-            .on("mouseover", function(d) {
+            .on("mouseover.tooltip", function(d) {
                 mouseover(htmlFactory(d));
             })
-            .on("mouseout", mouseout);
+            .on("mouseout.tooltip", mouseout);
     };
 
     return {

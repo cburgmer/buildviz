@@ -103,7 +103,30 @@ const weightedTimeline = (function(tooltip, graphFactory) {
         const node = selection
             .enter()
             .append("g")
-            .attr("class", "bar");
+            .attr("class", "bar")
+            .on("mouseover", function(d) {
+                window.dispatchEvent(
+                    new CustomEvent("jobSelected", {
+                        detail: { jobName: d.job }
+                    })
+                );
+            })
+            .on("mouseout", function() {
+                window.dispatchEvent(
+                    new CustomEvent("jobSelected", {
+                        detail: { jobName: undefined }
+                    })
+                );
+            });
+
+        window.addEventListener("jobSelected", function(event) {
+            const jobName = event.detail.jobName;
+
+            g.classed("highlighted", !!jobName);
+            g.selectAll(".bar").classed("highlightedElement", function(d) {
+                return d.job === jobName;
+            });
+        });
 
         node.append("rect");
         node.append("text");

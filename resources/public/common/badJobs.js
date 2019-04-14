@@ -73,7 +73,6 @@ const badJobs = (function(jobColors, utils) {
 
         window.addEventListener("jobSelected", function(event) {
             const jobName = event.detail.jobName;
-            console.log(jobName);
 
             svg.classed("highlighted", !!jobName);
             svg.selectAll("g").classed("highlightedElement", function(d) {

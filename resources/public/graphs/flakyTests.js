@@ -23,6 +23,7 @@
                 ),
                 name: testCase.name,
                 color: jobColor(testCase.job),
+                job: testCase.job,
                 tooltip: [
                     testCase.name,
                     testCase.classname,

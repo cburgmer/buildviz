@@ -10,3 +10,11 @@
   stroke: white;
   stroke-width: 1px;
 }
+
+.weightedTimeline .highlighted .bar {
+  opacity: 0.4;
+}
+
+.weightedTimeline .bar.highlightedElement {
+  opacity: 1;
+}
