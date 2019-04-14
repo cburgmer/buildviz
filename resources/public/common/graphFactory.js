@@ -1,71 +1,78 @@
-const graphFactory = function (d3) {
+const graphFactory = (function(d3) {
     "use strict";
     const module = {};
 
     module.size = 600;
 
-    module.textWithLineBreaks = function (elem, lines) {
+    module.textWithLineBreaks = function(elem, lines) {
         const textElem = d3.select(elem),
             lineHeight = 1.1,
             yCorrection = (lineHeight * lines.length) / 2 - 0.95;
 
-        lines.forEach(function (line, idx) {
-            textElem.append('tspan')
-                .attr('x', 0)
-                .attr('y', (lineHeight * idx - yCorrection) + 'em')
+        lines.forEach(function(line, idx) {
+            textElem
+                .append("tspan")
+                .attr("x", 0)
+                .attr("y", lineHeight * idx - yCorrection + "em")
                 .text(line);
         });
     };
 
-    module.create = function (params) {
-        const id = 'graph_' + params.id,
-            widget = d3.select(document.currentScript.parentNode)
+    module.create = function(params) {
+        const id = "graph_" + params.id,
+            widget = d3
+                .select(document.currentScript.parentNode)
                 .append("section")
                 .attr("class", "graph " + params.id)
-                .attr('id', id);
+                .attr("id", id);
 
-        widget.append('a')
-            .attr('class', 'close')
-            .attr('href', '#')
-            .text('╳');
+        widget
+            .append("a")
+            .attr("class", "close")
+            .attr("href", "#")
+            .text("╳");
 
-        const enlargeLink = widget.append("a")
-                .attr('class', 'enlarge')
-                .attr("href", '#' + id);
+        const enlargeLink = widget
+            .append("a")
+            .attr("class", "enlarge")
+            .attr("href", "#" + id);
 
-        const header = enlargeLink.append('header');
-        header.append("h1")
-            .text(params.headline);
+        const header = enlargeLink.append("header");
+        header.append("h1").text(params.headline);
 
         if (params.widgets) {
-            params.widgets.reverse().forEach(function (widget) {
+            params.widgets.reverse().forEach(function(widget) {
                 header.node().appendChild(widget);
-            }) ;
+            });
         }
 
-        widget.append('div')
-            .attr('class', 'loader');
+        widget.append("div").attr("class", "loader");
 
         const svg = enlargeLink
                 .append("svg")
                 .attr("preserveAspectRatio", "xMinYMin meet")
                 .attr("viewBox", "0 0 " + module.size + " " + module.size),
-            noDataExplanation = params.noDataReason ? "<p>Recent entries will appear once you've " + params.noDataReason + "</p>": '';
+            noDataExplanation = params.noDataReason
+                ? "<p>Recent entries will appear once you've " +
+                  params.noDataReason +
+                  "</p>"
+                : "";
 
-        enlargeLink.append("p")
-            .attr('class', 'nodata')
+        enlargeLink
+            .append("p")
+            .attr("class", "nodata")
             .html("No data" + noDataExplanation);
 
         return {
             svg: svg,
-            loaded: function () {
-                widget.classed('loading', false);
+            loaded: function() {
+                widget.classed("loading", false);
             },
-            loading: function () {
-                widget.classed('loading', true);
+            loading: function() {
+                widget.classed("loading", true);
             }
         };
     };
 
     return module;
-}(d3);
+})(d3);

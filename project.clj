@@ -28,6 +28,10 @@
   :npm {:dependencies [[d3 "3.5.5"]
                        [moment "2.22.2"]
                        [moment-duration-format "2.2.2"]]
+        :devDependencies [[jshint "2.10.2"
+                           prettier "1.17.0"]]
+        :package {:scripts {:lint "jshint ./common ./graphs"
+                            :prettier "prettier --write --tab-width 4 './common/*.js' './graphs/*.js'"}}
         :root "resources/public"}
   :ring {:handler buildviz.main/app
          :init buildviz.main/help}

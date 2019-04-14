@@ -3,9 +3,15 @@ set -e
 
 readonly SCRIPT_DIR=$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)
 
+goal_prettier() {
+    ./lein npm run prettier
+}
+
 goal_lint() {
     find "$SCRIPT_DIR" -name "*.sh" -not -path "${SCRIPT_DIR}/test/node_modules/*" -exec shellcheck {} +
     shellcheck "$SCRIPT_DIR"/go
+
+    ./lein npm run lint
 }
 
 goal_test_unit() {

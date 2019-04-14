@@ -1,35 +1,39 @@
-const badJobs = function (jobColors, utils) {
+const badJobs = (function(jobColors, utils) {
     "use strict";
 
     const module = {};
 
     const borderWidthInPx = 30;
 
-    const selectWorst = function (pipeline, n) {
-        pipeline.sort(function (jobA, jobB) {
+    const selectWorst = function(pipeline, n) {
+        pipeline.sort(function(jobA, jobB) {
             return jobA.value - jobB.value;
         });
 
         return pipeline.slice(-n);
     };
 
-    const bubble = d3.layout.pack()
+    const bubble = d3.layout
+            .pack()
             .sort(null)
             .size([graphFactory.size, graphFactory.size])
             .padding(1.5),
-        noGrouping = function (bubbleNodes) {
-            return bubbleNodes.filter(function(d) { return d.depth > 0; });
+        noGrouping = function(bubbleNodes) {
+            return bubbleNodes.filter(function(d) {
+                return d.depth > 0;
+            });
         };
 
-    const colorScale = function (maxDomain) {
-        return d3.scale.linear()
+    const colorScale = function(maxDomain) {
+        return d3.scale
+            .linear()
             .domain([0, maxDomain])
             .range(["white", d3.rgb("red").darker()])
             .interpolate(d3.interpolateLab);
     };
 
-    module.renderData = function (data, svg, jobCount, worstFailureRatio) {
-        const jobNames = data.map(function (job) {
+    module.renderData = function(data, svg, jobCount, worstFailureRatio) {
+        const jobNames = data.map(function(job) {
             return job.name;
         });
         const jobColor = jobColors.colors(jobNames),
@@ -37,42 +41,51 @@ const badJobs = function (jobColors, utils) {
 
         const color = colorScale(worstFailureRatio);
 
-        const selection = svg.selectAll("g")
-                .data(noGrouping(bubble.nodes({children: worstJobs})),
-                      function(d) { return d.name; });
+        const selection = svg
+            .selectAll("g")
+            .data(noGrouping(bubble.nodes({ children: worstJobs })), function(
+                d
+            ) {
+                return d.name;
+            });
 
-        selection
-            .exit()
-            .remove();
+        selection.exit().remove();
 
-        const node = selection
-                .enter()
-                .append('g');
+        const node = selection.enter().append("g");
 
-        node.append('title');
-        node.append('circle')
+        node.append("title");
+        node.append("circle")
             .attr("stroke-width", borderWidthInPx)
-            .style("fill", function (d) {
+            .style("fill", function(d) {
                 return jobColor(d.name);
             });
-        node.append('text')
+        node.append("text")
             .style("text-anchor", "middle")
-            .each(function (d) {
-                graphFactory.textWithLineBreaks(this, utils.breakJobName(d.name));
+            .each(function(d) {
+                graphFactory.textWithLineBreaks(
+                    this,
+                    utils.breakJobName(d.name)
+                );
             });
 
+        selection.transition().attr("transform", function(d) {
+            return "translate(" + d.x + "," + d.y + ")";
+        });
+
+        selection.select("title").text(function(d) {
+            return d.title;
+        });
+
         selection
+            .select("circle")
             .transition()
-            .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
-
-        selection.select('title')
-            .text(function(d) { return d.title; });
-
-        selection.select('circle')
-            .transition()
-            .attr("r", function (d) { return (d.r - borderWidthInPx / 2); })
-            .style("stroke", function(d) { return color(d.ratio); });
+            .attr("r", function(d) {
+                return d.r - borderWidthInPx / 2;
+            })
+            .style("stroke", function(d) {
+                return color(d.ratio);
+            });
     };
 
     return module;
-}(jobColors, utils);
+})(jobColors, utils);
