@@ -12,15 +12,33 @@
                 callback([
                     {
                         jobName: "aBuild",
-                        totalCount: 0
+                        flakyCount: 42,
+                        failedCount: 100
                     },
                     {
-                        jobName: "aGroup anotherBuild",
-                        totalCount: 0
+                        jobName: "anotherBuild",
+                        flakyCount: 20,
+                        failedCount: 100
                     },
                     {
-                        jobName: "aGroup yetAnotherBuild",
-                        totalCount: 0
+                        jobName: "yetAnotherBuild",
+                        flakyCount: 10,
+                        failedCount: 200
+                    },
+                    {
+                        jobName: "someBuild",
+                        flakyCount: 3,
+                        failedCount: 20
+                    },
+                    {
+                        jobName: "someOtherBuild",
+                        flakyCount: 1,
+                        failedCount: 200
+                    },
+                    {
+                        jobName: "yetSomeOtherBuild",
+                        flakyCount: 3,
+                        failedCount: 30
                     }
                 ]);
             }
@@ -33,5 +51,9 @@
     <script src="../../resources/public/common/timespanSelection.js"></script>
     <script src="../../resources/public/common/utils.js"></script>
     <script src="../../resources/public/common/badJobs.js"></script>
+    <script>d3.selection.prototype.transition = function(){ return this }</script>
     <script src="../../resources/public/graphs/flakyBuilds.js"></script>
+    <script>
+     window.dispatchEvent(new CustomEvent('jobSelected', {detail: {jobName: 'anotherBuild'}}));
+    </script>
 </body>

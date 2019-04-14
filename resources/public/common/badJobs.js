@@ -33,6 +33,8 @@ const badJobs = (function(jobColors, utils) {
     };
 
     module.renderData = function(data, svg, jobCount, worstFailureRatio) {
+        svg.attr("class", "badJobs");
+
         const jobNames = data.map(function(job) {
             return job.name;
         });
@@ -51,7 +53,33 @@ const badJobs = (function(jobColors, utils) {
 
         selection.exit().remove();
 
-        const node = selection.enter().append("g");
+        const node = selection
+            .enter()
+            .append("g")
+            .on("mouseover", function(d) {
+                window.dispatchEvent(
+                    new CustomEvent("jobSelected", {
+                        detail: { jobName: d.name }
+                    })
+                );
+            })
+            .on("mouseout", function() {
+                window.dispatchEvent(
+                    new CustomEvent("jobSelected", {
+                        detail: { jobName: undefined }
+                    })
+                );
+            });
+
+        window.addEventListener("jobSelected", function(event) {
+            const jobName = event.detail.jobName;
+            console.log(jobName);
+
+            svg.classed("highlighted", !!jobName);
+            svg.selectAll("g").classed("highlightedElement", function(d) {
+                return d.name === jobName;
+            });
+        });
 
         node.append("title");
         node.append("circle")

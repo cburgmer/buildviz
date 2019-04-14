@@ -37,7 +37,8 @@ const graphFactory = (function(d3) {
             .append("a")
             .attr("class", "enlarge")
             .attr("href", "#" + id)
-            .append("h1").text(params.headline);
+            .append("h1")
+            .text(params.headline);
 
         if (params.widgets) {
             params.widgets.reverse().forEach(function(widget) {

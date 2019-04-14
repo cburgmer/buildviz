@@ -1,0 +1,7 @@
+.badJobs.highlighted g {
+  opacity: 0.4;
+}
+
+.badJobs.highlighted .highlightedElement {
+  opacity: 1;
+}
