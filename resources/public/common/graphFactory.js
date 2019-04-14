@@ -32,13 +32,12 @@ const graphFactory = (function(d3) {
             .attr("href", "#")
             .text("╳");
 
-        const enlargeLink = widget
+        const header = widget.append("header");
+        header
             .append("a")
             .attr("class", "enlarge")
-            .attr("href", "#" + id);
-
-        const header = enlargeLink.append("header");
-        header.append("h1").text(params.headline);
+            .attr("href", "#" + id)
+            .append("h1").text(params.headline);
 
         if (params.widgets) {
             params.widgets.reverse().forEach(function(widget) {
@@ -48,7 +47,7 @@ const graphFactory = (function(d3) {
 
         widget.append("div").attr("class", "loader");
 
-        const svg = enlargeLink
+        const svg = widget
                 .append("svg")
                 .attr("preserveAspectRatio", "xMinYMin meet")
                 .attr("viewBox", "0 0 " + module.size + " " + module.size),
@@ -58,7 +57,7 @@ const graphFactory = (function(d3) {
                   "</p>"
                 : "";
 
-        enlargeLink
+        widget
             .append("p")
             .attr("class", "nodata")
             .html("No data" + noDataExplanation);

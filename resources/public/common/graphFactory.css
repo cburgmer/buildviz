@@ -24,10 +24,8 @@
 .graph:hover:not(:target) {
     background-color: #f7f7f7;
 }
-.graph .enlarge {
-    height: 100%;
-    display: flex;
-    flex-flow: column;
+.graph .enlarge:hover {
+  text-decoration: underline;
 }
 .graph svg {
     flex: 2;
