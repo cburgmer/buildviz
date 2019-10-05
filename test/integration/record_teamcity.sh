@@ -15,7 +15,6 @@ readonly BUILDVIZ_BASE_URL="http://localhost:${BUILDVIZ_PORT}"
 readonly TEAMCITY_BASE_URL="http://localhost:8111"
 readonly SYNC_URL="http://admin:admin@localhost:${WIREMOCK_PORT}"
 
-readonly BUILDVIZ_TMP_DATA_DIR="/tmp/record.buildviz.$$"
 readonly MAPPING_TMP_DIR="/tmp/record.wiremock.$$"
 
 
