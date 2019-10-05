@@ -62,7 +62,7 @@ data "template_cloudinit_config" "config" {
 resource "aws_instance" "buildviz_instance" {
   ami             = "${data.aws_ami.amazon_linux2_ami.id}"
   subnet_id       = "${aws_subnet.public_subnet.id}"
-  instance_type   = "t2.micro"
+  instance_type   = "t3a.micro"
   key_name        = "${aws_key_pair.buildviz_keypair.id}"
   security_groups = ["${aws_security_group.buildviz_instance_ssh_security_group.id}", "${aws_security_group.buildviz_instance_http_security_group.id}"]
 
