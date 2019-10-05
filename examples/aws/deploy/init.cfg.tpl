@@ -18,33 +18,11 @@ write_files:
         mkdir data # create mount volume ourselves, so it has the correct owner, might be https://github.com/docker/compose/issues/3270
         /usr/local/bin/docker-compose -f docker-compose.yml -f docker-compose.prod.yml up --no-build -d
    path: /tmp/run.sh
- - content: |
-        version: "2.4"
-        
-        services:
-          buildviz:
-            volumes:
-              - ./data:/buildviz/data
-            image: cburgmer/buildviz
-        
-          sync:
-            command: schedule buildviz.teamcity.sync "https://guest@teamcity.jetbrains.com" --project KotlinTools --buildviz http://buildviz:3000
-            restart: always
-            image: cburgmer/buildviz
-        
-          nginx:
-            build: nginx
-            ports:
-              - "8080:8080"
-            image: cburgmer/buildviz-nginx
+ - encoding: b64
+   content: ${base64encode(docker_compose_file)}
    path: /home/ec2-user/docker-compose.yml
- - content: |
-        version: "2.4"
-
-        services:
-          nginx:
-            ports:
-              - "80:8080"
+ - encoding: b64
+   content: ${base64encode(docker_compose_prod_file)}
    path: /home/ec2-user/docker-compose.prod.yml
 runcmd:
  - 'bash /tmp/install_docker.sh'

@@ -49,6 +49,11 @@ resource "aws_security_group" "buildviz_instance_http_security_group" {
 
 data "template_file" "script" {
   template = "${file("${path.module}/init.cfg.tpl")}"
+
+  vars = {
+    docker_compose_file = "${file("${path.module}/../docker-compose.yml")}"
+    docker_compose_prod_file = "${file("${path.module}/../docker-compose.prod.yml")}"
+  }
 }
 
 data "template_cloudinit_config" "config" {
