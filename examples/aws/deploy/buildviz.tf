@@ -47,6 +47,18 @@ resource "aws_security_group" "buildviz_instance_http_security_group" {
   }
 }
 
+data "template_file" "script" {
+  template = "${file("${path.module}/init.cfg.tpl")}"
+}
+
+data "template_cloudinit_config" "config" {
+  part {
+    filename     = "init.cfg"
+    content_type = "text/cloud-config"
+    content      = "${data.template_file.script.rendered}"
+  }
+}
+
 resource "aws_instance" "buildviz_instance" {
   ami             = "${data.aws_ami.amazon_linux2_ami.id}"
   subnet_id       = "${aws_subnet.public_subnet.id}"
@@ -54,51 +66,7 @@ resource "aws_instance" "buildviz_instance" {
   key_name        = "${aws_key_pair.buildviz_keypair.id}"
   security_groups = ["${aws_security_group.buildviz_instance_ssh_security_group.id}", "${aws_security_group.buildviz_instance_http_security_group.id}"]
 
-  provisioner "file" {
-    source      = "../docker-compose.yml"
-    destination = "docker-compose.yml"
-
-    connection {
-      user = "ec2-user"
-    }
-  }
-
-  provisioner "file" {
-    source      = "../docker-compose.prod.yml"
-    destination = "docker-compose.prod.yml"
-
-    connection {
-      user = "ec2-user"
-    }
-  }
-
-  provisioner "remote-exec" {
-    inline = [
-      "sudo yum update -y",
-      "sudo yum install -y docker",
-      "sudo curl -L https://github.com/docker/compose/releases/download/1.21.2/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose",
-      "sudo chmod +x /usr/local/bin/docker-compose",
-      "sudo service docker start",
-      "sudo usermod -a -G docker ec2-user", # needs a re-login to take effect
-    ]
-
-    connection {
-      user = "ec2-user"
-    }
-  }
-
-  provisioner "remote-exec" {
-    inline = [
-      "mkdir buildviz nginx", # Work around https://github.com/docker/compose/issues/3391
-      "docker-compose pull",
-      "mkdir data", # create mount volume ourselves, so it has the correct owner, might be https://github.com/docker/compose/issues/3270
-      "docker-compose -f docker-compose.yml -f docker-compose.prod.yml up --no-build -d",
-    ]
-
-    connection {
-      user = "ec2-user"
-    }
-  }
+  user_data_base64 = "${data.template_cloudinit_config.config.rendered}"
 }
 
 output "instance_fqdn" {
