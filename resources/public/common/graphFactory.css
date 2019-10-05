@@ -28,7 +28,6 @@
   text-decoration: underline;
 }
 .graph svg {
-    flex: 2;
     overflow: auto;
 }
 .graph:target {
