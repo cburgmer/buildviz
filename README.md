@@ -17,10 +17,6 @@ All it needs is your build history including test results.
 
 ![Screenshot](https://github.com/cburgmer/buildviz/raw/master/examples/data/screenshot.png)
 
-## Example
-
-Here's [buildviz's look at 'Kotlin Tools and Libraries'](http://buildviz.cburgmer.space/index.html) on [teamcity.jetbrains.com](https://teamcity.jetbrains.com/project.html?projectId=KotlinTools).
-
 ## Usage
 
     $ curl -OL https://github.com/cburgmer/buildviz/releases/download/0.14.1/buildviz-0.14.1-standalone.jar

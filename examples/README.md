@@ -1,12 +1,9 @@
 ## Buildviz Examples
 
-### Free (as in lunch) example
+### Hosted on AWS 
 
-http://buildviz.cburgmer.space/ is a live example tracking KotlinTools from
-https://teamcity.jetbrains.com.
-
-The example is hosted on AWS and the infrastructure code for that can be found
-in `./aws/`.
+There used to be a live example hosted on AWS, but it got a bit expensive over time.
+The infrastructure code for that can be found in `./aws/`.
 
 ### Simple seed data
 
