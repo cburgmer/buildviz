@@ -60,6 +60,12 @@ There's support for [Jenkins, GoCD and TeamCity](https://github.com/cburgmer/bui
 
 [FAQ](https://github.com/cburgmer/buildviz/wiki)
 
-You might also like [Kuona project for IT Analytics](https://github.com/kuona/kuona-project), [Test Trend Analyzer](https://github.com/anandbagmar/tta), [TRT](https://github.com/thetestpeople/trt) or (commercial solution) [GoCD's analytics extension](https://extensions-docs.gocd.org/analytics/current/).
+You might also like:
+
+* [HeartBeat](https://github.com/thoughtworks/HeartBeat)
+* [Kuona project for IT Analytics](https://github.com/kuona/kuona-project)
+* [Test Trend Analyzer](https://github.com/anandbagmar/tta)
+* [TRT](https://github.com/thetestpeople/trt)
+* [GoCD's analytics extension](https://extensions-docs.gocd.org/analytics/current/)
 
 Reach out to [@cburgmer](https://twitter.com/cburgmer) for feedback and ideas.
