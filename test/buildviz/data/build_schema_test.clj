@@ -2,63 +2,52 @@
   (:require [buildviz.data.build-schema :as schema]
             [clojure.test :refer :all]))
 
-(defn- first-pointer [validation]
-  (-> validation
-      first
-      :instance
-      :pointer))
-
-(defn- first-missing [validation]
-  (-> validation
-      first
-      :missing))
-
 (deftest test-build-validation-errors
   (testing "should require start time"
     (is (empty? (schema/build-validation-errors {:start 1000000000000})))
-    (is (= ["start"]
-           (first-missing (schema/build-validation-errors {}))))
-    (is (= "/start"
-           (first-pointer (schema/build-validation-errors {:start -1}))))
-    (is (= "/start"
-           (first-pointer (schema/build-validation-errors {:start nil})))))
+    (is (= "#: required key [start] not found"
+           (first (schema/build-validation-errors {}))))
+    (is (= "#/start: -1 is not greater or equal to 1.0E12"
+           (first (schema/build-validation-errors {:start -1}))))
+    (is (= "#/start: expected type: Number, found: Null"
+           (first (schema/build-validation-errors {:start nil})))))
 
   (testing "should pass on end time equal to start time"
     (is (empty? (schema/build-validation-errors {:start 1000000000000 :end 1000000000000}))))
 
   (testing "should do a sanity check on the timestamp and disallow anything shorter than 13 digits"
-    (is (= "/start"
-           (first-pointer (schema/build-validation-errors {:start 999999999999 :end 1000000000000})))))
+    (is (= "#/start: 999999999999 is not greater or equal to 1.0E12"
+           (first (schema/build-validation-errors {:start 999999999999 :end 1000000000000})))))
 
   (testing "should fail on end time before start time"
-    (is (= "/end"
-           (first-pointer (schema/build-validation-errors {:start 1453646247759
-                                                           :end 1453646247758})))))
+    (is (= "#/end: 1453646247758 is not greater or equal to 1453646247759"
+           (first (schema/build-validation-errors {:start 1453646247759
+                                                   :end 1453646247758})))))
 
   (testing "should fail on missing revision for inputs"
-    (is (= ["revision"]
-           (first-missing (schema/build-validation-errors {:start 1453646247759
-                                                            :inputs [{:source-id "43"}]})))))
+    (is (= "#/inputs/0: required key [revision] not found"
+           (first (schema/build-validation-errors {:start 1453646247759
+                                                   :inputs [{:source-id "43"}]})))))
 
   (testing "should fail on missing source-id for inputs"
-    (is (= ["source-id"]
-           (first-missing (schema/build-validation-errors {:start 1453646247759
-                                                            :inputs [{:revision "abcd"}]})))))
+    (is (= "#/inputs/0: required key [source-id] not found"
+           (first (schema/build-validation-errors {:start 1453646247759
+                                                   :inputs [{:revision "abcd"}]})))))
 
   (testing "should fail on missing job-name for triggered-by"
-    (is (= "/triggered-by/0"
-           (first-pointer (schema/build-validation-errors {:start 1453646247759
-                                                           :triggered-by [{:build-id "42"}]})))))
+    (is (= "#/triggered-by/0: required key [job-name] not found"
+           (first (schema/build-validation-errors {:start 1453646247759
+                                                   :triggered-by [{:build-id "42"}]})))))
 
   (testing "should fail on missing build-id for triggered-by"
-    (is (= "/triggered-by/0"
-           (first-pointer (schema/build-validation-errors {:start 1453646247759
-                                                           :triggered-by [{:job-name "the_job"}]})))))
+    (is (= "#/triggered-by/0: required key [build-id] not found"
+           (first (schema/build-validation-errors {:start 1453646247759
+                                                   :triggered-by [{:job-name "the_job"}]})))))
 
   (testing "should fail on empty triggered-by list"
-    (is (= "/triggered-by"
-           (first-pointer (schema/build-validation-errors {:start 1453646247759
-                                                           :triggered-by []})))))
+    (is (= "#/triggered-by: expected minimum item count: 1, found: 0"
+           (first (schema/build-validation-errors {:start 1453646247759
+                                                   :triggered-by []})))))
 
   (testing "should allow boolean revision for inputs"
     (is (empty? (schema/build-validation-errors {:start 1453646247759

@@ -1,8 +1,10 @@
 (ns buildviz.data.tests-schema
-  (:require [scjsv.core :as schema]))
+  (:require [json-schema.core :as schema])
+  (:import clojure.lang.ExceptionInfo))
 
 ;; TODO The schema does not fully resemble the internal schema, as values for :status are keywords, not strings (:pass not "pass")
-(def tests-schema {:type "array"
+(def tests-schema {:$schema "http://json-schema.org/draft-04/schema"
+                   :type "array"
                    :items {:type "object"
                            :properties {:name {:type "string"}
                                         :children {:type "array"
@@ -12,12 +14,14 @@
                                                                         :runtime {:type "integer"}
                                                                         :status {:enum ["pass" "fail" "skipped" "error"]}}
                                                            :required [:name :classname :status]}}}
-                           :required [:name :children]}
-                   })
+                           :required [:name :children]}})
 
 (defn tests-validation-errors [test-results]
-  (let [validate (schema/validator tests-schema)]
-    (validate test-results)))
+  (try
+    (schema/validate tests-schema (apply vector test-results)) ; https://github.com/luposlip/json-schema/issues/7
+    (list)
+    (catch ExceptionInfo e
+      (:errors (ex-data e)))))
 
 
 (defn is-ok? [{status :status}]

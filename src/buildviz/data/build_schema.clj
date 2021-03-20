@@ -1,10 +1,12 @@
 (ns buildviz.data.build-schema
-  (:require [scjsv.core :as schema]))
+  (:require [json-schema.core :as schema])
+  (:import clojure.lang.ExceptionInfo))
 
 (def minimum-13-digit-timestamp (Math/pow 10 12)) ; Sun, 09 Sep 2001 01:46:40 GMT
 
 (defn- build-schema [start-value]
-  {:type "object"
+  {:$schema "http://json-schema.org/draft-04/schema"
+   :type "object"
    :properties {:start {:type "integer"
                         :minimum minimum-13-digit-timestamp}
                 :end {:type "integer"
@@ -28,8 +30,11 @@
    :additionalProperties false})
 
 (defn build-validation-errors [{:keys [start] :as build}]
-  (let [validate (schema/validator (build-schema start))]
-    (validate build)))
+  (try
+    (schema/validate (build-schema start) build)
+    (list)
+    (catch ExceptionInfo e
+      (:errors (ex-data e)))))
 
 
 (defn build-with-outcome? [build]
