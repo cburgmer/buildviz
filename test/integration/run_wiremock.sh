@@ -31,7 +31,8 @@ hint_at_logs() {
     # shellcheck disable=SC2181
     if [[ "$?" -ne 0 ]]; then
         echo
-        echo "Logs are in ${TMP_LOG}"
+        echo "Logs from ${TMP_LOG}"
+        cat "$TMP_LOG"
     fi
 }
 
