@@ -31,13 +31,12 @@ hint_at_logs() {
     # shellcheck disable=SC2181
     if [[ "$?" -ne 0 ]]; then
         echo
-        echo "Logs from ${TMP_LOG}"
-        cat "$TMP_LOG"
+        echo "Logs are in ${TMP_LOG}"
     fi
 }
 
 goal_install() {
-    local url="http://repo1.maven.org/maven2/com/github/tomakehurst/${ARTIFACT_NAME}/${VERSION}/${FILENAME}"
+    local url="https://repo1.maven.org/maven2/com/github/tomakehurst/${ARTIFACT_NAME}/${VERSION}/${FILENAME}"
     announce "Downloading wiremock"
     if [ -f "$FILEPATH" ]; then
         echo " already there"
@@ -45,7 +44,7 @@ goal_install() {
         echo -n " from ${url}"
         (
             cd "$SCRIPT_DIR"
-            curl --silent --fail -O "$url" > "$TMP_LOG"
+            curl -q --fail -O "$url" > "$TMP_LOG"
         )
         echo " done"
         rm "$TMP_LOG"
