@@ -3,7 +3,8 @@
              [build-schema :as schema]
              [junit-xml :as junit-xml]
              [results :as results]
-             [tests-schema :as tests-schema]]
+             [tests-schema :as tests-schema]
+             [build-facts-schema :as build-facts-schema]]
             [buildviz.util
              [csv :as csv]
              [http :as http]
@@ -91,5 +92,10 @@
 
 (defn store-builds! [build-results body]
   (let [builds (json/from-sequence (clojure.java.io/reader body))]
-    (do (run! #(store-build-and-test-results! build-results %) builds)
-        {:status 204})))
+    (if (->> builds
+             (map #(build-facts-schema/validation-errors %))
+             (remove empty?)
+             empty?)
+     (do (run! #(store-build-and-test-results! build-results %) builds)
+         {:status 204})
+     {:status 400})))

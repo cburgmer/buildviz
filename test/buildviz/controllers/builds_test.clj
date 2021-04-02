@@ -210,7 +210,17 @@
                                                                       :status "pass"}]}]})
                     "text/plain")
       (is (= "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"Test Suite\"><testcase name=\"A Test\" classname=\"some.class\" time=\"0.002\"></testcase></testsuite></testsuites>"
-             (get-in @test-results ["abuild" "1"]))))))
+             (get-in @test-results ["abuild" "1"])))))
+
+  (testing "should error on invalid input"
+    (let [response (post-request (the-app) "/builds" (json/generate-string {:jobName "abuild" :buildId "42"}) "application/x-ndjson")]
+      (is (= 400 (:status response)))))
+
+  (testing "should not store the build on invalid format"
+    (let [builds (atom {})
+          app (the-app-with-builds builds)]
+      (post-request app "/builds" (json/generate-string {:jobName "abuild" :buildId "42"}) "application/x-ndjson")
+      (is (nil? (get-in @builds ["abuild" "42"]))))))
 
 
 (deftest test-get-builds
