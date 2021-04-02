@@ -84,10 +84,12 @@
                                       (csv/format-timestamp end)
                                       outcome]))))))))
 
-(defn- store-build-with-name-and-id! [build-results {:keys [job-name build-id] :as build}]
-  (results/set-build! build-results job-name build-id (dissoc build :job-name :build-id)))
+(defn- store-build-and-test-results! [build-results {:keys [job-name build-id test-results] :as build}]
+  (results/set-build! build-results job-name build-id (dissoc build :job-name :build-id :test-results))
+  (when test-results
+    (results/set-tests! build-results job-name build-id (junit-xml/serialize-testsuites test-results))))
 
 (defn store-builds! [build-results body]
   (let [builds (json/from-sequence (clojure.java.io/reader body))]
-    (do (run! #(store-build-with-name-and-id! build-results %) builds)
+    (do (run! #(store-build-and-test-results! build-results %) builds)
         {:status 204})))

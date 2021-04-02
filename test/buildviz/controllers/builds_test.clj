@@ -193,7 +193,24 @@
       (is (= {:start 1453646247759}
              (get-in @builds ["abuild" "1"])))
       (is (= {:start 1453646247750}
-             (get-in @builds ["otherbuild" "42"]))))))
+             (get-in @builds ["otherbuild" "42"])))))
+
+  (testing "should ingest test results with builds"
+    (let [test-results (atom {})
+          app (the-app {} test-results)]
+      (post-request app
+                    "/builds"
+                    (json/generate-string {:jobName "abuild"
+                                           :buildId "1"
+                                           :start 1453646247759
+                                           :testResults [{:name "Test Suite"
+                                                          :children [{:classname "some.class"
+                                                                      :name "A Test"
+                                                                      :runtime 2
+                                                                      :status "pass"}]}]})
+                    "text/plain")
+      (is (= "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"Test Suite\"><testcase name=\"A Test\" classname=\"some.class\" time=\"0.002\"></testcase></testsuite></testsuites>"
+             (get-in @test-results ["abuild" "1"]))))))
 
 
 (deftest test-get-builds
