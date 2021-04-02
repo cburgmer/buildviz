@@ -11,3 +11,8 @@
   (->> json-string
        j/parse-string
        (wharf/transform-keys (comp keyword clojure.string/lower-case wharf/camel->hyphen))))
+
+(defn from-sequence [json-sequence]
+  (->> json-sequence
+       j/parsed-seq
+       (wharf/transform-keys (comp keyword clojure.string/lower-case wharf/camel->hyphen))))

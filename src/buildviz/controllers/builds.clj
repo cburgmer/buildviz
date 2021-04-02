@@ -88,7 +88,6 @@
   (results/set-build! build-results job-name build-id (dissoc build :job-name :build-id)))
 
 (defn store-builds! [build-results body]
-  (let [builds (->> (line-seq (clojure.java.io/reader body))
-                    (map #(json/from-string %)))]
+  (let [builds (json/from-sequence (clojure.java.io/reader body))]
     (do (run! #(store-build-with-name-and-id! build-results %) builds)
         {:status 204})))
