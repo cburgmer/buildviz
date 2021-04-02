@@ -6,7 +6,8 @@
              [tests-schema :as tests-schema]]
             [buildviz.util
              [csv :as csv]
-             [http :as http]]
+             [http :as http]
+             [json :as json]]
             [clojure.walk :as walk]))
 
 (defn store-build! [build-results job-name build-id build]
@@ -82,3 +83,12 @@
                                       (csv/format-timestamp start)
                                       (csv/format-timestamp end)
                                       outcome]))))))))
+
+(defn- store-build-with-name-and-id! [build-results {:keys [job-name build-id] :as build}]
+  (results/set-build! build-results job-name build-id (dissoc build :job-name :build-id)))
+
+(defn store-builds! [build-results body]
+  (let [builds (->> (line-seq (clojure.java.io/reader body))
+                    (map #(json/from-string %)))]
+    (do (run! #(store-build-with-name-and-id! build-results %) builds)
+        {:status 204})))

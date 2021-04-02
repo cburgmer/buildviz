@@ -56,5 +56,10 @@
            (body xml)
            (content-type "application/xml"))))
 
+(defn post-request [app url the-body the-content-type]
+  (app (-> (request :post url)
+           (body the-body)
+           (content-type the-content-type))))
+
 (defn json-body [response]
   (json/parse-string (:body response)))

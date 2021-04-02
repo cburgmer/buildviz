@@ -6,6 +6,7 @@
              [coerce :as tc]
              [core :as t]]
             [buildviz.data.results :as results]
+            [cheshire.core :as json]
             [clojure.string :as str]
             [clojure.test :refer :all]))
 
@@ -147,6 +148,39 @@
                             "classname" "the class"
                             "status" "pass"}]}]
              (json-body (json-get-request app "/builds/job/1/testresults")))))))
+
+
+(deftest test-store-builds!
+  (testing "should return 204 if storing a build"
+    (is (= 204 (:status (post-request (the-app)
+                                      "/builds"
+                                      (json/generate-string {:jobName "abuild" :buildId "1" :start 1453646247759})
+                                      "application/x-ndjson")))))
+
+  (testing "should store build"
+    (let [builds (atom {})
+          app (the-app-with-builds builds)]
+      (post-request app
+                    "/builds"
+                    (json/generate-string {:jobName "abuild" :buildId "1" :start 1453646247759})
+                    "application/x-ndjson")
+      (is (= {:start 1453646247759}
+             (get-in @builds ["abuild" "1"])))))
+
+  (testing "should store multiple builds"
+    (let [builds (atom {})
+          app (the-app-with-builds builds)]
+      (post-request app
+                    "/builds"
+                    (clojure.string/join "\n"
+                                         [(json/generate-string {:jobName "abuild" :buildId "1" :start 1453646247759})
+                                          (json/generate-string {:jobName "otherbuild" :buildId "42" :start 1453646247750})])
+                    "application/x-ndjson")
+      (is (= {:start 1453646247759}
+             (get-in @builds ["abuild" "1"])))
+      (is (= {:start 1453646247750}
+             (get-in @builds ["otherbuild" "42"]))))))
+
 
 (deftest test-get-builds
   (testing "should get all builds sorted by start"
