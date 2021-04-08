@@ -62,6 +62,7 @@ There's support for [Jenkins, GoCD and TeamCity](https://github.com/cburgmer/bui
 
 You might also like:
 
+* [Metrik](https://github.com/thoughtworks/metrik)
 * [HeartBeat](https://github.com/thoughtworks/HeartBeat)
 * [Kuona project for IT Analytics](https://github.com/kuona/kuona-project)
 * [Test Trend Analyzer](https://github.com/anandbagmar/tta)
