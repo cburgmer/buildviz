@@ -62,11 +62,11 @@ There's support for [Jenkins, GoCD and TeamCity](https://github.com/cburgmer/bui
 
 You might also like:
 
-* [Metrik](https://github.com/thoughtworks/metrik)
-* [HeartBeat](https://github.com/thoughtworks/HeartBeat)
-* [Kuona project for IT Analytics](https://github.com/kuona/kuona-project)
-* [Test Trend Analyzer](https://github.com/anandbagmar/tta)
-* [TRT](https://github.com/thetestpeople/trt)
-* [GoCD's analytics extension](https://extensions-docs.gocd.org/analytics/current/)
+* [Metrik](https://github.com/thoughtworks/metrik), calculates the [4 key metrics](https://www.thoughtworks.com/radar/techniques/four-key-metrics) based on CI/CD build data.
+* [HeartBeat](https://github.com/thoughtworks/HeartBeat), calculates delivery metrics from CI/CD build data, revision control and project planning tools.
+* [Kuona project for IT Analytics](https://github.com/kuona/kuona-project), provides a dashboard on data from various sources.
+* [Test Trend Analyzer](https://github.com/anandbagmar/tta), consumes test results for test trends.
+* [TRT](https://github.com/thetestpeople/trt), consumes test results for test trends.
+* [GoCD's analytics extension](https://extensions-docs.gocd.org/analytics/current/), collects and displays build metrics for GoCD.
 
 Reach out to [@cburgmer](https://twitter.com/cburgmer) for feedback and ideas.
