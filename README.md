@@ -68,5 +68,6 @@ You might also like:
 * [Test Trend Analyzer](https://github.com/anandbagmar/tta), consumes test results for test trends.
 * [TRT](https://github.com/thetestpeople/trt), consumes test results for test trends.
 * [GoCD's analytics extension](https://extensions-docs.gocd.org/analytics/current/), collects and displays build metrics for GoCD.
+* [BuildPulse](https://github.com/marketplace/buildpulse), automatically detects flaky tests.
 
 Reach out to [@cburgmer](https://twitter.com/cburgmer) for feedback and ideas.
