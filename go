@@ -67,12 +67,17 @@ goal_make_release() {
 
         git add README.md project.clj resources/public/package-lock.json
         git commit -m "Bump version"
+
+        ./lein clean
+        ./lein uberjar
+
         git show
         git tag "$NEW_VERSION"
         echo
         echo "You now want to"
         echo "$ git push origin master --tags"
-        echo "$ ./go publish_docker ${NEW_VERSION} # once travis has built the jar"
+        echo "and upload the jar, and finally"
+        echo "$ ./go publish_docker ${NEW_VERSION}"
     )
 }
 
