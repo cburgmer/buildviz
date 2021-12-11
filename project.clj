@@ -4,20 +4,20 @@
   :license {:name "BSD 2-Clause"
             :url "http://opensource.org/licenses/BSD-2-Clause"}
   :dependencies [[org.clojure/clojure "1.10.0"]
-                 [org.clojure/tools.logging "1.1.0"]
+                 [org.clojure/tools.logging "1.2.1"]
                  [log4j/log4j "1.2.17" :exclusions [javax.mail/mail
                                                     javax.jms/jms
                                                     com.sun.jdmk/jmxtools
                                                     com.sun.jmx/jmxri]]
-                 [ring/ring-core "1.9.2"]
-                 [ring/ring-jetty-adapter "1.9.2"]
-                 [ring/ring-json "0.5.0"]
+                 [ring/ring-core "1.9.4"]
+                 [ring/ring-jetty-adapter "1.9.4"]
+                 [ring/ring-json "0.5.1"]
                  [ring-middleware-accept "2.0.3"]
                  [compojure "1.6.2"]
-                 [luposlip/json-schema "0.2.9"]
-                 [clj-http "3.12.1"]
+                 [luposlip/json-schema "0.3.2"]
+                 [clj-http "3.12.3"]
                  [clj-time "0.15.2"]
-                 [cheshire "5.10.0"]
+                 [cheshire "5.10.1"]
                  [org.clojure/data.xml "0.0.8"]
                  [org.clojure/tools.cli "1.0.206"]
                  [intervox/clj-progress "0.2.1"]

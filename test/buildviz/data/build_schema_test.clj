@@ -7,16 +7,16 @@
     (is (empty? (schema/build-validation-errors {:start 1000000000000})))
     (is (= "#: required key [start] not found"
            (first (schema/build-validation-errors {}))))
-    (is (= "#/start: -1 is not greater or equal to 1.0E12"
+    (is (= "#/start: -1 is not greater or equal to 1.0E+12"
            (first (schema/build-validation-errors {:start -1}))))
-    (is (= "#/start: expected type: Number, found: Null"
+    (is (= "#/start: expected type: Integer, found: Null"
            (first (schema/build-validation-errors {:start nil})))))
 
   (testing "should pass on end time equal to start time"
     (is (empty? (schema/build-validation-errors {:start 1000000000000 :end 1000000000000}))))
 
   (testing "should do a sanity check on the timestamp and disallow anything shorter than 13 digits"
-    (is (= "#/start: 999999999999 is not greater or equal to 1.0E12"
+    (is (= "#/start: 999999999999 is not greater or equal to 1.0E+12"
            (first (schema/build-validation-errors {:start 999999999999 :end 1000000000000})))))
 
   (testing "should fail on end time before start time"
