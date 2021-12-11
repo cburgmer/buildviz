@@ -1,7 +1,8 @@
 #!/bin/bash
 set -eo pipefail
 
-readonly SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+readonly SCRIPT_DIR
 
 readonly MAPPING_TARGET="${SCRIPT_DIR}/jenkins.tar.gz"
 readonly EXAMPLE_DIR="${SCRIPT_DIR}/../../examples/jenkins"

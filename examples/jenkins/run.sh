@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -eo pipefail
 
-readonly SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+readonly SCRIPT_DIR
 
 readonly TMP_LOG="/tmp/run.$$.log"
 readonly BASE_URL="http://localhost:8080"
@@ -80,7 +81,7 @@ configure_pipeline() {
             # shellcheck disable=SC2001
             job_name=$( echo "$job_config" | sed s/.xml$// )
             curl --fail -X POST --data-binary "@$job_config" -H "Content-Type: application/xml" "${BASE_URL}/createItem?name=${job_name}" &>> "$TMP_LOG"
-            curl --fail -X POST --data-binary "@$job_config" "${BASE_URL}/job/${job_name}/config.xml" &>> "$TMP_LOG" > /dev/null
+            curl --fail -X POST --data-binary "@$job_config" "${BASE_URL}/job/${job_name}/config.xml" &>> "$TMP_LOG"
         done
     )
     (

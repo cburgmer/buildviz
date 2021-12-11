@@ -1,7 +1,8 @@
 #!/bin/bash
 set -eo pipefail
 
-readonly SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+readonly SCRIPT_DIR
 
 readonly TMP_LOG="/tmp/run.$$.log"
 readonly BUILDVIZ_TMP_DATA_DIR="/tmp/buildviz_data"

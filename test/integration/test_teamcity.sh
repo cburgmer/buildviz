@@ -1,7 +1,8 @@
 #!/bin/bash
 set -eo pipefail
 
-readonly SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+readonly SCRIPT_DIR
 
 readonly MAPPING_SOURCE="${SCRIPT_DIR}/teamcity.tar.gz"
 readonly DATA_DIR="${SCRIPT_DIR}/../../examples/data"

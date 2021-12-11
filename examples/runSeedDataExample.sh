@@ -1,7 +1,8 @@
 #!/bin/bash
 set -eo pipefail
 
-readonly SCRIPT_DIR=$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+readonly SCRIPT_DIR
 
 readonly BUILDVIZ_PORT=3333
 readonly BUILDVIZ_PATH="http://localhost:${BUILDVIZ_PORT}"

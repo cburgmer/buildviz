@@ -4,7 +4,8 @@ set -eo pipefail
 readonly PORT=${1:-3334}
 readonly ROOT_DIR=${2:-$PWD}
 
-readonly SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+readonly SCRIPT_DIR
 
 readonly VERSION="2.16.0"
 readonly ARTIFACT_NAME="wiremock-standalone"
