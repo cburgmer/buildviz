@@ -5,10 +5,8 @@
             :url "http://opensource.org/licenses/BSD-2-Clause"}
   :dependencies [[org.clojure/clojure "1.10.3"]
                  [org.clojure/tools.logging "1.2.1"]
-                 [log4j/log4j "1.2.17" :exclusions [javax.mail/mail
-                                                    javax.jms/jms
-                                                    com.sun.jdmk/jmxtools
-                                                    com.sun.jmx/jmxri]]
+                 [org.apache.logging.log4j/log4j-api "2.15.0"]
+                 [org.apache.logging.log4j/log4j-core "2.15.0"]
                  [ring/ring-core "1.9.4"]
                  [ring/ring-jetty-adapter "1.9.4"]
                  [ring/ring-json "0.5.1"]
@@ -44,4 +42,5 @@
                                   [clj-http-fake "1.0.3"]]
                    :plugins [[lein-ancient "1.0.0-RC3"]]}
              :test {:resource-paths ["test/resources"]}}
-  :jvm-opts ["--illegal-access=deny"]) ; https://clojure.org/guides/faq#illegal_access
+  :jvm-opts ["-Dclojure.tools.logging.factory=clojure.tools.logging.impl/log4j2-factory"
+             "--illegal-access=deny"]) ; https://clojure.org/guides/faq#illegal_access
