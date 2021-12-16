@@ -8,7 +8,9 @@ function msg {
     echo "$@" 1>&2
 }
 
-export LEIN_VERSION="2.9.1"
+export LEIN_VERSION="2.9.8"
+# Must be sha256sum, will be replaced by bin/release
+export LEIN_CHECKSUM='2a0e9114e0d623c748a9ade5d72b54128b31b5ddb13f51b04c533f104bb0c48d'
 
 case $LEIN_VERSION in
     *SNAPSHOT) SNAPSHOT="YES" ;;
@@ -75,6 +77,17 @@ function download_failed_message {
 	EOS
 }
 
+function checksum_failed_message {
+    cat <<-EOS 1>&2
+	Failed to properly download $1
+	The checksum was mismatched. and we could not verify the downloaded
+	file. We expected a sha256 of
+	$2 and actually had
+	$3.
+	We used '$SHASUM_CMD' to verify the downloaded file.
+	EOS
+}
+
 function self_install {
   if [ -r "$LEIN_JAR" ]; then
     cat <<-EOS 1>&2
@@ -85,12 +98,20 @@ function self_install {
   fi
   msg "Downloading Leiningen to $LEIN_JAR now..."
   mkdir -p "$(dirname "$LEIN_JAR")"
-  LEIN_URL="https://github.com/technomancy/leiningen/releases/download/$LEIN_VERSION/leiningen-$LEIN_VERSION-standalone.zip"
+  LEIN_URL="https://github.com/technomancy/leiningen/releases/download/$LEIN_VERSION/leiningen-$LEIN_VERSION-standalone.jar"
   $HTTP_CLIENT "$LEIN_JAR.pending" "$LEIN_URL"
   local exit_code=$?
   if [ $exit_code == 0 ]; then
-      # TODO: checksum
-      mv -f "$LEIN_JAR.pending" "$LEIN_JAR"
+      printf "$LEIN_CHECKSUM  $LEIN_JAR.pending\n" > "$LEIN_JAR.pending.shasum"
+      $SHASUM_CMD -c "$LEIN_JAR.pending.shasum"
+      if [ $? == 0 ]; then
+        mv -f "$LEIN_JAR.pending" "$LEIN_JAR"
+      else
+        got_sum="$($SHASUM_CMD "$LEIN_JAR.pending" | cut -f 1 -d ' ')"
+        checksum_failed_message "$LEIN_URL" "$LEIN_CHECKSUM" "$got_sum"
+        rm "$LEIN_JAR.pending" 2> /dev/null
+        exit 1
+      fi
   else
       rm "$LEIN_JAR.pending" 2> /dev/null
       download_failed_message "$LEIN_URL" "$exit_code"
@@ -121,7 +142,7 @@ if $cygwin; then
     export LEIN_HOME=$(cygpath -w "$LEIN_HOME")
 fi
 
-LEIN_JAR="$LEIN_HOME/self-installs/leiningen-$LEIN_VERSION-standalone.jar"
+LEIN_JAR="${LEIN_JAR:-${LEIN_HOME}/self-installs/leiningen-${LEIN_VERSION}-standalone.jar}"
 
 # normalize $0 on certain BSDs
 if [ "$(dirname "$0")" = "." ]; then
@@ -146,7 +167,7 @@ done
 
 BIN_DIR="$(dirname "$SCRIPT")"
 
-export LEIN_JVM_OPTS="${LEIN_JVM_OPTS-"-Xverify:none -XX:+TieredCompilation -XX:TieredStopAtLevel=1"}"
+export LEIN_JVM_OPTS="${LEIN_JVM_OPTS-"-XX:+TieredCompilation -XX:TieredStopAtLevel=1"}"
 
 # This needs to be defined before we call HTTP_CLIENT below
 if [ "$HTTP_CLIENT" = "" ]; then
@@ -160,6 +181,18 @@ if [ "$HTTP_CLIENT" = "" ]; then
     fi
 fi
 
+# This needs to be defined before we call SHASUM_CMD below
+if [ "$SHASUM_CMD" = "" ]; then
+    if type -p sha256sum >/dev/null 2>&1; then
+        export SHASUM_CMD="sha256sum"
+    elif type -p shasum >/dev/null 2>&1; then
+        export SHASUM_CMD="shasum --algorithm 256"
+    elif type -p sha256 >/dev/null 2>&1; then
+        export SHASUM_CMD="sha256 -q"
+    else
+        command_not_found sha256sum
+    fi
+fi
 
 # When :eval-in :classloader we need more memory
 grep -E -q '^\s*:eval-in\s+:classloader\s*$' project.clj 2> /dev/null && \
@@ -330,17 +363,9 @@ else
     fi
 
     if [ "$LEIN_FAST_TRAMPOLINE" != "" ] && [ -r project.clj ]; then
-        INPUTS="$* $(cat project.clj) $LEIN_VERSION $(test -f "$LEIN_HOME/profiles.clj" && cat "$LEIN_HOME/profiles.clj")"
+        INPUTS="$* $(cat project.clj) $LEIN_VERSION $(test -f "$LEIN_HOME/profiles.clj" && cat "$LEIN_HOME/profiles.clj") $(test -f profiles.clj && cat profiles.clj)"
 
-        if command -v shasum >/dev/null 2>&1; then
-            SUM="shasum"
-        elif command -v sha1sum >/dev/null 2>&1; then
-            SUM="sha1sum"
-        else
-            command_not_found "sha1sum or shasum"
-        fi
-
-        INPUT_CHECKSUM=$(echo "$INPUTS" | $SUM | cut -f 1 -d " ")
+        INPUT_CHECKSUM=$(echo "$INPUTS" | $SHASUM_CMD | cut -f 1 -d " ")
         # Just don't change :target-path in project.clj, mkay?
         TRAMPOLINE_FILE="target/trampolines/$INPUT_CHECKSUM"
     else
