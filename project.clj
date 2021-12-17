@@ -26,8 +26,8 @@
   :npm {:dependencies [[d3 "3.5.5"]
                        [moment "2.22.2"]
                        [moment-duration-format "2.2.2"]]
-        :devDependencies [[jshint "2.10.2"
-                           prettier "1.17.0"]]
+        :devDependencies [[jshint "2.13.1"
+                           prettier "2.5.1"]]
         :package {:scripts {:lint "jshint ./common ./graphs"
                             :prettier "prettier --write --tab-width 4 './common/*.js' './graphs/*.js'"}}
         :root "resources/public"}

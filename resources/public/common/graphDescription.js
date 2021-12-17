@@ -1,22 +1,19 @@
-const graphDescription = (function(d3) {
+const graphDescription = (function (d3) {
     const module = {};
 
-    const githubWikiLink = function(question) {
+    const githubWikiLink = function (question) {
         const baseUrl = "https://github.com/cburgmer/buildviz/wiki/Questions";
 
         return (
             baseUrl +
             "#" +
-            question
-                .replace(/ /g, "-")
-                .replace(/\?/g, "")
-                .toLowerCase()
+            question.replace(/ /g, "-").replace(/\?/g, "").toLowerCase()
         );
     };
 
-    const answerToListWidget = function(answersTo) {
+    const answerToListWidget = function (answersTo) {
         const ul = d3.select(document.createElement("ul"));
-        answersTo.forEach(function(answerTo) {
+        answersTo.forEach(function (answerTo) {
             ul.append("li")
                 .append("a")
                 .attr("href", githubWikiLink(answerTo))
@@ -25,21 +22,19 @@ const graphDescription = (function(d3) {
         return ul.node();
     };
 
-    const textWidget = function(text) {
+    const textWidget = function (text) {
         const p = d3.select(document.createElement("p"));
         p.text(text);
         return p.node();
     };
 
-    const csvLinkWidget = function(link) {
+    const csvLinkWidget = function (link) {
         const h4 = d3.select(document.createElement("h4"));
-        h4.append("a")
-            .attr("href", link)
-            .text("Source as CSV");
+        h4.append("a").attr("href", link).text("Source as CSV");
         return h4.node();
     };
 
-    const createBlock = function(content, widget, headline) {
+    const createBlock = function (content, widget, headline) {
         const block = d3.select(document.createElement("div"));
         if (headline) {
             block.append("h4").text(headline);
@@ -48,7 +43,7 @@ const graphDescription = (function(d3) {
         return block.node();
     };
 
-    module.create = function(params) {
+    module.create = function (params) {
         const container = d3
                 .select(document.createElement("div"))
                 .attr("class", "graphDescription")
@@ -60,11 +55,11 @@ const graphDescription = (function(d3) {
             {
                 headline: "Answer to",
                 content: params.answer,
-                widget: answerToListWidget
+                widget: answerToListWidget,
             },
             { headline: "Legend", content: params.legend, widget: textWidget },
-            { content: params.csvSource, widget: csvLinkWidget }
-        ].forEach(function(block) {
+            { content: params.csvSource, widget: csvLinkWidget },
+        ].forEach(function (block) {
             if (block.content) {
                 section
                     .node()
@@ -75,7 +70,7 @@ const graphDescription = (function(d3) {
         });
 
         return {
-            widget: container.node()
+            widget: container.node(),
         };
     };
 

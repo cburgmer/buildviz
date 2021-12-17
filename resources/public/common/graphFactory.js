@@ -1,15 +1,15 @@
-const graphFactory = (function(d3) {
+const graphFactory = (function (d3) {
     "use strict";
     const module = {};
 
     module.size = 600;
 
-    module.textWithLineBreaks = function(elem, lines) {
+    module.textWithLineBreaks = function (elem, lines) {
         const textElem = d3.select(elem),
             lineHeight = 1.1,
             yCorrection = (lineHeight * lines.length) / 2 - 0.95;
 
-        lines.forEach(function(line, idx) {
+        lines.forEach(function (line, idx) {
             textElem
                 .append("tspan")
                 .attr("x", 0)
@@ -18,7 +18,7 @@ const graphFactory = (function(d3) {
         });
     };
 
-    module.create = function(params) {
+    module.create = function (params) {
         const id = "graph_" + params.id,
             widget = d3
                 .select(document.currentScript.parentNode)
@@ -26,11 +26,7 @@ const graphFactory = (function(d3) {
                 .attr("class", "graph " + params.id)
                 .attr("id", id);
 
-        widget
-            .append("a")
-            .attr("class", "close")
-            .attr("href", "#")
-            .text("╳");
+        widget.append("a").attr("class", "close").attr("href", "#").text("╳");
 
         const header = widget.append("header");
         header
@@ -41,7 +37,7 @@ const graphFactory = (function(d3) {
             .text(params.headline);
 
         if (params.widgets) {
-            params.widgets.reverse().forEach(function(widget) {
+            params.widgets.reverse().forEach(function (widget) {
                 header.node().appendChild(widget);
             });
         }
@@ -65,12 +61,12 @@ const graphFactory = (function(d3) {
 
         return {
             svg: svg,
-            loaded: function() {
+            loaded: function () {
                 widget.classed("loading", false);
             },
-            loading: function() {
+            loading: function () {
                 widget.classed("loading", true);
-            }
+            },
         };
     };
 

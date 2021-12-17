@@ -1,9 +1,9 @@
-const zoomableSunburst = function(svg, diameter) {
+const zoomableSunburst = function (svg, diameter) {
     const zoomTransitionDuration = 750,
         maxCaptionCharacterCount = diameter / 16;
 
     let rootPane;
-    const getOrCreateRootPane = function() {
+    const getOrCreateRootPane = function () {
             if (!rootPane) {
                 rootPane = svg
                     .append("g")
@@ -14,7 +14,7 @@ const zoomableSunburst = function(svg, diameter) {
             }
             return rootPane;
         },
-        removeRootPane = function() {
+        removeRootPane = function () {
             svg.select("g").remove();
             rootPane = undefined;
         };
@@ -29,7 +29,7 @@ const zoomableSunburst = function(svg, diameter) {
 
     const partition = d3.layout
         .partition()
-        .sort(function(a, b) {
+        .sort(function (a, b) {
             if (a.name === b.name) {
                 return 0;
             } else if (a.name > b.name) {
@@ -38,61 +38,58 @@ const zoomableSunburst = function(svg, diameter) {
                 return -1;
             }
         })
-        .value(function(d) {
+        .value(function (d) {
             return d.size;
         });
 
     const arc = d3.svg
         .arc()
-        .startAngle(function(d) {
+        .startAngle(function (d) {
             return Math.max(0, Math.min(2 * Math.PI, x(d.x)));
         })
-        .endAngle(function(d) {
+        .endAngle(function (d) {
             return Math.max(0, Math.min(2 * Math.PI, x(d.x + d.dx)));
         })
-        .innerRadius(function(d) {
+        .innerRadius(function (d) {
             return Math.max(0, y(d.y));
         })
-        .outerRadius(function(d) {
+        .outerRadius(function (d) {
             return Math.max(0, y(d.y + d.dy));
         });
 
-    const computeTextRotation = function(d) {
+    const computeTextRotation = function (d) {
         return ((x(d.x + d.dx / 2) - Math.PI / 2) / Math.PI) * 180;
     };
 
-    const arcTween = function(d) {
+    const arcTween = function (d) {
         const xd = d3.interpolate(x.domain(), [d.x, d.x + d.dx]),
             yd = d3.interpolate(y.domain(), [d.y, 1]),
             yr = d3.interpolate(y.range(), [d.y ? 20 : 0, radius]);
-        return function(d, i) {
+        return function (d, i) {
             if (i === 0) {
-                return function(t) {
+                return function (t) {
                     x.domain(xd(t));
                     y.domain(yd(t)).range(yr(t));
                     return arc(d);
                 };
             } else {
-                return function(t) {
+                return function (t) {
                     return arc(d);
                 };
             }
         };
     };
 
-    const nodeLuminance = function(d, l) {
+    const nodeLuminance = function (d, l) {
         if (!d.value) {
             return 50;
         }
-        const luminance = d3.scale
-            .sqrt()
-            .domain([0, 1e6])
-            .range([90, 40]);
+        const luminance = d3.scale.sqrt().domain([0, 1e6]).range([90, 40]);
 
         return luminance(d.value);
     };
 
-    const closestAncestorWithColor = function(d) {
+    const closestAncestorWithColor = function (d) {
         let parent = d;
         while (!parent.color && parent.parent) {
             parent = parent.parent;
@@ -100,7 +97,7 @@ const zoomableSunburst = function(svg, diameter) {
         return parent;
     };
 
-    const nodeColorWithFallbackToParentColor = function(d) {
+    const nodeColorWithFallbackToParentColor = function (d) {
         let color = d.color;
         if (!color) {
             const ancestor = closestAncestorWithColor(d);
@@ -111,7 +108,7 @@ const zoomableSunburst = function(svg, diameter) {
     };
 
     // poor man's text clipping
-    const maxLength = function(text, length) {
+    const maxLength = function (text, length) {
         const ellipsis = "…";
         if (text.length > length) {
             return text.substr(0, length - 1) + ellipsis;
@@ -120,12 +117,12 @@ const zoomableSunburst = function(svg, diameter) {
         }
     };
 
-    const enoughPlaceForText = function(d, selectedNode) {
+    const enoughPlaceForText = function (d, selectedNode) {
         const currentDx = selectedNode ? selectedNode.dx : 1;
         return d.dx / currentDx > 0.015;
     };
 
-    const displayText = function(d, selectedNode) {
+    const displayText = function (d, selectedNode) {
         const currentDepth = selectedNode ? selectedNode.depth : 0;
         if (
             d.depth === 0 ||
@@ -137,20 +134,20 @@ const zoomableSunburst = function(svg, diameter) {
         return true;
     };
 
-    const allChildNodesFor = function(parentNode) {
+    const allChildNodesFor = function (parentNode) {
         if (!parentNode.children) {
             return [parentNode];
         }
 
         return parentNode.children.reduce(
-            function(nodes, childNode) {
+            function (nodes, childNode) {
                 return nodes.concat(allChildNodesFor(childNode));
             },
             [parentNode]
         );
     };
 
-    const allNodesFor = function(node) {
+    const allNodesFor = function (node) {
         const nodes = allChildNodesFor(node);
         if (node.parent) {
             nodes.push(node.parent);
@@ -158,10 +155,10 @@ const zoomableSunburst = function(svg, diameter) {
         return nodes;
     };
 
-    const renderSunburst = function(rootNode, domElement, showTransition) {
+    const renderSunburst = function (rootNode, domElement, showTransition) {
         const nodes = allNodesFor(rootNode);
 
-        const selection = domElement.selectAll("g").data(nodes, function(d) {
+        const selection = domElement.selectAll("g").data(nodes, function (d) {
             return d.id;
         });
 
@@ -170,38 +167,39 @@ const zoomableSunburst = function(svg, diameter) {
             .enter()
             .append("g")
             .attr("class", "segment")
-            .on("click", function(d) {
+            .on("click", function (d) {
                 d3.event.preventDefault();
 
                 renderSunburst(d, domElement, true);
             })
-            .on("mouseover", function(d) {
+            .on("mouseover", function (d) {
                 window.dispatchEvent(
                     new CustomEvent("jobSelected", {
-                        detail: { jobName: d.jobName }
+                        detail: { jobName: d.jobName },
                     })
                 );
             })
-            .on("mouseout", function() {
+            .on("mouseout", function () {
                 window.dispatchEvent(
                     new CustomEvent("jobSelected", {
-                        detail: { jobName: undefined }
+                        detail: { jobName: undefined },
                     })
                 );
             });
 
-        window.addEventListener("jobSelected", function(event) {
+        window.addEventListener("jobSelected", function (event) {
             const jobName = event.detail.jobName;
 
             svg.classed("highlighted", !!jobName);
-            svg.selectAll(".segment").classed("highlightedElement", function(
-                d
-            ) {
-                return d.jobName === jobName;
-            });
+            svg.selectAll(".segment").classed(
+                "highlightedElement",
+                function (d) {
+                    return d.jobName === jobName;
+                }
+            );
         });
 
-        selection.attr("role", function(d) {
+        selection.attr("role", function (d) {
             if (d.depth - rootNode.depth <= 1) {
                 return "link";
             }
@@ -213,7 +211,7 @@ const zoomableSunburst = function(svg, diameter) {
         g.append("text")
             .attr("dx", "6") // margin
             .attr("dy", ".35em") // vertical-align
-            .text(function(d) {
+            .text(function (d) {
                 if (d.children) {
                     return maxLength(d.name, maxCaptionCharacterCount * d.dy);
                 }
@@ -225,7 +223,7 @@ const zoomableSunburst = function(svg, diameter) {
                 );
             });
 
-        g.append("title").text(function(d) {
+        g.append("title").text(function (d) {
             return d.title || d.name;
         });
 
@@ -237,16 +235,16 @@ const zoomableSunburst = function(svg, diameter) {
             .transition()
             .duration(showTransition ? zoomTransitionDuration : 0)
             .attrTween("d", arcTween(rootNode))
-            .each("end", function(e) {
+            .each("end", function (e) {
                 d3.select(this.parentNode)
                     .select("text")
-                    .attr("display", function(d) {
+                    .attr("display", function (d) {
                         return displayText(d, rootNode) ? "inherit" : "none";
                     })
-                    .attr("transform", function(d) {
+                    .attr("transform", function (d) {
                         return "rotate(" + computeTextRotation(d) + ")";
                     })
-                    .attr("x", function(d) {
+                    .attr("x", function (d) {
                         return y(d.y);
                     });
             });
@@ -260,12 +258,12 @@ const zoomableSunburst = function(svg, diameter) {
             .transition()
             .duration(showTransition ? zoomTransitionDuration : 0)
             .attrTween("d", arcTween(rootNode))
-            .each("end", function() {
+            .each("end", function () {
                 d3.select(this.parentNode).remove();
             });
     };
 
-    const render = function(data) {
+    const render = function (data) {
         if (!data.children.length) {
             removeRootPane();
             return;
@@ -275,6 +273,6 @@ const zoomableSunburst = function(svg, diameter) {
     };
 
     return {
-        render: render
+        render: render,
     };
 };

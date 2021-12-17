@@ -1,4 +1,4 @@
-(function(
+(function (
     timespanSelection,
     graphDescription,
     graphFactory,
@@ -12,15 +12,9 @@
 
     const x = d3.time.scale().range([0, width]);
 
-    const y = d3.scale
-        .linear()
-        .domain([0, 24])
-        .range([height, 0]);
+    const y = d3.scale.linear().domain([0, 24]).range([height, 0]);
 
-    const xAxis = d3.svg
-        .axis()
-        .scale(x)
-        .orient("bottom");
+    const xAxis = d3.svg.axis().scale(x).orient("bottom");
 
     const yAxis = d3.svg
         .axis()
@@ -28,7 +22,7 @@
         .orient("left")
         .outerTickSize(0)
         .tickValues([0, 6, 9, 12, 15, 18])
-        .tickFormat(function(d) {
+        .tickFormat(function (d) {
             if (d < 12) {
                 return d + "am";
             } else if (d === 12) {
@@ -40,7 +34,7 @@
             }
         });
 
-    const timeOfDay = function(date) {
+    const timeOfDay = function (date) {
         return (
             ((date.getTime() - date.getTimezoneOffset() * 60 * 1000) %
                 (24 * 60 * 60 * 1000)) /
@@ -48,11 +42,11 @@
         );
     };
 
-    const startOfDay = function(date) {
+    const startOfDay = function (date) {
         return new Date(date.getFullYear(), date.getMonth(), date.getDate());
     };
 
-    const endOfDay = function(date) {
+    const endOfDay = function (date) {
         const nextDay = new Date(
             date.getFullYear(),
             date.getMonth(),
@@ -62,7 +56,7 @@
         return new Date(nextDay.getTime() - 1);
     };
 
-    const phasesByDay = function(start, end) {
+    const phasesByDay = function (start, end) {
         const phases = [];
         let startDate = new Date(start),
             endDate = end ? new Date(end) : undefined,
@@ -72,7 +66,7 @@
             while (endOfCurrentDay < endDate) {
                 phases.push({
                     start: startDate,
-                    end: endOfCurrentDay
+                    end: endOfCurrentDay,
                 });
 
                 startDate = new Date(endOfCurrentDay.getTime() + 1);
@@ -82,22 +76,24 @@
 
         phases.push({
             start: startDate,
-            end: endDate
+            end: endDate,
         });
 
         return phases;
     };
 
-    const flatten = function(listOfLists) {
-        return listOfLists.reduce(function(a, b) {
+    const flatten = function (listOfLists) {
+        return listOfLists.reduce(function (a, b) {
             return a.concat(b);
         }, []);
     };
 
-    const calculatePhasesByDay = function(data) {
+    const calculatePhasesByDay = function (data) {
         return flatten(
-            data.map(function(entry) {
-                return phasesByDay(entry.start, entry.end).map(function(phase) {
+            data.map(function (entry) {
+                return phasesByDay(entry.start, entry.end).map(function (
+                    phase
+                ) {
                     phase.color = entry.status === "pass" ? "green" : "red";
                     phase.culprits = entry.culprits;
                     phase.ongoingCulprits = entry.ongoingCulprits || [];
@@ -110,8 +106,8 @@
         );
     };
 
-    const annotateDateAndTime = function(phases) {
-        return phases.map(function(phase) {
+    const annotateDateAndTime = function (phases) {
+        return phases.map(function (phase) {
             phase.startOfDay = startOfDay(phase.start);
             phase.endOfDay = endOfDay(phase.end);
             phase.startTime = timeOfDay(phase.start);
@@ -120,12 +116,12 @@
         });
     };
 
-    const isWeekend = function(date) {
+    const isWeekend = function (date) {
         const dayOfWeek = date.getDay();
         return dayOfWeek === 0 || dayOfWeek === 6;
     };
 
-    const shortTimeString = function(date, referenceDate) {
+    const shortTimeString = function (date, referenceDate) {
         if (
             startOfDay(date).valueOf() === startOfDay(referenceDate).valueOf()
         ) {
@@ -135,7 +131,7 @@
         }
     };
 
-    const saneDayTicks = function(axis, scale) {
+    const saneDayTicks = function (axis, scale) {
         const dayCount =
             (x.domain()[1] - x.domain()[0]) / (24 * 60 * 60 * 1000);
         if (dayCount < 10) {
@@ -147,7 +143,7 @@
     };
 
     let axesPane;
-    const getOrCreateAxesPane = function(svg) {
+    const getOrCreateAxesPane = function (svg) {
             if (axesPane === undefined) {
                 axesPane = svg
                     .append("g")
@@ -175,12 +171,12 @@
 
             return axesPane;
         },
-        removeAxesPane = function(svg) {
+        removeAxesPane = function (svg) {
             svg.select("g").remove();
             axesPane = undefined;
         };
 
-    const renderData = function(data, startTimestamp, svg) {
+    const renderData = function (data, startTimestamp, svg) {
         const phasesByDay = annotateDateAndTime(calculatePhasesByDay(data));
 
         if (!phasesByDay.length) {
@@ -192,15 +188,15 @@
         const xMin =
             startTimestamp > 0
                 ? startTimestamp
-                : d3.min(phasesByDay, function(d) {
+                : d3.min(phasesByDay, function (d) {
                       return d.startOfDay;
                   });
 
         x.domain([
             xMin,
-            d3.max(phasesByDay, function(d) {
+            d3.max(phasesByDay, function (d) {
                 return d.endOfDay;
-            })
+            }),
         ]);
 
         const pane = getOrCreateAxesPane(svg);
@@ -211,18 +207,15 @@
 
         const selection = pane
             .selectAll(".entry")
-            .data(phasesByDay, function(d) {
+            .data(phasesByDay, function (d) {
                 return d.start;
             });
 
         selection.exit().remove();
 
-        const g = selection
-            .enter()
-            .append("g")
-            .attr("class", "entry");
+        const g = selection.enter().append("g").attr("class", "entry");
 
-        g.append("rect").attr("class", function(d) {
+        g.append("rect").attr("class", function (d) {
             const classNames = [];
             if (isWeekend(d.start)) {
                 classNames.push("weekend");
@@ -234,20 +227,20 @@
 
         selection
             .select("rect")
-            .attr("x", function(d) {
+            .attr("x", function (d) {
                 return x(startOfDay(d.start));
             })
-            .attr("width", function(d) {
+            .attr("width", function (d) {
                 return x(d.endOfDay) - x(d.startOfDay);
             })
-            .attr("y", function(d) {
+            .attr("y", function (d) {
                 return y(d.endTime);
             })
-            .attr("height", function(d) {
+            .attr("height", function (d) {
                 return y(d.startTime) - y(d.endTime);
             });
 
-        const tooltipText = function(d) {
+        const tooltipText = function (d) {
             const duration = utils.formatTimeInMs(d.duration);
             let lines = [];
 
@@ -272,7 +265,7 @@
             if (d.color === "red") {
                 lines.push("");
                 lines = lines.concat(
-                    d.culprits.map(function(culprit) {
+                    d.culprits.map(function (culprit) {
                         const isOngoing =
                             d.ongoingCulprits.indexOf(culprit) >= 0;
                         return (
@@ -305,28 +298,28 @@
                 "The failing phase continues when another job starts to fail in between and only ends when that job also passes again.",
                 "Weekends are blurred out.",
                 "This graphs assumes that failures are generally not tolerated to persist over a long interval for any job,",
-                "otherwise the graph will not provide much value for those periods."
+                "otherwise the graph will not provide much value for those periods.",
             ].join(" "),
             answer: [
                 "What is the general health of the build system?",
                 "How much are we stopping the pipeline?",
-                "How quickly can we resume the pipeline after failure?"
+                "How quickly can we resume the pipeline after failure?",
             ],
             legend: "Color: healthy/broken state",
-            csvSource: "failphases.csv"
+            csvSource: "failphases.csv",
         }),
         graph = graphFactory.create({
             id: "failPhases",
             headline: "Fail phases",
             noDataReason:
                 "provided <code>start</code>, <code>end</code> times and the <code>outcome</code> of your builds",
-            widgets: [timespanSelector.widget, description.widget]
+            widgets: [timespanSelector.widget, description.widget],
         });
 
-    timespanSelector.load(function(fromTimestamp) {
+    timespanSelector.load(function (fromTimestamp) {
         graph.loading();
 
-        dataSource.load("failphases?from=" + fromTimestamp, function(data) {
+        dataSource.load("failphases?from=" + fromTimestamp, function (data) {
             graph.loaded();
 
             renderData(data, fromTimestamp, graph.svg);
