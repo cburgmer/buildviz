@@ -1,89 +1,128 @@
-<!doctype html>
-<meta charset="utf-8">
-<link rel="stylesheet" href="../../resources/public/common/base.css">
-<link rel="stylesheet" href="../../resources/public/common/graphFactory.css">
-<link rel="stylesheet" href="../../resources/public/common/timespanSelection.css">
-<link rel="stylesheet" href="../../resources/public/common/graphDescription.css">
-<link rel="stylesheet" href="../../resources/public/common/zoomableSunburst.css">
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../../resources/public/common/base.css" />
+<link rel="stylesheet" href="../../resources/public/common/graphFactory.css" />
+<link
+  rel="stylesheet"
+  href="../../resources/public/common/timespanSelection.css"
+/>
+<link
+  rel="stylesheet"
+  href="../../resources/public/common/graphDescription.css"
+/>
+<link
+  rel="stylesheet"
+  href="../../resources/public/common/zoomableSunburst.css"
+/>
 <body>
-    <script>
-        const dataSource = {
-            load: function (_, callback) {
-                callback([{
-                    jobName: "aBuild",
-                    children: [{
-                        name: "test suite",
-                        children: [{
-                            name: "package.sub.classname",
-                            averageRuntime: 2
-                        }]
-                    }, {
-                        name: "another suite",
-                        children: [{
-                            name: "package.classname",
-                            averageRuntime: 0.5
-                        }, {
-                            name: "package.without.runtime"
-                        }]
-                    }]
-                }, {
-                    jobName: "anotherBuild",
-                    children: [{
-                        name: "some suite",
-                        children: [{
-                            name: "com.example.and.more.class.doge",
-                            averageRuntime: 2
-                        }, {
-                            name: "com.example.bee",
-                            averageRuntime: 15
-                        }, {
-                            name: "com.example.zen.nested",
-                            averageRuntime: 8
-                        }, {
-                            name: "com.example.y",
-                            averageRuntime: 8
-                        }, {
-                            name: "com.example.some.more.and.one",
-                            averageRuntime: 2
-                        }, {
-                            name: "com.example.some.more.and.two",
-                            averageRuntime: 2
-                        }, {
-                            name: "com.something",
-                            averageRuntime: 8
-                        }]
-                    }]
-                }, {
-                    jobName: "buildWithSemicolons",
-                    children: [{
-                        name: "<empty>",
-                        children: [{
-                            name: "The: Class Name",
-                            averageRuntime: 4
-                        }, {
-                            name: "The: Class",
-                            averageRuntime: 4
-                        }, {
-                            name: "Another: Class",
-                            averageRuntime: 4
-                        }]
-                    }]
-                }]);
-            }
-        };
-    </script>
-    <script src="../../resources/public/node_modules/d3/d3.min.js"></script>
-    <script src="../../resources/public/common/graphFactory.js"></script>
-    <script src="../../resources/public/common/timespanSelection.js"></script>
-    <script src="../../resources/public/common/graphDescription.js"></script>
-    <script src="../../resources/public/common/utils.js"></script>
-    <script src="../../resources/public/common/zoomableSunburst.js"></script>
-    <script src="../../resources/public/common/jobColors.js"></script>
-    <script src="../../resources/public/graphs/averageTestRuntime.js"></script>
-    <script>
-     d3.timer.flush();
-    </script>
-    <script>
-     window.dispatchEvent(new CustomEvent('jobSelected', {detail: {jobName: 'anotherBuild'}}));
-    </script>
+  <script>
+    const dataSource = {
+      load: function (_, callback) {
+        callback([
+          {
+            jobName: "aBuild",
+            children: [
+              {
+                name: "test suite",
+                children: [
+                  {
+                    name: "package.sub.classname",
+                    averageRuntime: 2,
+                  },
+                ],
+              },
+              {
+                name: "another suite",
+                children: [
+                  {
+                    name: "package.classname",
+                    averageRuntime: 0.5,
+                  },
+                  {
+                    name: "package.without.runtime",
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            jobName: "anotherBuild",
+            children: [
+              {
+                name: "some suite",
+                children: [
+                  {
+                    name: "com.example.and.more.class.doge",
+                    averageRuntime: 2,
+                  },
+                  {
+                    name: "com.example.bee",
+                    averageRuntime: 15,
+                  },
+                  {
+                    name: "com.example.zen.nested",
+                    averageRuntime: 8,
+                  },
+                  {
+                    name: "com.example.y",
+                    averageRuntime: 8,
+                  },
+                  {
+                    name: "com.example.some.more.and.one",
+                    averageRuntime: 2,
+                  },
+                  {
+                    name: "com.example.some.more.and.two",
+                    averageRuntime: 2,
+                  },
+                  {
+                    name: "com.something",
+                    averageRuntime: 8,
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            jobName: "buildWithSemicolons",
+            children: [
+              {
+                name: "<empty>",
+                children: [
+                  {
+                    name: "The: Class Name",
+                    averageRuntime: 4,
+                  },
+                  {
+                    name: "The: Class",
+                    averageRuntime: 4,
+                  },
+                  {
+                    name: "Another: Class",
+                    averageRuntime: 4,
+                  },
+                ],
+              },
+            ],
+          },
+        ]);
+      },
+    };
+  </script>
+  <script src="../../resources/public/vendor/d3.min.js"></script>
+  <script src="../../resources/public/common/graphFactory.js"></script>
+  <script src="../../resources/public/common/timespanSelection.js"></script>
+  <script src="../../resources/public/common/graphDescription.js"></script>
+  <script src="../../resources/public/common/utils.js"></script>
+  <script src="../../resources/public/common/zoomableSunburst.js"></script>
+  <script src="../../resources/public/common/jobColors.js"></script>
+  <script src="../../resources/public/graphs/averageTestRuntime.js"></script>
+  <script>
+    d3.timer.flush();
+  </script>
+  <script>
+    window.dispatchEvent(
+      new CustomEvent("jobSelected", { detail: { jobName: "anotherBuild" } })
+    );
+  </script>
 </body>

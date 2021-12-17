@@ -1,62 +1,84 @@
-<!doctype html>
-<meta charset="utf-8">
-<link rel="stylesheet" href="../../resources/public/common/base.css">
-<link rel="stylesheet" href="../../resources/public/common/timespanSelection.css">
-<link rel="stylesheet" href="../../resources/public/common/graphDescription.css">
-<link rel="stylesheet" href="../../resources/public/common/graphFactory.css">
-<link rel="stylesheet" href="../../resources/public/common/weightedTimeline.css">
-<link rel="stylesheet" href="../../resources/public/common/tooltip.css">
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../../resources/public/common/base.css" />
+<link
+  rel="stylesheet"
+  href="../../resources/public/common/timespanSelection.css"
+/>
+<link
+  rel="stylesheet"
+  href="../../resources/public/common/graphDescription.css"
+/>
+<link rel="stylesheet" href="../../resources/public/common/graphFactory.css" />
+<link
+  rel="stylesheet"
+  href="../../resources/public/common/weightedTimeline.css"
+/>
+<link rel="stylesheet" href="../../resources/public/common/tooltip.css" />
 <body>
-    <script>
-     const toCsvDate = function (date) {
-         return date.toISOString().replace('T', ' ');
-     };
+  <script>
+    const toCsvDate = function (date) {
+      return date.toISOString().replace("T", " ");
+    };
 
-     const dateDaysAgo = function (daysAgo) {
-         const d = new Date('2000-01-01');
-         d.setDate(d.getDate() - daysAgo);
-         return d;
-     };
+    const dateDaysAgo = function (daysAgo) {
+      const d = new Date("2000-01-01");
+      d.setDate(d.getDate() - daysAgo);
+      return d;
+    };
 
-     const aFlakyTest = function (name, flakyCount, countDaysAgoOfLatestFailure) {
-         return {
-             latestBuildId: "4",
-             latestFailure: toCsvDate(dateDaysAgo(countDaysAgoOfLatestFailure)),
-             flakyCount: flakyCount,
-             name: name
-         };
-     };
+    const aFlakyTest = function (
+      name,
+      flakyCount,
+      countDaysAgoOfLatestFailure
+    ) {
+      return {
+        latestBuildId: "4",
+        latestFailure: toCsvDate(dateDaysAgo(countDaysAgoOfLatestFailure)),
+        flakyCount: flakyCount,
+        name: name,
+      };
+    };
 
-     const forJob = function (jobName, tests) {
-         return tests.map(function (test) {
-             test.job = jobName;
-             return test;
-         });
-     };
+    const forJob = function (jobName, tests) {
+      return tests.map(function (test) {
+        test.job = jobName;
+        return test;
+      });
+    };
 
-     const dataSource = {
-         loadCSV: function (_, callback) {
-             callback(
-                 [forJob("aFlakyBuild", [aFlakyTest("Another Test Case", 80, 0),
-                                         aFlakyTest("Week old test", 40, 7),
-                                         aFlakyTest("More than a week old test", 40, 8),
-                                         aFlakyTest("An older test", 40, 1),
-                                         aFlakyTest("Another older test", 80, 1)]),
-                  forJob("anotherBuild", [aFlakyTest("Yet another older test", 40, 1),
-                                          aFlakyTest("A Test", 120, 0),
-                                          aFlakyTest("Some Test", 1, 0),
-                                          aFlakyTest("Even older test", 40, 2),
-                                          aFlakyTest("Even another test", 40, 9),
-                                          aFlakyTest("Older test", 40, 10)])].reduce(function (arr, tests) { return arr.concat(tests); }, []));
-         }
-     };
-    </script>
-    <script src="../../resources/public/node_modules/d3/d3.min.js"></script>
-    <script src="../../resources/public/common/graphFactory.js"></script>
-    <script src="../../resources/public/common/jobColors.js"></script>
-    <script src="../../resources/public/common/timespanSelection.js"></script>
-    <script src="../../resources/public/common/tooltip.js"></script>
-    <script src="../../resources/public/common/graphDescription.js"></script>
-    <script src="../../resources/public/common/weightedTimeline.js"></script>
-    <script src="../../resources/public/graphs/flakyTests.js"></script>
+    const dataSource = {
+      loadCSV: function (_, callback) {
+        callback(
+          [
+            forJob("aFlakyBuild", [
+              aFlakyTest("Another Test Case", 80, 0),
+              aFlakyTest("Week old test", 40, 7),
+              aFlakyTest("More than a week old test", 40, 8),
+              aFlakyTest("An older test", 40, 1),
+              aFlakyTest("Another older test", 80, 1),
+            ]),
+            forJob("anotherBuild", [
+              aFlakyTest("Yet another older test", 40, 1),
+              aFlakyTest("A Test", 120, 0),
+              aFlakyTest("Some Test", 1, 0),
+              aFlakyTest("Even older test", 40, 2),
+              aFlakyTest("Even another test", 40, 9),
+              aFlakyTest("Older test", 40, 10),
+            ]),
+          ].reduce(function (arr, tests) {
+            return arr.concat(tests);
+          }, [])
+        );
+      },
+    };
+  </script>
+  <script src="../../resources/public/vendor/d3.min.js"></script>
+  <script src="../../resources/public/common/graphFactory.js"></script>
+  <script src="../../resources/public/common/jobColors.js"></script>
+  <script src="../../resources/public/common/timespanSelection.js"></script>
+  <script src="../../resources/public/common/tooltip.js"></script>
+  <script src="../../resources/public/common/graphDescription.js"></script>
+  <script src="../../resources/public/common/weightedTimeline.js"></script>
+  <script src="../../resources/public/graphs/flakyTests.js"></script>
 </body>

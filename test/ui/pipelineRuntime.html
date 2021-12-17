@@ -1,75 +1,122 @@
-<!doctype html>
-<meta charset="utf-8">
-<link rel="stylesheet" href="../../resources/public/common/base.css">
-<link rel="stylesheet" href="../../resources/public/common/tooltip.css">
-<link rel="stylesheet" href="../../resources/public/common/timespanSelection.css">
-<link rel="stylesheet" href="../../resources/public/common/graphDescription.css">
-<link rel="stylesheet" href="../../resources/public/common/graphFactory.css">
-<link rel="stylesheet" href="../../resources/public/common/events.css">
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../../resources/public/common/base.css" />
+<link rel="stylesheet" href="../../resources/public/common/tooltip.css" />
+<link
+  rel="stylesheet"
+  href="../../resources/public/common/timespanSelection.css"
+/>
+<link
+  rel="stylesheet"
+  href="../../resources/public/common/graphDescription.css"
+/>
+<link rel="stylesheet" href="../../resources/public/common/graphFactory.css" />
+<link rel="stylesheet" href="../../resources/public/common/events.css" />
 <body>
-    <script>
-     const dataSource = {
-         load: function (_, callback) {
-             callback([{
-                 pipeline: ["Some_Build", "Other_Build"],
-                 builds: [{job: "Some_Build", buildId: "1"}, {job: "Other_Build", buildId: "10"}],
-                 start: 1443650400000,
-                 end: 1443651000000
-             }, {
-                 pipeline: ["Some_Build", "Other_Build"],
-                 builds: [{job: "Some_Build", buildId: "2"}, {job: "Other_Build", buildId: "11"}],
-                 start: 1443996000000,
-                 end: 1443996360000
-             }, {
-                 pipeline: ["Some_Build", "Other_Build"],
-                 builds: [{job: "Some_Build", buildId: "3"}, {job: "Other_Build", buildId: "12"}],
-                 start: 1446418800000,
-                 end: 1446419064000
-             }, {
-                 pipeline: ["Some_Build", "Other_Build"],
-                 builds: [{job: "Some_Build", buildId: "4"}, {job: "Other_Build", buildId: "13"}],
-                 start: 1446850800000,
-                 end: 1446851190000
-             }, {
-                 pipeline: ["Some_Build", "Other_Build"],
-                 builds: [{job: "Some_Build", buildId: "5"}, {job: "Other_Build", buildId: "14"}],
-                 start: 1446937200000,
-                 end: 1446937380000
-             }, {
-                 pipeline: ["Test", "Deploy", "SmokeTest"],
-                 builds: [{job: "Test", buildId: "6"}, {job: "Deploy", buildId: "20"}, {job: "SmokeTest", buildId: "1"}],
-                 start: 1441663200000,
-                 end: 1441663320000
-             }, {
-                 pipeline: ["Test", "Deploy", "SmokeTest"],
-                 builds: [{job: "Test", buildId: "7"}, {job: "Deploy", buildId: "21"}, {job: "SmokeTest", buildId: "2"}],
-                 start: 1442527200000,
-                 end: 1442527350000
-             }, {
-                 pipeline: ["Test", "Deploy", "SmokeTest"],
-                 builds: [{job: "Test", buildId: "8"}, {job: "Deploy", buildId: "22"}, {job: "SmokeTest", buildId: "3"}],
-                 start: 1443736800000,
-                 end: 1443737040000
-             }, {
-                 pipeline: ["Test", "Deploy", "SmokeTest"],
-                 builds: [{job: "Test", buildId: "9"}, {job: "Deploy", buildId: "23"}, {job: "SmokeTest", buildId: "4"}],
-                 start: 1446937200000,
-                 end: 1446937390000
-             }]);
-         }
-     };
-    </script>
-    <script src="../../resources/public/node_modules/d3/d3.min.js"></script>
-    <script src="../../resources/public/common/tooltip.js"></script>
-    <script src="../../resources/public/common/graphFactory.js"></script>
-    <script src="../../resources/public/common/timespanSelection.js"></script>
-    <script src="../../resources/public/common/graphDescription.js"></script>
-    <script src="../../resources/public/common/utils.js"></script>
-    <script src="../../resources/public/common/jobColors.js"></script>
-    <script src="../../resources/public/common/events.js"></script>
-    <script src="testHelpers.js"></script>
-    <script>
-     testHelpers.mockDateToday('2015-10-18');
-    </script>
-    <script src="../../resources/public/graphs/pipelineRuntime.js"></script>
+  <script>
+    const dataSource = {
+      load: function (_, callback) {
+        callback([
+          {
+            pipeline: ["Some_Build", "Other_Build"],
+            builds: [
+              { job: "Some_Build", buildId: "1" },
+              { job: "Other_Build", buildId: "10" },
+            ],
+            start: 1443650400000,
+            end: 1443651000000,
+          },
+          {
+            pipeline: ["Some_Build", "Other_Build"],
+            builds: [
+              { job: "Some_Build", buildId: "2" },
+              { job: "Other_Build", buildId: "11" },
+            ],
+            start: 1443996000000,
+            end: 1443996360000,
+          },
+          {
+            pipeline: ["Some_Build", "Other_Build"],
+            builds: [
+              { job: "Some_Build", buildId: "3" },
+              { job: "Other_Build", buildId: "12" },
+            ],
+            start: 1446418800000,
+            end: 1446419064000,
+          },
+          {
+            pipeline: ["Some_Build", "Other_Build"],
+            builds: [
+              { job: "Some_Build", buildId: "4" },
+              { job: "Other_Build", buildId: "13" },
+            ],
+            start: 1446850800000,
+            end: 1446851190000,
+          },
+          {
+            pipeline: ["Some_Build", "Other_Build"],
+            builds: [
+              { job: "Some_Build", buildId: "5" },
+              { job: "Other_Build", buildId: "14" },
+            ],
+            start: 1446937200000,
+            end: 1446937380000,
+          },
+          {
+            pipeline: ["Test", "Deploy", "SmokeTest"],
+            builds: [
+              { job: "Test", buildId: "6" },
+              { job: "Deploy", buildId: "20" },
+              { job: "SmokeTest", buildId: "1" },
+            ],
+            start: 1441663200000,
+            end: 1441663320000,
+          },
+          {
+            pipeline: ["Test", "Deploy", "SmokeTest"],
+            builds: [
+              { job: "Test", buildId: "7" },
+              { job: "Deploy", buildId: "21" },
+              { job: "SmokeTest", buildId: "2" },
+            ],
+            start: 1442527200000,
+            end: 1442527350000,
+          },
+          {
+            pipeline: ["Test", "Deploy", "SmokeTest"],
+            builds: [
+              { job: "Test", buildId: "8" },
+              { job: "Deploy", buildId: "22" },
+              { job: "SmokeTest", buildId: "3" },
+            ],
+            start: 1443736800000,
+            end: 1443737040000,
+          },
+          {
+            pipeline: ["Test", "Deploy", "SmokeTest"],
+            builds: [
+              { job: "Test", buildId: "9" },
+              { job: "Deploy", buildId: "23" },
+              { job: "SmokeTest", buildId: "4" },
+            ],
+            start: 1446937200000,
+            end: 1446937390000,
+          },
+        ]);
+      },
+    };
+  </script>
+  <script src="../../resources/public/vendor/d3.min.js"></script>
+  <script src="../../resources/public/common/tooltip.js"></script>
+  <script src="../../resources/public/common/graphFactory.js"></script>
+  <script src="../../resources/public/common/timespanSelection.js"></script>
+  <script src="../../resources/public/common/graphDescription.js"></script>
+  <script src="../../resources/public/common/utils.js"></script>
+  <script src="../../resources/public/common/jobColors.js"></script>
+  <script src="../../resources/public/common/events.js"></script>
+  <script src="testHelpers.js"></script>
+  <script>
+    testHelpers.mockDateToday("2015-10-18");
+  </script>
+  <script src="../../resources/public/graphs/pipelineRuntime.js"></script>
 </body>

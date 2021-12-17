@@ -2,7 +2,8 @@ Just a few pointers if you want to make changes to buildviz:
 
 ## Run the server locally
 
-    $ ./lein do deps, ring server
+    $ ./go install
+    $ ./lein ring server
     # optionally
     $ ./examples/data/seedDummyData.sh
 
@@ -12,7 +13,7 @@ Just a few pointers if you want to make changes to buildviz:
 
 ## UI regression tests
 
-    $ ./test/serve_ui_test.sh
+    $ npm run ui_tests
     $ open http://localhost:8000/test/RegressionRunner.html
 
 ## Inspect JUnit XML file

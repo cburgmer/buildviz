@@ -1,102 +1,102 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8">
-        <title>buildviz</title>
-        <link rel="stylesheet" href="common/base.css">
-        <link rel="stylesheet" href="common/tooltip.css">
-        <link rel="stylesheet" href="common/timespanSelection.css">
-        <link rel="stylesheet" href="common/graphDescription.css">
-        <link rel="stylesheet" href="common/graphFactory.css">
-        <link rel="stylesheet" href="common/zoomableSunburst.css">
-        <link rel="stylesheet" href="common/events.css">
-        <link rel="stylesheet" href="common/weightedTimeline.css">
-        <link rel="stylesheet" href="common/badJobs.css">
+  <head>
+    <meta charset="utf-8" />
+    <title>buildviz</title>
+    <link rel="stylesheet" href="common/base.css" />
+    <link rel="stylesheet" href="common/tooltip.css" />
+    <link rel="stylesheet" href="common/timespanSelection.css" />
+    <link rel="stylesheet" href="common/graphDescription.css" />
+    <link rel="stylesheet" href="common/graphFactory.css" />
+    <link rel="stylesheet" href="common/zoomableSunburst.css" />
+    <link rel="stylesheet" href="common/events.css" />
+    <link rel="stylesheet" href="common/weightedTimeline.css" />
+    <link rel="stylesheet" href="common/badJobs.css" />
 
-        <link rel="stylesheet" href="status.css">
+    <link rel="stylesheet" href="status.css" />
 
-        <link rel="stylesheet" href="graphs/failPhases.css">
-        <link rel="stylesheet" href="graphs/averageJobRuntime.css">
+    <link rel="stylesheet" href="graphs/failPhases.css" />
+    <link rel="stylesheet" href="graphs/averageJobRuntime.css" />
 
-        <style>
-            body {
-                display: flex;
-                flex-wrap: wrap;
-            }
-            header {
-                width: 100%;
-            }
-            .graphGroup {
-                font-size: 0rem; /* work around 2x 50% containers not fitting in together */
-                margin-bottom: 20px;
-                width: 100%;
-                margin: 5px 0 15px;
-            }
-            .graphGroup > h1 {
-                display: block;
-                color: lightgray;
-                font-size: 0.8rem;
-                margin: 0 10px 2px 10px;
-                letter-spacing: 0.08em;
-                font-weight: normal;
-                border-bottom: 1px solid currentColor;
-            }
-            .graph {
-                width: 50%;
-                display: inline-block;
-            }
-            @media (min-width: 1400px) {
-                .graph {
-                    width: 33.33%;
-                }
-            }
-            @media (min-width: 1900px) {
-                .graph {
-                    width: 25%;
-                }
-            }
-        </style>
-    </head>
-    <body>
-        <script src="node_modules/d3/d3.min.js"></script>
-        <script src="node_modules/moment/moment.js"></script>
-        <script src="node_modules/moment-duration-format/lib/moment-duration-format.js"></script>
+    <style>
+      body {
+        display: flex;
+        flex-wrap: wrap;
+      }
+      header {
+        width: 100%;
+      }
+      .graphGroup {
+        font-size: 0rem; /* work around 2x 50% containers not fitting in together */
+        margin-bottom: 20px;
+        width: 100%;
+        margin: 5px 0 15px;
+      }
+      .graphGroup > h1 {
+        display: block;
+        color: lightgray;
+        font-size: 0.8rem;
+        margin: 0 10px 2px 10px;
+        letter-spacing: 0.08em;
+        font-weight: normal;
+        border-bottom: 1px solid currentColor;
+      }
+      .graph {
+        width: 50%;
+        display: inline-block;
+      }
+      @media (min-width: 1400px) {
+        .graph {
+          width: 33.33%;
+        }
+      }
+      @media (min-width: 1900px) {
+        .graph {
+          width: 25%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <script src="vendor/d3.min.js"></script>
+    <script src="vendor/moment.js"></script>
+    <script src="vendor/moment-duration-format.js"></script>
 
-        <script src="common/tooltip.js"></script>
-        <script src="common/timespanSelection.js"></script>
-        <script src="common/graphDescription.js"></script>
-        <script src="common/graphFactory.js"></script>
-        <script src="common/utils.js"></script>
-        <script src="common/jobColors.js"></script>
-        <script src="common/zoomableSunburst.js"></script>
-        <script src="common/badJobs.js"></script>
-        <script src="common/events.js"></script>
-        <script src="common/weightedTimeline.js"></script>
-        <script src="common/dataSource.js"></script>
+    <script src="common/tooltip.js"></script>
+    <script src="common/timespanSelection.js"></script>
+    <script src="common/graphDescription.js"></script>
+    <script src="common/graphFactory.js"></script>
+    <script src="common/utils.js"></script>
+    <script src="common/jobColors.js"></script>
+    <script src="common/zoomableSunburst.js"></script>
+    <script src="common/badJobs.js"></script>
+    <script src="common/events.js"></script>
+    <script src="common/weightedTimeline.js"></script>
+    <script src="common/dataSource.js"></script>
 
-        <script src="status.js"></script>
+    <script src="status.js"></script>
 
-        <section class="graphGroup">
-            <h1>Runtime</h1>
-            <script src="graphs/pipelineRuntime.js"></script>
-            <script src="graphs/builds.js"></script>
-            <script src="graphs/averageJobRuntime.js"></script>
-            <script src="graphs/averageTestRuntime.js"></script>
-            <script src="graphs/slowestTests.js"></script>
-            <script src="graphs/jobWaitTimes.js"></script>
-        </section>
+    <section class="graphGroup">
+      <h1>Runtime</h1>
+      <script src="graphs/pipelineRuntime.js"></script>
+      <script src="graphs/builds.js"></script>
+      <script src="graphs/averageJobRuntime.js"></script>
+      <script src="graphs/averageTestRuntime.js"></script>
+      <script src="graphs/slowestTests.js"></script>
+      <script src="graphs/jobWaitTimes.js"></script>
+    </section>
 
-        <section class="graphGroup">
-            <h1>Failures</h1>
-            <script src="graphs/failPhases.js"></script>
-            <script src="graphs/failedBuilds.js"></script>
-            <script src="graphs/mostFrequentlyFailingTests.js"></script>
-        </section>
+    <section class="graphGroup">
+      <h1>Failures</h1>
+      <script src="graphs/failPhases.js"></script>
+      <script src="graphs/failedBuilds.js"></script>
+      <script src="graphs/mostFrequentlyFailingTests.js"></script>
+    </section>
 
-        <section class="graphGroup">
-            <h1>Stability</h1>
-            <script src="graphs/flakyBuilds.js"></script>
-            <script src="graphs/flakyTests.js"></script>
-        </section>
-    </body>
+    <section class="graphGroup">
+      <h1>Stability</h1>
+      <script src="graphs/flakyBuilds.js"></script>
+      <script src="graphs/flakyTests.js"></script>
+    </section>
+  </body>
 </html>

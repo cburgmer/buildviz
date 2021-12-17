@@ -4,15 +4,20 @@ set -e
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 readonly SCRIPT_DIR
 
+goal_install() {
+    npm i
+    ./lein deps
+}
+
 goal_prettier() {
-    ./lein npm run prettier
+    npm run prettier
 }
 
 goal_lint() {
-    find "$SCRIPT_DIR" -name "*.sh" -not -path "${SCRIPT_DIR}/test/node_modules/*" -exec shellcheck {} +
+    find "$SCRIPT_DIR" -name "*.sh" -not -path "${SCRIPT_DIR}/node_modules/*" -exec shellcheck {} +
     shellcheck "$SCRIPT_DIR"/go
 
-    ./lein npm run lint
+    npm run lint
 }
 
 goal_test_unit() {
@@ -63,9 +68,9 @@ goal_make_release() {
         sed -i "" "s/buildviz \"$OLD_VERSION\"/buildviz \"$NEW_VERSION\"/" project.clj
 
         # shellcheck disable=SC1010
-        ./lein do deps # force package-lock.json to be updated now
+        goal_install # force package-lock.json to be updated now
 
-        git add README.md project.clj resources/public/package-lock.json
+        git add README.md project.clj package-lock.json
         git commit -m "Bump version"
 
         ./lein clean

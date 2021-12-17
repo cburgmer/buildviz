@@ -1,80 +1,86 @@
-<!doctype html>
-<meta charset="utf-8">
-<link rel="stylesheet" href="../../resources/public/common/base.css">
-<link rel="stylesheet" href="../../resources/public/common/tooltip.css">
-<link rel="stylesheet" href="../../resources/public/common/timespanSelection.css">
-<link rel="stylesheet" href="../../resources/public/common/graphDescription.css">
-<link rel="stylesheet" href="../../resources/public/common/graphFactory.css">
-<link rel="stylesheet" href="../../resources/public/common/events.css">
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../../resources/public/common/base.css" />
+<link rel="stylesheet" href="../../resources/public/common/tooltip.css" />
+<link
+  rel="stylesheet"
+  href="../../resources/public/common/timespanSelection.css"
+/>
+<link
+  rel="stylesheet"
+  href="../../resources/public/common/graphDescription.css"
+/>
+<link rel="stylesheet" href="../../resources/public/common/graphFactory.css" />
+<link rel="stylesheet" href="../../resources/public/common/events.css" />
 <body>
-    <script>
-     const dataSource = {
-         load: function (_, callback) {
-             callback([
-                 {
-                     job: "myJob",
-                     buildId: "30",
-                     start: 1443996000000,
-                     waitTime: 40000,
-                     triggeredBy: {job: "test", buildId: "10"}
-                 },
-                 {
-                     job: "someJob",
-                     buildId: "42",
-                     start: 1441058400000,
-                     waitTime: 30000,
-                     triggeredBy: {job: "test", buildId: "10"}
-                 },
-                 {
-                     job: "someJob",
-                     buildId: "43",
-                     start: 1443650400000,
-                     waitTime: 15000,
-                     triggeredBy: {job: "test", buildId: "10"}
-                 },
-                 {
-                     job: "someJob",
-                     buildId: "44",
-                     start: 1443996000000,
-                     waitTime: 10000,
-                     triggeredBy: {job: "test", buildId: "10"}
-                 },
-                 {
-                     job: "anotherJob",
-                     buildId: "1",
-                     start: 1441058400000,
-                     waitTime: 20000,
-                     triggeredBy: {job: "test", buildId: "10"}
-                 },
-                 {
-                     job: "anotherJob",
-                     buildId: "2",
-                     start: 1446850800000,
-                     waitTime: 2345,
-                     triggeredBy: {job: "test", buildId: "10"}
-                 },
-                 {
-                     job: "anotherJob",
-                     buildId: "20",
-                     start: 1446851800000,
-                     waitTime: 4000,
-                     triggeredBy: {job: "test", buildId: "10"}
-                 }
-             ]);
-         }
-     };
-    </script>
-    <script src="../../resources/public/node_modules/d3/d3.min.js"></script>
-    <script src="../../resources/public/common/tooltip.js"></script>
-    <script src="../../resources/public/common/graphFactory.js"></script>
-    <script src="../../resources/public/common/timespanSelection.js"></script>
-    <script src="../../resources/public/common/graphDescription.js"></script>
-    <script src="../../resources/public/common/utils.js"></script>
-    <script src="../../resources/public/common/jobColors.js"></script>
-    <script src="../../resources/public/common/events.js"></script>
-    <script src="testHelpers.js"></script>
-    <script>
-     testHelpers.mockDateToday('2015-10-18');
-    </script>
-    <script src="../../resources/public/graphs/jobWaitTimes.js"></script>
+  <script>
+    const dataSource = {
+      load: function (_, callback) {
+        callback([
+          {
+            job: "myJob",
+            buildId: "30",
+            start: 1443996000000,
+            waitTime: 40000,
+            triggeredBy: { job: "test", buildId: "10" },
+          },
+          {
+            job: "someJob",
+            buildId: "42",
+            start: 1441058400000,
+            waitTime: 30000,
+            triggeredBy: { job: "test", buildId: "10" },
+          },
+          {
+            job: "someJob",
+            buildId: "43",
+            start: 1443650400000,
+            waitTime: 15000,
+            triggeredBy: { job: "test", buildId: "10" },
+          },
+          {
+            job: "someJob",
+            buildId: "44",
+            start: 1443996000000,
+            waitTime: 10000,
+            triggeredBy: { job: "test", buildId: "10" },
+          },
+          {
+            job: "anotherJob",
+            buildId: "1",
+            start: 1441058400000,
+            waitTime: 20000,
+            triggeredBy: { job: "test", buildId: "10" },
+          },
+          {
+            job: "anotherJob",
+            buildId: "2",
+            start: 1446850800000,
+            waitTime: 2345,
+            triggeredBy: { job: "test", buildId: "10" },
+          },
+          {
+            job: "anotherJob",
+            buildId: "20",
+            start: 1446851800000,
+            waitTime: 4000,
+            triggeredBy: { job: "test", buildId: "10" },
+          },
+        ]);
+      },
+    };
+  </script>
+  <script src="../../resources/public/vendor/d3.min.js"></script>
+  <script src="../../resources/public/common/tooltip.js"></script>
+  <script src="../../resources/public/common/graphFactory.js"></script>
+  <script src="../../resources/public/common/timespanSelection.js"></script>
+  <script src="../../resources/public/common/graphDescription.js"></script>
+  <script src="../../resources/public/common/utils.js"></script>
+  <script src="../../resources/public/common/jobColors.js"></script>
+  <script src="../../resources/public/common/events.js"></script>
+  <script src="testHelpers.js"></script>
+  <script>
+    testHelpers.mockDateToday("2015-10-18");
+  </script>
+  <script src="../../resources/public/graphs/jobWaitTimes.js"></script>
 </body>

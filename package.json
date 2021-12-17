@@ -1,0 +1,23 @@
+{
+  "name": "buildviz-frontend",
+  "version": "1.0.0",
+  "description": "Transparency for your build pipeline's results and runtime.",
+  "scripts": {
+    "build": "mkdir -p ./resources/public/vendor && cp node_modules/d3/d3.min.js node_modules/moment/moment.js node_modules/moment-duration-format/lib/moment-duration-format.js ./resources/public/vendor",
+    "lint": "jshint ./resources/public/common ./resources/public/graphs",
+    "prettier": "prettier --write --tab-width 4 './resources/public/common/*.js' './resources/public/graphs/*.js'",
+    "ui_tests": "echo 'Please go to http://localhost:8000/test/RegressionRunner.html' && http-server -p 8000 -a 127.0.0.1"
+  },
+  "license": "BSD-2-Clause",
+  "devDependencies": {
+    "jshint": "^2.13.1",
+    "prettier": "^2.5.1",
+    "http-server": "^14.0.0",
+    "csscritic": "^2.0.0"
+  },
+  "dependencies": {
+    "d3": "^3.5.17",
+    "moment": "^2.29.1",
+    "moment-duration-format": "^2.3.2"
+  }
+}

@@ -1,17 +1,17 @@
-<!doctype html>
-<meta charset="utf-8">
-<link rel="stylesheet" href="../../resources/public/common/base.css">
-<link rel="stylesheet" href="../../resources/public/common/graphFactory.css">
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../../resources/public/common/base.css" />
+<link rel="stylesheet" href="../../resources/public/common/graphFactory.css" />
 <body>
-    <script src="../../resources/public/node_modules/d3/d3.min.js"></script>
-    <script src="../../resources/public/common/graphFactory.js"></script>
-    <script>
-        const graph = graphFactory.create({
-            id: 'someId',
-            headline: "Some headline",
-            csvUrl: "/someUrl",
-            noDataReason: "..."
-        });
-        graph.loading();
-    </script>
+  <script src="../../resources/public/vendor/d3.min.js"></script>
+  <script src="../../resources/public/common/graphFactory.js"></script>
+  <script>
+    const graph = graphFactory.create({
+      id: "someId",
+      headline: "Some headline",
+      csvUrl: "/someUrl",
+      noDataReason: "...",
+    });
+    graph.loading();
+  </script>
 </body>

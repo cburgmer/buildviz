@@ -1,248 +1,247 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Regression Runner</title>
-        <meta charset="utf-8"/>
+  <head>
+    <title>Regression Runner</title>
+    <meta charset="utf-8" />
 
-        <script src="node_modules/csscritic/csscritic.js"></script>
+    <script src="../node_modules/csscritic/csscritic.js"></script>
 
-        <script>
-         window.onload = function() {
-             csscritic
-                 .addReporter(csscritic.NiceReporter())
-                 .component('Status')
-                 .add({
-                     desc: 'should show the header',
-                     url: 'ui/status.html',
-                     width: 800
-                 })
-                 .add({
-                     desc: 'should show help',
-                     url: 'ui/statusWithHelp.html',
-                     width: 1300
-                 })
-                 .add({
-                     desc: 'should show pipeline name',
-                     url: 'ui/statusWithPipelineName.html',
-                     width: 800
-                 })
-                 .component('Graph')
-                 .add({
-                     desc: 'should show a loading animation',
-                     url: 'ui/graphLoading.html',
-                     width: 400
-                 })
-                 .component('Average job runtime')
-                 .add({
-                     desc: "should render jobs correctly",
-                     url: 'ui/averageJobRuntime.html',
-                     width: 400
-                 })
-                 .add({
-                     desc: "should highlight selected job",
-                     url: 'ui/averageJobRuntimeSelectedJob.html',
-                     width: 400
-                 })
-                 .add({
-                     desc: "should show 'no data'",
-                     url: 'ui/averageJobRuntimeEmpty.html',
-                     width: 400
-                 })
-                 .add({
-                     desc: "should show desc",
-                     url: 'ui/averageJobRuntimeEmpty.html',
-                     hover: '.graphDescription',
-                     width: 400
-                 })
-                 .component('Builds')
-                 .add({
-                     desc: 'should show builds',
-                     url: 'ui/builds.html',
-                     width: 400
-                 })
-                 .add({
-                     desc: 'should highlight builds of one selected job',
-                     url: 'ui/buildsSelectedJob.html',
-                     width: 400
-                 })
-                 .add({
-                     desc: 'should show empty builds',
-                     url: 'ui/buildsEmpty.html',
-                     width: 400
-                 })
-                 .component('Pipeline runtime')
-                 .add({
-                     desc: 'should render pipeline runtime',
-                     url: 'ui/pipelineRuntime.html',
-                     width: 400
-                 })
-                 .add({
-                     desc: 'should render tooltip',
-                     url: 'ui/pipelineRuntimeTooltip.html',
-                     width: 400
-                 })
-                 .add({
-                     desc: "should show 'no data'",
-                     url: 'ui/pipelineRuntimeEmpty.html',
-                     width: 400
-                 })
-                 .component('Job wait times')
-                 .add({
-                     desc: 'should render build wait times',
-                     url: 'ui/waitTimes.html',
-                     width: 400
-                 })
-                 .add({
-                     desc: 'should highlight wait times of selected job',
-                     url: 'ui/waitTimesSelectedJob.html',
-                     width: 400
-                 })
-                 .add({
-                     desc: 'should show a tooltip',
-                     url: 'ui/waitTimesTooltip.html',
-                     width: 400
-                 })
-                 .component('Slowest tests')
-                 .add({
-                     desc: 'should render slowest tests',
-                     url: 'ui/slowestTests.html',
-                     width: 400
-                 })
-                 .add({
-                     desc: 'should highlight selected job',
-                     url: 'ui/slowestTestsSelectedJob.html',
-                     width: 400
-                 })
-                 .component('Most frequently failing tests')
-                 .add({
-                     desc: 'should render most frequently failing tests',
-                     url: 'ui/mostFrequentlyFailingTests.html',
-                     width: 400
-                 })
-                 .add({
-                     desc: 'should highlight selected job',
-                     url: 'ui/mostFrequentlyFailingTestsSelectedJob.html',
-                     width: 400
-                 })
-                 .component('Average test runtime')
-                 .add({
-                     desc: "should render classes correctly",
-                     url: 'ui/averageTestRuntime.html',
-                     width: 400
-                 })
-                 .add({
-                     desc: "should highlight selected job",
-                     url: 'ui/averageTestRuntimeSelectedJob.html',
-                     width: 400
-                 })
-                 .add({
-                     desc: "should show 'no data'",
-                     url: 'ui/averageTestRuntimeEmpty.html',
-                     width: 400
-                 })
-                 .add({
-                     desc: "should show desc",
-                     url: 'ui/averageTestRuntimeEmpty.html',
-                     hover: '.graphDescription',
-                     width: 400
-                 })
-                 .component('Top 5 failed builds')
-                 .add({
-                     desc: "should render builds correctly",
-                     url: 'ui/failedBuilds.html',
-                     width: 400
-                 })
-                 .add({
-                     desc: "should show 'no data'",
-                     url: 'ui/failedBuildsEmpty.html',
-                     width: 400
-                 })
-                 .add({
-                     desc: "should show desc",
-                     url: 'ui/failedBuildsEmpty.html',
-                     hover: '.graphDescription',
-                     width: 400
-                 })
-                 .add({
-                     desc: "should show 5 builds even if one build does not include failed count",
-                     url: 'ui/failedBuildsNoOutcomes.html',
-                     width: 400
-                 })
-                 .add({
-                     desc: "should highlight selected job",
-                     url: 'ui/failedJobsSelectedJob.html',
-                     width: 400
-                 })
-                 .component('Fail phases')
-                 .add({
-                     desc: 'should show phases',
-                     url: 'ui/failPhases.html',
-                     width: 400
-                 })
-                 .add({
-                     desc: 'should correctly repain on timespan selection',
-                     url: 'ui/failPhasesTimespanSelection.html',
-                     width: 400
-                 })
-                 .add({
-                     desc: "should show description",
-                     hover: '.graphDescription',
-                     url: 'ui/failPhasesEmpty.html',
-                     width: 400
-                 })
-                 .add({
-                     desc: 'should show tooltip',
-                     url: 'ui/failPhasesTooltip.html',
-                     width: 400
-                 })
-                 .component('Top 5 flaky builds')
-                 .add({
-                     desc: "should render builds correctly",
-                     url: 'ui/flakyBuilds.html',
-                     width: 400
-                 })
-                 .add({
-                     desc: "should show 'no data'",
-                     url: 'ui/flakyBuildsEmpty.html',
-                     width: 400
-                 })
-                 .add({
-                     desc: "should show description",
-                     url: 'ui/flakyBuildsEmpty.html',
-                     hover: '.graphDescription',
-                     width: 400
-                 })
-                 .add({
-                     desc: "should highlight selected job",
-                     url: 'ui/flakyBuildsSelectedJob.html',
-                     width: 400
-                 })
-                 .component('Flaky tests')
-                 .add({
-                     desc: "should show flaky tests",
-                     url: 'ui/flakyTests.html',
-                     width: 400
-                 })
-                 .add({
-                     desc: "should show tooltip",
-                     url: 'ui/flakyTestsTooltip.html',
-                     width: 400
-                 })
-                 .add({
-                     desc: "should show description",
-                     url: 'ui/flakyTestsEmpty.html',
-                     hover: '.graphDescription',
-                     width: 400
-                 })
-                 .add({
-                     desc: "should highlight selected job",
-                     url: 'ui/flakyTestsSelectedJob.html',
-                     width: 400
-                 })
-                 .execute();
-         };
-        </script>
-</head>
-<body>
-</body>
+    <script>
+      window.onload = function () {
+        csscritic
+          .addReporter(csscritic.NiceReporter())
+          .component("Status")
+          .add({
+            desc: "should show the header",
+            url: "ui/status.html",
+            width: 800,
+          })
+          .add({
+            desc: "should show help",
+            url: "ui/statusWithHelp.html",
+            width: 1300,
+          })
+          .add({
+            desc: "should show pipeline name",
+            url: "ui/statusWithPipelineName.html",
+            width: 800,
+          })
+          .component("Graph")
+          .add({
+            desc: "should show a loading animation",
+            url: "ui/graphLoading.html",
+            width: 400,
+          })
+          .component("Average job runtime")
+          .add({
+            desc: "should render jobs correctly",
+            url: "ui/averageJobRuntime.html",
+            width: 400,
+          })
+          .add({
+            desc: "should highlight selected job",
+            url: "ui/averageJobRuntimeSelectedJob.html",
+            width: 400,
+          })
+          .add({
+            desc: "should show 'no data'",
+            url: "ui/averageJobRuntimeEmpty.html",
+            width: 400,
+          })
+          .add({
+            desc: "should show desc",
+            url: "ui/averageJobRuntimeEmpty.html",
+            hover: ".graphDescription",
+            width: 400,
+          })
+          .component("Builds")
+          .add({
+            desc: "should show builds",
+            url: "ui/builds.html",
+            width: 400,
+          })
+          .add({
+            desc: "should highlight builds of one selected job",
+            url: "ui/buildsSelectedJob.html",
+            width: 400,
+          })
+          .add({
+            desc: "should show empty builds",
+            url: "ui/buildsEmpty.html",
+            width: 400,
+          })
+          .component("Pipeline runtime")
+          .add({
+            desc: "should render pipeline runtime",
+            url: "ui/pipelineRuntime.html",
+            width: 400,
+          })
+          .add({
+            desc: "should render tooltip",
+            url: "ui/pipelineRuntimeTooltip.html",
+            width: 400,
+          })
+          .add({
+            desc: "should show 'no data'",
+            url: "ui/pipelineRuntimeEmpty.html",
+            width: 400,
+          })
+          .component("Job wait times")
+          .add({
+            desc: "should render build wait times",
+            url: "ui/waitTimes.html",
+            width: 400,
+          })
+          .add({
+            desc: "should highlight wait times of selected job",
+            url: "ui/waitTimesSelectedJob.html",
+            width: 400,
+          })
+          .add({
+            desc: "should show a tooltip",
+            url: "ui/waitTimesTooltip.html",
+            width: 400,
+          })
+          .component("Slowest tests")
+          .add({
+            desc: "should render slowest tests",
+            url: "ui/slowestTests.html",
+            width: 400,
+          })
+          .add({
+            desc: "should highlight selected job",
+            url: "ui/slowestTestsSelectedJob.html",
+            width: 400,
+          })
+          .component("Most frequently failing tests")
+          .add({
+            desc: "should render most frequently failing tests",
+            url: "ui/mostFrequentlyFailingTests.html",
+            width: 400,
+          })
+          .add({
+            desc: "should highlight selected job",
+            url: "ui/mostFrequentlyFailingTestsSelectedJob.html",
+            width: 400,
+          })
+          .component("Average test runtime")
+          .add({
+            desc: "should render classes correctly",
+            url: "ui/averageTestRuntime.html",
+            width: 400,
+          })
+          .add({
+            desc: "should highlight selected job",
+            url: "ui/averageTestRuntimeSelectedJob.html",
+            width: 400,
+          })
+          .add({
+            desc: "should show 'no data'",
+            url: "ui/averageTestRuntimeEmpty.html",
+            width: 400,
+          })
+          .add({
+            desc: "should show desc",
+            url: "ui/averageTestRuntimeEmpty.html",
+            hover: ".graphDescription",
+            width: 400,
+          })
+          .component("Top 5 failed builds")
+          .add({
+            desc: "should render builds correctly",
+            url: "ui/failedBuilds.html",
+            width: 400,
+          })
+          .add({
+            desc: "should show 'no data'",
+            url: "ui/failedBuildsEmpty.html",
+            width: 400,
+          })
+          .add({
+            desc: "should show desc",
+            url: "ui/failedBuildsEmpty.html",
+            hover: ".graphDescription",
+            width: 400,
+          })
+          .add({
+            desc: "should show 5 builds even if one build does not include failed count",
+            url: "ui/failedBuildsNoOutcomes.html",
+            width: 400,
+          })
+          .add({
+            desc: "should highlight selected job",
+            url: "ui/failedJobsSelectedJob.html",
+            width: 400,
+          })
+          .component("Fail phases")
+          .add({
+            desc: "should show phases",
+            url: "ui/failPhases.html",
+            width: 400,
+          })
+          .add({
+            desc: "should correctly repain on timespan selection",
+            url: "ui/failPhasesTimespanSelection.html",
+            width: 400,
+          })
+          .add({
+            desc: "should show description",
+            hover: ".graphDescription",
+            url: "ui/failPhasesEmpty.html",
+            width: 400,
+          })
+          .add({
+            desc: "should show tooltip",
+            url: "ui/failPhasesTooltip.html",
+            width: 400,
+          })
+          .component("Top 5 flaky builds")
+          .add({
+            desc: "should render builds correctly",
+            url: "ui/flakyBuilds.html",
+            width: 400,
+          })
+          .add({
+            desc: "should show 'no data'",
+            url: "ui/flakyBuildsEmpty.html",
+            width: 400,
+          })
+          .add({
+            desc: "should show description",
+            url: "ui/flakyBuildsEmpty.html",
+            hover: ".graphDescription",
+            width: 400,
+          })
+          .add({
+            desc: "should highlight selected job",
+            url: "ui/flakyBuildsSelectedJob.html",
+            width: 400,
+          })
+          .component("Flaky tests")
+          .add({
+            desc: "should show flaky tests",
+            url: "ui/flakyTests.html",
+            width: 400,
+          })
+          .add({
+            desc: "should show tooltip",
+            url: "ui/flakyTestsTooltip.html",
+            width: 400,
+          })
+          .add({
+            desc: "should show description",
+            url: "ui/flakyTestsEmpty.html",
+            hover: ".graphDescription",
+            width: 400,
+          })
+          .add({
+            desc: "should highlight selected job",
+            url: "ui/flakyTestsSelectedJob.html",
+            width: 400,
+          })
+          .execute();
+      };
+    </script>
+  </head>
+  <body></body>
 </html>

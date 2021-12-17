@@ -21,16 +21,7 @@
                  [intervox/clj-progress "0.2.1"]
                  [uritemplate-clj "1.3.0"]
                  [wharf "0.2.0-20141115.032457-2"]]
-  :plugins [[lein-ring "0.12.5"]
-            [lein-npm "0.6.2"]]
-  :npm {:dependencies [[d3 "3.5.5"]
-                       [moment "2.22.2"]
-                       [moment-duration-format "2.2.2"]]
-        :devDependencies [[jshint "2.13.1"
-                           prettier "2.5.1"]]
-        :package {:scripts {:lint "jshint ./common ./graphs"
-                            :prettier "prettier --write --tab-width 4 './common/*.js' './graphs/*.js'"}}
-        :root "resources/public"}
+  :plugins [[lein-ring "0.12.5"]]
   :ring {:handler buildviz.main/app
          :init buildviz.main/help}
   :aot [buildviz.go.sync

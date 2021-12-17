@@ -1,23 +1,23 @@
-<!doctype html>
-<meta charset="utf-8">
-<link rel="stylesheet" href="../../resources/public/common/base.css">
-<link rel="stylesheet" href="../../resources/public/common/graphFactory.css">
-<link rel="stylesheet" href="../../resources/public/status.css">
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../../resources/public/common/base.css" />
+<link rel="stylesheet" href="../../resources/public/common/graphFactory.css" />
+<link rel="stylesheet" href="../../resources/public/status.css" />
 <body>
-    <script>
-        const dataSource = {
-            load: function (_, callback) {
-                callback({
-                    totalBuildCount: 42,
-                    latestBuildStart: +Date.now() - 24 * 60 * 60 * 1000,
-                    earliestBuildStart: +Date.now() - 8 * 24 * 60 * 60 * 1000,
-                    pipelineName: 'The Pipeline'
-                });
-            }
-        };
-    </script>
-    <script src="../../resources/public/node_modules/d3/d3.min.js"></script>
-    <script src="../../resources/public/node_modules/moment/moment.js"></script>
-    <script src="../../resources/public/node_modules/moment-duration-format/lib/moment-duration-format.js"></script>
-    <script src="../../resources/public/status.js"></script>
+  <script>
+    const dataSource = {
+      load: function (_, callback) {
+        callback({
+          totalBuildCount: 42,
+          latestBuildStart: +Date.now() - 24 * 60 * 60 * 1000,
+          earliestBuildStart: +Date.now() - 8 * 24 * 60 * 60 * 1000,
+          pipelineName: "The Pipeline",
+        });
+      },
+    };
+  </script>
+  <script src="../../resources/public/vendor/d3.min.js"></script>
+  <script src="../../resources/public/vendor/moment.js"></script>
+  <script src="../../resources/public/vendor/moment-duration-format.js"></script>
+  <script src="../../resources/public/status.js"></script>
 </body>

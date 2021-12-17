@@ -1,65 +1,79 @@
-<!doctype html>
-<meta charset="utf-8">
-<link rel="stylesheet" href="../../resources/public/common/base.css">
-<link rel="stylesheet" href="../../resources/public/common/tooltip.css">
-<link rel="stylesheet" href="../../resources/public/common/timespanSelection.css">
-<link rel="stylesheet" href="../../resources/public/common/graphDescription.css">
-<link rel="stylesheet" href="../../resources/public/common/graphFactory.css">
-<link rel="stylesheet" href="../../resources/public/graphs/failPhases.css">
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../../resources/public/common/base.css" />
+<link rel="stylesheet" href="../../resources/public/common/tooltip.css" />
+<link
+  rel="stylesheet"
+  href="../../resources/public/common/timespanSelection.css"
+/>
+<link
+  rel="stylesheet"
+  href="../../resources/public/common/graphDescription.css"
+/>
+<link rel="stylesheet" href="../../resources/public/common/graphFactory.css" />
+<link rel="stylesheet" href="../../resources/public/graphs/failPhases.css" />
 <body>
-    <script>
-        const dataSource = {
-            load: function (_, callback) {
-                callback([{
-                    start: 1445080343000,
-                    end: 1445081343000,
-                    status: 'fail',
-                    culprits: ['failingJob']
-                }, {
-                    start: 1445081343000,
-                    end: 1445084343000,
-                    status: 'pass'
-                },{
-                    start: 1445084343000,
-                    end: 1445098343000,
-                    status: 'fail',
-                    culprits: ['anotherFailingJob']
-                }, {
-                    start: 1445098343000,
-                    end: 1445124343000,
-                    status: 'pass'
-                }, {
-                    start: 1445124343000,
-                    end: 1445158343000,
-                    status: 'fail',
-                    culprits: ['failingJob']
-                }, {
-                    start: 1445158343000,
-                    end: 1445178343000,
-                    status: 'pass'
-                }, {
-                    start: 1445178343000,
-                    end: 1445182343000,
-                    status: 'fail',
-                    culprits: ['failingJob', 'anotherFailingJob'],
-                    ongoingCulprits: ['failingJob']
-                }]);
-            }
-        };
-    </script>
-    <script src="../../resources/public/node_modules/d3/d3.min.js"></script>
-    <script src="../../resources/public/common/tooltip.js"></script>
-    <script src="../../resources/public/common/timespanSelection.js"></script>
-    <script src="../../resources/public/common/graphDescription.js"></script>
-    <script src="../../resources/public/common/graphFactory.js"></script>
-    <script src="../../resources/public/common/utils.js"></script>
-    <script src="../../resources/public/common/jobColors.js"></script>
-    <script src="testHelpers.js"></script>
-    <script>
-        testHelpers.mockDateToday('2015-10-31');
-    </script>
-    <script src="../../resources/public/graphs/failPhases.js"></script>
-    <script>
-        testHelpers.hoverOver(document.querySelector('rect.red'));
-    </script>
+  <script>
+    const dataSource = {
+      load: function (_, callback) {
+        callback([
+          {
+            start: 1445080343000,
+            end: 1445081343000,
+            status: "fail",
+            culprits: ["failingJob"],
+          },
+          {
+            start: 1445081343000,
+            end: 1445084343000,
+            status: "pass",
+          },
+          {
+            start: 1445084343000,
+            end: 1445098343000,
+            status: "fail",
+            culprits: ["anotherFailingJob"],
+          },
+          {
+            start: 1445098343000,
+            end: 1445124343000,
+            status: "pass",
+          },
+          {
+            start: 1445124343000,
+            end: 1445158343000,
+            status: "fail",
+            culprits: ["failingJob"],
+          },
+          {
+            start: 1445158343000,
+            end: 1445178343000,
+            status: "pass",
+          },
+          {
+            start: 1445178343000,
+            end: 1445182343000,
+            status: "fail",
+            culprits: ["failingJob", "anotherFailingJob"],
+            ongoingCulprits: ["failingJob"],
+          },
+        ]);
+      },
+    };
+  </script>
+  <script src="../../resources/public/vendor/d3.min.js"></script>
+  <script src="../../resources/public/common/tooltip.js"></script>
+  <script src="../../resources/public/common/timespanSelection.js"></script>
+  <script src="../../resources/public/common/graphDescription.js"></script>
+  <script src="../../resources/public/common/graphFactory.js"></script>
+  <script src="../../resources/public/common/utils.js"></script>
+  <script src="../../resources/public/common/jobColors.js"></script>
+  <script src="testHelpers.js"></script>
+  <script>
+    testHelpers.mockDateToday("2015-10-31");
+  </script>
+  <script src="../../resources/public/graphs/failPhases.js"></script>
+  <script>
+    testHelpers.hoverOver(document.querySelector("rect.red"));
+  </script>
 </body>
