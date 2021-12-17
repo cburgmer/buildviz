@@ -31,7 +31,8 @@
   :profiles {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
                                   [ring-mock "0.1.5"]
                                   [clj-http-fake "1.0.3"]]
-                   :plugins [[lein-ancient "1.0.0-RC3"]]}
+                   :plugins [[lein-ancient "1.0.0-RC3"]
+                             [lein-nvd "1.9.0"]]}
              :test {:resource-paths ["test/resources"]}}
   :jvm-opts ["-Dclojure.tools.logging.factory=clojure.tools.logging.impl/log4j2-factory"
              "--illegal-access=deny"]) ; https://clojure.org/guides/faq#illegal_access

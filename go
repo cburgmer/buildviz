@@ -43,11 +43,17 @@ goal_test_example() {
     yes | "${SCRIPT_DIR}/examples/runSeedDataExample.sh"
 }
 
+goal_audit() {
+    npm audit --production
+    "${SCRIPT_DIR}/lein" nvd check
+}
+
 goal_test() {
     goal_lint
     goal_test_unit
     goal_test_integration
     goal_test_example
+    goal_audit
 }
 
 goal_make_release() {
