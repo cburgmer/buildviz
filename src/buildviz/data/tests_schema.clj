@@ -18,7 +18,7 @@
 
 (defn tests-validation-errors [test-results]
   (try
-    (schema/validate tests-schema (apply vector test-results)) ; https://github.com/luposlip/json-schema/issues/7
+    (schema/validate tests-schema test-results)
     (list)
     (catch ExceptionInfo e
       (:errors (ex-data e)))))

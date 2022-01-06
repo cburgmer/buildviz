@@ -12,7 +12,7 @@
                  [ring/ring-json "0.5.1"]
                  [ring-middleware-accept "2.0.3"]
                  [compojure "1.6.2"]
-                 [luposlip/json-schema "0.3.2"]
+                 [luposlip/json-schema "0.3.3"]
                  [clj-http "3.12.3"]
                  [clj-time "0.15.2"]
                  [cheshire "5.10.1"]
