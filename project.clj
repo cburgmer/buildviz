@@ -4,9 +4,9 @@
   :license {:name "BSD 2-Clause"
             :url "http://opensource.org/licenses/BSD-2-Clause"}
   :dependencies [[org.clojure/clojure "1.10.3"]
-                 [org.clojure/tools.logging "1.2.2"]
-                 [org.apache.logging.log4j/log4j-api "2.16.0"]
-                 [org.apache.logging.log4j/log4j-core "2.16.0"]
+                 [org.clojure/tools.logging "1.2.4"]
+                 [org.apache.logging.log4j/log4j-api "2.17.1"]
+                 [org.apache.logging.log4j/log4j-core "2.17.1"]
                  [ring/ring-core "1.9.4"]
                  [ring/ring-jetty-adapter "1.9.4"]
                  [ring/ring-json "0.5.1"]
@@ -19,7 +19,7 @@
                  [org.clojure/data.xml "0.0.8"]
                  [org.clojure/tools.cli "1.0.206"]
                  [intervox/clj-progress "0.2.1"]
-                 [uritemplate-clj "1.3.0"]
+                 [uritemplate-clj "1.3.1"]
                  [wharf "0.2.0-20141115.032457-2"]]
   :plugins [[lein-ring "0.12.5"]]
   :ring {:handler buildviz.main/app
