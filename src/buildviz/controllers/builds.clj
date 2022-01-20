@@ -91,11 +91,13 @@
     (results/set-tests! build-results job-name build-id (junit-xml/serialize-testsuites test-results))))
 
 (defn store-builds! [build-results body]
-  (let [builds (json/from-sequence (clojure.java.io/reader body))]
-    (if (->> builds
-             (map #(build-facts-schema/validation-errors %))
-             (remove empty?)
-             empty?)
+  (let [builds (json/from-sequence (clojure.java.io/reader body))
+        errors (->> builds
+                    (map (fn [build] {:build build
+                                      :errors (build-facts-schema/validation-errors build)}))
+                    (remove (fn [build-errors] (empty? (:errors build-errors)))))]
+    (if (empty? errors)
      (do (run! #(store-build-and-test-results! build-results %) builds)
          {:status 204})
-     {:status 400})))
+     (assoc (http/respond-with-json (first errors))
+            :status 400))))

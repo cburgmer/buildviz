@@ -216,6 +216,18 @@
     (let [response (post-request (the-app) "/builds" (json/generate-string {:jobName "abuild" :buildId "42"}) "application/x-ndjson")]
       (is (= 400 (:status response)))))
 
+  (testing "should return the first invalid build"
+    (let [response (post-request (the-app)
+                                 "/builds"
+                                 (clojure.string/join ""
+                                                      [(json/generate-string {:jobName "abuild"})
+                                                       (json/generate-string {:jobName "abuild" :buildId "42"})])
+                                 "text/plain")]
+      (is (= {:build {:jobName "abuild"}
+              :errors ["#: required key [build-id] not found"
+                       "#: required key [start] not found"]}
+             (json/parse-string (:body response) true)))))
+
   (testing "should not store the build on invalid format"
     (let [builds (atom {})
           app (the-app-with-builds builds)]
