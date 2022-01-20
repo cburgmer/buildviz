@@ -220,7 +220,18 @@
     (let [builds (atom {})
           app (the-app-with-builds builds)]
       (post-request app "/builds" (json/generate-string {:jobName "abuild" :buildId "42"}) "application/x-ndjson")
-      (is (nil? (get-in @builds ["abuild" "42"]))))))
+      (is (nil? (get-in @builds ["abuild" "42"])))))
+
+  (testing "should not store any build on invalid format"
+    (let [builds (atom {})
+          app (the-app-with-builds builds)]
+      (post-request app
+                    "/builds"
+                    (clojure.string/join ""
+                                         [(json/generate-string {:jobName "abuild" :buildId "1" :start 1453646247759})
+                                          (json/generate-string {:jobName "abuild" :buildId "42"})])
+                    "text/plain")
+      (is (empty? @builds)))))
 
 
 (deftest test-get-builds
