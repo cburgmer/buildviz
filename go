@@ -6,6 +6,7 @@ readonly SCRIPT_DIR
 
 goal_install() {
     npm i
+    npm run build
     ./lein deps
 }
 
