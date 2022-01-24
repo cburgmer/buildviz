@@ -41,22 +41,6 @@
       resp)))
 
 
-(defn- json-request? [request]
-  (when-let [type (:content-type request)]
-    (not (empty? (re-find #"^application/(vnd.+)?json" type)))))
-
-(defn- read-json [request]
-  (when (json-request? request)
-    (when-let [body (:body request)]
-      (json/from-string (slurp body)))))
-
-(defn wrap-json-body [handler]
-  (fn [request]
-    (if-let [json (read-json request)]
-      (handler (assoc request :body json))
-      (handler request))))
-
-
 (defn- ^java.util.Date date-header [response header]
   (if-let [http-date (resp/get-header response header)]
     (time/parse-date http-date)))

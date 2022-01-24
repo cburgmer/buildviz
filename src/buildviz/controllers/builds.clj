@@ -11,16 +11,17 @@
              [json :as json]]
             [clojure.walk :as walk]))
 
-(defn store-build! [build-results job-name build-id build]
-  (if-some [errors (seq (schema/build-validation-errors build))]
-    {:status 400
-     :body errors}
-    (try
-      (results/set-build! build-results job-name build-id build)
-      (http/respond-with-json build)
-      (catch IllegalArgumentException e
-        {:status 400
-         :body (.getMessage e)}))))
+(defn store-build! [build-results job-name build-id body]
+  (let [build (json/from-string (slurp body))]
+    (if-some [errors (seq (schema/build-validation-errors build))]
+      {:status 400
+       :body errors}
+      (try
+        (results/set-build! build-results job-name build-id build)
+        (http/respond-with-json build)
+        (catch IllegalArgumentException e
+          {:status 400
+           :body (.getMessage e)})))))
 
 (defn get-build [build-results job-name build-id]
   (if-some [build (results/build build-results job-name build-id)]
@@ -39,11 +40,15 @@
       (catch Exception e
         {:errors (.getMessage e)}))))
 
+(defn- parse-json-test-results [body]
+  (let [results (json/from-string (slurp body))]
+    (if-some [errors (seq (tests-schema/tests-validation-errors results))]
+      {:errors errors}
+      {:test-results (junit-xml/serialize-testsuites results)})))
+
 (defn- parse-test-results [body content-type]
   (if (= "application/json" content-type)
-    (if-some [errors (seq (tests-schema/tests-validation-errors body))]
-      {:errors errors}
-      {:test-results (junit-xml/serialize-testsuites body)})
+    (parse-json-test-results body)
     (parse-xml-test-results body)))
 
 (defn store-test-results! [build-results job-name build-id body content-type]

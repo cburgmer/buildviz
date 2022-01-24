@@ -54,7 +54,6 @@
   (-> (app-routes build-results pipeline-name)
       (wrap-build-results-not-modified build-results)
       params/wrap-params
-      (http/wrap-json-body)
       (accept/wrap-accept {:mime ["application/json" :as :json,
                                   "application/xml" "text/xml" :as :xml
                                   "text/plain" :as :plain]})
