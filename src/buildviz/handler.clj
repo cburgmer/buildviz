@@ -14,6 +14,7 @@
             [buildviz.data.results :as results]
             [buildviz.util.http :as http]
             [compojure.core :as compojure :refer :all]
+            [compojure.route :as route]
             [ring.middleware
              [accept :as accept]
              [content-type :as content-type]
@@ -44,7 +45,8 @@
    (GET "/failphases" {accept :accept query :query-params} (get-fail-phases build-results accept (from-timestamp query)))
    (GET "/testcases" {accept :accept query :query-params} (get-testcases build-results accept (from-timestamp query)))
    (GET "/testclasses" {accept :accept query :query-params} (get-testclasses build-results accept (from-timestamp query)))
-   (GET "/flakytestcases" {accept :accept query :query-params} (get-flaky-testclasses build-results accept (from-timestamp query)))))
+   (GET "/flakytestcases" {accept :accept query :query-params} (get-flaky-testclasses build-results accept (from-timestamp query)))
+   (route/not-found "Not found")))
 
 (defn- wrap-build-results-not-modified [handler build-results]
   (fn [request]

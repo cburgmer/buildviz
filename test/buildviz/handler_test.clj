@@ -9,4 +9,8 @@
     (is (= 302
            (:status (get-request (the-app) "/"))))
     (is (= "/index.html"
-           (get (:headers (get-request (the-app) "/")) "Location")))))
+           (get (:headers (get-request (the-app) "/")) "Location"))))
+
+  (testing "GET to /unknown"
+    (is (= 404
+           (:status (get-request (the-app) "/unknown"))))))
