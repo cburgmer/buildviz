@@ -14,8 +14,3 @@
 (defn clojurize [json]
   (wharf/transform-keys (comp keyword clojure.string/lower-case wharf/camel->hyphen)
                         json))
-
-(defn from-string [json-string]
-  (->> json-string
-       j/parse-string
-       clojurize))

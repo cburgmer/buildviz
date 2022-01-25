@@ -1,6 +1,7 @@
 (ns buildviz.storage
   (:require [buildviz.util.json :as json]
             [buildviz.safe-filenames :as safe-filenames]
+            [cheshire.core :as j]
             [clojure.java.io :as io]
             [clojure.string :as str]))
 
@@ -36,7 +37,7 @@
        (reduce (fn [jobs [job-name build-id file]]
                  (assoc-in jobs
                            [job-name build-id]
-                           (json/from-string (slurp file))))
+                           (json/clojurize (j/parse-string (slurp file)))))
                {})))
 
 

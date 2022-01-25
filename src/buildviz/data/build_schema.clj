@@ -16,16 +16,16 @@
                 :inputs {:type "array"
                          :items {:type "object"
                                  :properties {:revision {:type ["string" "integer" "boolean"]}
-                                              :source-id {:type ["string" "integer"]}}
-                                 :required [:revision :source-id]
+                                              :sourceId {:type ["string" "integer"]}}
+                                 :required [:revision :sourceId]
                                  :additionalProperties false}}
-                :triggered-by {:type "array"
-                               :minItems 1
-                               :items {:type "object"
-                                       :properties {:job-name {:type "string"}
-                                                    :build-id {:type "string"}}
-                                       :required [:job-name :build-id]
-                                       :additionalProperties false}}}
+                :triggeredBy {:type "array"
+                              :minItems 1
+                              :items {:type "object"
+                                      :properties {:jobName {:type "string"}
+                                                   :buildId {:type "string"}}
+                                      :required [:jobName :buildId]
+                                      :additionalProperties false}}}
    :required [:start]
    :additionalProperties false})
 

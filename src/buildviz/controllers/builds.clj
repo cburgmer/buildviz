@@ -14,16 +14,17 @@
             [wharf.core :as wharf]))
 
 (defn store-build! [build-results job-name build-id body]
-  (let [build (json/from-string (slurp body))]
-    (if-some [errors (seq (schema/build-validation-errors build))]
+  (let [build-json (j/parse-string (slurp body))]
+    (if-some [errors (seq (schema/build-validation-errors build-json))]
       {:status 400
        :body errors}
-      (try
-        (results/set-build! build-results job-name build-id build)
-        (http/respond-with-json build)
-        (catch IllegalArgumentException e
-          {:status 400
-           :body (.getMessage e)})))))
+      (let [build (json/clojurize build-json)]
+        (try
+          (results/set-build! build-results job-name build-id build)
+          (http/respond-with-json build)
+          (catch IllegalArgumentException e
+            {:status 400
+             :body (.getMessage e)}))))))
 
 (defn get-build [build-results job-name build-id]
   (if-some [build (results/build build-results job-name build-id)]
@@ -43,10 +44,10 @@
         {:errors (.getMessage e)}))))
 
 (defn- parse-json-test-results [body]
-  (let [results (json/from-string (slurp body))]
-    (if-some [errors (seq (tests-schema/tests-validation-errors results))]
+  (let [results-json (j/parse-string (slurp body))]
+    (if-some [errors (seq (tests-schema/tests-validation-errors results-json))]
       {:errors errors}
-      {:test-results (junit-xml/serialize-testsuites results)})))
+      {:test-results (junit-xml/serialize-testsuites (json/clojurize results-json))})))
 
 (defn- parse-test-results [body content-type]
   (if (= "application/json" content-type)

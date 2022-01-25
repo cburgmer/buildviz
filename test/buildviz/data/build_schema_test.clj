@@ -27,31 +27,31 @@
   (testing "should fail on missing revision for inputs"
     (is (= "#/inputs/0: required key [revision] not found"
            (first (schema/build-validation-errors {:start 1453646247759
-                                                   :inputs [{:source-id "43"}]})))))
+                                                   :inputs [{:sourceId "43"}]})))))
 
   (testing "should fail on missing source-id for inputs"
-    (is (= "#/inputs/0: required key [source-id] not found"
+    (is (= "#/inputs/0: required key [sourceId] not found"
            (first (schema/build-validation-errors {:start 1453646247759
                                                    :inputs [{:revision "abcd"}]})))))
 
   (testing "should fail on missing job-name for triggered-by"
-    (is (= "#/triggered-by/0: required key [job-name] not found"
+    (is (= "#/triggeredBy/0: required key [jobName] not found"
            (first (schema/build-validation-errors {:start 1453646247759
-                                                   :triggered-by [{:build-id "42"}]})))))
+                                                   :triggeredBy [{:buildId "42"}]})))))
 
   (testing "should fail on missing build-id for triggered-by"
-    (is (= "#/triggered-by/0: required key [build-id] not found"
+    (is (= "#/triggeredBy/0: required key [buildId] not found"
            (first (schema/build-validation-errors {:start 1453646247759
-                                                   :triggered-by [{:job-name "the_job"}]})))))
+                                                   :triggeredBy [{:jobName "the_job"}]})))))
 
   (testing "should fail on empty triggered-by list"
-    (is (= "#/triggered-by: expected minimum item count: 1, found: 0"
+    (is (= "#/triggeredBy: expected minimum item count: 1, found: 0"
            (first (schema/build-validation-errors {:start 1453646247759
-                                                   :triggered-by []})))))
+                                                   :triggeredBy []})))))
 
   (testing "should allow boolean revision for inputs"
     (is (empty? (schema/build-validation-errors {:start 1453646247759
-                                                 :inputs [{:revision true :source-id "something"}]})))))
+                                                 :inputs [{:revision true :sourceId "something"}]})))))
 
 (deftest test-was-triggered-by?
   (testing "should find triggering build"
