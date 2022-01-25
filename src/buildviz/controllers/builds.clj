@@ -97,16 +97,21 @@
   (when test-results
     (results/set-tests! build-results job-name build-id (junit-xml/serialize-testsuites test-results))))
 
-(defn store-builds! [build-results body]
+(defn- ingest-builds [body]
   (let [builds-json (j/parsed-seq (clojure.java.io/reader body))
-        builds (->> builds-json
-                    (wharf/transform-keys (comp keyword clojure.string/lower-case wharf/camel->hyphen)))
-        errors (->> builds-json
-                    (map (fn [build] {:build build
-                                      :errors (build-facts-schema/validation-errors build)}))
-                    (remove (fn [build-errors] (empty? (:errors build-errors)))))]
-    (if (empty? errors)
-     (do (run! #(store-build-and-test-results! build-results %) builds)
-         {:status 204})
-     (assoc (http/respond-with-json (first errors))
-            :status 400))))
+        first-error (->> builds-json
+                         (map (fn [build] {:build build
+                                           :errors (build-facts-schema/validation-errors build)}))
+                         (remove (fn [build-errors] (empty? (:errors build-errors))))
+                         first)]
+    [(json/clojurize builds-json)
+     first-error]))
+
+(defn store-builds! [build-results body]
+  (let [[builds first-error] (ingest-builds body)]
+    (if first-error
+      {:body (j/generate-string (json/jsonize first-error))
+       :headers {"Content-Type" "application/json;charset=UTF-8"}
+       :status 400}
+      (do (run! #(store-build-and-test-results! build-results %) builds)
+         {:status 204}))))

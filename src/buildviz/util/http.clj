@@ -4,8 +4,7 @@
             [buildviz.util.json :as json]
             [ring.util
              [response :as resp]
-             [time :as time]]
-            [wharf.core :as wharf]))
+             [time :as time]]))
 
 (defn respond-with-json [content]
   {:body (json/to-string content)
