@@ -9,7 +9,9 @@
              [csv :as csv]
              [http :as http]
              [json :as json]]
-            [clojure.walk :as walk]))
+            [cheshire.core :as j]
+            [clojure.walk :as walk]
+            [wharf.core :as wharf]))
 
 (defn store-build! [build-results job-name build-id body]
   (let [build (json/from-string (slurp body))]
@@ -96,8 +98,10 @@
     (results/set-tests! build-results job-name build-id (junit-xml/serialize-testsuites test-results))))
 
 (defn store-builds! [build-results body]
-  (let [builds (json/from-sequence (clojure.java.io/reader body))
-        errors (->> builds
+  (let [builds-json (j/parsed-seq (clojure.java.io/reader body))
+        builds (->> builds-json
+                    (wharf/transform-keys (comp keyword clojure.string/lower-case wharf/camel->hyphen)))
+        errors (->> builds-json
                     (map (fn [build] {:build build
                                       :errors (build-facts-schema/validation-errors build)}))
                     (remove (fn [build-errors] (empty? (:errors build-errors)))))]

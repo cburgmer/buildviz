@@ -5,25 +5,25 @@
 (def build-schema
   {:$schema "http://json-schema.org/draft-07/schema"
    :type "object"
-   :required [:job-name :build-id :start]
-   :properties {:job-name {:type "string"}
-                :build-id {:type "string"}
+   :required [:jobName :buildId :start]
+   :properties {:jobName {:type "string"}
+                :buildId {:type "string"}
                 :start {:type "integer" :minimum 0}
                 :end {:type "integer" :minimum 0}
                 :outcome {:type "string" :enum ["pass" "fail"]}
                 :inputs {:type "array"
                          :items {:type "object"
-                                 :required [:source-id :revision]
-                                 :properties {:source-id {:type "string"}
+                                 :required [:sourceId :revision]
+                                 :properties {:sourceId {:type "string"}
                                               :revision {:type "string"}}
                                  :additionalProperties false}}
-                :triggered-by {:type "array"
+                :triggeredBy {:type "array"
                               :items {:type "object"
-                                      :required [:job-name :build-id]
-                                      :properties {:job-name {:type "string"}
-                                                   :build-id {:type "string"}}
+                                      :required [:jobName :buildId]
+                                      :properties {:jobName {:type "string"}
+                                                   :buildId {:type "string"}}
                                       :additionalProperties false}}
-                :test-results {:type "array"
+                :testResults {:type "array"
                               :items {:type "object"
                                       :required [:name :children]
                                       :properties {:name {:type "string"}

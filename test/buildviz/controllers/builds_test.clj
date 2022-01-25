@@ -224,7 +224,7 @@
                                                        (json/generate-string {:jobName "abuild" :buildId "42"})])
                                  "text/plain")]
       (is (= {:build {:jobName "abuild"}
-              :errors ["#: required key [build-id] not found"
+              :errors ["#: required key [buildId] not found"
                        "#: required key [start] not found"]}
              (json/parse-string (:body response) true)))))
 

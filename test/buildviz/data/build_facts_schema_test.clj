@@ -3,6 +3,6 @@
             [clojure.test :refer :all]))
 
 (deftest test-validation-errors
-  (is (empty? (schema/validation-errors {:job-name "my job" :build-id "42" :start 1})))
-  (is (= "#: required key [job-name] not found"
-         (first (schema/validation-errors {:build-id "42" :start 1})))))
+  (is (empty? (schema/validation-errors {:jobName "my job" :buildId "42" :start 1})))
+  (is (= "#: required key [jobName] not found"
+         (first (schema/validation-errors {:buildId "42" :start 1})))))
