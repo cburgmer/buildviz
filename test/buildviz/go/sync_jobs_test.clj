@@ -193,12 +193,12 @@
         (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
                                        (url/url "http://buildviz:8010")
                                        beginning-of-2016 nil)))
-      (is (= [{:job-name "AnotherPipeline :: AnotherStage"
-               :build-id "21 (Run 2)"}]
+      (is (= [{:jobName "AnotherPipeline :: AnotherStage"
+               :buildId "21 (Run 2)"}]
              (-> @store
                  first
                  second
-                 :triggered-by)))))
+                 :triggeredBy)))))
 
   (testing "should not sync a forced build trigger"
     (let [store (atom [])]
@@ -221,7 +221,7 @@
       (is (nil? (-> @store
                     first
                     second
-                    :triggered-by)))))
+                    :triggeredBy)))))
 
   (testing "should not count a source revision cause as pipeline trigger"
     (let [store (atom [])]
@@ -248,7 +248,7 @@
       (is (nil? (-> @store
                     first
                     second
-                    :triggered-by)))))
+                    :triggeredBy)))))
 
   (testing "should only sync build trigger from pipeline material for first stage"
     (let [store (atom [])]
@@ -274,12 +274,12 @@
         (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
                                        (url/url "http://buildviz:8010")
                                        beginning-of-2016 nil)))
-      (let [pipeline-trigger {:job-name "AnotherPipeline :: AnotherStage"
-                              :build-id "21 (Run 2)"}]
+      (let [pipeline-trigger {:jobName "AnotherPipeline :: AnotherStage"
+                              :buildId "21 (Run 2)"}]
         (is (= 1
                (->> @store
                     (map second)
-                    (map :triggered-by)
+                    (map :triggeredBy)
                     (filter (fn [triggers] (some #(= % pipeline-trigger)
                                                  triggers)))
                     count))))))
@@ -315,12 +315,12 @@
         (with-out-str (sut/sync-stages (url/url "http://gocd:8513")
                                        (url/url "http://buildviz:8010")
                                        beginning-of-2016 nil)))
-      (is (= [{:job-name "Build :: DoStuff"
-               :build-id "42"}]
+      (is (= [{:jobName "Build :: DoStuff"
+               :buildId "42"}]
              (-> @store
                  (nth 1)
                  second
-                 :triggered-by)))))
+                 :triggeredBy)))))
 
   (testing "should not sync build trigger for re-run of stage"
     (let [store (atom [])]
@@ -356,7 +356,7 @@
       (is (nil? (-> @store
                     (nth 1)
                     second
-                    :triggered-by)))))
+                    :triggeredBy)))))
 
   (testing "should handle a rerun"
     (let [store (atom [])]

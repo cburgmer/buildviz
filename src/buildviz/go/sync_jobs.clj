@@ -3,6 +3,7 @@
             [buildviz.go.junit :as junit]
             [buildviz.go.transform :as transform]
             [buildviz.util.url :as url]
+            [buildviz.util.json :as json]
             [cheshire.core :as j]
             [clj-http.client :as client]
             [clj-progress.core :as progress]
@@ -67,7 +68,7 @@
 (defn- put-build [buildviz-url job-name build-no build]
   (client/put (str/join [(url/with-plain-text-password buildviz-url) (templ/uritemplate "/builds{/job}{/build}" {"job" job-name "build" build-no})])
               {:content-type :json
-               :body (j/generate-string build)}))
+               :body (json/to-string build)}))
 
 (defn- put-junit-xml [buildviz-url job-name build-no junit-xml]
   (try
