@@ -96,6 +96,28 @@ goal_make_release() {
     )
 }
 
+goal_bump_build_facts() {
+    local NEW_VERSION=$1
+
+    if [ -z "$NEW_VERSION" ]; then
+        echo "Provide a new version number"
+        exit 1
+    fi
+
+    (
+        cd "$SCRIPT_DIR"
+        sed -i "" "s/build_facts_version=\"\(.*\)\"/build_facts_version=\"$NEW_VERSION\"/g" test/integration/test_build_facts.sh
+
+        git add test/integration/test_build_facts.sh
+        git commit -m "Bump build-facts version"
+
+        ./test/integration/test_build_facts.sh
+
+        git show
+        git status
+    )
+}
+
 fetch_buildviz_jar() {
     local version="$1"
     (
