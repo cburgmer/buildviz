@@ -120,7 +120,7 @@ goal_publish_docker() {
     docker push "${image_name}:latest"
 }
 
-print_usage() {
+goal_help() {
     local GOALS
     GOALS=$(set | grep -e "^goal_" | sed "s/^goal_\(.*\)().*/\1/" | xargs | sed "s/ / | /g")
     echo "Usage: $0 [ ${GOALS} ]"
@@ -129,17 +129,13 @@ print_usage() {
 main() {
     local GOAL
 
-    if [[ -z "$1" ]]; then
-        GOAL="test"
-    else
-        GOAL="$1"
-        shift
-    fi
-
-    if ! type -t "goal_${GOAL}" &>/dev/null; then
-        print_usage
+    if [[ -z "$1" ]] || ! type -t "goal_$1" &>/dev/null; then
+        goal_help
         exit 1
     fi
+
+    GOAL="$1"
+    shift
 
     "goal_${GOAL}" "$@"
 }

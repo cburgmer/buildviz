@@ -1,7 +1,0 @@
-language: clojure
-jdk:
-  - oraclejdk11
-script:
-- ./go
-before_deploy:
-- lein ring uberjar
