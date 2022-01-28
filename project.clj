@@ -1,4 +1,4 @@
-(defproject buildviz "0.14.3"
+(defproject buildviz "0.15.0"
   :description "Transparency for your build pipeline's results and runtime."
   :url "https://github.com/cburgmer/buildviz"
   :license {:name "BSD 2-Clause"
