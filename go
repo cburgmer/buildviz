@@ -77,10 +77,7 @@ goal_make_release() {
         sed -i "" "s/$OLD_VERSION/$NEW_VERSION/g" README.md
         sed -i "" "s/buildviz \"$OLD_VERSION\"/buildviz \"$NEW_VERSION\"/" project.clj
 
-        # shellcheck disable=SC1010
-        goal_install # force package-lock.json to be updated now
-
-        git add README.md project.clj package-lock.json
+        git add README.md project.clj
         git commit -m "Bump version"
 
         ./lein clean
