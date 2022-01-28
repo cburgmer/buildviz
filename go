@@ -81,7 +81,7 @@ goal_make_release() {
         git commit -m "Bump version"
 
         ./lein clean
-        ./lein uberjar
+        ./lein ring uberjar
 
         git show
         git tag "$NEW_VERSION"
