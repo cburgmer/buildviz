@@ -1,5 +1,4 @@
 (ns buildviz.data.junit-xml
-  (:gen-class)
   (:require [clojure.data.xml :as xml]
             [clojure.string :as str]
             [clojure.java.io :as io]
@@ -128,28 +127,3 @@
 
 (defn serialize-testsuites [testsuites]
   (xml/emit-str (testsuites->node testsuites)))
-
-
-(declare node->string)
-
-(defn- testcase->string [{:keys [name classname runtime status]}]
-  (format "%s.%s\t%s\t%s" classname name (format-runtime-in-millis runtime) status))
-
-(defn- testsuite->string [{:keys [:name :children]}]
-  (cons name
-        (->> children
-             (mapcat node->string)
-             (map #(str "  " %)))))
-
-(defn- node->string [element]
-  (if (contains? element :children)
-    (testsuite->string element)
-    (list (testcase->string element))))
-
-(defn to-string [testsuites]
-  (doall (map println (mapcat node->string testsuites))))
-
-(defn -main [path]
-  (let [xml (slurp (io/file path))
-        testsuites (parse-testsuites xml)]
-    (to-string testsuites)))
