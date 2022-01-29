@@ -3,7 +3,7 @@ Just a few pointers if you want to make changes to buildviz:
 ## Run the server locally
 
     $ ./go install
-    $ ./lein ring server
+    $ ./lein ring server-headless
     # optionally
     $ ./examples/data/seedDummyData.sh
 
@@ -16,14 +16,6 @@ Just a few pointers if you want to make changes to buildviz:
     $ npm run ui_tests
     $ open http://localhost:8000/test/RegressionRunner.html
 
-## Inspect JUnit XML file
-
-    $ ./lein run -m buildviz.data.junit-xml MY_JUNIT_RESULTS.xml
-
-## Run sync for GoCD locally
-
-    $ ./lein run -m buildviz.go.sync http://$USER:$PW@localhost:8153/go
-
 ## Generate the standalone jar
 
     $ ./lein ring uberjar
@@ -31,14 +23,3 @@ Just a few pointers if you want to make changes to buildviz:
 ## Make a new release
 
     $ ./go make_release 1.2.3
-
-## Re-generating the recorded traffic from actual GoCD server
-
-Re-generating the traffic, captured via wiremock, is necessary if a new API is
-accessed in the sync that hasn't been captured yet, or any URL access has been
-slightly changed:
-
-    $ ./test/integration/record_gocd.sh
-
-The recorded file needs to be checked in to provide regression testing for the
-relevant sync job.
