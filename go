@@ -96,7 +96,7 @@ goal_bump_build_facts() {
         cd "$SCRIPT_DIR"
         sed -i "" "s/build_facts_version=\"\(.*\)\"/build_facts_version=\"$NEW_VERSION\"/g" test/integration/test_build_facts.sh
         sed -i "" "s|/\([^/]*\)/build-facts-\1-standalone.jar|/$NEW_VERSION/build-facts-$NEW_VERSION-standalone.jar|" README.md
-        sed -i "" "s|build-facts-\(.*\)-standalone.jar|build-facts-$NEW_VERSION-standalone.jar|" README.md
+        sed -i "" "s|build-facts-\(.*\)-standalone.jar|build-facts-$NEW_VERSION-standalone.jar|" README.md examples/README.md
 
         git add test/integration/test_build_facts.sh README
         git commit -m "Bump build-facts version"

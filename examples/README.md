@@ -1,6 +1,6 @@
 ## Buildviz Examples
 
-### Hosted on AWS 
+### Hosted on AWS
 
 There used to be a live example hosted on AWS, but it got a bit expensive over time.
 The infrastructure code for that can be found in `./aws/`.
@@ -11,20 +11,16 @@ This is the quickest, most lightweight example with some fake seed data:
 
     $ ./runSeedDataExample.sh
 
-### Integration with CI servers
+### Integration with build servers
 
-These demos show integration with popular CI servers. Installed via Docker, they
-come with a minimal pipeline pre-configured.
+[build-facts](https://github.com/cburgmer/build-facts) hosts
+[examples for all supported build servers](https://github.com/cburgmer/build-facts/tree/master/examples).
 
-    $ ./runGoCdExample.sh       # GoCD
-    $ ./runJenkinsExample.sh    # Jenkins
-    $ ./runTeamCityExample.sh   # TeamCity
+Follow the steps there to run your build server of choice. Once you have that
+and a running instance of buildviz, run build-facts and pipe the extracted data
+through curl.
 
-Re-running the examples will re-use the provisioned containers.
+Here is an example for the Jenkins setup:
 
-#### Cleaning up
-
-To remove the test instance and then the downloaded docker images run, e.g.
-
-    $ ./jenkins/run.sh destroy
-    $ ./jenkins/run.sh purge
+    $ java -jar build-facts-0.5.4-standalone.jar jenkins http://localhost:8080 --state state.json \
+        | curl -v -H "Content-type: text/plain" -d@- 'http://localhost:3000/builds'
