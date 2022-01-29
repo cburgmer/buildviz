@@ -4,7 +4,11 @@ set -eo pipefail
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 readonly SCRIPT_DIR
 
+# Responses recorded from Jenkins by wiremock. This needs to be in a version
+# currently supported by build-facts. And update can be pulled from the
+# build-facts repository.
 readonly MAPPING_SOURCE="${SCRIPT_DIR}/jenkins.tar.gz"
+
 readonly DATA_DIR="${SCRIPT_DIR}/../../examples/data"
 
 readonly WIREMOCK_PORT="3341"

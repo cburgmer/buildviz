@@ -28,15 +28,6 @@ goal_test_unit() {
 
 goal_test_integration() {
     echo
-    echo "Running integration test against recorded endpoints."
-    echo "If this fails you might have changed how the endpoints are requested, and might want to record from scratch."
-    echo "Testing buildviz.go.sync"
-    "${SCRIPT_DIR}/test/integration/test_gocd.sh"
-    echo "Testing buildviz.jenkins.sync"
-    "${SCRIPT_DIR}/test/integration/test_jenkins.sh"
-    echo "Testing buildviz.teamcity.sync"
-    "${SCRIPT_DIR}/test/integration/test_teamcity.sh"
-
     echo "Testing integration with build-facts"
     "${SCRIPT_DIR}/test/integration/test_build_facts.sh"
 }
