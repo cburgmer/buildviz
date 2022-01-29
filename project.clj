@@ -24,10 +24,6 @@
   :plugins [[lein-ring "0.12.5"]]
   :ring {:handler buildviz.main/app
          :init buildviz.main/help}
-  :aot [buildviz.go.sync
-        buildviz.jenkins.sync
-        buildviz.teamcity.sync
-        buildviz.data.junit-xml]
   :profiles {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
                                   [ring-mock "0.1.5"]
                                   [clj-http-fake "1.0.3"]]
