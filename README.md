@@ -87,7 +87,8 @@ formatted test results can be `PUT` to `http://localhost:3000/builds/$JOB_NAME/$
 
 You might also like:
 
-* [Metrik](https://github.com/thoughtworks/metrik), calculates the [4 key metrics](https://www.thoughtworks.com/radar/techniques/four-key-metrics) based on CI/CD build data.
+* [Metrik](https://github.com/thoughtworks/metrik), calculates the [four key metrics](https://www.thoughtworks.com/radar/techniques/four-key-metrics) based on CI/CD build data.
+* [Four Keys](https://github.com/GoogleCloudPlatform/fourkeys), measures the four key metrics.
 * [HeartBeat](https://github.com/thoughtworks/HeartBeat), calculates delivery metrics from CI/CD build data, revision control and project planning tools.
 * [Kuona project for IT Analytics](https://github.com/kuona/kuona-project), provides a dashboard on data from various sources.
 * [Test Trend Analyzer](https://github.com/anandbagmar/tta), consumes test results for test trends.
