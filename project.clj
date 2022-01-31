@@ -24,6 +24,7 @@
   :plugins [[lein-ring "0.12.5"]]
   :ring {:handler buildviz.main/app
          :init buildviz.main/help}
+  :aot [buildviz.bundle]
   :profiles {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
                                   [ring-mock "0.1.5"]
                                   [clj-http-fake "1.0.3"]]
