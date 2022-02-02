@@ -1,0 +1,28 @@
+#!/bin/bash
+set -eo pipefail
+
+goal_tf() {
+    (
+        cd deploy
+        terraform init
+        if [[ $# -eq 0 ]]; then
+            terraform plan
+        else
+            terraform "$@"
+        fi
+    )
+}
+
+main() {
+    local GOAL="$1"
+    if type "goal_${GOAL}" > /dev/null 2>&1; then
+        shift
+        "goal_${GOAL}" "$@"
+    else
+        echo -n "Usage: $0 "
+        set | grep -e "^goal_" | sed "s/^goal_\(.*\)().*/\1/" | xargs | sed "s/ / | /g"
+        exit 1
+    fi
+}
+
+main "$@"

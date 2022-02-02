@@ -12,6 +12,8 @@ pom.xml.asc
 /examples/aws/data/
 /examples/aws/deploy/.terraform/
 /examples/aws/deploy/terraform.tfstate*
+/examples/aws_statics/deploy/.terraform/
+/examples/aws_statics/deploy/terraform.tfstate*
 /data/
 /log/
 /examples/gocd/server/config/
