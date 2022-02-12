@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - Dropped support for synching of build servers in favour of [build-facts](https://github.com/cburgmer/build-facts). This feature has already been deprecated in 0.15.0.
 
+## [0.15.1] - 2022-02-12
+### Fixed
+- The jar contained superfluous files from the development setup increasing the file size.
+
 
 ## [0.15.0] - 2022-01-28
 ### Deprecated

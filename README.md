@@ -20,8 +20,8 @@ All it needs is your build history including test results.
 
 ## Usage
 
-    $ curl -OL https://github.com/cburgmer/buildviz/releases/download/0.15.0/buildviz-0.15.0-standalone.jar
-    $ java -jar buildviz-0.15.0-standalone.jar
+    $ curl -OL https://github.com/cburgmer/buildviz/releases/download/0.15.1/buildviz-0.15.1-standalone.jar
+    $ java -jar buildviz-0.15.1-standalone.jar
 
 Now, buildviz takes in build data via `POST` to `/builds`. Some suggestions how
 to set it up:
