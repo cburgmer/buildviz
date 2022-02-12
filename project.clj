@@ -25,6 +25,7 @@
   :ring {:handler buildviz.main/app
          :init buildviz.main/help}
   :aot [buildviz.bundle]
+  :jar-exclusions [#"docker/.*"]
   :profiles {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
                                   [ring-mock "0.1.5"]
                                   [clj-http-fake "1.0.3"]]

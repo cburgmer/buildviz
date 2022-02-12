@@ -3,8 +3,6 @@
 /checkouts
 pom.xml
 pom.xml.asc
-*.jar
-*.class
 /.lein-*
 /.nrepl-port
 /node_modules/
@@ -18,3 +16,4 @@ pom.xml.asc
 /log/
 /examples/gocd/server/config/
 /examples/teamcity/data/
+/test/integration/wiremock-standalone-*.jar
