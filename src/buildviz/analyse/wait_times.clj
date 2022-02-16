@@ -26,14 +26,17 @@
        (map (fn [[_ builds]] (apply min-key :end builds)))))
 
 (defn- longest-build-wait-time [build all-builds]
-  ;; If a job needs multiple preceding jobs to be triggered, then only the
-  ;; latest will finally fulfill the requirement for a successful trigger, hence
-  ;; the wait time will start there.
-  (let [latest-triggering-build (->> (:triggered-by build)
-                                     (map #(find-build % all-builds))
-                                     earliest-triggering-candidates
-                                     (apply max-key :end))]
-    (build-wait-time build latest-triggering-build)))
+  (when-let [triggered-builds (->> (:triggered-by build)
+                                   (map #(find-build % all-builds))
+                                   (remove nil?)
+                                   seq)]
+    ;; If a job needs multiple preceding jobs to be triggered, then only the
+    ;; latest will finally fulfill the requirement for a successful trigger,
+    ;; hence the wait time will start there.
+    (let [latest-triggering-build (->> triggered-builds
+                                       earliest-triggering-candidates
+                                       (apply max-key :end))]
+      (build-wait-time build latest-triggering-build))))
 
 (defn wait-times [builds]
   (->> builds

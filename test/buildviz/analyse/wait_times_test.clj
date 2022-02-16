@@ -54,6 +54,13 @@
   (testing "should handle missing triggering build"
     (is (empty? (sut/wait-times [(a-triggered-build "deploy" "42" 1000 [["test" "41"]])]))))
 
+  (testing "should handle partially missing triggering builds"
+    (is (= [{:job "deploy" :build-id "42" :start 1000 :wait-time 900 :triggered-by {:job "test" :build-id "40"}}]
+           (sut/wait-times [(a-triggered-build "deploy" "42" 1000 [["another test" "41"]
+                                                                   ["test" "40"]
+                                                                   ["yet another test" "39"]])
+                            (a-build "test" "40" 100)]))))
+
   (testing "should handle two builds"
     (is (= [{:job "deploy" :build-id "42" :start 2000 :wait-time 1000 :triggered-by {:job "test" :build-id "41"}}
             {:job "deploy" :build-id "30" :start 1000 :wait-time 800 :triggered-by {:job "test" :build-id "30"}}]
