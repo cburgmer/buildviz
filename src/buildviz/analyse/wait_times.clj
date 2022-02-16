@@ -7,14 +7,13 @@
                  builds)))
 
 (defn- build-wait-time [{:keys [job build-id start]} triggering-build]
-  (when-let [triggering-build-end (:end triggering-build)]
-    (let [wait-time (- start
-                       triggering-build-end)]
-      {:job job
-       :build-id build-id
-       :start start
-       :wait-time wait-time
-       :triggered-by (select-keys triggering-build [:job :build-id])})))
+  (let [wait-time (- start
+                     (:end triggering-build))]
+    {:job job
+     :build-id build-id
+     :start start
+     :wait-time wait-time
+     :triggered-by (select-keys triggering-build [:job :build-id])}))
 
 ;; Jenkins for example may report multiple builds of the same jobs as trigger,
 ;; if the triggered job is slow to schedule, and multiple triggering builds
@@ -29,6 +28,7 @@
   (when-let [triggered-builds (->> (:triggered-by build)
                                    (map #(find-build % all-builds))
                                    (remove nil?)
+                                   (filter :end)
                                    seq)]
     ;; If a job needs multiple preceding jobs to be triggered, then only the
     ;; latest will finally fulfill the requirement for a successful trigger,
