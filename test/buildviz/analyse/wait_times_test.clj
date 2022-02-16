@@ -20,17 +20,24 @@
                          :build-id triggering-build-id})
                       triggered-by)})
 
-(deftest test-wait-times-by-day
+(deftest test-wait-times
   (testing "should calculate wait time for triggered build"
     (is (= [{:job "deploy" :build-id "42" :start 1000 :wait-time 800 :triggered-by {:job "test" :build-id "41"}}]
            (sut/wait-times [(a-triggered-build "deploy" "42" 1000 [["test" "41"]])
                             (a-build "test" "41" 200)]))))
 
-  (testing "should use longest wait time for build triggered by two"
+  (testing "should use longest wait time for build triggered by two builds of the same job"
     (is (= [{:job "deploy" :build-id "42" :start 1000 :wait-time 900 :triggered-by {:job "test" :build-id "40"}}]
            (sut/wait-times [(a-triggered-build "deploy" "42" 1000 [["test" "41"]
                                                                    ["test" "40"]])
                             (a-build "test" "41" 500)
+                            (a-build "test" "40" 100)]))))
+
+  (testing "should use shortest wait time for build triggered by two builds of different jobs"
+    (is (= [{:job "deploy" :build-id "42" :start 1000 :wait-time 500 :triggered-by {:job "another test" :build-id "41"}}]
+           (sut/wait-times [(a-triggered-build "deploy" "42" 1000 [["another test" "41"]
+                                                                   ["test" "40"]])
+                            (a-build "another test" "41" 500)
                             (a-build "test" "40" 100)]))))
 
   (testing "should handle optional 'end' value for triggering build"

@@ -16,11 +16,24 @@
        :wait-time wait-time
        :triggered-by (select-keys triggering-build [:job :build-id])})))
 
+;; Jenkins for example may report multiple builds of the same jobs as trigger,
+;; if the triggered job is slow to schedule, and multiple triggering builds
+;; have happened in the meantime. As of wait times, the oldest should obviously
+;; count as it's been waiting the longest.
+(defn- earliest-triggering-candidates [triggering-builds]
+  (->> triggering-builds
+       (group-by :job)
+       (map (fn [[_ builds]] (apply min-key :end builds)))))
+
 (defn- longest-build-wait-time [build all-builds]
-  (->> (:triggered-by build)
-       (map #(find-build % all-builds))
-       (map #(build-wait-time build %))
-       (apply max-key :wait-time)))
+  ;; If a job needs multiple preceding jobs to be triggered, then only the
+  ;; latest will finally fulfill the requirement for a successful trigger, hence
+  ;; the wait time will start there.
+  (let [latest-triggering-build (->> (:triggered-by build)
+                                     (map #(find-build % all-builds))
+                                     earliest-triggering-candidates
+                                     (apply max-key :end))]
+    (build-wait-time build latest-triggering-build)))
 
 (defn wait-times [builds]
   (->> builds
