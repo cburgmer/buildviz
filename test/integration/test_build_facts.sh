@@ -56,7 +56,7 @@ die() {
 
 sync_builds() {
     local build_facts_version="0.5.4"
-    local jar="build-facts-${build_facts_version}-standalone.jar"
+    local jar="tmp/build-facts-${build_facts_version}-standalone.jar"
     local stdout="${TMP_OUTPUT_DIR}/stdout"
     local stderr="${TMP_OUTPUT_DIR}/stderr"
     local curl_output="${TMP_OUTPUT_DIR}/curl_output"
