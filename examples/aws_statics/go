@@ -1,6 +1,11 @@
 #!/bin/bash
 set -eo pipefail
 
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+readonly SCRIPT_DIR
+
+DATA_DIR="${SCRIPT_DIR}/teamcity_data"
+
 goal_tf() {
     (
         cd deploy
@@ -13,8 +18,28 @@ goal_tf() {
     )
 }
 
+goal_sync_builds() {
+    local build_facts_version="0.5.4"
+    local jar="${SCRIPT_DIR}/../../tmp/build-facts-${build_facts_version}-standalone.jar"
+
+    if [[ ! -f "$jar" ]]; then
+        echo "Downloading ${jar}"
+        curl -L "https://github.com/cburgmer/build-facts/releases/download/${build_facts_version}/build-facts-${build_facts_version}-standalone.jar" -o "$jar"
+    fi
+
+    java -jar "$jar" teamcity "https://guest@teamcity.jetbrains.com" --project KotlinTools --state teamcity.json --output "$DATA_DIR"
+}
+
+goal_sync_report() {
+    local bundle_dir="${SCRIPT_DIR}/teamcity_bundle"
+    BUILDVIZ_DATA_DIR="$DATA_DIR" "$SCRIPT_DIR"/../../lein run -m buildviz.bundle "$bundle_dir"
+    aws s3 cp --recursive "$bundle_dir"/ s3://cburgmerbuildviz/
+}
+
 main() {
     local GOAL="$1"
+    cd "$SCRIPT_DIR"
+
     if type "goal_${GOAL}" > /dev/null 2>&1; then
         shift
         "goal_${GOAL}" "$@"

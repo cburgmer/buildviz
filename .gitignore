@@ -12,9 +12,10 @@ pom.xml.asc
 /examples/aws/deploy/terraform.tfstate*
 /examples/aws_statics/deploy/.terraform/
 /examples/aws_statics/deploy/terraform.tfstate*
+/examples/aws_statics/teamcity.json
+/examples/aws_statics/teamcity_bundle/
+/examples/aws_statics/teamcity_data/
 /data/
 /log/
 /tmp/
-/examples/gocd/server/config/
-/examples/teamcity/data/
 /test/integration/wiremock-standalone-*.jar
