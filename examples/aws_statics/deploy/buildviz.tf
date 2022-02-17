@@ -1,6 +1,23 @@
 resource "aws_s3_bucket" "statics" {
   bucket = "cburgmerbuildviz"
-  acl    = "private"
+  acl    = "public-read"
+}
+
+data "aws_iam_policy_document" "statics" {
+  statement {
+    actions   = ["s3:GetObject"]
+    resources = ["${aws_s3_bucket.statics.arn}/*"]
+
+    principals {
+      type        = "AWS"
+      identifiers = ["*"]
+    }
+  }
+}
+
+resource "aws_s3_bucket_policy" "statics" {
+  bucket = aws_s3_bucket.statics.id
+  policy = data.aws_iam_policy_document.statics.json
 }
 
 locals {
@@ -16,6 +33,7 @@ resource "aws_cloudfront_distribution" "cf" {
   enabled             = true
   is_ipv6_enabled     = true
   default_root_object = "index.html"
+  price_class         = "PriceClass_100"
 
   aliases = ["${data.aws_route53_zone.selected.name}"]
 
@@ -32,10 +50,11 @@ resource "aws_cloudfront_distribution" "cf" {
       }
     }
 
-    viewer_protocol_policy = "allow-all"
     min_ttl                = 0
     default_ttl            = 3600
     max_ttl                = 86400
+    compress               = true
+    viewer_protocol_policy = "redirect-to-https"
   }
   restrictions {
     geo_restriction {
@@ -43,13 +62,10 @@ resource "aws_cloudfront_distribution" "cf" {
     }
   }
   viewer_certificate {
-    cloudfront_default_certificate = true
+    acm_certificate_arn      = aws_acm_certificate.cloudfront_acm.arn
+    ssl_support_method       = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2019"
   }
-}
-
-// A hosted zone can be created using https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/CreatingNewSubdomain.html
-data "aws_route53_zone" "selected" {
-  name = "buildviz.cburgmer.space."
 }
 
 resource "aws_route53_record" "dns_record" {
