@@ -2,8 +2,25 @@
 
 ### Hosted on AWS
 
-There used to be a live example hosted on AWS, but it got a bit expensive over time.
+We have two examples hosting buildviz in AWS:
+
+#### Running as a webserver
+
 The infrastructure code for that can be found in `./aws/`.
+
+#### Running via statics
+
+(This is the code behind https://buildviz.cburgmer.space/)
+
+The infrastructure code for that can be found in `./aws_statics/`.
+
+When applying an adapted version for yourself, make sure you give your user the
+correct rights in [IAM](https://console.aws.amazon.com/iamv2/home#/home):
+
+- AmazonS3FullAccess
+- CloudFrontFullAccess
+- AWSCertificateManagerFullAccess
+
 
 ### Simple seed data
 

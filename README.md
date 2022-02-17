@@ -16,6 +16,8 @@ in the hopes of improving your pipeline.
 
 All it needs is your build history including test results.
 
+Live example: https://buildviz.cburgmer.space/
+
 ![Screenshot](https://github.com/cburgmer/buildviz/raw/master/examples/data/screenshot.png)
 
 ## Usage
