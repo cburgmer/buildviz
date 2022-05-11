@@ -89,6 +89,7 @@ formatted test results can be `PUT` to `http://localhost:3000/builds/$JOB_NAME/$
 
 You might also like:
 
+* [Polaris](https://sites.google.com/thoughtworks.com/polaris/home), automated tracking of engineering excellence fitness metrics.
 * [Metrik](https://github.com/thoughtworks/metrik), calculates the [four key metrics](https://www.thoughtworks.com/radar/techniques/four-key-metrics) based on CI/CD build data.
 * [Four Keys](https://github.com/GoogleCloudPlatform/fourkeys), measures the four key metrics.
 * [HeartBeat](https://github.com/thoughtworks/HeartBeat), calculates delivery metrics from CI/CD build data, revision control and project planning tools.
